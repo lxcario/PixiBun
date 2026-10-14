@@ -15,6 +15,8 @@ import { studioEvents } from '@/lib/events/studioEvents';
 import { compositeFrame } from '@/lib/render/compositor';
 import type { HistoryStep } from '@/types/canvas';
 import { resolveFrameLayerTargets } from '@/lib/project/frameLayerTargets';
+import { isSpaceHeld, pointerIntent, strokeUsesSecondary } from '@/lib/input/keymap';
+import { usePreferencesStore } from '@/stores/preferencesStore';
 
 import { useBrushPointerHandler } from './useBrushPointerHandler';
 import { useSelectionPointerHandler } from './useSelectionPointerHandler';
@@ -90,8 +92,29 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
 
   const chiselSessionRef = useRef<ChiselStrokeSession | null>(null);
   const capturedPointerRef = useRef<{ target: HTMLElement; pointerId: number } | null>(null);
+  // The stroke in progress started with the secondary color (standard right-click).
+  const strokeSecondaryRef = useRef(false);
+  // Alt-click / eyedropper drag in the standard keymap: which color it picks.
+  const samplingRef = useRef<{ secondary: boolean } | null>(null);
+  // Where the last pen/eraser/dither stroke ended, for Shift-click lines.
+  const lastStrokeEndRef = useRef<{ layerId: string; frameIndex: number; point: Point } | null>(null);
+  const usesSecondary = (e: { shiftKey: boolean } | undefined) =>
+    strokeUsesSecondary(usePreferencesStore.getState().keymap, strokeSecondaryRef.current, e, tools.activeTool);
+
+  /** Pick the composite color under the pointer into the primary or secondary slot. */
+  const sampleColor = (coords: Point, secondary: boolean) => {
+    const comp = compositeFrame(frames, activeFrameIndex, props.canvasWidth, props.canvasHeight);
+    const ctx = comp?.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+    const pixel = ctx.getImageData(coords.x, coords.y, 1, 1).data;
+    if (pixel[3] === 0) return;
+    const hex = rgbaToHex(pixel[0], pixel[1], pixel[2], pixel[3]);
+    if (secondary) useStudioStore.getState().setSecondaryColor(hex);
+    else props.setPrimaryColor(hex);
+  };
 
   const brushHandler = useBrushPointerHandler({
+    usesSecondary,
     drawPointsOnActiveLayer: props.drawPointsOnActiveLayer,
     drawProvisionalPoint: props.drawProvisionalPoint,
     finishBrushBatch: props.finishBrushBatch,
@@ -133,6 +156,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     strokeStart: props.strokeStart,
     previewCanvasRef: props.previewCanvasRef,
     drawPointsOnActiveLayer: props.drawPointsOnActiveLayer,
+    usesSecondary,
   });
 
   const curveHandler = useCurvePointerHandler({
@@ -145,6 +169,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     discardSnapshot: props.discardSnapshot,
     performUndo: props.performUndo,
     renderComposite: props.renderComposite,
+    usesSecondary,
   });
 
   const chiselHandler = useChiselPointerHandler({
@@ -169,16 +194,25 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       return;
     }
 
-    // Selection tools own Alt for subtraction; middle-click always pans.
-    if (e.button === 1 || (e.button === 0 && e.altKey && !tools.activeTool.startsWith('select-'))) {
+    // The keymap decides what this press means: pan, pick a color or use the tool.
+    // Middle-click always pans; selection tools keep Alt for subtraction.
+    const intent = pointerIntent(usePreferencesStore.getState().keymap, e, tools.activeTool, isSpaceHeld());
+    if (intent.kind === 'pan') {
       props.setIsPanning(true);
       props.setPanStart({ x: e.clientX - props.panX, y: e.clientY - props.panY });
       return;
     }
-
-    if (e.button !== 0) return;
+    if (intent.kind === 'ignore') return;
 
     const coords = props.clientToCanvasCoords(e.clientX, e.clientY);
+    if (intent.kind === 'sample') {
+      if (!coords) return;
+      sampleColor(coords, intent.secondary);
+      samplingRef.current = { secondary: intent.secondary };
+      try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); } catch { /* fallback */ }
+      return;
+    }
+    strokeSecondaryRef.current = intent.secondary;
     if (!coords) {
       if (!e.altKey) {
         const state = useStudioStore.getState();
@@ -344,7 +378,10 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       case 'pen':
       case 'eraser':
       case 'dither': {
-        brushHandler.onPointerDown(e, coords);
+        const last = lastStrokeEndRef.current;
+        const lineFrom = intent.lineFromLast && last && last.layerId === activeLayerId && last.frameIndex === activeFrameIndex
+          ? last.point : undefined;
+        brushHandler.onPointerDown(e, coords, lineFrom);
         break;
       }
       case 'line':
@@ -359,17 +396,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
         break;
       }
       case 'eyedropper': {
-        const comp = compositeFrame(frames, activeFrameIndex, props.canvasWidth, props.canvasHeight);
-        if (comp) {
-          const ctx = comp.getContext('2d', { willReadFrequently: true });
-          if (ctx) {
-            const pixel = ctx.getImageData(coords.x, coords.y, 1, 1).data;
-            if (pixel[3] > 0) {
-              const hex = rgbaToHex(pixel[0], pixel[1], pixel[2], pixel[3]);
-              props.setPrimaryColor(hex);
-            }
-          }
-        }
+        sampleColor(coords, false);
         props.isDrawingRef.current = false;
         props.setIsDrawing(false);
         // Eyedropper never changes pixels: drop stale snapshot
@@ -382,7 +409,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
           const layerCanvas = props.getOrCreateLayerCanvas(targetLayerId);
           const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
           if (ctx) {
-            const drawColor = e.shiftKey ? useStudioStore.getState().secondaryColor : primaryColor;
+            const drawColor = usesSecondary(e) ? useStudioStore.getState().secondaryColor : primaryColor;
             const selected = useStudioStore.getState();
             const mask = resolveSelectionMask(selected.selection, selected.selectionMask, props.canvasWidth, props.canvasHeight);
             performFloodFill(ctx, coords.x, coords.y, drawColor, tools.bucketContiguous, tools.fillTolerance, tools.fillEnclosedSpecks, mask);
@@ -404,6 +431,11 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     if (e.pointerType === 'touch' && !e.isPrimary) return;
     if (props.isPanning) {
       props.setPan(e.clientX - props.panStart.x, e.clientY - props.panStart.y);
+      return;
+    }
+    if (samplingRef.current) {
+      const sampleAt = props.clientToCanvasCoords(e.clientX, e.clientY);
+      if (sampleAt) sampleColor(sampleAt, samplingRef.current.secondary);
       return;
     }
 
@@ -470,6 +502,10 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     if (props.isPanning) {
       props.setIsPanning(false);
     }
+    if (samplingRef.current) {
+      samplingRef.current = null;
+      return;
+    }
 
     if (props.isDraggingSelection) {
       props.setIsDraggingSelection(false);
@@ -510,6 +546,9 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
         // Selection handled its own commit
       } else {
         brushHandler.onPointerUp(e, endCoords);
+        if (endCoords && ['pen', 'eraser', 'dither'].includes(tools.activeTool)) {
+          lastStrokeEndRef.current = { layerId: activeLayerId, frameIndex: activeFrameIndex, point: endCoords };
+        }
         shapeHandler.onPointerUp(e, endCoords);
         const changed = tools.activeTool === 'gradient' ? gradientHandler.onPointerUp(endCoords) : true;
         chiselHandler.onPointerUp(e, endCoords);
@@ -569,6 +608,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     if (props.isPanning) {
       props.setIsPanning(false);
     }
+    samplingRef.current = null;
 
     if (props.isDraggingSelection) {
       props.setIsDraggingSelection(false);

@@ -16,9 +16,10 @@ async function color(page: Page, target: 'Primary' | 'Secondary', hex: string) {
 async function draft(page: Page, secondary = false) {
   await page.getByTestId('curve-tool').click(); const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
   const point = (x: number, y: number) => ({ x: box.x + (x + .5) * box.width / 32, y: box.y + (y + .5) * box.height / 32 });
-  const a = point(5, 8), b = point(23, 8); if (secondary) await page.keyboard.down('Shift');
-  await page.mouse.move(a.x, a.y); await page.mouse.down(); await page.mouse.move(b.x, b.y, { steps: 3 });
-  if (secondary) await page.keyboard.up('Shift'); await page.mouse.up();
+  // The standard keymap draws a secondary-color curve with the right button.
+  const a = point(5, 8), b = point(23, 8), button = secondary ? 'right' : 'left';
+  await page.mouse.move(a.x, a.y); await page.mouse.down({ button }); await page.mouse.move(b.x, b.y, { steps: 3 });
+  await page.mouse.up({ button });
   await expect(page.getByTestId('curve-adjustment-toolbar')).toBeVisible();
 }
 test.beforeEach(async ({ page }) => {
@@ -28,7 +29,7 @@ test.beforeEach(async ({ page }) => {
   await color(page, 'Primary', '#ff0055'); await color(page, 'Secondary', '#00ffff');
 });
 
-test('Shift Curve retains secondary preview, exact Undo/Redo and saved reload pixels', async ({ page }, info) => {
+test('Right-button Curve retains secondary preview, exact Undo/Redo and saved reload pixels', async ({ page }, info) => {
   await draft(page, true); await expect.poll(() => colors(page, 'stroke-preview-canvas')).toEqual(['0,255,255,255']);
   const preview = await pixels(page, 'stroke-preview-canvas'); await page.screenshot({ path: info.outputPath('secondary-preview.png') });
   await page.getByRole('button', { name: 'Apply (Enter)', exact: true }).click(); await expect.poll(() => pixels(page)).toEqual(preview);

@@ -14,10 +14,10 @@ describe('welcome journey and tips', () => {
   });
 
   it('reads saved preferences defensively', () => {
-    expect(parsePreferences(null)).toEqual({ experience: null, onboardedAt: null, seenTips: [], tipsEnabled: true });
-    expect(parsePreferences('{not json')).toEqual({ experience: null, onboardedAt: null, seenTips: [], tipsEnabled: true });
+    expect(parsePreferences(null)).toEqual({ experience: null, onboardedAt: null, seenTips: [], tipsEnabled: true, keymap: 'standard' });
+    expect(parsePreferences('{not json')).toEqual({ experience: null, onboardedAt: null, seenTips: [], tipsEnabled: true, keymap: 'standard' });
     expect(parsePreferences(JSON.stringify({ experience: 'wizard', onboardedAt: 'yesterday', seenTips: ['lamp', 7, 'x'.repeat(65)], tipsEnabled: false })))
-      .toEqual({ experience: null, onboardedAt: null, seenTips: ['lamp'], tipsEnabled: false });
+      .toEqual({ experience: null, onboardedAt: null, seenTips: ['lamp'], tipsEnabled: false, keymap: 'standard' });
     expect(parsePreferences(JSON.stringify({ experience: 'pro', onboardedAt: 12, seenTips: [], tipsEnabled: true })).experience).toBe('pro');
     expect(parsePreferences('x'.repeat(9000)).experience).toBeNull();
   });

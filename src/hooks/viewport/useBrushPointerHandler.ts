@@ -11,6 +11,8 @@ interface BrushHandlerProps {
   setLastPoint: (pt: Point | null) => void;
   drawProvisionalPoint?: (point: Point, color: string, isErase: boolean) => (() => void) | undefined;
   finishBrushBatch?: () => void;
+  /** Whether this event paints with the secondary color (keymap-dependent; defaults to Shift). */
+  usesSecondary?: (e: { shiftKey: boolean } | undefined) => boolean;
 }
 
 export function useBrushPointerHandler({
@@ -19,29 +21,31 @@ export function useBrushPointerHandler({
   setLastPoint,
   drawProvisionalPoint,
   finishBrushBatch,
+  usesSecondary = e => !!e?.shiftKey,
 }: BrushHandlerProps) {
   const tools = useStudioStore((s) => s.tools);
   const primaryColor = useStudioStore((s) => s.primaryColor);
   const secondaryColor = useStudioStore((s) => s.secondaryColor);
   const strokeRef = useRef<{ last: Point; previous: Point; pending: Point | null; rollback?: () => void } | null>(null);
 
-  const onPointerDown = (e: React.PointerEvent, coords: Point) => {
+  /** `lineFrom`: Shift-click in the standard keymap draws a straight line from the previous stroke's end. */
+  const onPointerDown = (e: React.PointerEvent, coords: Point, lineFrom?: Point) => {
     const isErase = tools.activeTool === 'eraser';
-    const drawColor = e.shiftKey ? secondaryColor : primaryColor;
+    const drawColor = usesSecondary(e) ? secondaryColor : primaryColor;
     strokeRef.current = { last: coords, previous: coords, pending: null };
+    const points = lineFrom ? getBresenhamLine(lineFrom.x, lineFrom.y, coords.x, coords.y) : [coords];
 
     if (tools.activeTool === 'pen' || tools.activeTool === 'eraser') {
-      drawPointsOnActiveLayer([coords], drawColor, isErase);
+      drawPointsOnActiveLayer(points, drawColor, isErase);
     } else if (tools.activeTool === 'dither') {
-      if (shouldDitherPixel(coords.x, coords.y, tools.ditherMatrix, tools.ditherDensity)) {
-        drawPointsOnActiveLayer([coords], drawColor, false);
-      }
+      const stamps = points.filter(point => shouldDitherPixel(point.x, point.y, tools.ditherMatrix, tools.ditherDensity));
+      if (stamps.length) drawPointsOnActiveLayer(stamps, drawColor, false);
     }
   };
 
   const onPointerMove = (e: React.PointerEvent, coords: Point) => {
     const isErase = tools.activeTool === 'eraser';
-    const drawColor = e.shiftKey ? secondaryColor : primaryColor;
+    const drawColor = usesSecondary(e) ? secondaryColor : primaryColor;
 
     if (tools.activeTool === 'pen' || tools.activeTool === 'eraser') {
       const stroke = strokeRef.current;

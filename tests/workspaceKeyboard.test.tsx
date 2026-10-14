@@ -6,6 +6,8 @@ import { useStudioStore } from '@/stores/studioStore';
 import { CANONICAL_TOOLS } from '@/config/shortcuts';
 import { useStudioClipboard } from '@/hooks/studio/useStudioClipboard';
 import { readImportFile } from '@/lib/project/importFile';
+import { usePreferencesStore } from '@/stores/preferencesStore';
+import { isSpaceHeld } from '@/lib/input/keymap';
 
 vi.mock('@/lib/project/importFile', () => ({ readImportFile: vi.fn(), reportImportError: vi.fn() }));
 
@@ -22,6 +24,7 @@ function key(init: KeyboardEventInit, target: EventTarget = window) {
 beforeEach(() => {
   const state = useStudioStore.getState();
   state.resetToNewProject(); state.setActiveTool('pen'); state.setCvdLens('none'); state.setIsPlaying(false);
+  usePreferencesStore.setState({ keymap: 'standard' });
   vi.clearAllMocks();
 });
 afterEach(() => { cleanup(); document.body.replaceChildren(); vi.restoreAllMocks(); });
@@ -125,9 +128,24 @@ describe('Workspace keyboard ownership', () => {
     const button = document.createElement('button'); document.body.append(button); button.focus();
     expect(key({ key: ' ', code: 'Space' }, button).defaultPrevented).toBe(false);
     expect(useStudioStore.getState().isPlaying).toBe(false);
-    button.blur(); key({ key: ' ', code: 'Space' }); expect(useStudioStore.getState().isPlaying).toBe(true);
+    button.blur();
+    usePreferencesStore.setState({ keymap: 'classic' });
+    key({ key: ' ', code: 'Space' }); expect(useStudioStore.getState().isPlaying).toBe(true);
     const size = useStudioStore.getState().tools.brushSize;
     key({ key: ']', code: 'BracketRight' }); expect(useStudioStore.getState().tools.brushSize).toBe(size + 1);
+  });
+
+  it('standard keymap: Space is held for panning, Enter plays unless a selection is active', () => {
+    renderHook(() => useStudioKeyboard(options()));
+    key({ key: ' ', code: 'Space' });
+    expect(isSpaceHeld()).toBe(true);
+    expect(useStudioStore.getState().isPlaying).toBe(false);
+    act(() => { window.dispatchEvent(new KeyboardEvent('keyup', { key: ' ', code: 'Space' })); });
+    expect(isSpaceHeld()).toBe(false);
+    key({ key: 'Enter', code: 'Enter' }); expect(useStudioStore.getState().isPlaying).toBe(true);
+    key({ key: 'Enter', code: 'Enter' }); expect(useStudioStore.getState().isPlaying).toBe(false);
+    useStudioStore.setState({ selection: { x: 0, y: 0, w: 2, h: 2 } });
+    key({ key: 'Enter', code: 'Enter' }); expect(useStudioStore.getState().isPlaying).toBe(false);
   });
 });
 

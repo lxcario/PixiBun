@@ -4,6 +4,17 @@ The [current status](../current-status.md) records the qualifying revision and o
 
 The generated tool table in [source-contracts.json](../generated/source-contracts.json) is checked against [shortcuts.ts](../../src/config/shortcuts.ts), the shared [command registry](../../src/config/studioCommands.ts) and its keyboard dispatch in [useStudioKeyboard.ts](../../src/hooks/studio/useStudioKeyboard.ts). It is a source-backed inventory, not proof of every input-device interaction.
 
+Two keymaps share every letter shortcut and differ only in Space, Enter, Alt, Shift and the right button on the artwork ([keymap.ts](../../src/lib/input/keymap.ts)). **Standard** is the default and follows common pixel-art editors; **PixiBun classic** keeps the original keys. Switch in **Guide & Shortcuts** (`?`); the choice is saved with the other local preferences.
+
+| Gesture | Standard | PixiBun classic |
+| --- | --- | --- |
+| Play / Pause | Enter (not while a selection is active, where Enter commits it) | Space |
+| Pan | Hold Space and drag; middle-button drag | Alt+drag with a non-selection tool; middle-button drag |
+| Pick a color | Alt+click (right button picks the secondary color); the Eyedropper tool's right button also picks secondary | Eyedropper tool only |
+| Secondary color | Right-click with Pen, Eraser, Dither, Fill, Line, Iso line, Rectangle, Ellipse or Curve | Shift while painting |
+| Straight line from the last pixel | Shift+click with Pen, Eraser or Dither (same layer and frame) | Not available |
+| Right-click on the artwork | Paints (see above); right-click beside the artwork opens Canvas tools | Opens Canvas tools |
+
 | Action | Shortcut / gesture |
 | --- | --- |
 | Pen / Eraser / Fill / Eyedropper | B / E / G / I |
@@ -15,11 +26,11 @@ The generated tool table in [source-contracts.json](../generated/source-contract
 | Undo / Redo | Ctrl/Cmd+Z / Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y |
 | Save local / Save As file | Ctrl/Cmd+S / Ctrl/Cmd+Shift+S |
 | Command palette / Help | Ctrl/Cmd+K / ? |
-| Play / Pause; previous / next frame | Space; comma / period |
+| Play / Pause; previous / next frame | Enter (standard) or Space (classic); comma / period |
 | Onion skin toggle | F3; previous/next counts, tints and opacity are in the timeline gear |
 | Canvas only / restore panels | Shift+Tab with canvas focus; focused controls and dialogs retain keyboard navigation |
-| Canvas tools popup | Right-click the workspace, or Shift+F10 / Context Menu key with the drawing canvas focused; arrows/Home/End navigate, Enter selects, Tab stays inside, Escape closes |
-| Pan / Zoom / Fit / 100% | Middle or supported Alt+drag; wheel; Ctrl/Cmd+0 / Ctrl/Cmd+1 |
+| Canvas tools popup | Right-click beside the artwork (standard) or anywhere in the workspace (classic), or Shift+F10 / Context Menu key with the drawing canvas focused; arrows/Home/End navigate, Enter selects, Tab stays inside, Escape closes |
+| Pan / Zoom / Fit / 100% | Middle drag, plus Space+drag (standard) or Alt+drag (classic); wheel; Ctrl/Cmd+0 / Ctrl/Cmd+1 |
 | Step zoom / brush size | Ctrl/Cmd + plus/minus; left/right square brackets |
 | Pixel grid | Ctrl/Cmd + Quote key; the produced apostrophe is the fallback when a physical code is unavailable |
 | Navigator keyboard pan / center | Focus overview: arrows by one pixel; Shift+arrows by eight; Enter centers |
@@ -34,8 +45,8 @@ Command search opens in the shared native modal, with focus on its combobox. Up/
 
 Studio, selection, lighting and desktop-practice workspace handlers pause for open native/ARIA modal dialogs, inputs/textareas/selects, editable ancestors and custom textbox/searchbox/combobox/spinbutton/slider controls. They also leave previously handled events, composition input, dead/process keys and AltGraph to their owner. Image paste uses the same dialog/editable boundary. Modal-owned commands and native text editing remain available. The lighting gizmo retains keyboard ownership of its own slider handles through an explicit owner scope; other workspace handlers still yield to those sliders. Unrecognized Ctrl/Cmd/Alt combinations do not fall through to bare tool shortcuts; the lighting gizmo retains its explicit Alt+R action.
 
-Space on buttons, links, summary and matching custom controls keeps native activation and does not start workspace playback. Selection Enter/arrows leave those controls alone. CenterViewport gives Escape/arrow transforms one keyboard owner: arrows nudge once (Shift uses ten pixels) and Escape cancels without first committing the float. Shift+H/V remains symmetry, even with a selection; unshifted H/V is selection flip when applicable. Alt starts subtraction on the artwork or selection body with a selection tool. Middle-button drag pans even with a selection tool; Alt pans with other tools. Transform handles retain their own modifier gestures, including Shift axis lock on translation.
+Space on buttons, links, summary and matching custom controls keeps native activation and does not start workspace playback. Selection Enter/arrows leave those controls alone. CenterViewport gives Escape/arrow transforms one keyboard owner: arrows nudge once (Shift uses ten pixels) and Escape cancels without first committing the float. Shift+H/V remains symmetry, even with a selection; unshifted H/V is selection flip when applicable. Alt starts subtraction on the artwork or selection body with a selection tool in both keymaps. Middle-button drag pans even with a selection tool; with other tools Alt picks a color (standard) or pans (classic). Transform handles retain their own modifier gestures, including Shift axis lock on translation.
 
 The drawing viewport uses `touch-action: none` and accepts primary-touch drawing while ignoring secondary fingers. Browser scroll/pinch gestures remain available outside that viewport. This introduces neither two-finger canvas navigation nor pressure-sensitive brush behavior. Tablet touch emulation and physical-device qualification have separate scopes in the dated input repair record.
 
-Space is playback, not Space+drag pan. Z alone is not Undo. Rivet/N is retired. Export has no E shortcut. Open secondary controls through File → Projects/Import/Canvas size and Studio → Help/appearance/Co-Draw.
+In the standard keymap Space is held to pan and Enter plays; in classic Space is playback. Z alone is not Undo. Rivet/N is retired. Export has no E shortcut. Open secondary controls through File → Projects/Import/Canvas size and Studio → Help/appearance/Co-Draw.
