@@ -11,6 +11,7 @@ import {
   ReplayBaselineCheckpoint,
 } from '@/lib/engine/historyEngine';
 import { RawFrameData, encodeGifRawFrames } from './gifEncoderCore';
+import { isPatchStep, pastePatch } from '@/lib/engine/pixelPatch';
 import { toBlobPart } from './blobBytes';
 
 export interface ProcessReplayOptions {
@@ -125,16 +126,17 @@ function createBlankImageData(width: number, height: number): ImageData {
 export function reconstructProcessReplayFrames(
   steps: readonly HistoryStep[],
   baseline?: ReplayBaselineCheckpoint | null,
-  scale: number = 1
+  scale: number = 1,
+  size?: { width: number; height: number }
 ): RawFrameData[] {
   const s = Math.max(1, Math.floor(scale));
   const rawFrames: RawFrameData[] = [];
 
-  let width = baseline?.width ?? 0;
-  let height = baseline?.height ?? 0;
+  let width = baseline?.width || size?.width || 0;
+  let height = baseline?.height || size?.height || 0;
   if (!width || !height) {
     for (const step of steps) {
-      if (step.type !== 'structural' && step.imageData) {
+      if (step.type !== 'structural' && step.imageData && !isPatchStep(step)) {
         width = step.imageData.width;
         height = step.imageData.height;
         break;
@@ -169,6 +171,16 @@ export function reconstructProcessReplayFrames(
   }
 
   const activeFrame = baseline?.activeFrameIndex ?? 0;
+  // Layer images this replay copied and may paint patches into in place.
+  const owned = new WeakSet<ImageData>();
+  const ownedLayerImage = (source: ImageData | undefined): ImageData => {
+    if (source && owned.has(source) && source.width === width && source.height === height) return source;
+    const copy = source && source.width === width && source.height === height
+      ? { width, height, data: new Uint8ClampedArray(source.data), colorSpace: source.colorSpace ?? 'srgb' } as ImageData
+      : createBlankImageData(width, height);
+    owned.add(copy);
+    return copy;
+  };
 
   const emitComposite = (fIdx: number) => {
     const lMap = frameLayerMap.get(fIdx);
@@ -199,16 +211,25 @@ export function reconstructProcessReplayFrames(
         frameLayerMap.set(fIdx, lMap);
       }
       const existing = lMap.get(step.layerId);
-      lMap.set(step.layerId, {
+      // Patch steps hold only the changed rectangle: paint it onto the layer so far.
+      const patch = isPatchStep(step);
+      const layerImage = patch ? ownedLayerImage(existing?.imageData) : step.imageData;
+      if (patch) pastePatch(layerImage, step.imageData, step.x, step.y);
+      const entry: ReplayLayerState = {
         layerId: step.layerId,
         name: step.layerName ?? existing?.name,
-        imageData: step.imageData,
+        imageData: layerImage,
         opacity: existing?.opacity ?? 1,
         blendMode: existing?.blendMode ?? 'source-over',
         visible: existing?.visible ?? true,
         order: existing?.order ?? lMap.size,
-      });
+      };
+      lMap.set(step.layerId, entry);
       emitComposite(fIdx);
+      // Then move the layer on to its state right after this step.
+      const after = step.expectedImageData;
+      if (after && patch) pastePatch(layerImage, after, step.x, step.y);
+      else if (after && after.width === width && after.height === height) entry.imageData = after;
     } else if (step.type === 'structural') {
       const fIdx = step.frameIndex ?? 0;
       if (step.frames && step.frames.length > 0) {
@@ -290,8 +311,9 @@ export function convertHistoryToRawFrames(
 ): RawFrameData[] {
   if (!steps || steps.length === 0) return [];
 
-  if (options?.baseline) {
-    return appendFinalFrame(reconstructProcessReplayFrames(steps, options.baseline, scale), scale, options.finalFrame);
+  if (options?.baseline || steps.some(step => step.type !== 'structural' && isPatchStep(step))) {
+    const size = options?.finalFrame ? { width: options.finalFrame.width, height: options.finalFrame.height } : undefined;
+    return appendFinalFrame(reconstructProcessReplayFrames(steps, options?.baseline, scale, size), scale, options?.finalFrame);
   }
 
   const s = Math.max(1, Math.floor(scale));
@@ -346,8 +368,8 @@ export function convertHistoryToCanvases(
 ): HTMLCanvasElement[] {
   if (typeof document === 'undefined' || !steps || steps.length === 0) return [];
 
-  if (options?.baseline || options?.finalFrame) {
-    const rawFrames = convertHistoryToRawFrames(steps, options.scale ?? 1, options);
+  if (options?.baseline || options?.finalFrame || steps.some(step => step.type !== 'structural' && isPatchStep(step))) {
+    const rawFrames = convertHistoryToRawFrames(steps, options?.scale ?? 1, options);
     const canvases: HTMLCanvasElement[] = [];
     for (const frame of rawFrames) {
       const canvas = document.createElement('canvas');

@@ -68,6 +68,6 @@ If **Export Untouched Backup** reports too many stored records, no archive has b
 
 *These two current recovery captures use temporary damaged fixtures in the compiled Chromium app. The first has an independently checked untouched ZIP download; neither depicts a completed repair. [Capture details](../assets/screenshots/2026-10-02-feature-repairs-phase6/run.json), [verification and limits (local archive)](../archives.md#record-docs-research-2026-10-02-feature-repairs-phase6-md).*
 
-Undo is session-local, bounded by independent depth caps and a combined 64 MiB payload budget. An oversized history-backed edit is refused before mutation. Process Replay reconstructs retained history and its eviction baseline; it is not a durable complete recording of every earlier stroke.
+Undo is session-local, bounded by independent depth caps and a combined 64 MiB payload budget. Each drawing step stores only the rectangle it changed, so a session of small strokes keeps over a thousand Undo steps. An oversized history-backed edit is refused before mutation. Process Replay reconstructs retained history and its eviction baseline; it is not a durable complete recording of every earlier stroke.
 
 Implementation: [autosave](../../src/hooks/studio/useStudioAutosave.ts), [database](../../src/lib/storage/db.ts), [recovery admission](../../src/lib/recovery/projectAdmission.ts), [recovery orchestration](../../src/lib/recovery/recoveryOrchestrator.ts). For persistence compatibility see [storage](../contracts/storage.md).

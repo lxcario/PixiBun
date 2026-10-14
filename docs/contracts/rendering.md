@@ -36,7 +36,7 @@ Timeline thumbnail placeholders use the same initial markup on the server and cl
 | --- | --- |
 | Raster registry | Tracks selected detached raster backing estimates |
 | Timeline previews | Visible/nearby frame cells retain aspect-correct backing surfaces of at most 24 px per axis; hover previews at most 96 px. Offscreen surfaces unmount. Layer order, visibility, opacity, blend and raster revision/generation determine refresh; timing and unrelated frame edits do not redraw a preview. Backing estimates register as `previews` and release on replacement/unmount |
-| Undo/Redo | Independent 50-step caps; combined 64 MiB retained-step budget per engine; replay baseline accounted separately |
+| Undo/Redo | Pixel steps keep only the changed rectangle, before and after (`pixelPatch.ts`); independent 4,096-step caps; combined 64 MiB retained-step budget per engine, which is the usual limit; replay baseline (each edited layer's first state plus evicted steps) accounted separately |
 | Collaboration | Tracks application-owned retained sync state/queues |
 | Idle scratch pool | Exact-size Float32/Int32 reuse, up to 16 per bucket and 32 MiB globally; oldest idle buffers evicted on pressure; empty buckets removed; registered in combined ledger |
 | Operations | Reserve before allocation and release on completion/failure/cancellation/deadline in supported paths |

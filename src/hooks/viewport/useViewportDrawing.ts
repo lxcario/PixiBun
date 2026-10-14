@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { Point, applySymmetry } from '@/lib/canvas/rasterMath';
 import { fillRectMasked, resolveSelectionMask } from '@/lib/canvas/selectionMask';
 import { createHistoryEngine, HistoryEngine, setGlobalHistoryEngine, getGlobalHistoryEngine, readViewportHistory, rememberViewportHistory } from '@/lib/engine/historyEngine';
-import { HistoryStep, Layer } from '@/types/canvas';
+import { HistoryStep, Layer, PixelHistoryStep } from '@/types/canvas';
 import { deleteBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
 import { captureLayerBuffers, restoreStructuralWorkspace, estimateRestorationAllocation } from '@/lib/engine/structuralHistory';
 import { canAddLayersToFrame, validateWorkspaceStructure } from '@/lib/project/workspaceEnvelopeGuard';
@@ -15,6 +15,7 @@ import { estimateClipBytes } from '@/lib/animation/reviewMetadata';
 import { estimatePaletteBytes } from '@/lib/color/paletteSemantics';
 import { commitWorkspace } from '@/lib/engine/workspaceTransaction';
 import { selectiveRestore } from '@/lib/engine/selectiveRestore';
+import { cropImageData, isPatchStep, stepRect, toPatchStep } from '@/lib/engine/pixelPatch';
 
 interface UseViewportDrawingProps {
   canvasWidth: number;
@@ -26,14 +27,20 @@ interface UseViewportDrawingProps {
 }
 
 /**
- * Co-draw steps carry the layer as it looked right after the change; restoring
- * then keeps any pixel a partner has painted since (see selectiveRestore).
+ * Steps carry their rectangle as it looked right after the change. While
+ * co-drawing, restoring keeps any pixel a partner has painted since (see
+ * selectiveRestore). `live` is the same rectangle of the layer now.
  */
 function selectiveImage(live: ImageData, step: HistoryStep): ImageData | null {
-  if (step.type === 'structural' || !step.expectedImageData || step.createdLayerId) return null;
+  if (step.type === 'structural' || !step.expectedImageData || step.createdLayerId || coDrawBridge.getRole() === null) return null;
   if (step.expectedImageData.width !== live.width || step.expectedImageData.height !== live.height) return null;
   if (step.imageData.width !== live.width || step.imageData.height !== live.height) return null;
   return new ImageData(selectiveRestore(live.data, step.imageData.data, step.expectedImageData.data), live.width, live.height);
+}
+
+/** The live pixels of a layer under the rectangle a step restores. */
+function liveUnderStep(live: ImageData, step: PixelHistoryStep): ImageData {
+  return isPatchStep(step) ? cropImageData(live, stepRect(step)) : live;
 }
 
 export function useViewportDrawing({
@@ -53,7 +60,7 @@ export function useViewportDrawing({
   const [lockedWarning, setLockedWarning] = useState(false);
   const lockedWarningTimerRef = useRef<number | null>(null);
 
-  const [historyEngine] = useState(() => retainHistory ? readViewportHistory(useStudioStore.getState().currentProjectId) : createHistoryEngine(50));
+  const [historyEngine] = useState(() => retainHistory ? readViewportHistory(useStudioStore.getState().currentProjectId) : createHistoryEngine());
   const historyEngineRef = useRef<HistoryEngine>(historyEngine);
   const currentStrokeSnapshotRef = useRef<HistoryStep | null>(null);
   const rafBufferBumpRef = useRef<number | null>(null);
@@ -150,15 +157,22 @@ export function useViewportDrawing({
           if (layer) layer.effect = undefined;
         });
       }
+      let stored: HistoryStep = snapshot;
       if (snapshot.type !== 'structural' && snapshot.layerId) {
         touchBuffer(snapshot.layerId);
-        // While co-drawing, keep the result too, so Undo only takes back our own pixels.
-        if (coDrawBridge.getRole() !== null && !snapshot.createdLayerId) {
-          const after = getOrCreateLayerCanvas(snapshot.layerId).getContext('2d', { willReadFrequently: true });
-          if (after) snapshot.expectedImageData = after.getImageData(0, 0, snapshot.imageData.width, snapshot.imageData.height);
+        // Keep only the rectangle the change touched, before and after, so Undo
+        // reaches back hundreds of strokes and co-draw Undo keeps a partner's pixels.
+        // Right after a structural step (flip, resize, merge...) the step keeps the
+        // whole layer once, so timelapse replay picks up the structural change.
+        const after = getOrCreateLayerCanvas(snapshot.layerId).getContext('2d', { willReadFrequently: true });
+        const afterImage = after?.getImageData(0, 0, snapshot.imageData.width, snapshot.imageData.height);
+        if (afterImage) {
+          stored = historyEngineRef.current.peekUndo()?.type === 'structural'
+            ? { ...snapshot, expectedImageData: afterImage }
+            : toPatchStep(snapshot, afterImage);
         }
       }
-      historyEngineRef.current.push(snapshot);
+      historyEngineRef.current.push(stored, snapshot.type !== 'structural' ? snapshot.imageData : undefined);
       currentStrokeSnapshotRef.current = null;
       setCanUndo(historyEngineRef.current.canUndo);
       setCanRedo(historyEngineRef.current.canRedo);
@@ -244,6 +258,7 @@ export function useViewportDrawing({
 
     let currentStep: HistoryStep;
     let undoImage: ImageData | null = null;
+    let liveLayer: ImageData | null = null;
 
     if (previousStep.type === 'structural') {
       const state = useStudioStore.getState();
@@ -284,14 +299,17 @@ export function useViewportDrawing({
       const ctx = currentLayerCanvas.getContext('2d', { willReadFrequently: true });
       if (!ctx) return;
 
-      const currentImgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      liveLayer = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      const currentImgData = liveUnderStep(liveLayer, previousStep);
       undoImage = selectiveImage(currentImgData, previousStep);
+      const undoneImage = undoImage ?? previousStep.imageData;
       currentStep = {
         type: 'pixel',
         layerId: previousStep.layerId,
         frameIndex: previousStep.frameIndex,
         imageData: currentImgData,
-        ...(undoImage ? { expectedImageData: undoImage } : {}),
+        expectedImageData: undoneImage,
+        ...(isPatchStep(previousStep) ? { x: previousStep.x, y: previousStep.y } : {}),
         description: previousStep.description,
         createdLayerId: previousStep.createdLayerId,
         createdLayerTag: previousStep.createdLayerTag,
@@ -355,8 +373,7 @@ export function useViewportDrawing({
         const targetCanvas = getOrCreateLayerCanvas(stepToRestore.layerId);
         const targetCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
         if (targetCtx) {
-          if (undoImage) targetCtx.putImageData(undoImage, 0, 0);
-          else targetCtx.putImageData(stepToRestore.imageData, stepToRestore.x ?? 0, stepToRestore.y ?? 0);
+          targetCtx.putImageData(undoImage ?? stepToRestore.imageData, stepToRestore.x ?? 0, stepToRestore.y ?? 0);
           touchBuffer(stepToRestore.layerId);
         }
         useStudioStore.setState((state) => {
@@ -375,8 +392,8 @@ export function useViewportDrawing({
       }
     }
 
-    if (currentStep.type !== 'structural' && currentStep.imageData) {
-      coDrawBridge.notifyStrokeCommitted(currentStep.layerId, currentStep.imageData);
+    if (currentStep.type !== 'structural' && liveLayer) {
+      coDrawBridge.notifyStrokeCommitted(currentStep.layerId, liveLayer);
     }
     setCanUndo(historyEngineRef.current.canUndo);
     setCanRedo(historyEngineRef.current.canRedo);
@@ -395,6 +412,7 @@ export function useViewportDrawing({
 
     let currentStep: HistoryStep;
     let redoImage: ImageData | null = null;
+    let liveLayer: ImageData | null = null;
 
     if (nextStep.type === 'structural') {
       const state = useStudioStore.getState();
@@ -459,14 +477,17 @@ export function useViewportDrawing({
       const ctx = currentLayerCanvas.getContext('2d', { willReadFrequently: true });
       if (!ctx) return;
 
-      const currentImgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      liveLayer = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      const currentImgData = liveUnderStep(liveLayer, nextStep);
       redoImage = selectiveImage(currentImgData, nextStep);
+      const redoneImage = redoImage ?? nextStep.imageData;
       currentStep = {
         type: 'pixel',
         layerId: nextStep.layerId,
         frameIndex: nextStep.frameIndex,
         imageData: currentImgData,
-        ...(redoImage ? { expectedImageData: redoImage } : {}),
+        expectedImageData: redoneImage,
+        ...(isPatchStep(nextStep) ? { x: nextStep.x, y: nextStep.y } : {}),
         description: nextStep.description,
         createdLayerId: nextStep.createdLayerId,
         createdLayerTag: nextStep.createdLayerTag,
@@ -557,8 +578,7 @@ export function useViewportDrawing({
         const targetCanvas = getOrCreateLayerCanvas(stepToRestore.layerId);
         const targetCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
         if (targetCtx) {
-          if (redoImage) targetCtx.putImageData(redoImage, 0, 0);
-          else targetCtx.putImageData(stepToRestore.imageData, stepToRestore.x ?? 0, stepToRestore.y ?? 0);
+          targetCtx.putImageData(redoImage ?? stepToRestore.imageData, stepToRestore.x ?? 0, stepToRestore.y ?? 0);
           touchBuffer(stepToRestore.layerId);
         }
         useStudioStore.setState((state) => {
@@ -577,8 +597,8 @@ export function useViewportDrawing({
       }
     }
 
-    if (currentStep.type !== 'structural' && currentStep.imageData) {
-      coDrawBridge.notifyStrokeCommitted(currentStep.layerId, currentStep.imageData);
+    if (currentStep.type !== 'structural' && liveLayer) {
+      coDrawBridge.notifyStrokeCommitted(currentStep.layerId, liveLayer);
     }
     setCanUndo(historyEngineRef.current.canUndo);
     setCanRedo(historyEngineRef.current.canRedo);
