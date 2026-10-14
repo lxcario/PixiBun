@@ -67,7 +67,7 @@ Ghosts appear while paused, and remain separate from artwork and exports. **F3**
 
 ## Rotate a detail or try rigid-part motion
 
-With a selection active, open **Tools** to choose RotSprite or Paeth for rotation. Move the pivot and inspect thin features, outline and dither at the intended angle. Paeth's three-shear sampling is an alternative look, not a guarantee that every pattern survives. Normal layers use a separate vector-aware rotation path. The older selection screenshots predate these choices; see the [rotation contract](../contracts/rendering.md#pixel-art-rotation-rotsprite-v2).
+With a selection active, open **Tools** to choose RotSprite or Paeth for rotation. Move the pivot and inspect thin features, outline and dither at the intended angle. Paeth's three-shear sampling is an alternative look, not a guarantee that every pattern survives. Normal layers use a separate vector-aware rotation path. The older selection screenshots predate these choices; see the [rotation contract](../contracts/rendering.md#pixel-art-rotation-rotsprite-v3).
 
 ## Save a motion rig
 
