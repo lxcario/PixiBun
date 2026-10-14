@@ -14,10 +14,15 @@
  * dynamic route, which causes browsers to reject registration.
  *
  * Updates wait for open windows to close; an update must not interrupt artwork.
+ *
+ * Install precaches every emitted /_next/static file listed by
+ * scripts/writePrecacheManifest.mjs (public/precache-manifest.json), so a panel
+ * first opened offline loads from the cache instead of crashing the Studio.
  */
 
 export function buildServiceWorkerScript(version: string = process.env.SW_CACHE_VERSION ?? 'v1'): string {
   return `const CACHE_NAME = 'pixibun-${version}';
+const BUILD_VERSION = ${JSON.stringify(version)};
 const PRECACHE_ASSETS = [
   '/',
   '/studio',
@@ -31,7 +36,8 @@ const PRECACHE_ASSETS = [
 ];
 const MAX_DYNAMIC_CACHE_ENTRIES = 50;
 const PRECACHE_MANIFEST = '/__pixibun_precache__';
-const MAX_SHELL_DEPENDENCIES = 128;
+const BUILD_ASSET_LIST = '/precache-manifest.json';
+const MAX_SHELL_DEPENDENCIES = 512;
 let warmQueue = Promise.resolve();
 const CACHE_ACCESS_TIMEOUT_MS = 250;
 
@@ -92,18 +98,38 @@ async function trimCache(cache, maxEntries) {
   }
 }
 
+// Production builds list every emitted static file. A missing list (development)
+// or one from another build leaves only the shell's own dependencies.
+async function readBuildAssets() {
+  try {
+    const response = await fetch(BUILD_ASSET_LIST, { cache: 'no-store' });
+    if (!response.ok) return [];
+    const list = await response.json();
+    if (!list || list.version !== BUILD_VERSION || !Array.isArray(list.assets)) return [];
+    return list.assets.filter(path => typeof path === 'string' && path.startsWith('/_next/static/') && !path.includes('..'));
+  } catch {
+    return [];
+  }
+}
+
 async function precacheShell() {
   const cache = await caches.open(CACHE_NAME);
   await cache.addAll(PRECACHE_ASSETS);
-  const dependencies = new Set();
+  const shellDependencies = new Set();
   for (const path of ['/', '/studio']) {
     const shell = await cache.match(path);
     const html = await shell.text();
     for (const match of html.matchAll(/(?:src|href)=["']([^"']+)["']/g)) {
       const url = new URL(match[1], self.location.origin);
-      if (url.origin === self.location.origin && url.pathname.startsWith('/_next/static/')) dependencies.add(url.pathname + url.search);
+      if (url.origin === self.location.origin && url.pathname.startsWith('/_next/static/')) shellDependencies.add(url.pathname + url.search);
     }
   }
+  // A version names a commit, not a build: a development server or a rebuild of
+  // the same commit shares it. Trust the list only if it holds this shell's files.
+  const buildAssets = await readBuildAssets();
+  const listed = new Set(buildAssets);
+  const ownList = buildAssets.length > 0 && [...shellDependencies].every(path => listed.has(new URL(path, self.location.origin).pathname));
+  const dependencies = new Set([...(ownList ? buildAssets : []), ...shellDependencies]);
   if (dependencies.size > MAX_SHELL_DEPENDENCIES) throw new Error('Offline shell dependency limit exceeded.');
   await cache.addAll([...dependencies]);
   await cache.put(PRECACHE_MANIFEST, new Response(JSON.stringify([...dependencies]), { headers: { 'Content-Type': 'application/json' } }));

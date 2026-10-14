@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
 import { captureDiagnostic, exportDiagnosticsFile } from '@/lib/diagnostics/capture';
+import { saveAfterStudioCrash, type StudioCrashSave } from '@/lib/project/studioCrashSave';
 
 export default function StudioErrorBoundary({
   error,
@@ -11,6 +12,14 @@ export default function StudioErrorBoundary({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  // Claim "saved" only after a save of the live drawing has actually succeeded.
+  const [save, setSave] = useState<StudioCrashSave | null>(null);
+  useEffect(() => {
+    let current = true;
+    void saveAfterStudioCrash().then(result => { if (current) setSave(result); });
+    return () => { current = false; };
+  }, []);
+
   useEffect(() => {
     captureDiagnostic({
       kind: 'error',
@@ -30,7 +39,12 @@ export default function StudioErrorBoundary({
           Studio Canvas Hitch
         </h2>
         <p className="text-xs text-[var(--text-body)] leading-relaxed">
-          The studio workbench encountered an issue rendering canvas state. <strong className="text-[var(--accent-gold)]">Your artwork is safely saved in local IndexedDB storage.</strong>
+          The studio workbench encountered an issue rendering canvas state.
+        </p>
+        <p role="status" data-testid="studio-error-save-status" className="text-xs text-[var(--text-body)] leading-relaxed">
+          {save === null ? 'Saving your latest strokes…'
+            : save.saved ? <strong className="text-[var(--accent-gold)]">Your artwork is saved on this device.</strong>
+            : <><strong className="text-[#fca5a5]">Your latest strokes are not saved.</strong> Resume Session keeps them open; reloading now would lose them. ({save.error})</>}
         </p>
         {error.message && (
           <div className="bg-[var(--desk-bg)] border border-[var(--desk-border)] p-2.5 rounded text-[11px] text-[#fca5a5] text-left break-words max-h-28 overflow-y-auto font-mono">

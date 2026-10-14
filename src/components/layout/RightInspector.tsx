@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import dynamic from 'next/dynamic';
+import { lazyPanel } from '@/components/system/lazyPanel';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { LayersPanel } from './inspector/LayersPanel';
@@ -14,9 +14,9 @@ import { PinnedColorPanel } from '@/components/ui/ArtistColorPicker';
 import { PixiMotionPanel } from './inspector/PixiMotionPanel';
 import { MotionRigLibrary } from './inspector/MotionRigLibrary';
 
-const AiToolsPanel = dynamic(
+const AiToolsPanel = lazyPanel(
   () => import('./inspector/AiToolsPanel').then((m) => m.AiToolsPanel),
-  { ssr: false }
+  'PixiTools', 'inline'
 );
 
 export const RightInspector: React.FC = () => {

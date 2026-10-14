@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import dynamic from 'next/dynamic';
+import { lazyPanel } from '@/components/system/lazyPanel';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 
-const ColorPickerModal = dynamic(
+const ColorPickerModal = lazyPanel(
   () => import('@/components/modals/ColorPickerModal').then((m) => m.ColorPickerModal),
-  { ssr: false }
+  'Color picker'
 );
 
 export const QuickPaletteBar: React.FC = () => {

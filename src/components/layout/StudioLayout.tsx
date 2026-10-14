@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import dynamic from 'next/dynamic';
+import { lazyPanel } from '@/components/system/lazyPanel';
 import { useStudioStore } from '@/stores/studioStore';
 import { AtelierRail } from './AtelierRail';
 import { LeftToolbar } from './LeftToolbar';
@@ -36,42 +36,43 @@ import { useStudioKeyboard } from '@/hooks/studio/useStudioKeyboard';
 
 // Heavy dialogs are code-split client-side (Phase 33): none of these bundles
 // are part of the /studio first-load JS. They render only while open, so the
-// chunks are fetched on first open rather than on page load.
-const ExportModal = dynamic(
+// chunks are fetched on first open rather than on page load. A chunk that fails
+// to load (offline) shows a retry inside the dialog instead of crashing Studio.
+const ExportModal = lazyPanel(
   () => import('@/components/modals/ExportModal').then((m) => m.ExportModal),
-  { ssr: false }
+  'Export'
 );
-const ShortcutsModal = dynamic(
+const ShortcutsModal = lazyPanel(
   () => import('@/components/modals/ShortcutsModal').then((m) => m.ShortcutsModal),
-  { ssr: false }
+  'Shortcuts'
 );
-const CanvasResizeModal = dynamic(
+const CanvasResizeModal = lazyPanel(
   () => import('@/components/modals/CanvasResizeModal').then((m) => m.CanvasResizeModal),
-  { ssr: false }
+  'Canvas Size'
 );
-const ImportModal = dynamic(
+const ImportModal = lazyPanel(
   () => import('@/components/modals/ImportModal').then((m) => m.ImportModal),
-  { ssr: false }
+  'Import'
 );
-const ProjectsGalleryModal = dynamic(
+const ProjectsGalleryModal = lazyPanel(
   () => import('@/components/modals/ProjectsGalleryModal').then((m) => m.ProjectsGalleryModal),
-  { ssr: false }
+  'Projects'
 );
-const CoDrawModal = dynamic(
+const CoDrawModal = lazyPanel(
   () => import('@/components/modals/CoDrawModal').then((m) => m.CoDrawModal),
-  { ssr: false }
+  'Co-draw'
 );
-const DiagnosticsModal = dynamic(
+const DiagnosticsModal = lazyPanel(
   () => import('@/components/modals/DiagnosticsModal').then((m) => m.DiagnosticsModal),
-  { ssr: false }
+  'Diagnostics'
 );
-const CommandPaletteModal = dynamic(
+const CommandPaletteModal = lazyPanel(
   () => import('@/components/modals/CommandPaletteModal').then((m) => m.CommandPaletteModal),
-  { ssr: false }
+  'Command palette'
 );
-const RecoveryModal = dynamic(
+const RecoveryModal = lazyPanel(
   () => import('@/components/modals/RecoveryModal').then((m) => m.RecoveryModal),
-  { ssr: false }
+  'Recovery'
 );
 
 export const StudioLayout: React.FC = () => {
