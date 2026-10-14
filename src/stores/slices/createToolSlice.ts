@@ -24,7 +24,7 @@ export const PRESET_PALETTES: ColorPalette[] = [
     id: 'alabaster-wisteria-8',
     name: 'Alabaster & Wisteria (Active Theme)',
     colors: [
-      '#DDDFDF', '#DDDDDF', '#D0C4DF', '#DCABDF',
+      '#DDDFDF', '#D0C4DF', '#DCABDF',
       '#C792DF', '#A86EC6', '#6A5880', '#3A2E4C'
     ],
     cycleTracks: [
@@ -103,7 +103,7 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
     ditherDensity: 0.5,
     bucketContiguous: true,
     bucketTolerance: 0,
-    fillTolerance: 24,
+    fillTolerance: 0,
     fillEnclosedSpecks: false,
     eraseColorTolerance: 24,
     eraseColorContiguous: false,

@@ -111,8 +111,7 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
       switch (key) {
         case 'h': {
           if (!e.ctrlKey && !e.metaKey) {
-            const hasSelection = !!state.selection;
-            if (e.shiftKey || !hasSelection) {
+            if (e.shiftKey) {
               e.preventDefault();
               state.toggleSymmetryH();
             }
@@ -121,8 +120,7 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
         }
         case 'v': {
           if (!e.ctrlKey && !e.metaKey) {
-            const hasSelection = !!state.selection;
-            if (e.shiftKey || !hasSelection) {
+            if (e.shiftKey) {
               e.preventDefault();
               state.toggleSymmetryV();
             }
