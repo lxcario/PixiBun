@@ -30,7 +30,7 @@ Press **C**, choose a color and brush size, then drag between the start and end 
 
 Immediately after Apply, **Re-edit Curve** reopens the latest curve by undoing that edit. It is available only while the source and latest history entry still match. Cancel ends that re-edit with the curve undone; **Redo** restores the committed curve. An unrelated edit invalidates re-edit so it cannot undo newer work. Keyboard input in dialogs, fields and focused buttons keeps its own behavior. This is a quadratic curve editor, not a multi-point vector path editor. The screenshot above illustrates the earlier tool controls; the new adjustment handles and toolbar are described here.
 
-The local pre-S4 candidate keeps the color chosen at the start of the Curve: start it with the right mouse button (hold **Shift** in the PixiBun classic keymap) to use the secondary well. Re-edit keeps the committed color even if the wells have changed. Explicitly changing the chosen well updates adjustment; changing the other well or brush size preserves the chosen color. Twelve native color cases passed across three engines, including exact Undo/Redo and saved reload for secondary cyan. The published `8c207b22` version still has the earlier adjustment-color issue; inspect the preview before Apply on that version. See [current status](../current-status.md#local-pre-s4-hardening-candidate) for the uncommitted candidate and its limits.
+The current Curve keeps the color chosen at the start: start it with the right mouse button (hold **Shift** in the PixiBun classic keymap) to use the secondary well. Re-edit keeps the committed color even if the wells have changed. Explicitly changing the chosen well updates adjustment; changing the other well or brush size preserves the chosen color. Twelve native color cases passed across three engines, including exact Undo/Redo and saved reload for secondary cyan. The older `8c207b22` publication had the adjustment-color issue. The subsequent repair is integrated in main; those twelve checks retain their original source/build labels in [current status](../current-status.md#local-pre-s4-hardening-candidate).
 
 ## Eraser
 
@@ -129,7 +129,7 @@ Press **O**, choose **Outline** or **Filled**, and drag its bounding rectangle. 
 
 ![Normal Chisel selected; a surface layer is required before sculpting.](../assets/screenshots/2026-10-02-feature-guide/tool-normal-chisel.png)
 
-Press **K** to select the chisel. To paint safely, first open **PixiTools → Add light and depth → Shape the surface** and create or select an unlocked **surface/Normal** layer. Choose a direction, slope and bevel width, then paint raised or recessed edges there. It encodes surface directions as color values for lighting, rather than painting the sprite's visible colors. [The full surface guide](lighting-and-surfaces.md#shape-the-surface) shows the active controls and explains the blend modes.
+Press **K** to select the chisel. To paint safely, first open **Effects → Add light and depth → Shape the surface** and create or select an unlocked **surface/Normal** layer. Choose a direction, slope and bevel width, then paint raised or recessed edges there. It encodes surface directions as color values for lighting, rather than painting the sprite's visible colors. [The full surface guide](lighting-and-surfaces.md#shape-the-surface) shows the active controls and explains the blend modes.
 
 ## Eyedropper
 

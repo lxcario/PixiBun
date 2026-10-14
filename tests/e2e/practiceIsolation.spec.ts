@@ -52,7 +52,10 @@ async function enterPractice(page: Page) {
   await expect(page.getByRole('button', { name: 'Return to drawing', exact: true })).toBeVisible();
 }
 async function trace(page: Page) {
-  await page.getByRole('button', { name: 'Trace Stencil', exact: true }).click();
+  // Each lesson opens on its intro card.
+  const start = page.getByRole('button', { name: "Let's start", exact: true });
+  if (await start.isVisible()) await start.click();
+  await page.getByRole('button', { name: 'Trace it for me', exact: true }).click();
   await expect.poll(async () => (await pixels(page)).some((value, index) => index % 4 === 3 && value > 0)).toBe(true);
 }
 
@@ -61,7 +64,8 @@ test('lesson changes and Teaching Board edits preserve the original pixels, timi
   await enterPractice(page);
   expect((await metadata(page)).id).not.toBe(original.metadata.id);
   await trace(page);
-  await page.getByRole('combobox', { name: 'Choose animation lesson' }).selectOption('potion-bubble');
+  await page.getByRole('button', { name: /^Lesson /, exact: false }).click();
+  await page.getByRole('dialog', { name: /Choose a lesson/ }).getByRole('button', { name: /^Potion Bubbles/ }).click();
   await trace(page);
   await page.getByTitle('Open 10-Frame Jump Anatomy Teaching Board', { exact: true }).first().click();
   await page.getByRole('button', { name: 'Load into Playground Timeline', exact: true }).click();

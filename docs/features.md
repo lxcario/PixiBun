@@ -4,7 +4,7 @@ Current engineering verification and remaining release checks are recorded in th
 
 [Artist handbook](guides/README.md) · [Documentation map](README.md) · [Current status](current-status.md)
 
-This is the current web app's feature index, reconciled with the published Studio/Nibbli source on **13 October 2026**. Interface pictures retain their actual capture dates; new motion, rotation and Curve adjustment controls have source-backed instructions but no new handbook illustration. Rows distinguish those controls from older captures. A picture shows a real interface state; it does not prove every browser, exported file or artist workflow has been qualified. The guides explain destinations, previews, actions that change pixels immediately and the limits to keep in mind.
+This is the current web app's feature index, reconciled with main through `e9b5e682` and the integrated **15 October 2026** playground, homepage, inspector, theme and update changes. Interface pictures retain their actual capture dates; new motion, rotation and Curve adjustment controls have source-backed instructions but no new handbook illustration. Rows distinguish those controls from older captures. A picture shows a real interface state; it does not prove every browser, exported file or artist workflow has been qualified. The guides explain destinations, previews, actions that change pixels immediately and the limits to keep in mind.
 
 ## Welcome and starting points
 
@@ -12,15 +12,17 @@ The [3 October session record (local archive)](archives.md#record-docs-research-
 
 | Feature | What it does | Guide | Screenshot |
 | --- | --- | --- | --- |
-| Interactive welcome desk | Lamp toggle, pet interaction, temporary mini sketch and clear/color choices | [Desk](guides/welcome-and-demos.md#a-small-moment-at-the-desk) | [Welcome](assets/screenshots/2026-10-02-feature-repairs-phase5/welcome-overview.png) |
+| Interactive welcome scene | Animated town opening, Bun reactions and temporary sky constellations; scroll story from sketch to export | [Desk](guides/welcome-and-demos.md#a-small-moment-at-the-desk) | [Welcome](assets/screenshots/2026-10-02-feature-repairs-phase5/welcome-overview.png) |
 | Blank drawing entry | Small canvas presets and full Studio entry | [Begin](guides/welcome-and-demos.md#ready-to-draw) | [Welcome](assets/screenshots/2026-10-02-feature-repairs-phase5/welcome-overview.png) |
 | Four starter sprites | Hearth Ghost, Little Shroom, Bun and Little Lantern open as editable starting points | [Starter shelf](guides/welcome-and-demos.md#choose-a-starter-friend) | [All four](assets/screenshots/2026-10-02-feature-guide/starter-shelf.png) |
 | 2.5D Lighting & Shadows demonstration | Sample material, light, normal/tone and shadow comparisons | [Lighting demo](guides/welcome-and-demos.md#25d-lighting--shadows) | [Panel](assets/screenshots/2026-10-02-feature-repairs-phase5-welcome/welcome-photometric.png) |
 | RotSprite Precision demonstration | Sample angle/presets/spin; RotSprite versus nearest-neighbor | [Rotation demo](guides/welcome-and-demos.md#rotsprite-precision) | [Panel](assets/screenshots/2026-10-02-feature-repairs-phase5-welcome/welcome-rotsprite.png) |
-| Image Synthesis demonstration | Two sample scenes, three target sizes, sampling/color/dither comparison | [Image demo](guides/welcome-and-demos.md#image-synthesis) | [Panel](assets/screenshots/2026-10-02-feature-repairs-phase5/welcome-pixelize.png) |
-| Game Engine Exports demonstration | Godot/Unity/Phaser sample text and APNG/GIF specification text; copy/download | [Example downloads](guides/welcome-and-demos.md#game-engine-exports) | [Panel](assets/screenshots/2026-10-02-feature-repairs-phase4/welcome-apng-notes.png) |
+| Photo to pixels demonstration | Two sample scenes, three target sizes, sampling/color/dither comparison | [Image demo](guides/welcome-and-demos.md#photo-to-pixels) | [Panel](assets/screenshots/2026-10-02-feature-repairs-phase5/welcome-pixelize.png) |
+| Into your game demonstration | Four-frame Bun preview; Godot/Unity/Phaser image/metadata ZIP kits and actual APNG/GIF downloads; game metadata copying | [Example downloads](guides/welcome-and-demos.md#game-engine-exports) | [Panel](assets/screenshots/2026-10-02-feature-repairs-phase4/welcome-apng-notes.png) |
 
 Source: [moonlit atelier](../src/components/landing/night/NightHero.tsx), [starter definitions](../src/lib/art/starterTemplates.ts), [showcase](../src/components/landing/AtelierEngineShowcase.tsx). Showcase state and downloads are separate from Studio project state.
+
+The workbench's task ticks record which demonstration controls were tried during this page session. They are not saved learning progress. Explanations can expand with **How it works**. The older captures above show their stated historical layout, including downloads that have since changed.
 
 ## Every drawing tool
 
@@ -64,13 +66,13 @@ All **17** entries come from [the canonical tool list](../src/config/shortcuts.t
 | Selection transforms | Mask, move/nudge, eight resize handles, pivot, rotation/snap, flips, 90° turns, commit/cancel | [Transform](guides/studio-workspace.md#selections-and-transforms) | [Gizmo](assets/screenshots/2026-10-02-feature-guide/selection-transform.png) |
 | Rotation algorithm | Contour-aware RotSprite v3 or integer-sampled Paeth, with separate normal-vector handling where applicable | [Rotation](guides/artist-workspace.md#rotate-a-detail-or-try-rigid-part-motion) | The older gizmo capture predates these choices |
 | Canvas clipboard | Pixel selection copy/cut/paste, floating destination | [Clipboard](guides/studio-workspace.md#selections-and-transforms) | [Selection](assets/screenshots/2026-10-02-feature-guide/selection-transform.png) |
-| Undo/Redo | Session history with admitted payload and depth bounds | [History safety](guides/artwork-safety.md#damaged-stored-projects) | [Studio](assets/screenshots/2026-10-02-feature-guide/tool-pen.png) |
-| Zoom, fit and pan | Wheel/steps, fit, 100%, middle/Alt drag and contextual arrows | [Navigation](guides/studio-workspace.md#view-and-symmetry) | [View](assets/screenshots/2026-10-02-feature-guide/view-options.png) |
+| Undo/Redo | Before/after rectangle patches, up to 4,096 steps per stack and 64 MiB combined payload; selective pixel restoration during Co-Draw | [History safety](guides/artwork-safety.md#updates-and-session-history) | [Studio](assets/screenshots/2026-10-02-feature-guide/tool-pen.png) |
+| Zoom, fit and pan | Wheel/steps, fit, 100%, middle drag plus Space-drag (Standard) or Alt-drag (classic) and contextual arrows | [Navigation](guides/studio-workspace.md#view-and-symmetry) | [View](assets/screenshots/2026-10-02-feature-guide/view-options.png) |
 | Drawing guides | Pixel grid, 2:1 grid, Off/Thirds/Golden/Center/Diagonals/Safe area composition | [Guides](guides/studio-workspace.md#view-and-symmetry) | [Diagonals](assets/screenshots/2026-10-04-artist-workspace/color-tools-navigator.png) |
 | Seam/view previews | 3×3 canvas repetition; movable/resizable/minimizable PiP with backdrop/playback | [Previews](guides/studio-workspace.md#view-and-symmetry) | [PiP](assets/screenshots/2026-10-02-feature-repairs-phase3/single-live-preview.png) |
 | CVD and silhouette lenses | Color-vision simulation and shape inspection; view only | [Lenses](guides/studio-workspace.md#view-and-symmetry) | [View](assets/screenshots/2026-10-02-feature-guide/view-options.png) |
 | Drawing symmetry | Horizontal/vertical mirrors; p2, pm, p4, p4m, p6m wallpaper groups | [Symmetry](guides/studio-workspace.md#view-and-symmetry) | [View](assets/screenshots/2026-10-02-feature-guide/view-options.png) |
-| Quick tools menu | Canvas right-click or Shift+F10: ten labeled drawing/selection/shape tools and color swap; either mouse button selects | [Quick tools](guides/studio-workspace.md#right-click-quick-tools) | [Current menu](assets/screenshots/2026-10-08-motion-layout/canvas-tools.png) |
+| Quick tools menu | Right-click beside artwork (Standard) or on the drawing surface (classic), or Shift+F10: ten labeled tools and color swap; either mouse button selects | [Quick tools](guides/studio-workspace.md#right-click-quick-tools) | [Current menu](assets/screenshots/2026-10-08-motion-layout/canvas-tools.png) |
 | Command palette | Search tools, project, playback and view actions with Ctrl/Cmd+K | [Commands](guides/studio-workspace.md#appearance-help-and-command-search) | [Search](assets/screenshots/2026-10-02-feature-guide/command-palette.png) |
 | Theme and hover help | Moonlit / Sakura / Tidepool / Ember / Moss / Arcade (animated scenes) and Graphite / Plum (flat), each Night/Day; first-run welcome and level-based tips; animated tool-preview preference with 3-step storyboards | [Appearance](guides/studio-workspace.md#appearance-help-and-command-search) | [Studio menu](assets/screenshots/2026-10-02-feature-guide/studio-options.png) |
 | Shortcut guide and status | Contextual keys, cursor/size/zoom/frame/layer readouts | [Help](guides/studio-workspace.md#appearance-help-and-command-search) | [Shortcut dialog](assets/screenshots/2026-10-02-feature-guide/shortcuts-help.png) |
@@ -156,31 +158,31 @@ Sources: [export modal](../src/components/modals/ExportModal.tsx), [export contr
 
 ## Learning, Teaching Board and small screens
 
-The [lesson guide](guides/learning-and-playground.md#desktop-lessons) explains drawing notes, lightbox visibility/opacity, Trace Stencil, Clear Frame, local outline comparison, Next/Back, the practice timeline and finishing in Studio. Each of the **12** lessons has a current screenshot and pose/timing details:
+The [lesson guide](guides/learning-and-playground.md#desktop-lessons) explains the intro, one-pose-at-a-time coach, ghost-pen demos, guide strength, the tracing meter and What's missing?, Start from last frame, Trace it for me, the filmstrip and finishing in Studio. Each of the **12** lessons has pose/timing details and a dated 2 October screenshot of its earlier art:
 
 | Lesson | Screenshot |
 | --- | --- |
-| The Master Bouncing Ball | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-master-bouncing-ball.png) |
-| Sub-Pixel Character Idle | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-subpixel-idle.png) |
-| Sword Slash & Combat Hitstop | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-combat-slash-hitstop.png) |
-| Character Hop & Shock Absorption | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-character-hop-shock.png) |
-| The Bouncing Mochi | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-bouncing-mochi.png) |
-| The Hearth Flame | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-hearth-flame.png) |
-| The Character Hop | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-bun-hop.png) |
-| Magic Potion Bubbles | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-potion-bubble.png) |
-| The Slime Glide | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-slime-glide.png) |
-| The Twinkling Star | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-twinkling-star.png) |
-| The Water Ripple | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-water-ripple.png) |
-| The Sword Slash | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-sword-slash.png) |
+| The Full Bounce | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-master-bouncing-ball.png) |
+| Breathing Idle | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-subpixel-idle.png) |
+| Power Slash | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-combat-slash-hitstop.png) |
+| Big Hop | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-character-hop-shock.png) |
+| Bouncy Mochi | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-bouncing-mochi.png) |
+| Cozy Flame | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-hearth-flame.png) |
+| Bun Hops | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-bun-hop.png) |
+| Potion Bubbles | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-potion-bubble.png) |
+| Slime Slide | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-slime-glide.png) |
+| Twinkling Star | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-twinkling-star.png) |
+| Water Ripple | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-water-ripple.png) |
+| Sword Swing | [First pose](assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-sword-slash.png) |
 
 | Other learning feature | Guide | Screenshot |
 | --- | --- | --- |
 | Separate desktop practice: checkpoint original, Return, explicit Keep as a new project, refresh-return pointer and refusal on failure | [Keep and return](guides/learning-and-playground.md#keep-your-drawing-try-something-new) | [Practice](assets/screenshots/2026-10-02-feature-repairs-phase2/isolated-practice.png), [new project](assets/screenshots/2026-10-02-feature-repairs-phase2/kept-practice-new-project.png) |
 | Teaching Animation Board: Bun/Gel Slime, construction hover, alternate colors, ten poses, timing/play/FPS/onion trail, load into practice | [Board](guides/learning-and-playground.md#teaching-animation-board) | [Board](assets/screenshots/2026-10-02-feature-repairs-phase2/teaching-board.png) |
-| Pocket Doodle Pad: temporary 32×32 drawing, swatches, eraser, clear and PNG download | [Pocket](guides/learning-and-playground.md#pocket-doodle-pad) | [Pad](assets/screenshots/2026-10-02-feature-guide/pocket-doodle.png) |
+| Pocket Doodle Pad: 16×16 phone lessons (guide, ghost demo, frames, playback, PNG strip) and a temporary 32×32 free doodle with swatches, eraser, clear and PNG download | [Pocket](guides/learning-and-playground.md#pocket-doodle-pad) | [Pad](assets/screenshots/2026-10-02-feature-guide/pocket-doodle.png) |
 | Full Studio's narrow-screen gate: Home/Pocket routes; full desk requires 1024 px | [Screen size](guides/learning-and-playground.md#pocket-doodle-pad) | [Gate](assets/screenshots/2026-10-02-feature-guide/mobile-studio-gate.png) |
 
-Sources: [curriculum](../src/lib/art/playgroundLessons.ts), [practice controls](../src/components/onboarding/ArtisanHandbookPanel.tsx), [Teaching Board](../src/components/playground/TeachingAnimationBoard.tsx), [Pocket](../src/components/playground/PocketDoodlePad.tsx). Tracing an example and reaching the completion screen are not evidence of learning gains.
+Sources: [curriculum](../src/lib/art/playgroundLessons.ts), [lesson coach](../src/components/playground/CoachPanel.tsx), [lesson art](../src/lib/art/lessonArt.ts), [Teaching Board](../src/components/playground/TeachingAnimationBoard.tsx), [Pocket](../src/components/playground/PocketDoodlePad.tsx). Tracing an example and reaching the completion screen are not evidence of learning gains.
 
 ## Safety, collaboration and privacy
 
@@ -189,7 +191,7 @@ Sources: [curriculum](../src/lib/art/playgroundLessons.ts), [practice controls](
 | Local persistence and conflict copies | IndexedDB autosave/immediate save; save outcomes and Save a copy after a conflict | [Safety](guides/artwork-safety.md#save-and-restore-outcomes) | [Project output](assets/screenshots/2026-10-02-feature-guide/export-project.png) |
 | Recovery and untouched archive | Assess stored damage, review/consent to losses, create a separate recoverable copy; forensic ZIP with current-source admission and visible failure feedback | [Recovery](guides/artwork-safety.md#damaged-stored-projects) | [Assessment](assets/screenshots/2026-10-02-feature-repairs-phase6/archive-source-preserved.png), [backup refusal](assets/screenshots/2026-10-02-feature-repairs-phase6/archive-overflow-refused.png), [plan](assets/screenshots/2026-10-02-feature-guide/recovery-plan.png) |
 | Co-Draw | One host/guest, invite/answer token exchange, peer pixel synchronization, host-owned structure | [Co-Draw](guides/collaboration-and-privacy.md#co-draw) | [Dialog](assets/screenshots/2026-10-02-feature-guide/co-draw.png) |
-| Offline and browser installation | After one online visit, production builds precache every Studio file, so drawing and every panel, dialog and export tab open offline; a panel that still cannot load offers Try again in place; installation where the browser offers it | [Offline](guides/collaboration-and-privacy.md#local-saves-and-offline-drawing) | [Studio](assets/screenshots/2026-10-02-feature-guide/tool-pen.png) |
+| Offline and browser installation | After successful online load and worker installation, production builds precache every Studio file, so drawing and every panel, dialog and export tab open offline; a panel that still cannot load offers Try again in place; explicit Restart to update saves first; installation where the browser offers it | [Offline](guides/collaboration-and-privacy.md#local-saves-and-offline-drawing) | [Studio](assets/screenshots/2026-10-02-feature-guide/tool-pen.png) |
 | Diagnostics preferences | Local ring buffer, opt-in remote reports, JSON export and clear logs | [Diagnostics](guides/collaboration-and-privacy.md#help-and-diagnostics) | [Preferences](assets/screenshots/2026-10-02-feature-guide/privacy-diagnostics.png) |
 | Vulnerability reporting | Private contact and actual trust/network boundaries | [Security policy](../SECURITY.md) | [Privacy preferences](assets/screenshots/2026-10-02-feature-guide/privacy-diagnostics.png) |
 

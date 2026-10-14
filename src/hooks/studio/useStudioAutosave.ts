@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { registerRestartPreparation } from '@/lib/system/appRestart';
 import { useStudioStore } from '@/stores/studioStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import {
@@ -438,6 +439,15 @@ export function useStudioAutosave() {
       scheduleAutosave();
     }
   }, [lifecycleState, scheduleAutosave]);
+
+  useEffect(() => registerRestartPreparation(async () => {
+    if (isPracticeActive()) throw new Error('Keep or leave your practice session before restarting.');
+    if (lifecycleRef.current.phase !== 'active') throw new Error('Finish opening or recovering your project before restarting.');
+    const result = await runAutosave();
+    if (!result.ok || useStudioStore.getState().isDirty) {
+      throw new Error(result.ok ? 'Your drawing changed during the save. Tap Restart to try again.' : result.error || 'Your work could not be saved. Save a copy before restarting.');
+    }
+  }), [runAutosave]);
 
   // Native exit guard when changes are unsaved (UX-2)
   useEffect(() => {

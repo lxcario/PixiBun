@@ -85,7 +85,7 @@ for (const [mode, pathname] of [['navigate', '/studio'], ['cors', '/_next/static
     const listeners = (version: string) => {
       const callbacks = new Map<string, (event: WorkerEvent) => void>();
       runInNewContext(buildServiceWorkerScript(version), {
-        self: { location: { origin: 'https://example.test' }, clients: { claim: async () => {} }, addEventListener: (name: string, callback: (event: WorkerEvent) => void) => callbacks.set(name, callback) },
+        self: { location: { origin: 'https://example.test' }, clients: { claim: async () => {}, matchAll: async () => [] }, addEventListener: (name: string, callback: (event: WorkerEvent) => void) => callbacks.set(name, callback) },
         caches: cacheStorage, URL, Response, setTimeout, clearTimeout, fetch: () => { startedFetch(); return network; },
       });
       return callbacks;

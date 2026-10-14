@@ -1,5 +1,7 @@
 # Studio and Nibbli source publication — 13 October 2026
 
+Historical release/source record. The [15 October reconciliation](2026-10-15-codebase-and-documentation.md) describes later code and documentation; the original tests, decisions and source/build labels below retain their dated scope.
+
 This development change record covers all pending source changes reviewed against base commit `1275be5dae6133b8192d05b42fc982f46fa1403e`, including the existing Curve/UI work, Nibbli additions and the safety corrections made during publication review. PixiBun remains version 1.14.1. Source publication does not grant production release approval.
 
 ## Added workflows

@@ -4,6 +4,8 @@ Planning status — 11 October 2026: the [current status](../current-status.md) 
 
 **Working plan · 28 September–8 November 2026.** This is a product experiment, not a release promise or a TestSprite milestone. The first decision comes from observing new users; the findings below are code-review hypotheses, not user-test results.
 
+**15 October source reconciliation:** Desktop coaching/ghost demos/filmstrip and eight Pocket lessons are now implemented; their current scope is in the [learning contract](../contracts/learning.md). This plan's historical intake, proposed in-Studio progression, recruitment schedule and participant outcomes are not delivery evidence.
+
 ## Outcome and boundaries
 
 Help a first-time visitor make a small sprite, animate it, or change its lighting in the normal Studio. Each path is optional, can be closed and reopened, and leaves the person's project, history, frames, and saved work intact. Publish short videos made from the same genuine creation sessions so viewers can see a result and try the tool themselves.

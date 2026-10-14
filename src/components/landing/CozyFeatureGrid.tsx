@@ -74,28 +74,28 @@ const PROMISES: Array<{ kind: Kind; tag: string; title: string; body: string; co
     tag: 'come on in',
     title: 'No account, ever.',
     body: 'Open the page and start drawing. There is nothing to sign up for.',
-    color: '#ffd285',
+    color: 'var(--primary-bg)',
   },
   {
     kind: 'fort',
     tag: 'no wifi? no worries',
     title: 'Works offline.',
     body: 'After your first visit the Desk keeps working without a connection, on a train or in a blanket fort.',
-    color: '#dcabdf',
+    color: 'var(--accent-plum)',
   },
   {
     kind: 'home',
     tag: 'yours to keep',
     title: 'Your art stays home.',
     body: 'Drawings save on your own device. Your artwork is never uploaded anywhere.',
-    color: '#f2b8c6',
+    color: 'var(--accent-plum)',
   },
   {
     kind: 'game',
     tag: 'press start',
     title: 'Ready for your game.',
     body: 'Sprite sheets, GIF, APNG and a Godot kit, ready to drop into a project.',
-    color: '#a8e092',
+    color: 'var(--accent-sage)',
   },
 ];
 
@@ -115,7 +115,7 @@ export const CozyFeatureGrid: React.FC = () => {
         <CozyScrollReveal variant="fade-up">
           <div className="text-center max-w-2xl mx-auto mb-14">
             <p className="font-mono text-xs uppercase tracking-[0.25em] text-[var(--accent-gold)]">little promises</p>
-            <h2 className="mt-4 font-display text-3xl sm:text-5xl leading-[1.05] [text-shadow:0_4px_0_#0b0714]">
+            <h2 className="mt-4 font-display text-3xl sm:text-5xl leading-[1.05] [text-shadow:0_4px_0_var(--ink)]">
               Made to feel like home.
             </h2>
             <p className="mt-5 text-base sm:text-lg leading-relaxed text-[var(--text-body)]">

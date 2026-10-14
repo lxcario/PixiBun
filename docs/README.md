@@ -14,6 +14,10 @@ Start with [current status](current-status.md) for scoped engineering results an
 | Discovery and receipts | [Test inventory](generated/test-inventory.json), [source contracts](generated/source-contracts.json), [CI witness](verification/README.md) |
 | Versioned changes | [Changelog](../CHANGELOG.md), [Studio/Nibbli source change record](releases/2026-10-13-studio-and-nibbli.md), [v1.14.1 sign-off](releases/v1.14.1-signoff.md) |
 
+## Latest reconciliation
+
+[15 October source and documentation review](releases/2026-10-15-codebase-and-documentation.md) records recent code changes, per-file Markdown dispositions and current checks. Current guidance follows the integrated source; archived audits, release receipts and original screenshots retain their dated scope.
+
 ## Maintenance contract
 
 Keep present operating instructions separate from historical results and proposals. Source/build identities, capability skips, original failed verdicts and incomplete assertions retain their scope. Generated inventories describe discovery rather than execution. Run `npm run docs:inventory` after changing relevant source/test contracts and `npm run verify:docs` before publication. Local links must resolve in a clean checkout; ignored files on one machine do not satisfy that contract.

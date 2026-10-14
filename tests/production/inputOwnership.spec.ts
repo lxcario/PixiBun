@@ -108,7 +108,8 @@ test('the practice Teaching Board owns its dialog keys and retains separate artw
   await expect(page).toHaveURL(/\/$/, { timeout: 15000 });
   await page.getByRole('navigation').getByRole('link', { name: 'Playground', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Return to drawing', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Trace Stencil', exact: true }).click();
+  await page.getByRole('button', { name: "Let's start", exact: true }).click();
+  await page.getByRole('button', { name: 'Trace it for me', exact: true }).click();
   await expect.poll(async () => (await pixels(page)).some((value, index) => index % 4 === 3 && value > 0)).toBe(true);
   const traced = await pixels(page);
   await page.locator('#main-content').focus();

@@ -42,7 +42,7 @@ export const PixelCorners: React.FC<{
   color?: string;
   className?: string;
 }> = ({
-  color = '#f0be7c',
+  color = 'var(--accent-gold)',
   className = '',
 }) => (
   <div

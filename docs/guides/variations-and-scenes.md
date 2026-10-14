@@ -4,7 +4,7 @@ For the tested revision and remaining accessibility, device and host checks, see
 
 [Handbook](README.md) · [Lighting](lighting-and-surfaces.md) · [Patterns](pixitools-cleanup-and-tiles.md) · [All features](../features.md)
 
-Open **PixiTools → Try a new look**. Three tabs—**Simplify**, **Light**, and **Tiles**—offer bounded studies of your own artwork. The source/result panes compare actual pixels. Previews can update after a brief pause when settings change; **Preview my artwork / Update preview** asks for a fresh result. A preview alone does not apply it.
+Open **Effects → Try a new look**. Three tabs—**Simplify**, **Light**, and **Tiles**—offer bounded studies of your own artwork. The source/result panes compare actual pixels. Previews can update after a brief pause when settings change; **Preview my artwork / Update preview** asks for a fresh result. A preview alone does not apply it.
 
 When you choose **Apply**, the workflow adds editable output layers and retains the original source layers, adjusting visibility so you can see the new look. Undo restores an admitted application. **No change** means the preview has the same pixel result and there is nothing to apply. Changes to art, palette or settings can invalidate a preview; refresh it first.
 

@@ -10,15 +10,20 @@ Choose **Playground** from the welcome-page navigation. A wide screen gets the g
 
 ![A fresh desktop practice sheet with separate Keep and Return controls.](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-master-bouncing-ball.png)
 
-These [new captures](../assets/screenshots/2026-10-02-feature-repairs-phase2/run.json) show the separate practice workspace and its current controls. Earlier captures remain in their dated records; they describe earlier behavior.
+These [captures](../assets/screenshots/2026-10-02-feature-repairs-phase2/run.json) were taken on 2 October 2026 and show the earlier layout and lesson art; they remain as dated records. The 15 October redesign below changed the layout, the coaching and every lesson pose.
 
-At 1024 px wide and above, choose a lesson in **Lesson Curriculum**. The left shelf has Pen and Eraser, color wells and brush-size controls. The handbook on the right explains the pose, shows its stencil and tracks a local outline comparison.
+At 1024 px wide and above, the canvas fills the middle. A small tool dock sits beside it, one coach card on the right and the frames along the bottom. Change lesson with the **Lesson** button in the header; lessons are grouped from **First steps** to **Big projects**, and **Bouncy Mochi** comes first.
 
-1. Choose a lesson and read the current frame's drawing note.
-2. Draw over the lightbox with **Pen (B)**. **Eraser (E)** removes pixels. Show/hide the lightbox or adjust its opacity if the guide is too strong.
-3. **Trace Stencil** paints the provided template's colored cells over the current layer; it does not clear old pixels first. Use **Clear Frame** before tracing if you want only the example. Both actions now enter the current session's Undo/Redo history: **Ctrl+Z** restores the previous pixels and **Ctrl+Shift+Z** or **Ctrl+Y** reapplies the edit. Pause playback and use an unlocked layer. Normal session/history limits still apply, so Undo is not a portable backup. A high score after copying does not prove you learned to draw it.
-4. Use the step list, **Next** and **Back** to visit poses. The simplified timeline and lesson step synchronize when editing is paused. Play the loop to inspect timing; the completion screen is navigation feedback, not a participant evaluation.
-5. Choose **Return to drawing** to put your original Studio drawing back, including its pixels, settings and session Undo/Redo. Choose **Keep practice in Studio** to save your practice as a new project and open it in Studio. The handbook's **Keep practice** and the completion action use the same separate-save path. Your original stays in Projects.
+1. Each lesson opens on a short intro that plays the finished animation and names the one idea it teaches. Choose **Let's start**.
+2. The coach shows one pose at a time: its name, one sentence on what to draw and why, a looping preview of the whole move and a "what changes" view of this pose over the previous one. The first time you reach an empty frame, a ghost pen draws the pose on the canvas; **Show me** replays it.
+3. Trace the faint guide with **Pen (B)**, fill closed shapes with **Fill (G)** and remove pixels with **Eraser (E)**. The dock also has three pen sizes, the pose's own colors, Undo/Redo and **Clear frame**. **Guide** under the canvas hides the guide or changes its strength.
+4. The tracing meter fills as the drawing covers the pose. **What's missing?** pulses the cells not reached yet. A drawing that spills far past the pose is held below a match, with a hint to tidy it. At a score of 85 or above, the coach celebrates and the frame gets a tick in the filmstrip. This measures target-cell coverage rather than exact colors; it does not block Next or step jumping.
+5. **Start from last frame** overlays the previous frame's visible composite on the active layer, preserving existing destination pixels wherever that source is transparent. **Trace it for me** paints the pose's cells over the current layer without clearing old pixels first. Lesson edits (trace, copy, clear) enter the session's Undo/Redo: **Ctrl+Z** restores, **Ctrl+Shift+Z** or **Ctrl+Y** reapplies. Pause playback and use an unlocked layer. A match after copying does not prove you learned to draw it.
+6. **Next** moves to the following pose; the dots under the lesson name jump to any pose, **Watch it play** or the finish. Picking a frame in the filmstrip while drawing moves the lesson to that pose. Each filmstrip card shows your drawing over its faint target, and its bar shows how long the frame stays on screen. **Slow-mo** plays the frames slowly.
+7. On **Watch it move!**, press **Play** (or Space). After the playback timer (at least 1.8 seconds, based on the stored loop duration and Slow-mo) the lesson finishes and shows your own frames looping. This does not verify that every pose was displayed. The completion screen is navigation feedback, not a participant evaluation.
+8. Choose **Return to drawing** to put your original Studio drawing back, including its pixels, settings and session Undo/Redo. Choose **Keep practice in Studio** to save your practice as a new project and open it in Studio. The coach's and completion screen's **Keep it in Studio** use the same separate-save path. Your original stays in Projects.
+
+Practice shows the canvas on plain paper whatever View → Transparency says; the setting itself is unchanged.
 
 ## Keep your drawing, try something new
 
@@ -38,30 +43,30 @@ The Pocket sketch uses its own temporary canvas. It does not adopt desktop lesso
 
 ## All 12 lessons
 
-Each link opens a fresh screenshot of that lesson's **current layer cleared, then first frame traced through the actual UI**. They show the supplied content and shared controls, not completed participant work.
+Each pose is painted by [lesson art](../../src/lib/art/lessonArt.ts): an outline, fill, shadow side, highlight and ground shadow, moved and squashed by the motion the lesson teaches. The linked screenshots are the dated 2 October captures of the earlier art, cleared and then traced through the UI of that time.
 
-| Lesson | Poses / nominal FPS | What to practice | Current screenshot |
-| --- | --- | --- | --- |
-| The Master Bouncing Ball | 12 / 12 | Long bounce cycle, squash/stretch, short fast poses and longer apex/impact holds | [See lesson](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-master-bouncing-ball.png) |
-| Sub-Pixel Character Idle | 3 / 8 | Small internal highlight/edge-tone changes with a steady outer shape | [See lesson](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-subpixel-idle.png) |
-| Sword Slash & Combat Hitstop | 4 / 12 | Windup, a smear, impact pause and recovery | [See lesson](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-combat-slash-hitstop.png) |
-| Character Hop & Shock Absorption | 5 / 10 | Crouch, stretch, apex, trailing ears and landing | [See lesson](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-character-hop-shock.png) |
-| The Bouncing Mochi | 4 / 10 | A small squash/stretch bounce | [See lesson](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-bouncing-mochi.png) |
-| The Hearth Flame | 3 / 8 | Changing billows and detached ember details | [See lesson](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-hearth-flame.png) |
-| The Character Hop | 3 / 9 | A compact Bun hop and ear follow-through | [See lesson](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-bun-hop.png) |
-| Magic Potion Bubbles | 4 / 9 | A rising bubble, surface shape and burst droplets | [See lesson](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-potion-bubble.png) |
-| The Slime Glide | 4 / 8 | Forward reach, body catch-up and settle | [See lesson](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-slime-glide.png) |
-| The Twinkling Star | 4 / 10 | Flare expansion, sparkle and decay | [See lesson](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-twinkling-star.png) |
-| The Water Ripple | 4 / 8 | Expanding isometric ellipses and a fading wavefront | [See lesson](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-water-ripple.png) |
-| The Sword Slash | 3 / 12 | A short anticipation/smear/follow-through exercise | [See lesson](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-sword-slash.png) |
+| Lesson (as shown) | Level | Poses / nominal FPS | What to practice | Earlier screenshot |
+| --- | --- | --- | --- | --- |
+| Bouncy Mochi | First steps | 4 / 10 | Squash when it lands, stretch while it falls | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-bouncing-mochi.png) |
+| Cozy Flame | First steps | 3 / 8 | A flame that sways and sends up an ember | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-hearth-flame.png) |
+| Bun Hops | First steps | 3 / 9 | Crouch, jump with trailing ears, land | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-bun-hop.png) |
+| Twinkling Star | First steps | 4 / 10 | Grow a spark into a sparkle and fade it | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-twinkling-star.png) |
+| Potion Bubbles | Getting comfy | 4 / 9 | A bubble rising, doming the surface and popping | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-potion-bubble.png) |
+| Slime Slide | Getting comfy | 4 / 8 | Reach forward, pull the back along, settle | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-slime-glide.png) |
+| Water Ripple | Getting comfy | 4 / 8 | A drop and rings that widen and fade | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-water-ripple.png) |
+| Sword Swing | Getting comfy | 3 / 12 | Wind-up, a one-frame smear, follow-through | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-sword-slash.png) |
+| The Full Bounce | Big projects | 12 / 12 | A full bounce on 32×32 that keeps the ball's counted non-shadow area at 112–114 cells | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-master-bouncing-ball.png) |
+| Breathing Idle | Big projects | 3 / 8 | A one-pixel breath that leaves the head and base still | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-subpixel-idle.png) |
+| Power Slash | Big projects | 4 / 12 | Wind-up, smear, a freeze on the hit, recovery | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-combat-slash-hitstop.png) |
+| Big Hop | Big projects | 5 / 10 | Crouch, launch stretch, hang time, squash landing, settle | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-character-hop-shock.png) |
 
-Nominal FPS comes from the lesson configuration; per-frame holds can differ. Labels such as “mastered,” “physics” or “zero boiling” in lesson copy describe the intended exercise, not independently measured learning gains or a physical simulation guarantee.
+Nominal FPS comes from the lesson configuration; per-frame holds can differ. The coach's plain-language copy lives in [playground coaching](../../src/lib/art/playgroundCoach.ts) and describes the intended exercise, not independently measured learning gains or a physical simulation guarantee.
 
 ## Teaching Animation Board
 
-![The current 10-frame jump Teaching Animation Board.](../assets/screenshots/2026-10-02-feature-repairs-phase2/teaching-board.png)
+![The 2 October 10-frame jump Teaching Animation Board.](../assets/screenshots/2026-10-02-feature-repairs-phase2/teaching-board.png)
 
-Open **Teaching Board** from the playground header or handbook. Choose **Bun (Mascot)** or **Gel Slime**. Hover the construction stages to examine the sample's assembly; select alternate colors to re-theme the demonstration. Click **Inspect frame 1–10** to examine a jump pose and its pacing note.
+Open the **Teaching Board** with the book button in the playground header, or from the bottom of the lesson picker. Choose **Bun (Mascot)** or **Gel Slime**. Hover the construction stages to examine the sample's assembly; select alternate colors to re-theme the demonstration. Click **Inspect frame 1–10** to examine a jump pose and its pacing note.
 
 Play/pause the board, step backward/forward, choose playback FPS and toggle its onion-skin ghost trail. The board's playback is a separate demonstration from the drawing timeline. **Load into Playground Timeline** replaces the isolated practice timeline with its ten sample frames. It can replace your unkept practice, so Keep that practice first if you want both. Your original Studio drawing remains separate. Close the board with its close button or Escape, then edit the sample. Choose **Keep practice in Studio** for a new saved project or **Return to drawing** for your original.
 
@@ -69,12 +74,14 @@ Play/pause the board, step backward/forward, choose playback FPS and toggle its 
 
 ![The narrow-screen Pocket Doodle Pad with a small drawn stroke.](../assets/screenshots/2026-10-02-feature-guide/pocket-doodle.png)
 
-Below 1024 px, `/playground` offers a **32×32** sketchpad. Pick one of its colors, then draw with a finger, pointer or mouse. **Eraser** removes pixels; picking a color returns to painting. **Clear** wipes the sketch. **Save PNG** downloads its native-size image with transparency.
+The screenshot above is the 2 October capture of the earlier pad. Below 1024 px, `/playground` now opens **Pocket Doodle Pad** on its **Lesson** tab: the eight 16×16 lessons as cards, a coach card with the pose name, hint and tracing meter, and a large canvas showing the guide and a faint onion skin of your previous frame. A ghost pen draws each new pose; **Show me** replays it. Draw with **Pen**, **Fill** or **Eraser** in the pose's colors, use **Start from last frame**, **Guide** and **Clear frame**, step through the frames, then **Play** to watch them at their own timings. **Save PNG** downloads every frame side by side at native size.
 
-The sketch is kept in the current page's canvas. There is no Pocket project gallery, autosave, layer stack, animation or Undo control. Save the PNG before refreshing, leaving or widening the viewport into desktop lessons; switching between the two surfaces remounts their canvases. Home returns to the welcome page. Mobile now mounts only Pocket, so hidden desktop lessons do not initialize or change Studio metadata. This is a small phone-friendly drawing surface, rather than the full mobile Studio.
+The **Free doodle** tab keeps the **32×32** sketchpad: pick a color, draw with a finger, pointer or mouse, **Eraser**, **Clear** and **Save PNG** (native size with transparency).
 
-![The current full Studio's narrow-screen message and Doodle Pad link.](../assets/screenshots/2026-10-02-feature-guide/mobile-studio-gate.png)
+Both tabs keep their pixels only in the current page. There is no Pocket project gallery, autosave, layer stack or Undo control. Save the PNG before refreshing, leaving or widening the viewport into desktop lessons; switching between the two surfaces remounts their canvases. Home returns to the welcome page. Mobile mounts only Pocket, so hidden desktop lessons do not initialize or change Studio metadata. This is a small phone-friendly practice surface, rather than the full mobile Studio.
+
+![The 2 October full Studio narrow-screen message and Doodle Pad link.](../assets/screenshots/2026-10-02-feature-guide/mobile-studio-gate.png)
 
 The full `/studio` displays **Desk Too Small** on narrow screens and offers Home or Pocket Doodle Pad. Use a viewport at least 1024 px wide for the full workbench. Rotating a tablet helps only when it actually reaches that width.
 
-Sources: [route](../../src/app/playground/page.tsx), [responsive mount](../../src/components/playground/ResponsivePlayground.tsx), [reversible button edits](../../src/lib/art/applyLessonEdit.ts), [practice custody](../../src/lib/project/practiceSession.ts), [desktop playground](../../src/components/layout/PlaygroundLayout.tsx), [lesson list](../../src/lib/art/playgroundLessons.ts), [handbook actions](../../src/components/onboarding/ArtisanHandbookPanel.tsx), [teaching board](../../src/components/playground/TeachingAnimationBoard.tsx), [Pocket implementation](../../src/components/playground/PocketDoodlePad.tsx), [Studio gate](../../src/components/layout/MobileStudioGate.tsx). The [learning contract](../contracts/learning.md) describes the shipped workspace boundary separately from lesson proposals and pending human studies.
+Sources: [route](../../src/app/playground/page.tsx), [responsive mount](../../src/components/playground/ResponsivePlayground.tsx), [reversible button edits](../../src/lib/art/applyLessonEdit.ts), [practice custody](../../src/lib/project/practiceSession.ts), [desktop playground](../../src/components/layout/PlaygroundLayout.tsx), [lesson list](../../src/lib/art/playgroundLessons.ts), [lesson coach](../../src/components/playground/CoachPanel.tsx), [lesson art](../../src/lib/art/lessonArt.ts), [teaching board](../../src/components/playground/TeachingAnimationBoard.tsx), [Pocket implementation](../../src/components/playground/PocketDoodlePad.tsx), [Studio gate](../../src/components/layout/MobileStudioGate.tsx). The [learning contract](../contracts/learning.md) describes the shipped workspace boundary separately from lesson proposals and pending human studies.

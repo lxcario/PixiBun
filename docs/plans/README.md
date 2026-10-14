@@ -2,7 +2,7 @@
 
 Use [current status](../current-status.md) for implemented scope and [release readiness](../guides/release-readiness.md) for remaining qualification. A proposal does not establish delivery or measured usefulness.
 
-- [Strategy roadmap, 14 October 2026](2026-10-14-strategy-roadmap.md): Phase 0 offline safety, Phase 0.5 brand and the themes/onboarding addition are done; Phase 1 editing basics are next, then carts and launch.
+- [Strategy roadmap, 14 October 2026](2026-10-14-strategy-roadmap.md): Phase 0 offline safety, Phase 0.5 brand and the themes/onboarding addition are done; Phase 1 selection, transparency, selective history, keymaps and folding tools are integrated; moving the stroke loop out of React remains open, followed by planned carts and launch.
 - [Research-grounded product roadmap](research_grounded_product_roadmap.md): bounded foundations are delivered; broader Effect Inspector, depth/structure collaboration and device/artwork evaluation remain proposed.
 - [Learn by Making](learn-by-making-2026.md): safety-gated learning experiment; recruitment and measured outcomes remain pending.
 - [Nibbli milestones](nibbli.md): integrated verification first, then explainable selection/transform actions and conversation-planned motion.

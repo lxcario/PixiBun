@@ -15,28 +15,28 @@ const GoldenFlankStrand: React.FC<{ isRight?: boolean }> = ({ isRight = false })
   >
     {/* Top Brass Anchor Clasp */}
     <svg width="8" height="4" className="pixelated shrink-0" style={{ shapeRendering: 'crispEdges' }}>
-      <rect x="1" y="0" width="6" height="4" fill="#241708" />
-      <rect x="2" y="1" width="4" height="2" fill="#f0be7c" />
-      <rect x="2" y="1" width="2" height="1" fill="#fff8db" />
+      <rect x="1" y="0" width="6" height="4" fill="var(--ink)" />
+      <rect x="2" y="1" width="4" height="2" fill="var(--accent-gold)" />
+      <rect x="2" y="1" width="2" height="1" fill="var(--primary-shine)" />
     </svg>
 
     {/* Seamless Repeating 16-Bit Golden Chain Body */}
     <div
       className="w-[8px] flex-1 my-0.5"
       style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='10' viewBox='0 0 8 10'%3E%3Crect x='1' y='0' width='6' height='10' fill='%23241708'/%3E%3Crect x='2' y='1' width='4' height='8' fill='%23d89a55'/%3E%3Crect x='2' y='1' width='2' height='6' fill='%23f0be7c'/%3E%3Crect x='2' y='1' width='1' height='2' fill='%23fff8db'/%3E%3Crect x='4' y='5' width='2' height='3' fill='%238c5a28'/%3E%3Crect x='3' y='3' width='2' height='4' fill='%23241a32'/%3E%3Crect x='2.5' y='8' width='3' height='2' fill='%23f0be7c'/%3E%3C/svg%3E")`,
+        backgroundImage: 'repeating-linear-gradient(to bottom, var(--primary-bg) 0 2px, transparent 2px 8px, var(--primary-shade) 8px 10px), linear-gradient(to right, var(--ink) 0 1px, var(--primary-bg) 1px 3px, var(--ink) 3px 5px, var(--primary-shade) 5px 7px, var(--ink) 7px 8px)',
         backgroundRepeat: 'repeat-y',
         backgroundPosition: 'center top',
         imageRendering: 'pixelated',
-        filter: 'drop-shadow(0 0 3px rgba(240, 190, 124, 0.45))',
+        filter: 'drop-shadow(0 0 3px color-mix(in srgb, var(--primary-bg) 45%, transparent))',
       }}
     />
 
     {/* Bottom Brass Anchor Clasp */}
     <svg width="8" height="4" className="pixelated shrink-0" style={{ shapeRendering: 'crispEdges' }}>
-      <rect x="1" y="0" width="6" height="4" fill="#241708" />
-      <rect x="2" y="1" width="4" height="2" fill="#f0be7c" />
-      <rect x="2" y="1" width="2" height="1" fill="#fff8db" />
+      <rect x="1" y="0" width="6" height="4" fill="var(--ink)" />
+      <rect x="2" y="1" width="4" height="2" fill="var(--accent-gold)" />
+      <rect x="2" y="1" width="2" height="1" fill="var(--primary-shine)" />
     </svg>
   </div>
 );

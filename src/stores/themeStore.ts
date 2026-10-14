@@ -1,5 +1,6 @@
 'use client';
 
+import { useSyncExternalStore } from 'react';
 import { create } from 'zustand';
 import { DEFAULT_THEME_ID, isSceneTheme, isThemeId } from '@/lib/theme/registry';
 
@@ -155,6 +156,22 @@ export const useThemeStore = create<ThemeStore>((set, get) => ({
     get().toggleColorScheme();
   },
 }));
+
+const subscribeTheme = (onChange: () => void) => useThemeStore.subscribe(onChange);
+const liveStudioTheme = () => useThemeStore.getState().studioTheme;
+const liveColorScheme = () => useThemeStore.getState().colorScheme;
+
+/**
+ * The saved theme, already during hydration. The store's own hooks report the
+ * server default (Moonlit, night) until hydration completes, which painted a
+ * purple first frame on every canvas. Only use this for values that never reach
+ * markup, such as canvas drawing: markup must match the server HTML.
+ */
+export function useLiveThemeChoice(): { studioTheme: StudioTheme; colorScheme: ColorScheme } {
+  const studioTheme = useSyncExternalStore(subscribeTheme, liveStudioTheme, liveStudioTheme);
+  const colorScheme = useSyncExternalStore(subscribeTheme, liveColorScheme, liveColorScheme);
+  return { studioTheme, colorScheme };
+}
 
 if (typeof window !== 'undefined') {
   useThemeStore.setState({ studioTheme: initialStudioTheme, colorScheme: initialColorScheme, theme: initialColorScheme });

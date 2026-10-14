@@ -243,15 +243,15 @@ describe('AtelierEngineShowcase Component', () => {
     await act(async () => {
       fireEvent.click(unityBtn);
     });
-    expect(screen.getByText(/bun_walk_0\.png/i)).toBeDefined();
+    expect(screen.getByText(/bun_0/i)).toBeDefined();
 
     // Switch export sub-tab to Phaser 3
     const phaserBtn = screen.getByRole('button', { name: /Phaser 3/i });
     await act(async () => {
       fireEvent.click(phaserBtn);
     });
-    expect(screen.getByText(/bun_walk_spritesheet\.png/i)).toBeDefined();
-    expect(screen.getByText(/frame_000/i)).toBeDefined();
+    expect(screen.getByText(/bun_hop\.png/i)).toBeDefined();
+    expect(screen.getByText(/bun_0/i)).toBeDefined();
   });
 
   it('navigates sequentially using the Next and Prev buttons across the 4 curated tabs', async () => {
@@ -386,12 +386,16 @@ describe('AtelierEngineShowcase Component', () => {
     const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url');
     const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
 
-    const downloadBtn = screen.getByRole('button', { name: 'Download sample' });
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(callback => callback(new Blob([new Uint8Array([137, 80, 78, 71])], { type: 'image/png' })));
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const downloadBtn = screen.getByRole('button', { name: 'Download game kit' });
     await act(async () => {
       fireEvent.click(downloadBtn);
     });
 
     expect(createObjectURLSpy).toHaveBeenCalled();
+    expect(click).toHaveBeenCalledTimes(1);
+    expect((createObjectURLSpy.mock.calls[0][0] as Blob).type).toBe('application/zip');
     expect(revokeObjectURLSpy).not.toHaveBeenCalled();
     await vi.waitFor(() => expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-url'), { timeout: 1500 });
   });
@@ -413,13 +417,13 @@ describe('AtelierEngineShowcase Component', () => {
       configurable: true,
     });
 
-    const copyBtn = screen.getByRole('button', { name: /Copy sample/i });
+    const copyBtn = screen.getByRole('button', { name: /Copy metadata/i });
     await act(async () => {
       fireEvent.click(copyBtn);
     });
 
     expect(writeTextSpy).toHaveBeenCalled();
-    expect(screen.getByText(/Copied/i)).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Copied' })).toBeDefined();
   });
 });
 

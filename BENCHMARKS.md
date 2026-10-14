@@ -47,24 +47,28 @@ The palette cycling engine operates via an allocation-free per-pixel 32-bit pack
 
 **Class:** `HistoryEngine`  
 **File:** [`src/lib/engine/historyEngine.ts`](src/lib/engine/historyEngine.ts)  
-**Stack Ceilings:** 50 undo steps with independent 50-step redo stack (constrained by a unified 64 MiB combined history byte envelope); new edits clear redo
+**Stack ceilings:** 4,096 Undo entries and independently 4,096 Redo entries by default, sharing a 64 MiB retained-step cap; new edits clear Redo. This is drawing history. Motion pose parameters have separate 50-entry stacks.
 
-Each modeled pixel history step stores full-canvas single-layer RGBA ($width \times height \times 4$ bytes) plus the engine's fixed 512-byte accounting allowance. That allowance is not a measured JavaScript object size. Replay baselines and browser backing copies are separate from this table.
+Ordinary pixel steps retain the smallest changed rectangle twice (before and expected-after), plus the engine's fixed 512-byte accounting allowance: `8 × rectangleWidth × rectangleHeight + 512` bytes. A one-cell patch is 520 accounted bytes regardless of canvas size; the first edit on a layer additionally seeds a whole-layer replay baseline. Capture/diff still reads full-layer images, so retained size does not establish constant-time strokes or peak heap size.
 
 ### Memory Scaling Analysis
 
-| Canvas Size | Bytes per Pixel | Accounted Bytes per Step | Modeled 50 Steps, MiB (Uncapped) | Max Steps under 64 MiB Cap |
-|---|---|---|---|---|
-| **16 × 16** | 4 | 1,536 | 0.073 | 50 |
-| **32 × 32** | 4 | 4,608 | 0.220 | 50 |
-| **64 × 64** | 4 | 16,896 | 0.806 | 50 |
-| **128 × 128** | 4 | 66,048 | 3.149 | 50 |
-| **256 × 256** | 4 | 262,656 | 12.524 | 50 |
-| **512 × 512** | 4 | 1,049,088 | 50.024 | 50 |
-| **1024 × 1024** | 4 | 4,194,816 | 200.024 | 15 |
-| **2048 × 2048** | 4 | 16,777,728 | 800.024 | 3 |
+The table models a **whole-canvas before/after patch on every step**, with no Redo or structural entries. It is a conservative retained-payload scenario rather than measured heap or the ordinary small-stroke capacity. The 4,096-step column deliberately shows the uncapped model; the last column applies the actual byte and depth ceilings.
 
-> **Mathematical Note on 64 MiB Cap & Eviction Accounting:** Production code in `src/lib/engine/historyEngine.ts` enforces `DEFAULT_HISTORY_MAX_BYTES = 64 * 1024 * 1024` (64 MiB = 67,108,864 bytes). For resolutions $512 \times 512$ and below, 50 steps fit within 64 MiB. For $1024 \times 1024$ and $2048 \times 2048$, a naive division of raw pixel bytes ($64\text{ MiB} / 4\text{ MiB} = 16$ and $64\text{ MiB} / 16\text{ MiB} = 4$) does not account for the +512-byte per-step metadata overhead (`calculateStepBytes`). In actual execution, 16 steps at $1024\times1024$ total $67,117,056\text{ bytes}$ (8,192 bytes over the 64 MiB cap), and 4 steps at $2048\times2048$ total $67,110,912\text{ bytes}$ (2,048 bytes over the cap). The eviction check `(totalBytes + stepBytes > limitBytes)` triggers before insertion, yielding exactly 15 and 3 steps respectively in the active undo stack for single-layer full-canvas modifications. For multi-layer or structural history steps (which snapshot frame metadata and back up all affected layer buffers), step byte footprints vary dynamically by operation, and steps are evicted strictly according to aggregate byte size rather than a fixed step count. Redo steps are stored on an independent 50-step stack subject to the unified 64 MiB combined history byte envelope (with oldest redo entries evicted under combined byte pressure).
+| Changed rectangle | Accounted bytes per step | Modeled 4,096 steps, MiB (uncapped) | Maximum under 64 MiB |
+| --- | --- | --- | --- |
+| 16 × 16 | 2,560 | 10.000 | 4096 |
+| 32 × 32 | 8,704 | 34.000 | 4096 |
+| 64 × 64 | 33,280 | 130.000 | 2016 |
+| 128 × 128 | 131,584 | 514.000 | 510 |
+| 256 × 256 | 524,800 | 2050.000 | 127 |
+| 512 × 512 | 2,097,664 | 8194.000 | 31 |
+| 1024 × 1024 | 8,389,120 | 32770.000 | 7 |
+| 2048 × 2048 | 33,554,944 | 131074.000 | 1 |
+
+For a one-cell patch, 4,096 steps use 2,129,920 bytes (2.031 MiB), before separate replay-baseline/browser memory. Whole-layer steps without expected-after data and structural steps have different sizes: `calculateStepBytes` counts the actual retained raster payloads and metadata allowances. The first pixel edit following structural history stays whole-layer for replay continuity. `tests/undoPatches.test.ts` exercises 1,000 one-pixel steps, Undo/Redo, layer-offset replay and eviction. These are correctness/accounting checks, not input-latency measurements.
+
+Oldest Undo entries fold into the separately accounted replay baseline on eviction; Redo eviction does not rewrite that baseline. A baseline can still contain full layers even when retained steps are tiny. The previous 50-step/full-layer table is superseded by this source-backed model.
 
 ---
 

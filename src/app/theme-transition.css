@@ -1,0 +1,161 @@
+/* ═══════════════════════════════════════════════════════════════════
+   DAY / NIGHT TRANSITION (src/lib/theme/themeTransition.ts)
+   The new scheme widens out of the switch as a circle while the old one
+   dims beneath it. A sun or moon swoops across on its own layer.
+   ═══════════════════════════════════════════════════════════════════ */
+
+html[data-theme-switch]::view-transition-group(root) {
+  animation: none;
+}
+
+html[data-theme-switch]::view-transition-old(root),
+html[data-theme-switch]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html[data-theme-switch]::view-transition-new(root) {
+  animation: theme-reveal var(--theme-ms, 900ms) cubic-bezier(0.7, 0, 0.18, 1) both;
+}
+
+html[data-theme-switch]::view-transition-old(root) {
+  animation: theme-recede var(--theme-ms, 900ms) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes theme-reveal {
+  from { clip-path: circle(0px at var(--theme-x) var(--theme-y)); }
+  to { clip-path: circle(var(--theme-r) at var(--theme-x) var(--theme-y)); }
+}
+
+@keyframes theme-recede {
+  from { filter: brightness(1) saturate(1); }
+  to { filter: brightness(0.72) saturate(0.85); }
+}
+
+/* The sky layer lives on its own transition layer above both pictures, and keeps animating live. */
+html[data-theme-switch]::view-transition-group(theme-sky),
+html[data-theme-switch]::view-transition-new(theme-sky),
+html[data-theme-switch]::view-transition-old(theme-sky) {
+  animation: none;
+}
+
+html[data-theme-switch]::view-transition-group(theme-sky) {
+  z-index: 2;
+}
+
+.theme-sky {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  overflow: hidden;
+  view-transition-name: theme-sky;
+  --sky-color: var(--primary-bg);
+}
+
+.theme-sky--night {
+  --sky-color: var(--text-heading);
+}
+
+/* A dotted ring that rides the edge of the widening circle. */
+.theme-sky__ring {
+  position: absolute;
+  left: var(--sky-x);
+  top: var(--sky-y);
+  width: calc(var(--theme-r) * 2);
+  height: calc(var(--theme-r) * 2);
+  margin: calc(var(--theme-r) * -1) 0 0 calc(var(--theme-r) * -1);
+  border-radius: 50%;
+  border: 3px dashed color-mix(in srgb, var(--sky-color) 70%, transparent);
+  box-shadow: 0 0 40px 6px color-mix(in srgb, var(--sky-color) 30%, transparent), inset 0 0 40px 6px color-mix(in srgb, var(--sky-color) 22%, transparent);
+  transform: scale(0);
+  animation: theme-ring var(--theme-ms, 900ms) cubic-bezier(0.7, 0, 0.18, 1) forwards;
+}
+
+@keyframes theme-ring {
+  0% { transform: scale(0) rotate(0deg); opacity: 1; }
+  80% { opacity: 0.9; }
+  100% { transform: scale(1) rotate(40deg); opacity: 0; }
+}
+
+/* A little burst of square sparkles at the switch. */
+.theme-sky__burst {
+  position: absolute;
+  left: var(--sky-x);
+  top: var(--sky-y);
+}
+
+.theme-sky__burst i {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  background: var(--sky-color);
+  box-shadow: 0 0 8px var(--sky-color);
+  opacity: 0;
+  animation: theme-spark 700ms cubic-bezier(0.2, 0.8, 0.3, 1) var(--d, 0ms) forwards;
+}
+
+.theme-sky__burst i:nth-child(odd) {
+  width: 4px;
+  height: 4px;
+  background: var(--accent-gold);
+}
+
+@keyframes theme-spark {
+  0% { transform: translate(0, 0) scale(0.4) rotate(0deg); opacity: 1; }
+  60% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(1) rotate(90deg); opacity: 0; }
+}
+
+/* The sun or moon swoops from the switch down and across into the sky, then fades. */
+.theme-sky__body {
+  position: absolute;
+  left: var(--sky-x);
+  top: var(--sky-y);
+  width: 84px;
+  height: 84px;
+  margin: -42px 0 0 -42px;
+  color: var(--sky-color);
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--sky-color) 70%, transparent)) drop-shadow(0 0 2px var(--sky-color));
+  animation:
+    theme-body-x 1500ms cubic-bezier(0.45, 0, 0.2, 1) forwards,
+    theme-body-fade 1500ms linear forwards;
+}
+
+.theme-sky__body svg {
+  display: block;
+  fill: currentColor;
+  animation: theme-body-y 1500ms cubic-bezier(0.3, 0, 0.3, 1) forwards;
+}
+
+.theme-sky--day .theme-sky__rays {
+  transform-origin: 8px 8px;
+  animation: theme-rays 1500ms linear forwards;
+}
+
+@keyframes theme-body-x {
+  from { translate: 0 0; scale: 0.3; }
+  45% { scale: 1.15; }
+  to { translate: calc(50vw - var(--sky-x)) 0; scale: 1; }
+}
+
+@keyframes theme-body-y {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(calc(30vh - var(--sky-y))); }
+  100% { transform: translateY(calc(16vh - var(--sky-y))); }
+}
+
+@keyframes theme-body-fade {
+  0%, 70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes theme-rays {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(180deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-sky { display: none; }
+}

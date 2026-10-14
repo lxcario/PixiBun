@@ -4,7 +4,7 @@ Current engineering verification and remaining release checks are recorded in th
 
 For artists: [illustrated handbook](docs/guides/README.md) and [complete feature index](docs/features.md).
 
-PixiBun is a browser studio for small pixel-art drawings, sprites, tiles and animation loops. Its audience includes pixel artists, beginners and people making art for games. The visual direction is a quiet desk: readable tools, restrained motion and warm Cozy Classic colors.
+PixiBun is a browser studio for small pixel-art drawings, sprites, tiles and animation loops. Its audience includes pixel artists, beginners and people making art for games. The visual direction is a readable drawing desk across eight styles, each with Night and Day palettes. Scene styles add animated pixel backgrounds; Graphite and Plum keep flat backgrounds.
 
 ## Problem & Audience
 
@@ -24,7 +24,7 @@ Artists need to draw, revise colors, compare animation poses and keep editable w
 | Make tiles | Repeat previews, exact unique-tile PNG/map bundles, contour review and bounded small tile-scene studies | [Tile guide](docs/guides/pixitools-cleanup-and-tiles.md); exact size/alpha and stale-result checks apply; a complete 47-tile atlas and general world generation are not shipped |
 | Keep and share work | Local saves, portable backups, recovery, image/animation exports and game-delivery formats | [Artwork safety](docs/guides/artwork-safety.md), [exports](docs/contracts/exports.md); named consumer tests do not qualify every engine/version |
 | Draw together | One host and one guest share pixels through WebRTC; the host owns structure | [Current status](docs/current-status.md); real two-machine and stress qualification remain pending |
-| Learn and personalize | Separate desktop practice with save-before-entry, Return and explicit Keep; task-based PixiTools, searchable actions, eight Night/Day studio styles and a first-run welcome with level-based tips | [Learning contract](docs/contracts/learning.md), [design](DESIGN.md) |
+| Learn and personalize | Twelve coached desktop lessons with save-before-entry, Return and explicit Keep; eight Pocket lessons and a free pad; task-based PixiTools, searchable actions, eight Night/Day studio styles and a first-run welcome with level-based tips | [Learning contract](docs/contracts/learning.md), [design](DESIGN.md) |
 
 ### Explicitly out of scope for v1
 

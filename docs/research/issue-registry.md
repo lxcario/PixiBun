@@ -1,12 +1,14 @@
 # Issue and research registry
 
-Updated 11 October 2026. [Current status](../current-status.md) records the scoped artwork-safety, navigation and resource-cache engineering milestone. Original audit IDs, repair checklists and previous verdicts are preserved in the [local archive](../archives.md#historical-reports).
+Updated 15 October 2026. [Current status](../current-status.md) records the scoped artwork-safety, navigation and resource-cache engineering milestone. Original audit IDs, repair checklists and previous verdicts are preserved in the [local archive](../archives.md#historical-reports).
+
+The [15 October review](../releases/2026-10-15-codebase-and-documentation.md) reconciles source and docs after the editing basics, new lessons, homepage exports and explicit restart. Current source support does not close the historical WebKit M3 condition, participant studies, host update/rollback, actual Safari/pen devices or broad game-importer qualification. Drawing Undo is now patch-based with a 4,096-step cap; motion parameters keep their separate 50-step history.
 
 ## Outstanding research and qualification
 
 | Area | Required evidence |
 | --- | --- |
-| Accessibility | Seven compact target findings remain; qualify manual keyboard, screen-reader and touch equivalence on named devices. Automated scans do not establish conformance. |
+| Accessibility | Earlier scans recorded seven compact target findings; requalify changed controls and manual keyboard, screen-reader and touch equivalence on named devices. Automated scans do not establish conformance. |
 | Artist usefulness and learning | Recruit participants, record consent, build/task order and actual observations. Automated dry-runs do not close this work. |
 | Physical devices and Safari | Qualify pen/touch input, browser/device combinations and actual Safari, including legacy-Blob rollback. |
 | Long sessions and memory | Measure peak, retained and active scratch memory plus decoder/GPU/worker behavior on named low-memory devices. Earlier periodic sessions failed their final compiled-build guard. |

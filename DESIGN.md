@@ -4,7 +4,7 @@ Current engineering verification and remaining release checks are recorded in th
 
 **Studio interaction update — 13 October 2026:** The header/tool-option layout, color flyout with explicit Close control, pinned picker, palette/layer strips and compact tool-help cards have been refined. Curve exposes start/end/bend handles with Apply/Cancel and guarded re-edit; context switches cancel pending curves. Tool illustrations use a handcrafted pixel heart and explanatory shading/normal/light examples. They are tutorial demonstrations, not measured physical-lighting results. The [drawing guide](docs/guides/drawing-tools.md#bézier-curve) documents current behavior; older pictures retain their actual capture dates.
 
-The canvas surround uses bounded outlines and a small gradient in place of large blurred decorations. Frame-card transitions and active decorative shadows are disabled during playback. These changes reduce decorative paint work while retaining the existing animation clock; intermittent WebKit visible-pose stability remains open. They do not change the photometric cast-shadow engine or globally prohibit tactile button shadows. The [source change record](docs/releases/2026-10-13-studio-and-nibbli.md) separates functional checks, visual observations and remaining manual/device qualification.
+The canvas surround uses bounded outlines and a small gradient in place of large blurred decorations. Frame-card transitions and active decorative shadows are disabled during playback. That 13 October change reduced decorative paint work while retaining the then-existing clock; the current Studio and playground share usePlaybackClock. Intermittent WebKit visible-pose stability remains open. They do not change the photometric cast-shadow engine or globally prohibit tactile button shadows. The [source change record](docs/releases/2026-10-13-studio-and-nibbli.md) separates functional checks, visual observations and remaining manual/device qualification.
 
 > **Audit-session interaction update — 2026-10-01:** PixiTools includes animation review and Try a new look (previously Explore variations), with native before/after previews, protected rectangles, common light settings and tile border/path diagnostics. Later interface refinements are described in the [Phase 6 UX report (local archive)](docs/archives.md#record-docs-research-phase6-ux-hardening-md). Automated accessibility/layout checks establish their tested scope; artist usefulness remains unmeasured. See the [session record (local archive)](docs/archives.md#record-docs-research-session-completion-2026-10-01-md).
 
@@ -18,6 +18,10 @@ The canvas surround uses bounded outlines and a small gradient in place of large
 > Grounded in physical materials (dark plum-wood, warm tactile paper, incandescent lamplight, and soft wisteria petals).
 
 ---
+
+## Current interface — 15 October 2026
+
+The [source review](docs/releases/2026-10-15-codebase-and-documentation.md) covers the inspector's shared sections/fields, theme-aware canvas previews and the desktop coach/tool-dock/filmstrip layout. Pocket opens on lessons before its separate free pad. The homepage has a scroll-driven creation story, per-demo Try-this tasks, collapsible explanations and real Bun sample downloads. Decorative markers and scene motion exist in the current app; the material rules below are guidance, not an assertion that every existing component follows them. Earlier screenshot/token examples retain their dated scope.
 
 ## 1. Core Visual Metaphor: The Lamplit Drafting Desk
 
@@ -46,7 +50,7 @@ These are design rules and targets for new work, not a declaration that every ex
 
 ## 2. Semantic Color Tokens
 
-### Current studio references — 2 October 2026
+### Historical studio references — 2 October 2026
 
 ![Current Atelier dark studio, with amber controls and a restrained modern workspace around the original PixiBun starter artwork.](docs/assets/screenshots/2026-10-02-docs/studio-atelier-dark.png)
 
@@ -136,7 +140,7 @@ The studio supports two independent theme dimensions:
 
 The token tables above record the Cozy Classic and Atelier values as documented on 2 October 2026; `themes.json` is the current source.
 
-Both axes are selectable through the **Appearance Popover** (`src/components/ui/AppearancePopover.tsx`) in the top rail, while the quick **ThemeToggle** provides 1-click toggling between Dark and Light color schemes.
+Both axes are selectable through the **Studio** appearance popover (`src/components/ui/AppearancePopover.tsx`). Its Day/Night buttons set the color scheme directly. The homepage Daylight switch uses `src/lib/theme/themeTransition.ts`: capable browsers reveal the new scheme from that switch, while reduced-motion and unsupported browsers switch immediately. Canvas consumers use the saved palette during hydration through `useLiveThemeChoice`; markup keeps the server-compatible hydration boundary.
 
 ```mermaid
 stateDiagram-v2
@@ -234,7 +238,7 @@ At high zoom factors ($\ge 400\%$), navigating multi-pixel brush sizes ($2\text{
 The stage border is a CSS outline, outside the layout box. The main artwork canvas, selection/grid overlay, and stage share an identical screen origin and size at every zoom. CSS grid pitch is `zoom / 100` screen pixels per artwork pixel. A visible grid line must never drift across an artwork pixel as zoom increases.
 
 ### Imported-Art Bucket Controls
-The Bucket toolbar exposes Connected/Global, a separately labeled tolerance slider (default 24), and an optional **Enclosed specks** switch for tiny visible color islands. The switch starts off because artists may intend small contrasting details. Transparent holes remain transparent. Color Replace keeps its own exact-match tolerance setting.
+The Bucket toolbar exposes Connected/Global, a separately labeled tolerance slider (default 0, exact RGBA match), and an optional **Enclosed specks** switch for tiny visible color islands. The switch starts off because artists may intend small contrasting details. Transparent holes remain transparent. Color Replace keeps its own exact-match tolerance setting.
 
 ### Viewport Fit & Scale Navigation Standards
 Keyboard conventions for rapid drafting ergonomics:
@@ -326,7 +330,7 @@ All primitives consume the v2 design token scale defined in `globals.css`:
 
 ### Appearance Popover
 The `AppearancePopover` (`src/components/ui/AppearancePopover.tsx`) consolidates theme management into a single flyout, superseding the standalone `ThemeToggle` as the primary entry point. It exposes two orthogonal axes:
-1. **Studio Theme:** Atelier (modern midnight) or Cozy Classic (historical plum/wisteria).
+1. **Studio Theme:** Moonlit, Sakura, Tidepool, Ember, Moss, Arcade, Graphite (`atelier`) or Plum (`cozy-classic`), sourced from `src/lib/theme/themes.json`.
 2. **Color Scheme:** Dark or Light.
 
 Live preview swatches show the target theme's accent/surface colors. Selection triggers `applyThemeToDOM()` in `themeStore.ts` with transition suppression, suppressing simultaneous transition animations.

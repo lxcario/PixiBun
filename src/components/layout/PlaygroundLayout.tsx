@@ -1,303 +1,278 @@
 'use client';
 
-import React, { useEffect, useCallback } from 'react';
-import Link from 'next/link';
-import { usePracticeActions } from '@/components/playground/PracticeActions';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { isPracticeActive } from '@/lib/project/practiceSession';
 import { useStudioStore } from '@/stores/studioStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
-import { evaluateStencilCoverage } from '@/lib/art/stencilEvaluator';
-import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
-import { LeftToolbar } from './LeftToolbar';
-import { CenterViewport } from './CenterViewport';
-import { BottomTimeline } from './BottomTimeline';
-import { ArtisanHandbookPanel } from '@/components/onboarding/ArtisanHandbookPanel';
-import { OnboardingOverlay } from '@/components/onboarding/OnboardingOverlay';
-import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
-import { TactileButton } from '@/components/ui/TactileButton';
-import { PixelIcon } from '@/components/ui/PixelIcon';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { studioEvents } from '@/lib/events/studioEvents';
-import { TeachingBoardModal } from '@/components/playground/TeachingBoardModal';
+import { coachForFrame } from '@/lib/art/playgroundCoach';
 import { isWorkspaceControlTarget, shouldIgnoreWorkspaceKey, workspaceShortcutKey } from '@/lib/input/workspaceKeyboard';
+import { PixelIcon } from '@/components/ui/PixelIcon';
+import { CenterViewport } from './CenterViewport';
+import { TeachingBoardModal } from '@/components/playground/TeachingBoardModal';
+import { PlaygroundTopBar } from '@/components/playground/PlaygroundTopBar';
+import { CoachPanel } from '@/components/playground/CoachPanel';
+import { ToolDock } from '@/components/playground/ToolDock';
+import { FilmStrip } from '@/components/playground/FilmStrip';
+import { GhostOverlay } from '@/components/playground/GhostOverlay';
+import { LessonPicker } from '@/components/playground/LessonPicker';
+import { LessonCelebration } from '@/components/playground/LessonCelebration';
+import { scoreActiveLayer } from '@/components/playground/useLessonActions';
+import { useFrameScores, usePlaygroundUi } from '@/components/playground/playgroundUi';
 
-export const PlaygroundLayout: React.FC = () => {
-  const practice = usePracticeActions();
-  const [showTeachingBoard, setShowTeachingBoard] = React.useState(false);
-  const {
-    getCurrentStep,
-    getCurrentFrameTemplate,
-    recordAnalysis,
-    setStepIndex,
-  } = useOnboardingStore();
+/** Show or hide the tracing guide, and how strongly it shows. */
+const GuideControl: React.FC = () => {
+  const showStencilGuide = useOnboardingStore((s) => s.showStencilGuide);
+  const toggleStencilGuide = useOnboardingStore((s) => s.toggleStencilGuide);
+  const stencilOpacity = useOnboardingStore((s) => s.stencilOpacity);
+  const setStencilOpacity = useOnboardingStore((s) => s.setStencilOpacity);
+  return (
+    <div className="pointer-events-auto flex items-center gap-2 h-10 pl-1 pr-3 rounded-[3px] border-2 border-[var(--ink)] bg-[var(--desk-surface)] shadow-[0_3px_0_var(--ink)]">
+      <button
+        type="button"
+        aria-pressed={showStencilGuide}
+        onClick={toggleStencilGuide}
+        title={showStencilGuide ? 'Hide the faint guide shape' : 'Show the faint guide shape'}
+        className="h-8 px-2 flex items-center gap-1.5 rounded-[2px] text-xs font-semibold text-[var(--text-heading)] hover:bg-[var(--desk-surface-raised)] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)]"
+      >
+        <PixelIcon name={showStencilGuide ? 'eye' : 'eye-off'} size={13} />
+        Guide
+      </button>
+      {showStencilGuide && (
+        <input
+          type="range"
+          aria-label="Guide strength"
+          min="0.1"
+          max="1"
+          step="0.05"
+          value={stencilOpacity}
+          onChange={(e) => setStencilOpacity(parseFloat(e.target.value))}
+          className="w-24 accent-[var(--accent-gold)] cursor-pointer"
+        />
+      )}
+    </div>
+  );
+};
 
-  const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
-  const activeLayerId = useStudioStore((s) => s.activeLayerId);
-  const canvasWidth = useStudioStore((s) => s.canvasWidth);
-  const canvasHeight = useStudioStore((s) => s.canvasHeight);
+/** A small label above the canvas that names the pose being drawn (or playing). */
+const CanvasCaption: React.FC = () => {
+  const lesson = useOnboardingStore((s) => s.getCurrentLesson());
+  const step = useOnboardingStore((s) => s.getCurrentStep());
   const isPlaying = useStudioStore((s) => s.isPlaying);
-  const canUndo = useStudioStore((s) => s.canUndo);
-  const canRedo = useStudioStore((s) => s.canRedo);
-  const tools = useStudioStore((s) => s.tools);
-  const setBrushSize = useStudioStore((s) => s.setBrushSize);
-  const setActiveTool = useStudioStore((s) => s.setActiveTool);
-  const swapColors = useStudioStore((s) => s.swapColors);
-  const setIsPlaying = useStudioStore((s) => s.setIsPlaying);
+  const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
+  const reduceMotion = Boolean(useReducedMotion());
+  const text = isPlaying
+    ? 'Playing your animation'
+    : step.type === 'DRAW_FRAME' && step.frameIndex !== undefined
+      ? `Frame ${step.frameIndex + 1} · ${coachForFrame(lesson, step.frameIndex).title}`
+      : `Frame ${activeFrameIndex + 1}`;
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.p
+        key={text}
+        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -8, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
+        transition={{ duration: 0.2 }}
+        className="px-3 py-1.5 rounded-[2px] border-2 border-[var(--ink)] bg-[var(--desk-surface)] font-display text-xs text-[var(--text-heading)] shadow-[0_3px_0_var(--ink)]"
+      >
+        {isPlaying && <span aria-hidden="true" className="inline-block w-2 h-2 mr-2 bg-[var(--state-danger)] animate-pulse" />}
+        {text}
+      </motion.p>
+    </AnimatePresence>
+  );
+};
 
-  const stepConfig = getCurrentStep();
-
-  // Session ownership and initialization happen before the viewport mounts.
+/** Errors from lesson edits (for example a locked layer) would otherwise go unseen here. */
+const PlaygroundToast: React.FC = () => {
+  const [toast, setToast] = useState<{ message: string; id: number } | null>(null);
   useEffect(() => {
-    const unsub = studioEvents.on('pixibun:open-teaching-board', () => {
-      setShowTeachingBoard(true);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const unsub = studioEvents.on('pixibun:toast', ({ message }) => {
+      setToast({ message, id: Date.now() });
+      clearTimeout(timer);
+      timer = setTimeout(() => setToast(null), 4200);
     });
+    return () => { unsub(); clearTimeout(timer); };
+  }, []);
+  return (
+    <div role="status" aria-live="polite" className="pointer-events-none fixed bottom-32 left-1/2 -translate-x-1/2 z-50">
+      <AnimatePresence>
+        {toast && (
+          <motion.p key={toast.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}
+            className="max-w-md px-4 py-2.5 border-2 border-[var(--ink)] bg-[var(--desk-surface)] text-sm text-[var(--text-heading)] shadow-[0_4px_0_var(--ink)]">
+            {toast.message}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+/** Fill the stage at a crisp whole-number scale, leaving room for the tool dock, caption and guide control. */
+function heroZoom(canvasWidth: number, canvasHeight: number, stageWidth: number, stageHeight: number) {
+  const scale = Math.floor(Math.min((stageWidth - 200) / canvasWidth, (stageHeight - 150) / canvasHeight));
+  return Math.max(100, Math.min(6400, scale * 100));
+}
+
+/**
+ * The Playground: the canvas in the middle, a few tools beside it, one coach
+ * card on the right and the flipbook of frames along the bottom.
+ */
+export const PlaygroundLayout: React.FC = () => {
+  const [showTeachingBoard, setShowTeachingBoard] = useState(false);
+  const step = useOnboardingStore((s) => s.getCurrentStep());
+  const template = useOnboardingStore((s) => s.getCurrentFrameTemplate());
+  const lessonId = useOnboardingStore((s) => s.activeLessonId);
+  const introSeen = usePlaygroundUi((s) => Boolean(s.introSeen[lessonId]));
+  const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
+  const isPlaying = useStudioStore((s) => s.isPlaying);
+  const scores = useFrameScores();
+
+  useEffect(() => {
+    usePlaygroundUi.getState().reset();
+    const unsub = studioEvents.on('pixibun:open-teaching-board', () => setShowTeachingBoard(true));
     return () => unsub();
   }, []);
 
-  // Stroke commit detection & rigorous mathematical stencil coverage evaluation
+  // The canvas is the hero: CenterViewport fits it on open with this rule, and
+  // the stage refits on resize. A manual zoom holds until then.
+  const canvasWidth = useStudioStore((s) => s.canvasWidth);
+  const canvasHeight = useStudioStore((s) => s.canvasHeight);
+  const stageRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const fit = () => {
+      if (!stage.clientWidth || !stage.clientHeight) return;
+      useStudioStore.getState().setZoomAndPan(heroZoom(canvasWidth, canvasHeight, stage.clientWidth, stage.clientHeight), 0, 0);
+    };
+    const observer = new ResizeObserver(fit);
+    observer.observe(stage);
+    return () => observer.disconnect();
+  }, [canvasWidth, canvasHeight]);
+
+  // Score each finished stroke against the lesson pose.
   const handleCommitHistory = useCallback(() => {
-    if (!isPracticeActive()) return;
-    const template = getCurrentFrameTemplate();
-    if (!template || !activeLayerId) return;
+    if (isPracticeActive()) scoreActiveLayer();
+  }, []);
 
-    const buf = getOrCreateBuffer(activeLayerId, canvasWidth, canvasHeight);
-    const analysis = evaluateStencilCoverage(buf.ctx, canvasWidth, canvasHeight, template);
-    recordAnalysis(analysis);
-  }, [getCurrentFrameTemplate, activeLayerId, canvasWidth, canvasHeight, recordAnalysis]);
+  // Onion skin shows the previous drawing once the learner is past the first frame.
+  useEffect(() => {
+    if (isPracticeActive() && step.stepIndex > 0) useStudioStore.getState().setOnionSkin({ enabled: true });
+  }, [step.stepIndex]);
 
-  // Synchronize timeline frame selection with playground step
-  const prevActiveFrameIndexRef = React.useRef(activeFrameIndex);
-  const prevIsPlayingRef = React.useRef(isPlaying);
-
+  // Picking a frame in the filmstrip while drawing moves the lesson to that frame.
+  const prevFrameRef = useRef(activeFrameIndex);
+  const prevPlayingRef = useRef(isPlaying);
   useEffect(() => {
     if (!isPracticeActive()) return;
-    // If playback just stopped (pause transition), snap step to the active paused frame
-    if (prevIsPlayingRef.current && !isPlaying) {
-      const { steps } = useOnboardingStore.getState();
-      const targetStepIndex = steps.findIndex(
-        (s) => s.type === 'DRAW_FRAME' && s.frameIndex === activeFrameIndex
-      );
-      if (targetStepIndex !== -1) {
-        useOnboardingStore.getState().setStepIndex(targetStepIndex);
-      }
-    }
-    prevIsPlayingRef.current = isPlaying;
-
-    // While playing, freeze step updates so top bar and handbook do not jump or flicker
-    if (isPlaying) {
-      prevActiveFrameIndexRef.current = activeFrameIndex;
-      return;
-    }
-
-    if (prevActiveFrameIndexRef.current !== activeFrameIndex) {
-      prevActiveFrameIndexRef.current = activeFrameIndex;
-      const { steps, currentStepIndex } = useOnboardingStore.getState();
-      const currentStep = steps[currentStepIndex];
-      if (currentStep && currentStep.type === 'DRAW_FRAME' && currentStep.frameIndex !== activeFrameIndex) {
-        const targetStepIndex = steps.findIndex(
-          (s) => s.type === 'DRAW_FRAME' && s.frameIndex === activeFrameIndex
-        );
-        if (targetStepIndex !== -1) {
-          useOnboardingStore.getState().setStepIndex(targetStepIndex);
-        }
-      }
-    }
+    const wasPlaying = prevPlayingRef.current;
+    prevPlayingRef.current = isPlaying;
+    if (isPlaying) { prevFrameRef.current = activeFrameIndex; return; }
+    const changed = prevFrameRef.current !== activeFrameIndex;
+    prevFrameRef.current = activeFrameIndex;
+    if (!changed && !wasPlaying) return;
+    const { steps, currentStepIndex, setStepIndex } = useOnboardingStore.getState();
+    const current = steps[currentStepIndex];
+    // Watching and finishing are their own steps; pausing there keeps the learner in place.
+    if (current?.type !== 'DRAW_FRAME' || current.frameIndex === activeFrameIndex) return;
+    const target = steps.findIndex((s) => s.type === 'DRAW_FRAME' && s.frameIndex === activeFrameIndex);
+    if (target !== -1) setStepIndex(target);
   }, [activeFrameIndex, isPlaying]);
 
-  // Monitor playback to automatically celebrate completion
+  // Once the learner has watched a full loop or so, the lesson is done.
   useEffect(() => {
-    if (isPlaying && stepConfig.type === 'PLAYBACK') {
-      const timer = setTimeout(() => {
-        setStepIndex(stepConfig.totalSteps - 1);
-      }, 1800);
-      return () => clearTimeout(timer);
-    }
-  }, [isPlaying, stepConfig.type, stepConfig.totalSteps, setStepIndex]);
+    if (!isPlaying || step.type !== 'PLAYBACK') return;
+    const { frames, fps } = useStudioStore.getState();
+    const loopMs = frames.reduce((sum, frame) => sum + (frame.durationMs ?? Math.round(1000 / fps)), 0);
+    const slow = usePlaygroundUi.getState().slowMotion ? 1 / 0.35 : 1;
+    const timer = setTimeout(() => {
+      useOnboardingStore.getState().setStepIndex(step.totalSteps - 1);
+    }, Math.max(1800, loopMs * slow + 300));
+    return () => clearTimeout(timer);
+  }, [isPlaying, step.type, step.totalSteps]);
 
-  // Undo / Redo handlers
-  const handleUndo = useCallback(() => {
-    studioEvents.emit('pixibun:undo');
-  }, []);
+  // Show, don't tell: the first time a learner reaches an empty frame, ghost-draw it.
+  const demoed = useRef(new Set<string>());
+  const stepFrameScore = step.frameIndex !== undefined ? scores[step.frameIndex] ?? 0 : 0;
+  useEffect(() => {
+    if (!introSeen || step.type !== 'DRAW_FRAME' || isPlaying) return;
+    const key = `${lessonId}:${step.id}`;
+    if (demoed.current.has(key)) return;
+    demoed.current.add(key);
+    if (stepFrameScore > 0) return;
+    const timer = setTimeout(() => usePlaygroundUi.getState().showDemo(), 450);
+    return () => clearTimeout(timer);
+    // Only a step change (or finishing the intro) should start a demo.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [introSeen, lessonId, step.id, step.type]);
 
-  const handleRedo = useCallback(() => {
-    studioEvents.emit('pixibun:redo');
-  }, []);
-
-  // Keyboard shortcuts in playground (Pen, Eraser, Undo, Redo, Play)
+  // Keyboard: Pen, Fill, Eraser, swap colors, Undo/Redo and Play.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isPracticeActive()) return;
       if (shouldIgnoreWorkspaceKey(e) || e.altKey) return;
       const key = workspaceShortcutKey(e);
-
+      const studio = useStudioStore.getState();
       if ((e.ctrlKey || e.metaKey) && key === 'z') {
         e.preventDefault();
-        if (e.shiftKey) {
-          handleRedo();
-        } else {
-          handleUndo();
-        }
+        studioEvents.emit(e.shiftKey ? 'pixibun:redo' : 'pixibun:undo');
         return;
       }
-
       if ((e.ctrlKey || e.metaKey) && key === 'y') {
         e.preventDefault();
-        handleRedo();
+        studioEvents.emit('pixibun:redo');
         return;
       }
-
       if (e.ctrlKey || e.metaKey) return;
       switch (key) {
-        case 'b':
-          setActiveTool('pen');
-          break;
-        case 'e':
-          setActiveTool('eraser');
-          break;
-        case 'x':
-          swapColors();
-          break;
+        case 'b': studio.setActiveTool('pen'); break;
+        case 'e': studio.setActiveTool('eraser'); break;
+        case 'g': studio.setActiveTool('bucket'); break;
+        case 'x': studio.swapColors(); break;
         case ' ':
           if (isWorkspaceControlTarget(e)) return;
           e.preventDefault();
-          setIsPlaying(!isPlaying);
+          studio.setIsPlaying(!studio.isPlaying);
           break;
-        default:
-          break;
+        default: break;
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setActiveTool, swapColors, isPlaying, setIsPlaying, handleUndo, handleRedo]);
+  }, []);
 
+  // Lesson art always sits on the same warm paper as the canvas, in day and night.
   return (
-    <div className="flex flex-col h-screen w-screen bg-[var(--desk-bg)] text-[var(--text-heading)] transition-colors duration-300 overflow-hidden select-none relative">
-      {/* Playground Top Bar */}
-      <header className="h-12 bg-[var(--desk-surface)] border-b-2 border-[var(--desk-border)] px-4 flex items-center justify-between select-none z-30 shadow-sm transition-colors duration-300">
-        {/* Left: Brand + Tutorial Badge */}
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            className="flex items-center gap-2 hover:opacity-95 transition-all group focus-visible:outline-none"
-            title="Return to PixiBun Home"
-          >
-            <PixiBunLogo
-              showSubtitle={false}
-              className="group-hover:scale-105 transition-transform drop-shadow-sm"
-            />
-            <span className="text-[9px] font-mono font-bold text-[var(--accent-gold)] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] px-1.5 py-0.5 rounded-[2px] shadow-sm select-none">
-              PLAYGROUND
-            </span>
-          </Link>
+    <div className="flex flex-col h-dvh w-screen bg-[var(--desk-bg)] text-[var(--text-heading)] overflow-hidden select-none relative"
+      style={{ '--lesson-paper': '#fbf8f2' } as React.CSSProperties}>
+      <PlaygroundTopBar />
 
-          <div className="h-4 w-px bg-[var(--desk-border)] mx-1" />
-
-          {/* Current Step Pill */}
-          <div className="flex items-center gap-1.5 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] px-2.5 py-1 rounded-[2px] text-xs font-mono">
-            <span className="text-[var(--accent-gold)] font-bold">Step {stepConfig.stepIndex + 1}:</span>
-            <span className="text-[var(--text-body)]">{stepConfig.title}</span>
+      <div id="main-workspace" tabIndex={-1} className="flex flex-1 min-h-0 outline-none">
+        <div ref={stageRef} className="relative flex-1 min-w-0 flex">
+          {/* Tracing reads best on plain paper. */}
+          <CenterViewport onCommitHistory={handleCommitHistory} fitZoom={heroZoom} plainPaper stageOverlay={<GhostOverlay template={template} />} />
+          <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 z-30">
+            <ToolDock />
+          </div>
+          <div className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 z-30">
+            <CanvasCaption />
+          </div>
+          <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 z-30">
+            <GuideControl />
           </div>
         </div>
-
-        {/* Center: Brush Size & Undo / Redo Actions */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] px-2 py-0.5 rounded-[2px]">
-            <span className="text-[10px] font-mono font-bold text-[var(--text-muted)] mr-0.5">Pen:</span>
-            {[1, 2, 3].map((sz) => (
-              <button
-                key={sz}
-                type="button"
-                onClick={() => setBrushSize(sz)}
-                className={`px-1.5 py-0.5 rounded-[1px] text-[10px] font-mono font-bold cursor-pointer transition-colors ${
-                  tools.brushSize === sz
-                    ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border border-[var(--ink)]'
-                    : 'text-[var(--text-body)] hover:text-[var(--accent-gold)]'
-                }`}
-                title={`Set Brush Size to ${sz}px`}
-              >
-                {sz}px
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <TactileButton
-              size="icon-sm"
-              variant="default"
-              disabled={!canUndo}
-              onClick={handleUndo}
-              title="Undo (Ctrl+Z)"
-              className="w-8 h-8 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)] disabled:opacity-40"
-            >
-              <PixelIcon name="undo" size={13} />
-            </TactileButton>
-
-            <TactileButton
-              size="icon-sm"
-              variant="default"
-              disabled={!canRedo}
-              onClick={handleRedo}
-              title="Redo (Ctrl+Y)"
-              className="w-8 h-8 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)] disabled:opacity-40"
-            >
-              <PixelIcon name="redo" size={13} />
-            </TactileButton>
-          </div>
-        </div>
-
-        {/* Right: Teaching Board, Theme Toggle & Skip to Studio */}
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setShowTeachingBoard(true)}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] hover:bg-[var(--surface-2)] border-2 border-[var(--ink)] text-xs font-mono font-bold text-[var(--accent-gold)] hover:text-[#fff] transition-all cursor-pointer shadow-sm active:translate-y-px"
-            title="Open 10-Frame Jump Anatomy Teaching Board"
-          >
-            <span className="text-[var(--accent-gold)]">✦</span>
-            <span>Teaching Board</span>
-          </button>
-
-          <button type="button" onClick={practice?.keep} disabled={!practice}
-            className="border-2 border-[var(--ink)] px-3 py-1.5 text-xs font-mono text-[var(--accent-gold)]">
-            Keep practice in Studio
-          </button>
-          <ThemeToggle />
-
-          <button
-            type="button"
-            onClick={practice?.returnToDrawing}
-            disabled={!practice}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] hover:bg-[var(--surface-2)] border-2 border-[var(--desk-border)] text-xs font-mono font-bold text-[var(--text-body)] hover:text-[var(--accent-gold)] transition-all cursor-pointer shadow-sm active:translate-y-px"
-            title="Restore your original drawing in Studio" aria-label="Return to drawing"
-          >
-            <span>Return to drawing</span>
-            <span className="text-[var(--accent-gold)]">➔</span>
-          </button>
-        </div>
-      </header>
-      <p className="shrink-0 px-4 py-1.5 text-center text-xs text-[var(--text-body)] bg-[var(--desk-surface-raised)] border-b border-[var(--desk-border)]">
-        A fresh sheet to try things. Keep saves a new project; Return brings your drawing back. Practice is temporary until you keep it.
-      </p>
-
-      {/* Main Workspace Area (Left Restricted Toolbar + Center Stage + Right Artisan Handbook) */}
-      <div id="main-workspace" tabIndex={-1} className="flex flex-1 overflow-hidden outline-none relative">
-        <LeftToolbar isPlaygroundMode={true} />
-        <CenterViewport onCommitHistory={handleCommitHistory} />
-        <ArtisanHandbookPanel />
+        <CoachPanel />
       </div>
 
-      {/* Bottom Timeline (Always present to preserve stable viewport dimensions) */}
-      <BottomTimeline isPlaygroundMode={true} />
+      <FilmStrip />
 
-      {/* Onboarding Interactive Spotlight Overlay */}
-      <OnboardingOverlay />
-
-      {/* 10-Frame Animation Anatomy Teaching Board Modal */}
-      <TeachingBoardModal
-        isOpen={showTeachingBoard}
-        onClose={() => setShowTeachingBoard(false)}
-      />
+      <LessonPicker />
+      <LessonCelebration />
+      <TeachingBoardModal isOpen={showTeachingBoard} onClose={() => setShowTeachingBoard(false)} />
+      <PlaygroundToast />
     </div>
   );
 };

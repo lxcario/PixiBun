@@ -4,7 +4,7 @@ import { ToolType } from '@/types/tools';
 import { CvdLensMode, CVD_FILTER_IDS, getViewportFilterCss } from '@/lib/color/cvdLens';
 import { useStudioStore } from '@/stores/studioStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
-import { TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
+import { LESSON_PALETTE } from '@/lib/art/lessonPalette';
 import { getTemplateRows, getTemplateGridSize } from '@/lib/art/playgroundLessons';
 import { compositeFrame } from '@/lib/render/compositor';
 import { getOnionSkinSpecs } from '@/lib/render/onionSkin';
@@ -167,10 +167,15 @@ export function useViewportOverlays({
       for (let x = 0; x < row.length; x++) {
         const char = row[x];
         if (char === '.') continue;
-        const color = TEMPLATE_PALETTE[char];
+        const color = LESSON_PALETTE[char];
         if (color) {
           ctx.fillStyle = color;
           ctx.fillRect(x * cellW, y * cellH, cellW, cellH);
+          // A light plum wash keeps pale fills (white, cream) readable on white paper.
+          ctx.globalAlpha = stencilOpacity * 0.28;
+          ctx.fillStyle = '#5b4a78';
+          ctx.fillRect(x * cellW, y * cellH, cellW, cellH);
+          ctx.globalAlpha = stencilOpacity;
         }
       }
     });

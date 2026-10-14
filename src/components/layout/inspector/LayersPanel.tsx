@@ -9,6 +9,46 @@ import { BlendMode } from '@/types/canvas';
 import IconButton from '@/components/ui/IconButton';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { MAX_METADATA_NAME_LENGTH } from '@/lib/project/metadataAdmission';
+import { getBufferGeneration, getBufferRevision, snapshotBuffers } from '@/lib/engine/bufferRegistry';
+import { previewSize, retainFramePreview } from '@/lib/render/framePreview';
+
+const BLEND_LABELS: Record<string, string> = {
+  'source-over': 'Normal',
+  multiply: 'Multiply',
+  screen: 'Screen',
+  overlay: 'Overlay',
+  'color-dodge': 'Color Dodge',
+  'source-atop': 'On artwork only',
+};
+
+/** A small live picture of one layer's own pixels, over a transparency checkerboard. */
+const LayerThumbnail: React.FC<{ layerId: string; hidden: boolean }> = ({ layerId, hidden }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasWidth = useStudioStore((s) => s.canvasWidth);
+  const canvasHeight = useStudioStore((s) => s.canvasHeight);
+  // Raster revisions live outside Zustand; recompute the key on store notifications.
+  const revisionKey = useStudioStore(() => `${getBufferGeneration(layerId) ?? 'none'}:${getBufferRevision(layerId)}`);
+  const size = previewSize(canvasWidth, canvasHeight, 28);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    canvas.width = size.width;
+    canvas.height = size.height;
+    const ctx = canvas.getContext('2d');
+    const entry = snapshotBuffers().get(layerId);
+    if (ctx && entry) {
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(entry.canvas, 0, 0, canvas.width, canvas.height);
+    }
+    return retainFramePreview(canvas);
+  }, [layerId, revisionKey, size.width, size.height]);
+  return (
+    <span aria-hidden="true" className={`insp-thumb w-8 h-8 shrink-0 flex items-center justify-center overflow-hidden ${hidden ? 'opacity-40' : ''}`}>
+      <canvas ref={canvasRef} width={0} height={0} className="max-w-full max-h-full pixelated" />
+    </span>
+  );
+};
 
 const EFFECT_LABELS: Record<string, string> = {
   photometric: '2.5D lighting',
@@ -103,11 +143,13 @@ export const LayersPanel: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full bg-[var(--desk-surface)]">
-      {/* 1. Flush Action Header */}
-      <div className="h-8 px-3 flex items-center justify-between bg-[var(--desk-surface-raised)]/40 border-b border-[var(--desk-border)] shrink-0">
-        <span className="text-[11px] font-sans font-medium text-[var(--text-muted)]" data-testid="layers-stack-header" title="Each frame has its own layer pixels. A new blank frame keeps the layer names and settings.">
-          Frame {activeFrameIndex + 1} · Layers <span data-testid="layers-stack-count" className="font-mono text-[10px] text-[var(--text-body)]">({currentFrame?.layers.length || 0})</span>
-        </span>
+      {/* 1. Header: what you are looking at, then the stack actions */}
+      <div className="px-3 pt-2.5 pb-2 flex items-center justify-between gap-2 shrink-0">
+        <h2 className="m-0 min-w-0 flex items-baseline gap-1.5" data-testid="layers-stack-header" title="Each frame has its own layer pixels. A new blank frame keeps the layer names and settings.">
+          <span className="text-[13px] font-bold text-[var(--text-heading)]">Layers</span>
+          <span data-testid="layers-stack-count" className="font-mono text-[10px] text-[var(--text-muted)]">({currentFrame?.layers.length || 0})</span>
+          <span className="ml-1 px-1.5 py-px rounded-full border border-[var(--desk-border)] text-[10px] font-mono text-[var(--text-body)] whitespace-nowrap">Frame {activeFrameIndex + 1}</span>
+        </h2>
         <div className="flex items-center gap-1">
           <TactileButton
             size="icon-sm"
@@ -162,56 +204,44 @@ export const LayersPanel: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Compact Active Layer Properties Strip */}
+      {/* 2. Active layer properties: room for a slider you can actually aim */}
       {activeLayer && (
-        <div className="h-8 px-2 flex items-center justify-between gap-1.5 bg-[var(--desk-surface-raised)]/30 border-b border-[var(--desk-border)] text-[10px] shrink-0">
-          <div className="flex items-center gap-1 min-w-0 flex-1">
-            <span className="text-[var(--text-muted)] font-sans text-[10px] shrink-0">Opacity</span>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="5"
-              value={Math.round(activeLayer.opacity * 100)}
-              onChange={(e) => {
-                const layerId = activeLayer.id;
-                if (setLayerOpacity(layerId, parseFloat(e.target.value) / 100, opacityGestureLayerRef.current === layerId)) {
-                  opacityGestureLayerRef.current = layerId;
-                }
-              }}
-              onPointerUp={() => { opacityGestureLayerRef.current = null; }}
-              onPointerCancel={() => { opacityGestureLayerRef.current = null; }}
-              onKeyDown={(e) => {
-                if ((e.ctrlKey || e.metaKey) && ['z', 'y'].includes(e.key.toLowerCase())) opacityGestureLayerRef.current = null;
-              }}
-              onKeyUp={() => { opacityGestureLayerRef.current = null; }}
-              onBlur={() => { opacityGestureLayerRef.current = null; }}
-              aria-label="Layer opacity"
-              className="flex-1 min-w-[32px] max-w-[48px] h-1 accent-[var(--accent-gold)] cursor-pointer shrink-0"
-            />
-            <span className="font-mono text-[10px] text-[var(--text-heading)] font-semibold w-7 text-right shrink-0 tabular-nums">
-              {Math.round(activeLayer.opacity * 100)}%
-            </span>
-          </div>
-
-          <div aria-hidden="true" className="w-px h-3.5 bg-[var(--desk-border)] shrink-0" />
-
-          <div className="flex items-center gap-1 shrink-0">
-            <span className="text-[var(--text-muted)] font-sans text-[10px] shrink-0">Blend</span>
-            <select
-              value={activeLayer.blendMode}
-              onChange={(e) => setLayerBlendMode(activeLayer.id, e.target.value as BlendMode)}
-              aria-label="Layer blend mode"
-              className="w-[74px] bg-[var(--desk-surface-raised)] text-[var(--text-heading)] px-1 py-0.5 rounded-[2px] border border-[var(--desk-border)] outline-none text-[10px] font-sans cursor-pointer hover:border-[var(--desk-border-highlight)] focus:border-[var(--accent-gold)] truncate"
-            >
-              <option value="source-over">Normal</option>
-              <option value="multiply">Multiply</option>
-              <option value="screen">Screen</option>
-              <option value="overlay">Overlay</option>
-              <option value="color-dodge">Color Dodge</option>
-              <option value="source-atop">On artwork only</option>
-            </select>
-          </div>
+        <div className="mx-3 mb-2 px-2.5 py-2 rounded-[6px] bg-[var(--surface-0)]/60 border border-[var(--desk-border)] grid grid-cols-[auto_1fr_auto] items-center gap-x-2 gap-y-1.5 text-[11px] shrink-0">
+          <span className="text-[var(--text-muted)]">Opacity</span>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="5"
+            value={Math.round(activeLayer.opacity * 100)}
+            onChange={(e) => {
+              const layerId = activeLayer.id;
+              if (setLayerOpacity(layerId, parseFloat(e.target.value) / 100, opacityGestureLayerRef.current === layerId)) {
+                opacityGestureLayerRef.current = layerId;
+              }
+            }}
+            onPointerUp={() => { opacityGestureLayerRef.current = null; }}
+            onPointerCancel={() => { opacityGestureLayerRef.current = null; }}
+            onKeyDown={(e) => {
+              if ((e.ctrlKey || e.metaKey) && ['z', 'y'].includes(e.key.toLowerCase())) opacityGestureLayerRef.current = null;
+            }}
+            onKeyUp={() => { opacityGestureLayerRef.current = null; }}
+            onBlur={() => { opacityGestureLayerRef.current = null; }}
+            aria-label="Layer opacity"
+            className="w-full min-w-0 h-1 accent-[var(--accent-gold)] cursor-pointer"
+          />
+          <output className="insp-readout">{Math.round(activeLayer.opacity * 100)}%</output>
+          <span className="text-[var(--text-muted)]">Blend</span>
+          <select
+            value={activeLayer.blendMode}
+            onChange={(e) => setLayerBlendMode(activeLayer.id, e.target.value as BlendMode)}
+            aria-label="Layer blend mode"
+            className="col-span-2 w-full bg-[var(--surface-0)] text-[var(--text-heading)] px-1.5 py-0.5 rounded-[3px] border border-[var(--desk-border)] outline-none text-[11px] font-sans cursor-pointer hover:border-[var(--desk-border-highlight)] focus:border-[var(--accent-gold)]"
+          >
+            {Object.entries(BLEND_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
         </div>
       )}
 
@@ -278,13 +308,13 @@ export const LayersPanel: React.FC = () => {
                 setDraggedLayerId(null);
                 setDropTargetLayerId(null);
               }}
-              className={`h-8 px-3 flex items-center justify-between text-xs transition-colors group ${
+              className={`relative min-h-11 pl-1.5 pr-2 py-1 flex items-center justify-between text-xs transition-colors group ${
                 isActive
-                  ? 'bg-[var(--desk-surface-raised)] border-l-2 border-l-[var(--desk-border-highlight)] text-[var(--text-heading)] font-medium'
-                  : 'text-[var(--text-body)] hover:bg-[var(--desk-surface-raised)]/40'
+                  ? 'bg-[var(--surface-3)] text-[var(--text-heading)] font-medium before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[3px] before:rounded-r before:bg-[var(--accent-gold)]'
+                  : 'text-[var(--text-body)] hover:bg-[var(--desk-surface-raised)]/50'
               } ${layer.locked ? 'opacity-70' : ''} ${dropTargetLayerId === layer.id && draggedLayerId !== layer.id ? 'outline outline-2 outline-[var(--accent-gold)] outline-offset-[-2px]' : ''} ${draggedLayerId === layer.id ? 'opacity-50' : ''}`}
             >
-              <div className="flex items-center gap-2 flex-1 min-w-0 pr-1">
+              <div className="flex items-center gap-1.5 flex-1 min-w-0 pr-1">
                 <button type="button" draggable={!isGuest && currentFrame.layers.length > 1}
                   disabled={isGuest || currentFrame.layers.length <= 1}
                   onDragStart={(event) => {
@@ -304,6 +334,7 @@ export const LayersPanel: React.FC = () => {
                   className="w-4 h-6 shrink-0 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--accent-gold)] cursor-grab active:cursor-grabbing disabled:opacity-40 disabled:cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)]">
                   <span aria-hidden="true" className="text-[13px] leading-none">⠿</span>
                 </button>
+                <LayerThumbnail layerId={layer.id} hidden={!layer.visible} />
                 {editingLayerId === layer.id ? (
                   <input
                     type="text"
@@ -343,7 +374,12 @@ export const LayersPanel: React.FC = () => {
                       aria-label={`Select layer ${layer.name}. Double click to rename`}
                       title="Click to select, double-click to rename"
                     >
-                      {layer.name}
+                      <span className={`block truncate ${layer.visible ? '' : 'line-through decoration-[var(--text-muted)] text-[var(--text-muted)]'}`}>{layer.name}</span>
+                      {(layer.opacity < 1 || layer.blendMode !== 'source-over' || layer.locked) && (
+                        <span className="block truncate text-[10px] font-normal text-[var(--text-muted)]">
+                          {[layer.opacity < 1 ? `${Math.round(layer.opacity * 100)}%` : null, layer.blendMode !== 'source-over' ? BLEND_LABELS[layer.blendMode] ?? layer.blendMode : null, layer.locked ? 'Locked' : null].filter(Boolean).join(' · ')}
+                        </span>
+                      )}
                     </button>
                     {layer.effect && (
                       <span
@@ -428,6 +464,9 @@ export const LayersPanel: React.FC = () => {
           );
         })}
       </div>
+      <p className="m-0 px-3 py-2 border-t border-dashed border-[var(--desk-border)] text-[10px] leading-4 text-[var(--text-muted)] shrink-0">
+        The top layer draws in front. Double-click a name to rename; drag <span aria-hidden="true">⠿</span> to reorder.
+      </p>
     </div>
   );
 };

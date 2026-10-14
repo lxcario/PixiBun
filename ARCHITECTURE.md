@@ -1,5 +1,21 @@
 # Architecture & System Design — PixiBun
 
+## Current source update — 15 October 2026
+
+The [source and documentation review](docs/releases/2026-10-15-codebase-and-documentation.md) covers recent main commits through `e9b5e682` and the integrated playground, homepage, inspector, theme and update changes. Earlier dated updates retain their original verification scope.
+
+| Area | Current owner and behavior |
+| --- | --- |
+| Drawing history | [pixelPatch](src/lib/engine/pixelPatch.ts) retains before/after dirty rectangles with layer offsets; [historyEngine](src/lib/engine/historyEngine.ts) defaults to 4,096 entries per stack with a combined 64 MiB payload cap. Replay baselines are separate. Motion settings retain their separate 50-entry parameter history. |
+| Selection | [selectionMask](src/lib/canvas/selectionMask.ts) constrains raster tools across tool switches. Unshifted H/V flips a selection; Shift+H/V toggles drawing symmetry. |
+| Collaboration history | [selectiveRestore](src/lib/engine/selectiveRestore.ts) restores changed RGBA cells only while their live bytes still equal the step's expected result. It preserves differing later peer pixels, not author identity for equal-color overwrites. Structural history and created-layer steps retain their separate behavior. |
+| Playback | [usePlaybackClock](src/hooks/studio/usePlaybackClock.ts) owns one elapsed-time rAF clock per workspace, preserves time across frame publications, caps one contribution at 250 ms and suspends hidden-tab time. Studio and desktop practice share it; speed is a preview multiplier. M3 scheduling qualification remains open. |
+| Playground | [PlaygroundLayout](src/components/layout/PlaygroundLayout.tsx) uses CoachPanel, ToolDock, FilmStrip and ghost/gap overlays. [lessonArt](src/lib/art/lessonArt.ts) paints all twelve curricula; [playgroundCoach](src/lib/art/playgroundCoach.ts) supplies display names and coaching. Pocket has eight 16×16 lessons plus its temporary 32×32 free pad. |
+| Homepage | [NightStory](src/components/landing/night/NightStory.tsx) follows scroll through sketch, light, motion and export; the hero reacts to Bun taps and sky drawing. [showcaseExport](src/components/landing/showcase/showcaseExport.ts) creates real animation files and image/metadata ZIP kits for its separate sample. |
+| Inspector | [InspectorKit](src/components/layout/inspector/InspectorKit.tsx) shares section, field and control styling across Tools, Layers and Palette. Timeline thumbnails are admitted while visible, and the existing Studio cards remain 72 px wide. |
+| Theme | [useLiveThemeChoice](src/stores/themeStore.ts) supplies saved palette values to canvas consumers during hydration; markup keeps server-compatible values. [themeTransition](src/lib/theme/themeTransition.ts) optionally reveals Day/Night through View Transitions, with an immediate reduced-motion/unsupported fallback. |
+| Updates | [appRestart](src/lib/system/appRestart.ts) delegates to the active Studio's real save coordinator. The initiating page saves before APPLY_UPDATE and rechecks before reload; other pages do not automatically reload. The worker retains old caches when multiple window clients exist and can read their assets through CacheStorage. See [deployment](docs/guides/deployment.md). |
+
 ## Strategy Phase 0 and 0.5 update — 14 October 2026
 
 | Area | Ownership |
@@ -27,7 +43,7 @@ Curve now has a dedicated draft/adjust/apply/cancel handler and [screen-space ha
 
 The local candidate's project hydration uses a temporary profile-free PNG decoder copy to retain raw layer samples; original stored/portable bytes and atomic publication/rollback remain intact. Timelapse receives a separately captured, ownership-checked terminal composite without mutating Undo, and GIF forwards the eviction baseline. [Storage](docs/contracts/storage.md#project-layer-png-samples) and [export](docs/contracts/exports.md) describe admission and remaining capability limits. Firefox H.264's positive support query did not produce a working encoder; WebKit's overflow fixture also stalled before the product refusal could be tested. Neither is closed by passing unit tests or the clean Motion run.
 
-Reduced decorative paint cost does not close M3's intermittent WebKit scheduling/visible-pose issue. The animation clock and frame-order expectations remain unchanged.
+At the 13 October publication, reduced decorative paint cost did not close M3's intermittent WebKit scheduling/visible-pose issue and the clock was unchanged. The current shared clock is described in the 15 October update above; extracting it does not close M3 qualification.
 
 ## Import, worker and navigation ownership — 11 October 2026
 
@@ -120,7 +136,7 @@ graph TD
         AtelierRail["AtelierRail (Project Actions, Zoom, Tool Params, CVD, Appearance)"]
         LeftRail["LeftToolbar (Categorized Tool Rails & Dual Color Wells)"]
         ViewportShell["CenterViewport (Five Logical-Size Canvases & CSS HUD)"]
-        RightStudio["RightInspector (Layers / Palettes / PixiTools)"]
+        RightStudio["RightInspector (Tools / Layers / Palette / Effects)"]
         TimelineDock["BottomTimeline (Frame Scrubbing, Onion Skin, Scrub Preview)"]
         StatusBar["StatusBar (Cursor, Tool, Canvas, Zoom)"]
         Modals["Modals (Import, Export, Resize, Palette, Shortcuts, CommandPalette)"]
@@ -130,13 +146,13 @@ graph TD
         Store["useStudioStore (Tools, Zoom, Pan, Active Layer, Palette)"]
         Theme["themeStore (8 styles from themes.json × Night / Day)"]
         BufferReg["bufferRegistry (detached HTMLCanvasElement layers)"]
-        UndoRedo["historyEngine (50-Step Undo Stack / 50-Step Redo Stack)"]
+        UndoRedo["historyEngine (4,096-Step Stacks / Combined 64 MiB Payload)"]
     end
 
     subgraph Core_Engines ["Computational & Raster Engines"]
         RasterCore["Artisan Raster Engine (Bresenham, 2:1 Iso Stepper, Bézier)"]
         MathCore["Graphics Math Engine (Felzenszwalb EDT, Sobel Normals, Blinn-Phong, Laplace AO)"]
-        PixelizeCore["Image Synthesis Engine (Gradient Salience, OKLab Median-Cut, Floyd-Steinberg)"]
+        PixelizeCore["Image-to-Pixel Engine (Gradient Salience, OKLab Median-Cut, Floyd-Steinberg)"]
         DitherCore["Dither Suite (Bayer Matrix, Atkinson, Riemersma Hilbert)"]
     end
 
@@ -204,9 +220,9 @@ Layers are maintained as detached `HTMLCanvasElement` objects indexed by layer U
 
 ### Pure History Engine (`src/lib/engine/historyEngine.ts`)
 The undo/redo ledger is independent of React rendering in `HistoryEngine`; its mutable stacks, replay baseline and memory accounting are not a mathematically pure function. Integration hooks restore canvas pixels and store metadata:
-- Undo and redo stacks are independently depth-bounded (up to 50 entries each), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope. Oldest undo steps are evicted when capacity or byte limits are reached, folding evicted steps into the Process Replay baseline checkpoint across both push and redo operations. Oldest redo entries are evicted under combined byte pressure without mutating the baseline.
+- Undo and redo stacks are independently depth-bounded (up to 4,096 entries each), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope. Oldest undo steps are evicted when capacity or byte limits are reached, folding evicted steps into the Process Replay baseline checkpoint across both push and redo operations. Oldest redo entries are evicted under combined byte pressure without mutating the baseline.
 - Invalidates the redo tail upon any new drawing action or canvas mutation.
-- Captures pre-stroke and post-stroke layer `ImageData` snapshots for deterministic pixel restoration proportional to copied raster area via `ctx.putImageData`.
+- Captures full-layer pre/post images during commit, then retains only the changed rectangle and its offset for ordinary pixel steps. The first pixel edit after structural history retains the full layer for replay continuity. Solo restoration uses `putImageData`; Co-Draw uses expected/live RGBA comparisons before restoring changed cells.
 - Provides reactive boolean getters (`canUndo`, `canRedo`) synchronized with `useStudioStore`.
 - Layer property and frame-duration edits use metadata-only structural snapshots; continuous opacity and duration controls group one interaction into one history step. History-backed structural mutations estimate both Undo and Redo snapshot sizes before changing artwork and reject over-budget edits without clearing existing history.
 
@@ -310,11 +326,11 @@ graph TD
 
 The application state is managed by Zustand with Immer middleware:
 * **`useStudioStore`:** Single source of truth for tool settings, primary/secondary colors, frame lists, layer hierarchies, zoom/pan parameters, and UI visibility.
-* **50-Step Undo History:** Undo and redo stacks are independently depth-bounded (up to 50 entries each, `createHistoryEngine(50)` matching `src/hooks/viewport/useViewportDrawing.ts`), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope. Undo/Redo restores saved pixels with `putImageData`; work scales with the affected pixel region and does not re-run unrelated effect calculations.
+* **Byte-budgeted drawing history:** Undo and redo stacks are independently depth-bounded (up to 4,096 entries each, `createHistoryEngine()` matching `src/hooks/viewport/useViewportDrawing.ts`), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope. Undo/Redo restores saved pixels with `putImageData`; work scales with the affected pixel region and does not re-run unrelated effect calculations.
 * **History Layer Lifecycle (`createdLayerId`):** When PixiTools operations (`Photometric`, `Specular`, `Cast Shadow`) create a new layer, the history snapshot tracks `createdLayerId`. Undoing the action removes the layer entirely from the frame stack and purges its buffer memory, while redoing cleanly restores it.
 * **Locked Layer Drawing Protection:** `handlePointerDown` checks `currentLayer.locked` prior to dispatching raster strokes. When locked, execution returns immediately and triggers an animated HUD warning toast (`Active layer is locked! Unlock it in the Layers panel to draw.`) with `<PixelIcon name="lock" />`.
 * **`bufferVersion` Signal & Stroke Decoupling:** A raster invalidation counter supports leaf previews and the current viewport's motion-preview subscription. Cursor coordinates remain in a separate HUD subscriber, but artwork changes can render `CenterViewport`. Subscription structure is not a measured guarantee of zero parent renders or sub-16ms interaction.
-* **Layer Merge Down (`mergeLayerDown`):** Admits editable layers, composites their visible Normal (`source-over`) contribution with opacity, and publishes a neutral raster on the lower layer with generated provenance cleared. Visible non-Normal blending is refused because its backdrop-dependent result cannot generally be flattened into an independent layer. Pixel composition/history work scales with affected area; registry deletion alone is not the cost of the whole merge.
+* **Layer Merge Down (`mergeLayerDown`):** Refuses a hidden source or destination and asks the artist to show it; admits editable visible layers, composites their visible Normal (`source-over`) contribution with opacity, and publishes a neutral raster on the lower layer with generated provenance cleared. Visible non-Normal blending is refused because its backdrop-dependent result cannot generally be flattened into an independent layer. Pixel composition/history work scales with affected area; registry deletion alone is not the cost of the whole merge.
 
 ---
 
@@ -566,7 +582,7 @@ The following describes the named browser-test fixture's database teardown, not 
 ## 21. Bitwise Normalization, Hot-Path Viewport Decoupling & Export Pipeline Hardening
 
 * **Signed vs. Unsigned 32-Bit Bitwise Invariant (`src/lib/canvas/floodFill.ts`):** JavaScript bitwise operators coerce values to 32-bit signed integers. When packing RGBA color words via `(a << 24 | b << 16 | g << 8 | r)`, any fully opaque pixel ($a = 255$) sets the sign bit (bit 31), yielding a negative number (e.g. `-16777216`). Direct comparison against values from a `Uint32Array` view (which yields unsigned integers, e.g. `4278190335`) evaluated to `false`, terminating flood fill after a single pixel on opaque regions. All 32-bit color word conversions strictly enforce unsigned casting via the zero-fill right shift operator `>>> 0`. In addition, `Uint32Array` buffer views are constructed with explicit byte offset and aligned byte length parameters `new Uint32Array(data.buffer, data.byteOffset, data.byteLength >> 2)`.
-* **Imported-Color Bucket Semantics:** The bucket passes its own 0–255 RGBA-distance tolerance to `performFloodFill` (default 24); Color Replace retains a separate exact-match default. Connected fill compares to the clicked source color, stops at nonmatching boundaries, and can optionally absorb visible, fully enclosed islands of at most eight pixels. Transparent holes, larger details, and islands open to the region boundary remain untouched. The optional island pass uses bounded typed buffers and avoids per-pixel neighbor-array allocation.
+* **Imported-Color Bucket Semantics:** The bucket passes its own 0–255 RGBA-distance tolerance to `performFloodFill` (default 0, exact RGBA match); Color Replace retains a separate exact-match default. Connected fill compares to the clicked source color, stops at nonmatching boundaries, and can optionally absorb visible, fully enclosed islands of at most eight pixels. Transparent holes, larger details, and islands open to the region boundary remain untouched. The optional island pass uses bounded typed buffers and avoids per-pixel neighbor-array allocation.
 * **Sampled Color Erasure Engine (`src/lib/canvas/eraseMatchingColor.ts`):** Erases exact or nearby shades to transparent alpha on the active layer or across animation frames. Features default color-family cleanup that removes faint background specks and repairs dark color spill embedded within outlines, respecting selection masks and locked layers with single undoable steps.
 * **Viewport Hot-Path Decoupling (`src/components/layout/CursorStatusBadge.tsx`):** Moving high-frequency cursor coordinates (`cursorCoords`) out of parent `CenterViewport.tsx` state into a standalone `CursorStatusBadge` subscriber isolates cursor updates and reduces avoidable parent rendering. Integrated stroke latency and render counts have not been established by this separation alone.
 * **Object URL Lifetime (`src/components/modals/ExportModal.tsx`):** The modal's anchor-download helper delays revocation by 1,000 ms so the browser can begin consuming the Blob. Native file writes and other export/backup adapters own different lifetimes. This is a lifetime policy, not proof that every codec or browser uses the same path.
@@ -708,7 +724,7 @@ To ensure that the 2.5D Photometric Studio delivers mathematically sound volumet
 
 ### Audit clarifications (2026-09-19; updated Phase 74)
 
-Undo and redo stacks are independently depth-bounded to 50 entries each and share one 64 MiB combined retained HistoryStep byte envelope, and are not serialized. Export scale selection is automatically reduced when canvas dimensions make a previous choice unsafe. Squint preview takes precedence over a selected CVD lens. CRDT merge uses per-pixel clock comparison and deterministic peer-ID tie-breaking; mixed legacy timestamp/HLC inputs follow the normalization in `crdtPixelBuffer.ts`. This is not a certification of convergence for every full-app workflow. Reliable co-draw messages now remain in a bounded queue until acknowledged and are retried after congestion; explicit disconnect discards that session queue, and a new session starts from the host snapshot. Both peers must run the acknowledgment-capable protocol.
+Undo and redo stacks are independently depth-bounded to 4,096 entries each and share one 64 MiB combined retained HistoryStep byte envelope, and are not serialized. Export scale selection is automatically reduced when canvas dimensions make a previous choice unsafe. Squint preview takes precedence over a selected CVD lens. CRDT merge uses per-pixel clock comparison and deterministic peer-ID tie-breaking; mixed legacy timestamp/HLC inputs follow the normalization in `crdtPixelBuffer.ts`. This is not a certification of convergence for every full-app workflow. Reliable co-draw messages now remain in a bounded queue until acknowledged and are retried after congestion; explicit disconnect discards that session queue, and a new session starts from the host snapshot. Both peers must run the acknowledgment-capable protocol.
 
 ---
 
@@ -769,7 +785,7 @@ The monolithic pointer event architecture has been decomposed into dedicated per
 | `useArtisanEvents` | Freehand drawing event dispatch and Bresenham raster loops | `src/hooks/viewport/events/useArtisanEvents.ts` |
 | `useGeometricEvents` | Generated shading, normals, shadows, outlines and source-owned layer rotation | `src/hooks/viewport/events/useGeometricEvents.ts` |
 | `useViewportStudioEvents` | Central event coordinator orchestrating pointer capture and tools | `src/hooks/viewport/useViewportStudioEvents.ts` |
-| `useViewportDrawing` | Pixel snapshots, history binding, Undo/Redo and structural restoration | `src/hooks/viewport/useViewportDrawing.ts` |
+| `useViewportDrawing` | Dirty-rectangle history, selective Co-Draw Undo/Redo and structural restoration | `src/hooks/viewport/useViewportDrawing.ts` |
 
 
 ### Dual-Axis Theme Architecture
@@ -796,7 +812,7 @@ The tool preview architecture (`src/components/ui/ToolMotionPreview.tsx`, `src/c
 
 ## 29. Teaching Animation Board & Playground Education System
 
-The Playground (`/playground`) includes guided lessons and an interactive Teaching Animation Board. Below 1024 px only Pocket Doodle Pad mounts.
+The Playground (`/playground`) includes twelve coached desktop lessons, a tool dock, pose previews/ghost demos, progress and gap feedback, and a timing-aware filmstrip. The old OnboardingOverlay and ArtisanHandbookPanel have been removed. The Teaching Animation Board remains available from the header or lesson picker. Below 1024 px only Pocket Doodle Pad mounts, with eight 16×16 lessons and a separate 32×32 free doodle.
 
 Desktop `PracticeWorkspace` awaits the original Studio save before `practiceSession` detaches its full store snapshot, raster references and native-file association. Practice uses a new project identity and separate history. Return or route cleanup restores the original; Keep confirms a separate save and adopts its version into Studio. The viewport retains one project-keyed history engine across client-route handoffs; project-open history clear still applies. A verified session-storage pointer selects the saved original after refresh, through normal admission. Unkept practice, Undo history and OS file handles are not durable across reload. Co-Draw blocks entry. See [learning custody](docs/contracts/learning.md), [storage handoff](docs/contracts/storage.md) and [phase 2 checks (local archive)](docs/archives.md#record-docs-research-2026-10-02-feature-repairs-phase2-md).
 

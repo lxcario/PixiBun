@@ -3,10 +3,10 @@
 import React from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { CANONICAL_TOOLS } from '@/config/shortcuts';
-import type { DitherMatrixType } from '@/types/tools';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { TactileButton } from '@/components/ui/TactileButton';
+import { InspectorSection, InspectorNote, RangeRow, SelectRow, ToggleRow } from './InspectorKit';
 import { captureMotionPart } from '@/lib/animation/pixiMotion';
 import { prepareMotionArtwork } from '@/lib/animation/prepareMotionArtwork';
 import { snapshotBuffers } from '@/lib/engine/bufferRegistry';
@@ -68,342 +68,243 @@ export function ToolSettingsPanel() {
 
   const meta = CANONICAL_TOOLS.find((tool) => tool.id === t.activeTool);
   const isBrushTool = ['pen', 'eraser', 'curve', 'dither', 'line', 'isometric-line', 'rectangle', 'ellipse'].includes(t.activeTool);
+  const isSelectTool = t.activeTool.startsWith('select-');
 
-  const checkbox = (
-    label: string,
-    checked: boolean,
-    change: (value: boolean) => void,
-    help?: string
-  ) => (
-    <label className="flex items-start gap-2.5 text-xs py-1 cursor-pointer select-none group">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => change(e.target.checked)}
-        className="mt-0.5 accent-[var(--accent-gold)] rounded-[2px] cursor-pointer"
-      />
-      <span className="flex-1">
-        <span className="font-medium text-[var(--text-heading)] group-hover:text-[var(--accent-gold)] transition-colors">
-          {label}
-        </span>
-        {help && (
-          <span className="block text-[11px] text-[var(--text-muted)] mt-0.5 leading-relaxed">
-            {help}
-          </span>
-        )}
-      </span>
-    </label>
-  );
-
-  const range = (
-    label: string,
-    value: number,
-    min: number,
-    max: number,
-    step: number,
-    change: (value: number) => void,
-    unit: string = ''
-  ) => (
-    <div className="space-y-1.5 text-xs">
-      <div className="flex justify-between items-center">
-        <span className="font-medium text-[var(--text-body)]">{label}</span>
-        <span className="font-mono text-[11px] tabular-nums px-1.5 py-0.5 rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-[var(--text-heading)] font-bold">
-          {value}{unit}
-        </span>
-      </div>
-      <input
-        aria-label={`Tool panel ${label.toLowerCase()}`}
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => change(Number(e.target.value))}
-        className="w-full h-2 accent-[var(--accent-gold)] cursor-pointer bg-[var(--surface-0)] rounded-full"
-      />
-    </div>
-  );
-
-  return (
-    <section aria-label="Detailed tool settings" className="p-2.5 space-y-2.5 text-[var(--text-heading)] select-none">
-      {/* 1. Active Tool Identity Card */}
-      <div className="flex items-center gap-2.5 p-2.5 rounded-[4px] bg-[var(--desk-surface-raised)]/60 border border-[var(--desk-border)] shadow-xs">
-        <div className="w-8 h-8 rounded-[3px] bg-[var(--surface-0)] border border-[var(--accent-gold)] flex items-center justify-center shrink-0 shadow-xs text-[var(--accent-gold)]">
-          <PixelIcon name={meta?.icon ?? 'pen'} size={16} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <h2 className="text-xs font-bold text-[var(--text-heading)] truncate">
-              {meta?.label ?? 'Tool Settings'}
-            </h2>
-            {meta?.shortcut && (
-              <kbd className="px-1.5 py-0.5 rounded-[2px] bg-[var(--surface-1)] border border-[var(--desk-border)] font-mono text-[9px] text-[var(--accent-gold)] font-bold">
-                {meta.shortcut}
-              </kbd>
-            )}
-          </div>
-          <p className="text-[10px] text-[var(--text-muted)] truncate mt-0.5">
-            {meta?.group ?? 'Drawing'} Tool Controls
-          </p>
-        </div>
-      </div>
-
-      {/* 2. Brush Size & Quick Presets (Pen, Eraser, Curve, Shapes, Dither) */}
-      {isBrushTool && (
-        <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-2.5 shadow-xs">
-          {range('Brush size', t.brushSize, 1, 32, 1, state.setBrushSize, 'px')}
-          <div className="flex gap-1" aria-label="Tool panel brush presets">
-            {[1, 2, 3, 4, 8, 16].map((size) => (
-              <button
-                key={size}
-                type="button"
-                onClick={() => state.setBrushSize(size)}
-                aria-pressed={t.brushSize === size}
-                className={`flex-1 py-1 rounded-[2px] border text-xs font-mono font-bold cursor-pointer transition-colors ${
-                  t.brushSize === size
-                    ? 'bg-[var(--accent-gold)] text-[var(--surface-0)] border-[var(--accent-gold)] shadow-xs'
-                    : 'bg-[var(--surface-1)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--text-muted)]'
-                }`}
-              >
-                {size}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 3. Specific Tool Settings */}
-      {['pen', 'curve'].includes(t.activeTool) && (
-        <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] shadow-xs">
-          {checkbox('Clean corners', t.pixelPerfect, state.setPixelPerfect, 'Removes doubled corner pixels (L-shapes) when drawing single-pixel lines.')}
-        </div>
-      )}
-
-      {t.activeTool === 'curve' && (
-        <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] shadow-xs">
-          {range('Curve tightness', t.curveTightness, 0.1, 1, 0.05, state.setCurveTightness)}
-        </div>
-      )}
-
-      {['rectangle', 'ellipse'].includes(t.activeTool) && (
-        <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] shadow-xs">
-          {checkbox('Filled shape', t.shapeFilled, state.setShapeFilled, 'Fill the inner area of the geometric shape with foreground color.')}
-        </div>
-      )}
-
-      {t.activeTool === 'isometric-line' && (
-        <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] shadow-xs">
-          {checkbox('Snap to 2:1 slope', t.isoAngleSnap, state.setIsoAngleSnap, 'Constrains drawn angles to classic 26.565° isometric pixel slopes.')}
-        </div>
-      )}
-
-      {t.activeTool === 'bucket' && (
-        <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-2.5 shadow-xs">
-          {checkbox('Connected pixels only', t.bucketContiguous, state.setBucketContiguous, 'Fill contiguous area only, rather than all matching pixels on the layer.')}
-          {range('Fill tolerance', t.fillTolerance, 0, 255, 1, state.setFillTolerance)}
-          {t.bucketContiguous && checkbox('Fill enclosed specks', t.fillEnclosedSpecks, state.setFillEnclosedSpecks, 'Also replace enclosed islands up to 8 pixels.')}
-        </div>
-      )}
-
-      {['color-replace', 'select-wand'].includes(t.activeTool) && (
-        <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-2.5 shadow-xs">
-          {range('Color tolerance', t.bucketTolerance, 0, 255, 1, state.setBucketTolerance)}
-          {t.activeTool === 'select-wand' && checkbox('Connected pixels only', t.bucketContiguous, state.setBucketContiguous)}
-        </div>
-      )}
-
-      {t.activeTool === 'erase-color' && (
-        <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-2 shadow-xs">
-          {range('Erase tolerance', t.eraseColorTolerance, 0, 255, 1, state.setEraseColorTolerance)}
-          {checkbox('Connected pixels only', t.eraseColorContiguous, state.setEraseColorContiguous)}
-          {checkbox('Match color family', t.eraseColorFamily, state.setEraseColorFamily)}
-          {checkbox('Across all frames', t.eraseColorAllFrames, state.setEraseColorAllFrames, 'Uses the same layer position in each frame and skips locked layers.')}
-        </div>
-      )}
-
-      {t.activeTool === 'dither' && (
-        <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-3 shadow-xs">
-          <label className="block text-xs space-y-1">
-            <span className="font-medium text-[var(--text-body)]">Dither Matrix Pattern</span>
-            <select
-              aria-label="Tool panel dither pattern"
+  const optionsBody = (() => {
+    switch (t.activeTool) {
+      case 'curve':
+        return <RangeRow label="Curve tightness" value={t.curveTightness} min={0.1} max={1} step={0.05} onChange={state.setCurveTightness} />;
+      case 'rectangle':
+      case 'ellipse':
+        return <ToggleRow label="Filled shape" checked={t.shapeFilled} onChange={state.setShapeFilled} hint="Fill the inside with the foreground color." />;
+      case 'isometric-line':
+        return <ToggleRow label="Snap to 2:1 slope" checked={t.isoAngleSnap} onChange={state.setIsoAngleSnap} hint="Locks lines to the classic 26.565° isometric pixel slope." />;
+      case 'bucket':
+        return (
+          <>
+            <ToggleRow label="Connected pixels only" checked={t.bucketContiguous} onChange={state.setBucketContiguous} hint="Off fills every matching pixel on the layer." />
+            <RangeRow label="Fill tolerance" value={t.fillTolerance} min={0} max={255} step={1} onChange={state.setFillTolerance} />
+            {t.bucketContiguous && <ToggleRow label="Fill enclosed specks" checked={t.fillEnclosedSpecks} onChange={state.setFillEnclosedSpecks} hint="Also replaces enclosed islands up to 8 pixels." />}
+          </>
+        );
+      case 'color-replace':
+      case 'select-wand':
+        return (
+          <>
+            <RangeRow label="Color tolerance" value={t.bucketTolerance} min={0} max={255} step={1} onChange={state.setBucketTolerance} />
+            {t.activeTool === 'select-wand' && <ToggleRow label="Connected pixels only" checked={t.bucketContiguous} onChange={state.setBucketContiguous} />}
+          </>
+        );
+      case 'erase-color':
+        return (
+          <>
+            <RangeRow label="Erase tolerance" value={t.eraseColorTolerance} min={0} max={255} step={1} onChange={state.setEraseColorTolerance} />
+            <ToggleRow label="Connected pixels only" checked={t.eraseColorContiguous} onChange={state.setEraseColorContiguous} />
+            <ToggleRow label="Match color family" checked={t.eraseColorFamily} onChange={state.setEraseColorFamily} />
+            <ToggleRow label="Across all frames" checked={t.eraseColorAllFrames} onChange={state.setEraseColorAllFrames} hint="Uses the same layer in each frame and skips locked layers." />
+          </>
+        );
+      case 'dither':
+        return (
+          <>
+            <SelectRow
+              label="Pattern"
+              ariaLabel="Tool panel dither pattern"
               value={t.ditherMatrix}
-              onChange={(e) => state.setDitherMatrix(e.target.value as DitherMatrixType)}
-              className="block w-full p-1.5 bg-[var(--surface-1)] border border-[var(--desk-border)] rounded-[2px] text-xs font-mono text-[var(--text-heading)] cursor-pointer"
-            >
-              {[
+              onChange={(value) => state.setDitherMatrix(value)}
+              options={[
                 ['2x2', 'Bayer 2×2'],
                 ['4x4', 'Bayer 4×4'],
                 ['8x8', 'Bayer 8×8'],
                 ['blue-noise', 'Blue noise'],
                 ['atkinson', 'Atkinson'],
-              ].map(([id, label]) => (
-                <option key={id} value={id}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
-          {range('Dither density', t.ditherDensity, 0.1, 0.9, 0.05, state.setDitherDensity)}
-          <TactileButton
-            size="sm"
-            variant="default"
-            onClick={() => state.addLayer('Dither Pass')}
-            className="w-full justify-center text-xs"
-          >
-            <PixelIcon name="plus" size={11} /> ＋ New Layer for Dither
-          </TactileButton>
-        </div>
-      )}
-
-      {/* 4. Pixel Gradient / Dither Tool Settings with "Draw on new layer" */}
-      {t.activeTool === 'gradient' && (
-        <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-3 shadow-xs">
-          <label className="block text-xs space-y-1">
-            <span className="font-medium text-[var(--text-body)]">Gradient Shape</span>
-            <select
-              aria-label="Gradient shape"
+              ]}
+            />
+            <RangeRow label="Density" ariaLabel="Tool panel dither density" value={t.ditherDensity} min={0.1} max={0.9} step={0.05} onChange={state.setDitherDensity} format={(v) => String(Math.round(v * 100))} unit="%" />
+            <TactileButton size="sm" variant="default" onClick={() => state.addLayer('Dither Pass')} className="w-full justify-center text-xs mt-1">
+              <PixelIcon name="plus" size={11} /> New layer for dither
+            </TactileButton>
+          </>
+        );
+      case 'gradient':
+        return (
+          <>
+            <SelectRow
+              label="Shape"
+              ariaLabel="Gradient shape"
               value={gradient.shape}
-              onChange={(e) => setGradient({ shape: e.target.value as 'linear' | 'radial' })}
-              className="block w-full p-1.5 bg-[var(--surface-1)] border border-[var(--desk-border)] rounded-[2px] text-xs text-[var(--text-heading)] cursor-pointer"
-            >
-              <option value="linear">Linear Gradient</option>
-              <option value="radial">Radial Gradient</option>
-            </select>
-          </label>
-
-          <label className="block text-xs space-y-1">
-            <span className="font-medium text-[var(--text-body)]">Color Ramp Source</span>
-            <select
-              aria-label="Gradient colors"
+              onChange={(shape) => setGradient({ shape })}
+              options={[['linear', 'Linear'], ['radial', 'Radial']] as const}
+            />
+            <SelectRow
+              label="Colors"
+              ariaLabel="Gradient colors"
               value={gradient.ramp}
-              onChange={(e) => setGradient({ ramp: e.target.value as 'foreground' | 'palette' })}
-              className="block w-full p-1.5 bg-[var(--surface-1)] border border-[var(--desk-border)] rounded-[2px] text-xs text-[var(--text-heading)] cursor-pointer"
-            >
-              <option value="foreground">Foreground → Background</option>
-              <option value="palette">Active palette, in order</option>
-            </select>
-          </label>
+              onChange={(ramp) => setGradient({ ramp })}
+              options={[['foreground', 'Foreground → background'], ['palette', 'Active palette, in order']] as const}
+            />
+            <ToggleRow label="Bayer 4×4 dithering" checked={gradient.dither} onChange={(dither) => setGradient({ dither })} hint="Interleaves pixels for a retro shaded blend." />
+            <ToggleRow label="Draw on new layer" checked={gradient.newLayer} onChange={(newLayer) => setGradient({ newLayer })} hint="Keeps existing artwork untouched." />
+            <div className="pt-1">
+              <InspectorNote>Drag across the canvas to set the direction. With a selection, only the selected area fills.</InspectorNote>
+            </div>
+          </>
+        );
+      case 'normal-chisel':
+        return (
+          <>
+            <RangeRow label="Chisel width" value={t.chiselWidth} min={1} max={32} step={1} onChange={state.setChiselWidth} unit="px" />
+            <RangeRow label="Azimuth" value={t.chiselAzimuth} min={0} max={360} step={1} onChange={state.setChiselAzimuth} unit="°" />
+            <RangeRow label="Incline" value={t.chiselIncline} min={15} max={75} step={1} onChange={state.setChiselIncline} unit="°" />
+            <ToggleRow label="Ridge mode" checked={t.chiselRidgeMode} onChange={state.setChiselRidgeMode} />
+            <SelectRow
+              label="Normal blending"
+              ariaLabel="Tool panel normal blending"
+              value={t.normalBlendMode}
+              onChange={(value) => state.setNormalBlendMode(value)}
+              options={[['rnm', 'RNM'], ['udn', 'UDN'], ['overwrite', 'Replace']] as const}
+            />
+          </>
+        );
+      case 'eyedropper':
+        return <InspectorNote icon="eyedropper">Click anywhere on the artwork to pick its color into the foreground swatch.</InspectorNote>;
+      default:
+        return null;
+    }
+  })();
 
-          {checkbox('Bayer 4×4 dithering', gradient.dither, (dither) => setGradient({ dither }), 'Interleaves pixels using Bayer pattern for retro shaded transitions.')}
-          {checkbox('Draw on new layer', gradient.newLayer, (newLayer) => setGradient({ newLayer }), 'Automatically creates a new layer for the dither pass so existing artwork is preserved.')}
-
-          <p className="text-[10px] leading-relaxed text-[var(--text-muted)] bg-[var(--surface-1)]/50 p-2 rounded-[2px] border border-[var(--desk-border)]/50">
-            Drag across the canvas to define direction. If a selection is active, only the selected area is filled.
+  return (
+    <section aria-label="Detailed tool settings" className="text-[var(--text-heading)] select-none">
+      {/* Active tool: what it is, its key, and one line on how to use it */}
+      <div className="px-3 pt-3 pb-3 flex items-start gap-2.5">
+        <div className="insp-tool-badge w-9 h-9 flex items-center justify-center shrink-0">
+          <PixelIcon name={meta?.icon ?? 'pen'} size={17} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <h2 className="text-[13px] font-bold text-[var(--text-heading)] truncate">{meta?.label ?? 'Tool settings'}</h2>
+            {meta?.shortcut && <kbd className="insp-kbd" title="Keyboard shortcut">{meta.shortcut}</kbd>}
+          </div>
+          <p className="text-[11px] leading-4 text-[var(--text-muted)] mt-0.5">
+            {TOOL_HINTS[t.activeTool] ?? `${meta?.group ?? 'Drawing'} tool`}
           </p>
         </div>
+      </div>
+
+      {isBrushTool && (
+        <InspectorSection title="Stroke" meta={<span className="font-mono">{t.brushSize}px</span>}>
+          <div className="grid grid-cols-6 gap-1 mb-1.5" role="group" aria-label="Tool panel brush presets">
+            {BRUSH_PRESETS.map((size) => {
+              const active = t.brushSize === size;
+              const dot = Math.min(size + 1, 14);
+              return (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => state.setBrushSize(size)}
+                  aria-pressed={active}
+                  aria-label={`${size} pixel brush`}
+                  title={`${size}px`}
+                  className={`h-10 flex flex-col items-center justify-end gap-1 pb-1 rounded-[4px] border cursor-pointer transition-colors ${
+                    active
+                      ? 'bg-[var(--surface-3)] border-[var(--accent-gold)] text-[var(--accent-gold)]'
+                      : 'bg-[var(--surface-0)] border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
+                  }`}
+                >
+                  <span aria-hidden="true" className="flex-1 flex items-center">
+                    <span className="block bg-current" style={{ width: dot, height: dot }} />
+                  </span>
+                  <span className="text-[9px] font-mono font-bold leading-none">{size}</span>
+                </button>
+              );
+            })}
+          </div>
+          <RangeRow label="Brush size" value={t.brushSize} min={1} max={32} step={1} onChange={state.setBrushSize} unit="px" />
+          {['pen', 'curve'].includes(t.activeTool) && (
+            <ToggleRow label="Clean corners" checked={t.pixelPerfect} onChange={state.setPixelPerfect} hint="Removes doubled corner pixels from 1px lines." />
+          )}
+        </InspectorSection>
       )}
 
-      {t.activeTool === 'normal-chisel' && (
-        <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-2 shadow-xs">
-          {range('Chisel width', t.chiselWidth, 1, 32, 1, state.setChiselWidth)}
-          {range('Azimuth', t.chiselAzimuth, 0, 360, 1, state.setChiselAzimuth)}
-          {range('Incline', t.chiselIncline, 15, 75, 1, state.setChiselIncline)}
-          {checkbox('Ridge mode', t.chiselRidgeMode, state.setChiselRidgeMode)}
-          <label className="block text-xs space-y-1">
-            <span>Normal blending</span>
-            <select
-              aria-label="Tool panel normal blending"
-              value={t.normalBlendMode}
-              onChange={(e) => state.setNormalBlendMode(e.target.value as 'rnm' | 'udn' | 'overwrite')}
-              className="block w-full p-1.5 bg-[var(--surface-1)] border border-[var(--desk-border)] rounded-[2px] text-xs"
-            >
-              <option value="rnm">RNM</option>
-              <option value="udn">UDN</option>
-              <option value="overwrite">Replace</option>
-            </select>
-          </label>
-        </div>
-      )}
+      {optionsBody && <InspectorSection title={t.activeTool === 'eyedropper' ? 'How to use' : 'Options'}>{optionsBody}</InspectorSection>}
 
-      {t.activeTool.startsWith('select-') && (
+      {isSelectTool && (
         <>
-          <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-2 shadow-xs">
-            <span className="font-bold text-xs text-[var(--text-heading)]">Rotation Engine</span>
-            <select
-              aria-label="Rotation algorithm"
+          <InspectorSection title="Rotation">
+            <SelectRow
+              label="Engine"
+              ariaLabel="Rotation algorithm"
               value={t.rotationAlgorithm ?? 'rotsprite'}
-              onChange={(e) => state.setRotationAlgorithm(e.target.value as 'rotsprite' | 'paeth')}
-              className="block w-full p-1.5 bg-[var(--surface-1)] border border-[var(--desk-border)] rounded-[2px] text-xs text-[var(--text-heading)] cursor-pointer"
-            >
-              <option value="rotsprite">RotSprite v2 (Contours & Outlines)</option>
-              <option value="paeth">Paeth 3-Shear (Dither & Textures)</option>
-            </select>
-            <p className="text-[10px] leading-relaxed text-[var(--text-muted)]">
+              onChange={(value) => state.setRotationAlgorithm(value)}
+              options={[['rotsprite', 'RotSprite — outlines & cel shapes'], ['paeth', 'Paeth shear — dither & textures']] as const}
+            />
+            <p className="text-[11px] leading-4 text-[var(--text-muted)] pt-1">
               {(t.rotationAlgorithm ?? 'rotsprite') === 'rotsprite'
-                ? '8× subpixel majority voting & contour refinement. Best for clean character outlines and cel shapes.'
-                : 'Area-preserving 1D shear decomposition. Strictly preserves pixel count and dither without Moiré clumping.'}
+                ? 'Keeps character outlines clean when rotating.'
+                : 'Keeps every pixel and dither pattern, without moiré clumps.'}
             </p>
-          </div>
-
-          <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-1.5 text-xs shadow-xs">
-            <p className="font-medium text-[var(--text-heading)]">Selection Shortcuts</p>
-            <ul className="text-[11px] text-[var(--text-muted)] space-y-1 list-disc list-inside">
-              <li><kbd className="font-mono text-[var(--accent-gold)]">Shift</kbd> + drag: Add to selection</li>
-              <li><kbd className="font-mono text-[var(--accent-gold)]">Alt</kbd> + drag: Subtract from selection</li>
-              <li>Drag handles to resize, rotate, or move</li>
-              <li><kbd className="font-mono text-[var(--accent-gold)]">Enter</kbd>: Commit transform</li>
-              <li><kbd className="font-mono text-[var(--accent-gold)]">Esc</kbd>: Cancel / deselect</li>
-            </ul>
-          </div>
+          </InspectorSection>
+          <InspectorSection title="Shortcuts">
+            <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-[11px] items-center m-0">
+              {SELECTION_KEYS.map(([keys, what]) => (
+                <React.Fragment key={what}>
+                  <dt className="flex gap-1">{keys.map((k) => <kbd key={k} className="insp-kbd">{k}</kbd>)}</dt>
+                  <dd className="m-0 text-[var(--text-body)]">{what}</dd>
+                </React.Fragment>
+              ))}
+            </dl>
+          </InspectorSection>
         </>
       )}
 
-      {t.activeTool === 'eyedropper' && (
-        <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] text-xs text-[var(--text-muted)] shadow-xs">
-          Click anywhere on the artwork to sample its color into the foreground swatch.
+      <InspectorSection title="Guides">
+        <div className="grid grid-cols-2 gap-1.5 mb-1" role="group" aria-label="Mirror drawing">
+          {([
+            ['Horizontal mirror', 'symmetry-h', 'Shift+H', t.symmetryHorizontal, state.toggleSymmetryH, 'Mirror ↔'],
+            ['Vertical mirror', 'symmetry-v', 'Shift+V', t.symmetryVertical, state.toggleSymmetryV, 'Mirror ↕'],
+          ] as const).map(([label, icon, keys, on, toggle, short]) => (
+            <button
+              key={label}
+              type="button"
+              aria-pressed={on}
+              aria-label={label}
+              title={`${label} (${keys})`}
+              onClick={() => toggle()}
+              className={`h-8 px-2 flex items-center justify-center gap-1.5 rounded-[4px] border text-[11px] font-semibold cursor-pointer transition-colors ${
+                on
+                  ? 'bg-[var(--surface-3)] border-[var(--accent-gold)] text-[var(--accent-gold)]'
+                  : 'bg-[var(--surface-0)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
+              }`}
+            >
+              <PixelIcon name={icon} size={12} />
+              {short}
+            </button>
+          ))}
         </div>
-      )}
+        <SelectRow
+          label="Composition overlay"
+          ariaLabel="Composition guide"
+          value={state.referenceOverlay}
+          onChange={(value) => state.setReferenceOverlay(value)}
+          options={[
+            ['none', 'Off'],
+            ['thirds', 'Rule of thirds'],
+            ['golden', 'Golden ratio'],
+            ['center', 'Center crosshair'],
+            ['diagonals', 'Diagonals'],
+            ['safe', 'Safe area (10%)'],
+          ] as const}
+        />
+      </InspectorSection>
 
-      {/* 5. Drawing Guides Card */}
-      <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-2 shadow-xs">
-        <h3 className="text-xs font-bold text-[var(--text-heading)]">Symmetry & Composition</h3>
-        {checkbox('Horizontal mirror (Shift+H)', t.symmetryHorizontal, (value) => {
-          if (value !== t.symmetryHorizontal) state.toggleSymmetryH();
-        })}
-        {checkbox('Vertical mirror (Shift+V)', t.symmetryVertical, (value) => {
-          if (value !== t.symmetryVertical) state.toggleSymmetryV();
-        })}
-        <label className="block text-xs space-y-1">
-          <span className="font-medium text-[var(--text-body)]">Composition Guide</span>
-          <select
-            aria-label="Composition guide"
-            value={state.referenceOverlay}
-            onChange={(e) => state.setReferenceOverlay(e.target.value as typeof state.referenceOverlay)}
-            className="block w-full p-1.5 bg-[var(--surface-1)] border border-[var(--desk-border)] rounded-[2px] text-xs text-[var(--text-heading)] cursor-pointer"
-          >
-            {[
-              ['none', 'Off'],
-              ['thirds', 'Rule of thirds'],
-              ['golden', 'Golden ratio'],
-              ['center', 'Center crosshair'],
-              ['diagonals', 'Diagonals'],
-              ['safe', 'Safe area (10%)'],
-            ].map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-
-      {/* 6. Quick PixiMotion Helper Card */}
       {!state.motionPart && (
-        <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-2 shadow-xs">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-xs flex items-center gap-1.5 text-[var(--accent-gold)]">
-              <PixelIcon name="rotate" size={12} />
-              PixiMotion
-            </h3>
-            <span className="text-[9px] font-mono text-[var(--text-muted)]">Rig &amp; Animate</span>
-          </div>
-          <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
+        <InspectorSection title="Animate" icon="rotate" meta="PixiMotion">
+          <p className="text-[11px] leading-4 text-[var(--text-muted)] mb-2">
             {state.selection
-              ? 'Animate selected artwork as one rigid part.'
-              : 'Animate active layer as a rigid part, or select an area first.'}
+              ? 'Turn the selected pixels into one rigid part you can pose and tween.'
+              : 'Turn the active layer into a rigid part you can pose and tween. Select an area first to animate only that piece.'}
           </p>
-          <div className="flex flex-col gap-1.5 pt-0.5">
+          <div className="flex flex-col gap-1.5">
             <TactileButton
               variant="primary"
               size="sm"
@@ -426,11 +327,41 @@ export function ToolSettingsPanel() {
               className="w-full text-[11px] justify-center h-7 text-[var(--text-body)]"
               title="Combines visible color layers first. Cancel, then Undo restores the layers."
             >
-              Merge artwork &amp; animate
+              Merge visible layers &amp; animate
             </TactileButton>
           </div>
-        </div>
+        </InspectorSection>
       )}
     </section>
   );
 }
+
+const BRUSH_PRESETS = [1, 2, 3, 4, 8, 16] as const;
+
+const SELECTION_KEYS: ReadonlyArray<readonly [string[], string]> = [
+  [['Shift'], 'Drag to add'],
+  [['Alt'], 'Drag to subtract'],
+  [['Enter'], 'Apply transform'],
+  [['Esc'], 'Cancel or deselect'],
+];
+
+/** One plain sentence per tool: what it does and the most useful modifier. */
+const TOOL_HINTS: Partial<Record<string, string>> = {
+  pen: 'Draw pixel by pixel. Right-click paints the background color.',
+  curve: 'Drag to place a curve, then pull its handles. Enter applies.',
+  eraser: 'Clear pixels back to transparency.',
+  bucket: 'Fill an area of matching color.',
+  gradient: 'Drag across the art to lay down a stepped color blend.',
+  dither: 'Paint an ordered pattern between two colors.',
+  'color-replace': 'Swap one color for the foreground color where you paint.',
+  'erase-color': 'Erase only the pixels that match the color you click.',
+  'select-box': 'Drag a rectangle to select it. Drag inside to move.',
+  'select-lasso': 'Draw around any shape to select it.',
+  'select-wand': 'Click to select a region of similar color.',
+  line: 'Drag to draw a straight line.',
+  'isometric-line': 'Draw clean 2:1 lines for isometric art.',
+  rectangle: 'Drag to draw a box.',
+  ellipse: 'Drag to draw an ellipse.',
+  'normal-chisel': 'Carve bevels into a normal map for 2.5D lighting.',
+  eyedropper: 'Pick a color from the artwork.',
+};

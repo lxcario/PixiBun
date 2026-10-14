@@ -6,7 +6,7 @@ For the tested revision and remaining accessibility, device and host checks, see
 
 ![The five task choices in the current PixiTools panel.](../assets/screenshots/2026-10-02-feature-guide/pixitools-chooser.png)
 
-Choose **PixiTools** in the right inspector, then choose a task. **Choose another task** brings you back; **Browse all tools** shows the sections together. The task choice is remembered for the browser session. The five current groups are **Add light and depth**, **Build tiles and patterns**, **Clean and refine**, **Review animation**, and **Try a new look**.
+Choose **Effects** (the PixiTools tab) in the right inspector, then choose a task. **Choose another task** brings you back; **Browse all tools** shows the sections together. The task choice is remembered for the browser session. The five current groups are **Add light and depth**, **Build tiles and patterns**, **Clean and refine**, **Review animation**, and **Try a new look**.
 
 These are local tools with bounded algorithms. A folder named `ai` in the source does not mean an AI image service or trained model is shipped. Some actions commit immediately; the guide calls those out below.
 

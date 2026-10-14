@@ -1,6 +1,9 @@
 // Dedicated master lesson templates and animation theory for the PixiBun Playground.
 // Grounded in verified classical animation principles adapted to discrete pixel grids:
 // Pedro Medeiros (Saint11), Michael Azzi (Pixel Logic), and Richard Williams (Animator's Survival Kit).
+// The poses themselves are painted in lessonArt.ts.
+
+import { buildLessonArt } from './lessonArt';
 
 export interface LessonFrameTemplate {
   frameIndex: number;
@@ -30,26 +33,6 @@ export interface PlaygroundLesson {
   frames: LessonFrameTemplate[];
 }
 
-const EMPTY_ROW_16 = '................';
-const EMPTY_ROW_32 = '................................';
-
-function rows(arr: Array<[number, string]>): string[] {
-  const r = Array(16).fill(EMPTY_ROW_16);
-  for (const [idx, str] of arr) {
-    r[idx] = str;
-  }
-  return r;
-}
-
-function rows32(arr: Array<[number, string]>): string[] {
-  const r = Array(32).fill(EMPTY_ROW_32);
-  for (const [idx, str] of arr) {
-    if (str.length !== 32) throw new Error(`Row ${idx} length is ${str.length}, expected 32`);
-    r[idx] = str;
-  }
-  return r;
-}
-
 export function getTemplateRows(template: LessonFrameTemplate): string[] {
   return template.gridRows || template.grid16 || [];
 }
@@ -75,21 +58,6 @@ const MASTER_BOUNCING_BALL_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Apex Float",
     effectivePixelArea: 112,
     opticalTrick: "Apex Hang Time: Gravitational balance at crest (0px velocity)",
-    gridRows: rows32([
-      [4, "..............oooo.............."],
-      [5, "............oooAAooo............"],
-      [6, "...........ooAAAAAAoo..........."],
-      [7, "...........oAAAAAAAAo..........."],
-      [8, "..........ooAAAAAAAAoo.........."],
-      [9, "..........oAAAAAAAAAAo.........."],
-      [10, "..........oAAAAAAAAAAo.........."],
-      [11, "..........ooAAAAAAAAoo.........."],
-      [12, "...........oAAAAAAAAo..........."],
-      [13, "...........ooAAAAAAoo..........."],
-      [14, "............oooAAooo............"],
-      [15, "..............oooo.............."],
-      [27, "..............pppp.............."],
-    ]),
   },
   {
     frameIndex: 1,
@@ -103,21 +71,6 @@ const MASTER_BOUNCING_BALL_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Apex Cushioning",
     effectivePixelArea: 112,
     opticalTrick: "Deceleration Halving: 1px initial descent cushions away from apex",
-    gridRows: rows32([
-      [5, "..............oooo.............."],
-      [6, "............oooAAooo............"],
-      [7, "...........ooAAAAAAoo..........."],
-      [8, "...........oAAAAAAAAo..........."],
-      [9, "..........ooAAAAAAAAoo.........."],
-      [10, "..........oAAAAAAAAAAo.........."],
-      [11, "..........oAAAAAAAAAAo.........."],
-      [12, "..........ooAAAAAAAAoo.........."],
-      [13, "...........oAAAAAAAAo..........."],
-      [14, "...........ooAAAAAAoo..........."],
-      [15, "............oooAAooo............"],
-      [16, "..............oooo.............."],
-      [27, ".............pppppp............."],
-    ]),
   },
   {
     frameIndex: 2,
@@ -131,23 +84,6 @@ const MASTER_BOUNCING_BALL_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Fall Acceleration",
     effectivePixelArea: 112,
     opticalTrick: "Kinetic Stretch: 1px lateral narrowing balances vertical elongation",
-    gridRows: rows32([
-      [8, "..............oooo.............."],
-      [9, ".............ooAAoo............."],
-      [10, "............ooAAAAoo............"],
-      [11, "............oAAAAAAo............"],
-      [12, "...........ooAAAAAAoo..........."],
-      [13, "...........oAAAAAAAAo..........."],
-      [14, "...........oAAAAAAAAo..........."],
-      [15, "...........oAAAAAAAAo..........."],
-      [16, "...........oAAAAAAAAo..........."],
-      [17, "...........ooAAAAAAoo..........."],
-      [18, "............oAAAAAAo............"],
-      [19, "............ooAAAAoo............"],
-      [20, ".............ooAAoo............."],
-      [21, "..............oooo.............."],
-      [27, "............pppppppp............"],
-    ]),
   },
   {
     frameIndex: 3,
@@ -161,24 +97,6 @@ const MASTER_BOUNCING_BALL_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Terminal Velocity Stretch",
     effectivePixelArea: 112,
     opticalTrick: "Terminal Velocity: Maximum kinetic stretch bridges distance to ground",
-    gridRows: rows32([
-      [11, "..............oooo.............."],
-      [12, ".............ooAAoo............."],
-      [13, "............ooAAAAoo............"],
-      [14, "............oAAAAAAo............"],
-      [15, "............oAAAAAAo............"],
-      [16, "............oAAAAAAo............"],
-      [17, "...........ooAAAAAAoo..........."],
-      [18, "...........ooAAAAAAoo..........."],
-      [19, "............oAAAAAAo............"],
-      [20, "............oAAAAAAo............"],
-      [21, "............oAAAAAAo............"],
-      [22, "............oAAAAAAo............"],
-      [23, "............ooAAAAoo............"],
-      [24, ".............ooAAoo............."],
-      [25, "..............oooo.............."],
-      [27, "...........pppppppppp..........."],
-    ]),
   },
   {
     frameIndex: 4,
@@ -192,19 +110,6 @@ const MASTER_BOUNCING_BALL_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Ground Contact",
     effectivePixelArea: 112,
     opticalTrick: "Impact Compression: Base touches ground plane (y=26), initiating squash",
-    gridRows: rows32([
-      [17, ".............oooooo............."],
-      [18, "............ooAAAAoo............"],
-      [19, "...........ooAAAAAAoo..........."],
-      [20, "..........ooAAAAAAAAoo.........."],
-      [21, ".........ooAAAAAAAAAAoo........."],
-      [22, "........ooAAAAAAAAAAAAoo........"],
-      [23, "........ooAAAAAAAAAAAAoo........"],
-      [24, ".........oooAAAAAAAAooo........."],
-      [25, "...........oooAAAAooo..........."],
-      [26, ".............oooooo............."],
-      [27, ".........pppppppppppppp........."],
-    ]),
   },
   {
     frameIndex: 5,
@@ -218,15 +123,6 @@ const MASTER_BOUNCING_BALL_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Impact Squash (Hitstop)",
     effectivePixelArea: 112,
     opticalTrick: "Weight & Energy Dissipation: Broad flat base absorbs kinetic energy",
-    gridRows: rows32([
-      [21, "...........oooooooooo..........."],
-      [22, "........ooooAAAAAAAAoooo........"],
-      [23, ".....ooooAAAAAAAAAAAAAAoooo....."],
-      [24, ".....oAAAAAAAAAAAAAAAAAAAAo....."],
-      [25, ".....ooAAAAAAAAAAAAAAAAAAoo....."],
-      [26, "......oooooooooooooooooooo......"],
-      [27, "......pppppppppppppppppppp......"],
-    ]),
   },
   {
     frameIndex: 6,
@@ -240,24 +136,6 @@ const MASTER_BOUNCING_BALL_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Elastic Rebound",
     effectivePixelArea: 112,
     opticalTrick: "Elastic Recoil: Rebound stretch propels ball vertically",
-    gridRows: rows32([
-      [11, "..............oooo.............."],
-      [12, ".............ooAAoo............."],
-      [13, "............ooAAAAoo............"],
-      [14, "............oAAAAAAo............"],
-      [15, "............oAAAAAAo............"],
-      [16, "............oAAAAAAo............"],
-      [17, "...........ooAAAAAAoo..........."],
-      [18, "...........ooAAAAAAoo..........."],
-      [19, "............oAAAAAAo............"],
-      [20, "............oAAAAAAo............"],
-      [21, "............oAAAAAAo............"],
-      [22, "............oAAAAAAo............"],
-      [23, "............ooAAAAoo............"],
-      [24, ".............ooAAoo............."],
-      [25, "..............oooo.............."],
-      [27, "...........pppppppppp..........."],
-    ]),
   },
   {
     frameIndex: 7,
@@ -271,23 +149,6 @@ const MASTER_BOUNCING_BALL_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Ascent Transfer",
     effectivePixelArea: 112,
     opticalTrick: "Ascent Transition: Deceleration begins restoring circular equilibrium",
-    gridRows: rows32([
-      [9, "..............oooo.............."],
-      [10, ".............ooAAoo............."],
-      [11, "............ooAAAAoo............"],
-      [12, "............oAAAAAAo............"],
-      [13, "...........ooAAAAAAoo..........."],
-      [14, "...........oAAAAAAAAo..........."],
-      [15, "...........oAAAAAAAAo..........."],
-      [16, "...........oAAAAAAAAo..........."],
-      [17, "...........oAAAAAAAAo..........."],
-      [18, "...........ooAAAAAAoo..........."],
-      [19, "............oAAAAAAo............"],
-      [20, "............ooAAAAoo............"],
-      [21, ".............ooAAoo............."],
-      [22, "..............oooo.............."],
-      [27, "............pppppppp............"],
-    ]),
   },
   {
     frameIndex: 8,
@@ -301,21 +162,6 @@ const MASTER_BOUNCING_BALL_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Deceleration Cushion",
     effectivePixelArea: 112,
     opticalTrick: "Deceleration Halving: Upward speed halves as gravity counteracts inertia",
-    gridRows: rows32([
-      [7, "..............oooo.............."],
-      [8, "............oooAAooo............"],
-      [9, "...........ooAAAAAAoo..........."],
-      [10, "...........oAAAAAAAAo..........."],
-      [11, "..........ooAAAAAAAAoo.........."],
-      [12, "..........oAAAAAAAAAAo.........."],
-      [13, "..........oAAAAAAAAAAo.........."],
-      [14, "..........ooAAAAAAAAoo.........."],
-      [15, "...........oAAAAAAAAo..........."],
-      [16, "...........ooAAAAAAoo..........."],
-      [17, "............oooAAooo............"],
-      [18, "..............oooo.............."],
-      [27, ".............pppppp............."],
-    ]),
   },
   {
     frameIndex: 9,
@@ -329,21 +175,6 @@ const MASTER_BOUNCING_BALL_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Apex Slow-In",
     effectivePixelArea: 112,
     opticalTrick: "Apex Slow-In: Near-zero velocity creates suspended hang time",
-    gridRows: rows32([
-      [5, "..............oooo.............."],
-      [6, "............oooAAooo............"],
-      [7, "...........ooAAAAAAoo..........."],
-      [8, "...........oAAAAAAAAo..........."],
-      [9, "..........ooAAAAAAAAoo.........."],
-      [10, "..........oAAAAAAAAAAo.........."],
-      [11, "..........oAAAAAAAAAAo.........."],
-      [12, "..........ooAAAAAAAAoo.........."],
-      [13, "...........oAAAAAAAAo..........."],
-      [14, "...........ooAAAAAAoo..........."],
-      [15, "............oooAAooo............"],
-      [16, "..............oooo.............."],
-      [27, ".............pppppp............."],
-    ]),
   },
   {
     frameIndex: 10,
@@ -357,21 +188,6 @@ const MASTER_BOUNCING_BALL_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Overshoot Oscillation",
     effectivePixelArea: 112,
     opticalTrick: "Micro-Settling: Subtle kinetic settling before final loop reset",
-    gridRows: rows32([
-      [4, "..............oooo.............."],
-      [5, "............oooAAooo............"],
-      [6, "...........ooAAAAAAoo..........."],
-      [7, "...........oAAAAAAAAo..........."],
-      [8, "..........ooAAAAAAAAoo.........."],
-      [9, "..........oAAAAAAAAAAo.........."],
-      [10, "..........oAAAAAAAAAAo.........."],
-      [11, "..........ooAAAAAAAAoo.........."],
-      [12, "...........oAAAAAAAAo..........."],
-      [13, "...........ooAAAAAAoo..........."],
-      [14, "............oooAAooo............"],
-      [15, "..............oooo.............."],
-      [27, "..............pppp.............."],
-    ]),
   },
   {
     frameIndex: 11,
@@ -385,21 +201,6 @@ const MASTER_BOUNCING_BALL_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Cycle Reset",
     effectivePixelArea: 112,
     opticalTrick: "Seamless Loop: Identical resting mass connects cleanly back to Frame 1",
-    gridRows: rows32([
-      [4, "..............oooo.............."],
-      [5, "............oooAAooo............"],
-      [6, "...........ooAAAAAAoo..........."],
-      [7, "...........oAAAAAAAAo..........."],
-      [8, "..........ooAAAAAAAAoo.........."],
-      [9, "..........oAAAAAAAAAAo.........."],
-      [10, "..........oAAAAAAAAAAo.........."],
-      [11, "..........ooAAAAAAAAoo.........."],
-      [12, "...........oAAAAAAAAo..........."],
-      [13, "...........ooAAAAAAoo..........."],
-      [14, "............oooAAooo............"],
-      [15, "..............oooo.............."],
-      [27, "..............pppp.............."],
-    ]),
   },
 ];
 
@@ -416,27 +217,6 @@ const SUBPIXEL_IDLE_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Neutral Rest",
     effectivePixelArea: 145,
     opticalTrick: "Sub-Pixel Contrast Modulation: Shifting internal belly shade by 1px simulates breathing.",
-    gridRows: rows32([
-      [7, "...........ooo....ooo..........."],
-      [8, "...........oro....oro..........."],
-      [9, "...........oro....oro..........."],
-      [10, "...........oro....oro..........."],
-      [11, "..........oofoooooofoo.........."],
-      [12, ".........ooffffffffffoo........."],
-      [13, ".........offkffffffkffo........."],
-      [14, ".........offkffffffkffo........."],
-      [15, ".........oorfffrrfffroo........."],
-      [16, "..........offffffffffo.........."],
-      [17, ".........ooffffffffffoo........."],
-      [18, "........ooffffffffffffoo........"],
-      [19, "........offffffffffffffo........"],
-      [20, "........offffffffffffffo........"],
-      [21, "........offffffffffffffo........"],
-      [22, "........oossssssssssssoo........"],
-      [23, ".........oossssssssssoo........."],
-      [24, "..........oooooooooooo.........."],
-      [26, "........pppppppppppppppp........"],
-    ]),
   },
   {
     frameIndex: 1,
@@ -450,27 +230,6 @@ const SUBPIXEL_IDLE_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Inhale Expansion",
     effectivePixelArea: 145,
     opticalTrick: "Sub-Pixel Contrast Modulation: Shifting internal belly shade by 1px simulates breathing.",
-    gridRows: rows32([
-      [7, "...........ooo....ooo..........."],
-      [8, "...........oro....oro..........."],
-      [9, "...........oro....oro..........."],
-      [10, "...........oro....oro..........."],
-      [11, "..........oofoooooofoo.........."],
-      [12, ".........ooffffffffffoo........."],
-      [13, ".........offkffffffkffo........."],
-      [14, ".........offkffffffkffo........."],
-      [15, ".........oorfffrrfffroo........."],
-      [16, "..........offffffffffo.........."],
-      [17, ".........ooffffffffffoo........."],
-      [18, "........ooffffffffffffoo........"],
-      [19, "........offffffffffffffo........"],
-      [20, "........offffffffffffffo........"],
-      [21, "........osssssssssssssso........"],
-      [22, "........oossssssssssssoo........"],
-      [23, ".........oossssssssssoo........."],
-      [24, "..........oooooooooooo.........."],
-      [26, "........pppppppppppppppp........"],
-    ]),
   },
   {
     frameIndex: 2,
@@ -484,27 +243,6 @@ const SUBPIXEL_IDLE_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Exhale Settle",
     effectivePixelArea: 145,
     opticalTrick: "Sub-Pixel Contrast Modulation: Shifting internal belly shade by 1px simulates breathing.",
-    gridRows: rows32([
-      [7, "...........ooo....ooo..........."],
-      [8, "...........oro....oro..........."],
-      [9, "...........oro....oro..........."],
-      [10, "...........oro....oro..........."],
-      [11, "..........oofoooooofoo.........."],
-      [12, ".........ooffffffffffoo........."],
-      [13, ".........offkffffffkffo........."],
-      [14, ".........offkffffffkffo........."],
-      [15, ".........oorfffrrfffroo........."],
-      [16, "..........offffffffffo.........."],
-      [17, ".........ooffffffffffoo........."],
-      [18, "........ooffffffffffffoo........"],
-      [19, "........offffffffffffffo........"],
-      [20, "........offffffffffffffo........"],
-      [21, "........offffffffffffffo........"],
-      [22, "........oossssssssssssoo........"],
-      [23, ".........oossssssssssoo........."],
-      [24, "..........oooooooooooo.........."],
-      [26, "........pppppppppppppppp........"],
-    ]),
   },
 ];
 
@@ -521,30 +259,6 @@ const COMBAT_SLASH_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Anticipation Windup",
     effectivePixelArea: 68,
     opticalTrick: "Potential Energy Hold: High 45° angle registers upcoming strike.",
-    gridRows: rows32([
-      [4, "....oo.........................."],
-      [5, "....ooo........................."],
-      [6, ".....ooo........................"],
-      [7, "......ooo......................."],
-      [8, ".......ooo......................"],
-      [9, "........ooo....................."],
-      [10, ".........ooo...................."],
-      [11, "..........ooo..................."],
-      [12, "...........ooo.................."],
-      [13, "............ooo................."],
-      [14, ".............o.................."],
-      [15, "...........oooooooooo..........."],
-      [16, "...........offffffffo..........."],
-      [17, "...........offffffffo..........."],
-      [18, "...........offffffffo..........."],
-      [19, "...........offffffffo..........."],
-      [20, "...........offffffffo..........."],
-      [21, "...........offffffffo..........."],
-      [22, "...........offffffffo..........."],
-      [23, "...........offffffffo..........."],
-      [24, "...........oooooooooo..........."],
-      [26, "..........pppppppppppp.........."],
-    ]),
   },
   {
     frameIndex: 1,
@@ -558,30 +272,6 @@ const COMBAT_SLASH_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Action Smear",
     effectivePixelArea: 96,
     opticalTrick: "180° Crescent Smear: 2px sweeping arc bridges screen space in 40ms.",
-    gridRows: rows32([
-      [4, ".............ooooooo............"],
-      [5, "...........ooowwwwwooo.........."],
-      [6, ".........ooowwwwwwwwwooo........"],
-      [7, "........oowwwooooooowwwoo......."],
-      [8, ".......oowwooo.....ooowwoo......"],
-      [9, "......oowooo.........ooowoo....."],
-      [10, "......owwo.............owwo....."],
-      [11, ".....oowoo.............oowoo...."],
-      [12, ".....owwo...............owwo...."],
-      [13, "....oowoo...............oowoo..."],
-      [14, "....owwo.................owwo..."],
-      [15, "....owwo.................owwo..."],
-      [16, "....oooo...oooooooooo....oooo..."],
-      [17, "...........offffffffo..........."],
-      [18, "...........offffffffo..........."],
-      [19, "...........offffffffo..........."],
-      [20, "...........offffffffo..........."],
-      [21, "...........offffffffo..........."],
-      [22, "...........offffffffo..........."],
-      [23, "...........offffffffo..........."],
-      [24, "...........oooooooooo..........."],
-      [26, "..........pppppppppppp.........."],
-    ]),
   },
   {
     frameIndex: 2,
@@ -595,28 +285,6 @@ const COMBAT_SLASH_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Impact Hitstop",
     effectivePixelArea: 84,
     opticalTrick: "Visceral Hitstop: 180ms freeze registers strike contact and delivers punchy feedback.",
-    gridRows: rows32([
-      [6, "...............ooo.............."],
-      [7, "...............owo.............."],
-      [8, "...............owo.............."],
-      [9, "..........o....owo....o........."],
-      [10, "...........o...owo...o.........."],
-      [11, "...............owo.............."],
-      [12, "...............owo.............."],
-      [13, "....oooooooooooowooooooooooo...."],
-      [14, "....owwwwwwwwwwwwwwwwwwwwwwo...."],
-      [15, "....oooooooowwwwwwwwoooooooo...."],
-      [16, "...........offffffffo..........."],
-      [17, "...........offffffffo..........."],
-      [18, "...........offffffffoo.........."],
-      [19, "..........ooffffffffo.o........."],
-      [20, "...........offffffffo..........."],
-      [21, "...........offffffffo..........."],
-      [22, "...........offffffffo..........."],
-      [23, "...........offffffffo..........."],
-      [24, "...........oooooooooo..........."],
-      [26, "..........pppppppppppp.........."],
-    ]),
   },
   {
     frameIndex: 3,
@@ -630,20 +298,6 @@ const COMBAT_SLASH_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Recovery Settle",
     effectivePixelArea: 76,
     opticalTrick: "Follow-Through Dampening: Deceleration back into resting combat guard.",
-    gridRows: rows32([
-      [14, "...........oooooooooo..........."],
-      [15, "...........offffffffo..........."],
-      [16, "...........offffffffo..........."],
-      [17, "....oo.....offffffffo..........."],
-      [18, ".....oo....offffffffo..........."],
-      [19, "......oo...offffffffo..........."],
-      [20, ".......oo..offffffffo..........."],
-      [21, "........oo.offffffffo..........."],
-      [22, ".........oooffffffffo..........."],
-      [23, "..........ooffffffffo..........."],
-      [24, "...........oooooooooo..........."],
-      [26, "..........pppppppppppp.........."],
-    ]),
   },
 ];
 
@@ -660,24 +314,6 @@ const CHARACTER_HOP_SHOCK_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Crouch Anticipation",
     effectivePixelArea: 130,
     opticalTrick: "Secondary Overlap: Kinetic energy transfers through body into trailing ears.",
-    gridRows: rows32([
-      [10, "..........ooo......ooo.........."],
-      [11, "..........ofo......ofo.........."],
-      [12, "..........ofo......ofo.........."],
-      [13, "..........ofo......ofo.........."],
-      [14, "........ooofoooooooofooo........"],
-      [15, "........ofrrffffffffrrfo........"],
-      [16, "........offffffffffffffo........"],
-      [17, "........offffffffffffffo........"],
-      [18, "........offffffffffffffo........"],
-      [19, "......oooffffffffffffffooo......"],
-      [20, "......offffffffffffffffffo......"],
-      [21, "......osssssssssssssssssso......"],
-      [22, "......osssssssssssssssssso......"],
-      [23, "......osssssssssssssssssso......"],
-      [24, "......oooooooooooooooooooo......"],
-      [26, "......pppppppppppppppppppp......"],
-    ]),
   },
   {
     frameIndex: 1,
@@ -691,28 +327,6 @@ const CHARACTER_HOP_SHOCK_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Launch Stretch",
     effectivePixelArea: 130,
     opticalTrick: "Secondary Overlap: Kinetic energy transfers through body into trailing ears.",
-    gridRows: rows32([
-      [1, "............oo....oo............"],
-      [2, "............oo....oo............"],
-      [3, "............oo....oo............"],
-      [4, "............oo....oo............"],
-      [5, "............oo....oo............"],
-      [6, "...........oooooooooo..........."],
-      [7, "...........orffffffro..........."],
-      [8, "...........offffffffo..........."],
-      [9, "...........okffffffko..........."],
-      [10, "...........okffffffko..........."],
-      [11, "...........okffffffko..........."],
-      [12, "...........offffffffo..........."],
-      [13, "...........offffffffo..........."],
-      [14, "...........offffffffo..........."],
-      [15, "...........offffffffo..........."],
-      [16, "...........offffffffo..........."],
-      [17, "...........offffffffo..........."],
-      [18, "...........osssssssso..........."],
-      [19, "...........oooooooooo..........."],
-      [26, "............pppppppp............"],
-    ]),
   },
   {
     frameIndex: 2,
@@ -726,27 +340,6 @@ const CHARACTER_HOP_SHOCK_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Apex Hang",
     effectivePixelArea: 130,
     opticalTrick: "Secondary Overlap: Kinetic energy transfers through body into trailing ears.",
-    gridRows: rows32([
-      [1, "...........ooo....ooo..........."],
-      [2, "...........oro....oro..........."],
-      [3, "...........oro....oro..........."],
-      [4, "...........oro....oro..........."],
-      [5, "..........oofoooooofoo.........."],
-      [6, ".........oofkffffffkfoo........."],
-      [7, ".........offkffffffkffo........."],
-      [8, ".........offkffffffkffo........."],
-      [9, ".........oorffffffffroo........."],
-      [10, "..........offffffffffo.........."],
-      [11, ".........ooffffffffffoo........."],
-      [12, ".........offffffffffffo........."],
-      [13, ".........offffffffffffo........."],
-      [14, ".........offffffffffffo........."],
-      [15, ".........osssssssssssso........."],
-      [16, ".........osssssssssssso........."],
-      [17, ".........oossssssssssoo........."],
-      [18, "..........oooooooooooo.........."],
-      [26, ".........pppppppppppppp........."],
-    ]),
   },
   {
     frameIndex: 3,
@@ -760,24 +353,6 @@ const CHARACTER_HOP_SHOCK_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Impact Squash (Hitstop)",
     effectivePixelArea: 130,
     opticalTrick: "Secondary Overlap: Kinetic energy transfers through body into trailing ears.",
-    gridRows: rows32([
-      [10, "..........ooo......ooo.........."],
-      [11, "..........ofo......ofo.........."],
-      [12, "..........ofo......ofo.........."],
-      [13, "..........ofo......ofo.........."],
-      [14, "........ooofoooooooofooo........"],
-      [15, "........ofrrffffffffrrfo........"],
-      [16, "........offffffffffffffo........"],
-      [17, "........offffffffffffffo........"],
-      [18, "........offffffffffffffo........"],
-      [19, "......oooffffffffffffffooo......"],
-      [20, "......offffffffffffffffffo......"],
-      [21, "......osssssssssssssssssso......"],
-      [22, "......osssssssssssssssssso......"],
-      [23, "......osssssssssssssssssso......"],
-      [24, "......oooooooooooooooooooo......"],
-      [26, "......pppppppppppppppppppp......"],
-    ]),
   },
   {
     frameIndex: 4,
@@ -791,27 +366,6 @@ const CHARACTER_HOP_SHOCK_FRAMES: LessonFrameTemplate[] = [
     kineticPhase: "Sub-Pixel Settle",
     effectivePixelArea: 130,
     opticalTrick: "Secondary Overlap: Kinetic energy transfers through body into trailing ears.",
-    gridRows: rows32([
-      [7, "...........ooo....ooo..........."],
-      [8, "...........oro....oro..........."],
-      [9, "...........oro....oro..........."],
-      [10, "...........oro....oro..........."],
-      [11, "..........oofoooooofoo.........."],
-      [12, ".........oofkffffffkfoo........."],
-      [13, ".........offkffffffkffo........."],
-      [14, ".........offkffffffkffo........."],
-      [15, ".........oorffffffffroo........."],
-      [16, "..........offffffffffo.........."],
-      [17, ".........ooffffffffffoo........."],
-      [18, ".........offffffffffffo........."],
-      [19, ".........offffffffffffo........."],
-      [20, ".........offffffffffffo........."],
-      [21, ".........osssssssssssso........."],
-      [22, ".........osssssssssssso........."],
-      [23, ".........oossssssssssoo........."],
-      [24, "..........oooooooooooo.........."],
-      [26, ".........pppppppppppppp........."],
-    ]),
   },
 ];
 
@@ -827,18 +381,6 @@ const BOUNCING_MOCHI_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Mass Invariance: The resting circular silhouette occupies ~28 outline pixels. All subsequent deformed frames must preserve this approximate volume.',
     recommendedHoldMs: 160,
-    grid16: rows([
-      [2,  '......oooo......'],
-      [3,  '....oo....oo....'],
-      [4,  '...o........o...'],
-      [5,  '..o..........o..'],
-      [6,  '..o..........o..'],
-      [7,  '..o..........o..'],
-      [8,  '..o..........o..'],
-      [9,  '..o..........o..'],
-      [10, '...o........o...'],
-      [11, '....oooooooo....'],
-    ]),
   },
   {
     frameIndex: 1,
@@ -850,19 +392,6 @@ const BOUNCING_MOCHI_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Stretch Discipline: Keep side walls parallel to avoid jagged pixel stairs. The elongated shape communicates 60 FPS velocity even at 10 FPS.',
     recommendedHoldMs: 60,
-    grid16: rows([
-      [4,  '.......oo.......'],
-      [5,  '.....oo..oo.....'],
-      [6,  '....o......o....'],
-      [7,  '....o......o....'],
-      [8,  '....o......o....'],
-      [9,  '....o......o....'],
-      [10, '....o......o....'],
-      [11, '....o......o....'],
-      [12, '....o......o....'],
-      [13, '.....o....o.....'],
-      [14, '......oooo......'],
-    ]),
   },
   {
     frameIndex: 2,
@@ -874,13 +403,6 @@ const BOUNCING_MOCHI_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Ground Contact: Align the bottom boundary flush with the ground line (Y=14). Flatten the bottom row to establish a firm physical plane.',
     recommendedHoldMs: 90,
-    grid16: rows([
-      [11, '....oooooooo....'],
-      [12, '..oo........oo..'],
-      [13, '.o............o.'],
-      [14, 'o..............o'],
-      [15, 'oooooooooooooooo'],
-    ]),
   },
   {
     frameIndex: 3,
@@ -892,17 +414,6 @@ const BOUNCING_MOCHI_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Trajectory Loop: Positioning this frame at Y=7 between the impact baseline and the apex to complete a seamless parabolic easing arc.',
     recommendedHoldMs: 70,
-    grid16: rows([
-      [5,  '......oooo......'],
-      [6,  '....oo....oo....'],
-      [7,  '...o........o...'],
-      [8,  '..o..........o..'],
-      [9,  '..o..........o..'],
-      [10, '..o..........o..'],
-      [11, '..o..........o..'],
-      [12, '...o........o...'],
-      [13, '....oooooooo....'],
-    ]),
   },
 ];
 
@@ -918,17 +429,6 @@ const HEARTH_FLAME_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Teardrop Curve: Keep the base anchored wide on the wood hearth while tapering to a 2-pixel point at the apex.',
     recommendedHoldMs: 120,
-    grid16: rows([
-      [5,  '.......oo.......'],
-      [6,  '......o..o......'],
-      [7,  '.....o....o.....'],
-      [8,  '....o......o....'],
-      [9,  '...o........o...'],
-      [10, '...o........o...'],
-      [11, '...o........o...'],
-      [12, '....o......o....'],
-      [13, '.....oooooo.....'],
-    ]),
   },
   {
     frameIndex: 1,
@@ -940,17 +440,6 @@ const HEARTH_FLAME_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Base Anchor: Keep the bottom 2 rows consistent while letting the upper tip deform with the draft.',
     recommendedHoldMs: 120,
-    grid16: rows([
-      [4,  '........oo......'],
-      [5,  '.......o..o.....'],
-      [6,  '......o....o....'],
-      [7,  '.....o......o...'],
-      [8,  '....o........o..'],
-      [9,  '...o..........o.'],
-      [10, '...o.........o..'],
-      [11, '....o.......o...'],
-      [12, '.....ooooooo....'],
-    ]),
   },
   {
     frameIndex: 2,
@@ -962,18 +451,6 @@ const HEARTH_FLAME_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Floating Spark: A detached 2x2 pixel cluster floats 2 pixels above the main body before vanishing.',
     recommendedHoldMs: 120,
-    grid16: rows([
-      [2,  '........oo......'],
-      [3,  '........oo......'],
-      [6,  '......oo........'],
-      [7,  '.....o..oo......'],
-      [8,  '....o.....oo....'],
-      [9,  '...o........o...'],
-      [10, '...o........o...'],
-      [11, '...o........o...'],
-      [12, '....o......o....'],
-      [13, '.....oooooo.....'],
-    ]),
   },
 ];
 
@@ -989,17 +466,6 @@ const BUN_HOP_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Ear Drag: Keep ears upright or slightly swept back to show anticipation of the upcoming leap.',
     recommendedHoldMs: 140,
-    grid16: rows([
-      [5,  '...oo.....oo....'],
-      [6,  '..o..o...o..o...'],
-      [7,  '..o..o...o..o...'],
-      [8,  '..o..ooooo..o...'],
-      [9,  '.o..........o...'],
-      [10, '.o..........o...'],
-      [11, '.o..........o...'],
-      [12, '.o..........o...'],
-      [13, '..oooooooooo....'],
-    ]),
   },
   {
     frameIndex: 1,
@@ -1011,17 +477,6 @@ const BUN_HOP_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Secondary Motion: Trailing ears lag 1 frame behind the body velocity.',
     recommendedHoldMs: 160,
-    grid16: rows([
-      [0,  '...oo.....oo....'],
-      [1,  '..o..o...o..o...'],
-      [2,  '..o..o...o..o...'],
-      [3,  '..o..ooooo..o...'],
-      [4,  '.o..........o...'],
-      [5,  '.o..........o...'],
-      [6,  '.o..........o...'],
-      [7,  '.o..........o...'],
-      [8,  '..oooooooooo....'],
-    ]),
   },
   {
     frameIndex: 2,
@@ -1033,16 +488,6 @@ const BUN_HOP_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Settle Timing: A 1-frame impact hold gives weight to character physics.',
     recommendedHoldMs: 100,
-    grid16: rows([
-      [6,  '...oo.....oo....'],
-      [7,  '..o..o...o..o...'],
-      [8,  '..o..ooooo..o...'],
-      [9,  '.o..........o...'],
-      [10, '.o..........o...'],
-      [11, '.o..........o...'],
-      [12, '.o..........o...'],
-      [13, '..oooooooooo....'],
-    ]),
   },
 ];
 
@@ -1058,21 +503,6 @@ const POTION_BUBBLE_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Flask Boundary: Anchor the flask beaker outline while animating the floating bubble core inside.',
     recommendedHoldMs: 120,
-    grid16: rows([
-      [1,  '.....oooooo.....'],
-      [2,  '.....o....o.....'],
-      [3,  '....o......o....'],
-      [4,  '...o........o...'],
-      [5,  '..o..........o..'],
-      [6,  '..o..........o..'],
-      [7,  '..o..........o..'],
-      [8,  '..o..........o..'],
-      [9,  '..o..........o..'],
-      [10, '..o....oo....o..'],
-      [11, '..o....oo....o..'],
-      [12, '..o..........o..'],
-      [13, '...oooooooooo...'],
-    ]),
   },
   {
     frameIndex: 1,
@@ -1084,21 +514,6 @@ const POTION_BUBBLE_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Upward Spacing: Move the bubble up by 4 pixels between frames to show accelerating buoyancy.',
     recommendedHoldMs: 100,
-    grid16: rows([
-      [1,  '.....oooooo.....'],
-      [2,  '.....o....o.....'],
-      [3,  '....o......o....'],
-      [4,  '...o........o...'],
-      [5,  '..o...oooo...o..'],
-      [6,  '..o..o....o..o..'],
-      [7,  '..o..o....o..o..'],
-      [8,  '..o...oooo...o..'],
-      [9,  '..o..........o..'],
-      [10, '..o..........o..'],
-      [11, '..o..........o..'],
-      [12, '..o..........o..'],
-      [13, '...oooooooooo...'],
-    ]),
   },
   {
     frameIndex: 2,
@@ -1110,21 +525,6 @@ const POTION_BUBBLE_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Tension Dome: Flatten the bottom edge against the liquid line while arching the top dome.',
     recommendedHoldMs: 100,
-    grid16: rows([
-      [1,  '.....oooooo.....'],
-      [2,  '.....o....o.....'],
-      [3,  '....o.oooo.o....'],
-      [4,  '...o.o....o.o...'],
-      [5,  '..o..oooooo..o..'],
-      [6,  '..o..........o..'],
-      [7,  '..o..........o..'],
-      [8,  '..o..........o..'],
-      [9,  '..o..........o..'],
-      [10, '..o..........o..'],
-      [11, '..o..........o..'],
-      [12, '..o..........o..'],
-      [13, '...oooooooooo...'],
-    ]),
   },
   {
     frameIndex: 3,
@@ -1136,21 +536,6 @@ const POTION_BUBBLE_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Radial Dispersion: Place 4 discrete single pixels radiating 2 pixels out from the burst center.',
     recommendedHoldMs: 80,
-    grid16: rows([
-      [1,  '.....oooooo.....'],
-      [2,  '.....o.o..o.....'],
-      [3,  '....o.o..o.o....'],
-      [4,  '...o...o....o...'],
-      [5,  '..o..........o..'],
-      [6,  '..o..........o..'],
-      [7,  '..o..........o..'],
-      [8,  '..o..........o..'],
-      [9,  '..o..........o..'],
-      [10, '..o..........o..'],
-      [11, '..o..........o..'],
-      [12, '..o..........o..'],
-      [13, '...oooooooooo...'],
-    ]),
   },
 ];
 
@@ -1166,15 +551,6 @@ const SLIME_GLIDE_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Volume Baseline: Maintain roughly 40 pixels of body volume across all locomotion steps.',
     recommendedHoldMs: 140,
-    grid16: rows([
-      [7,  '......oooo......'],
-      [8,  '....oo....oo....'],
-      [9,  '...o........o...'],
-      [10, '..o..........o..'],
-      [11, '..o..........o..'],
-      [12, '..o..........o..'],
-      [13, '..oooooooooooo..'],
-    ]),
   },
   {
     frameIndex: 1,
@@ -1186,14 +562,6 @@ const SLIME_GLIDE_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Directional Asymmetry: Shift the front wall to X=14 while keeping the tail anchored at X=2.',
     recommendedHoldMs: 110,
-    grid16: rows([
-      [8,  '......oooooo....'],
-      [9,  '....oo......oo..'],
-      [10, '...o..........o.'],
-      [11, '..o............o'],
-      [12, '..o............o'],
-      [13, '..oooooooooooooo'],
-    ]),
   },
   {
     frameIndex: 2,
@@ -1205,16 +573,6 @@ const SLIME_GLIDE_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Vertical Bulge: Squeeze the width to 8 pixels and bulge the height up by 2 pixels.',
     recommendedHoldMs: 110,
-    grid16: rows([
-      [6,  '........oooo....'],
-      [7,  '......oo....oo..'],
-      [8,  '.....o........o.'],
-      [9,  '....o..........o'],
-      [10, '....o..........o'],
-      [11, '....o..........o'],
-      [12, '....o..........o'],
-      [13, '.....oooooooooo.'],
-    ]),
   },
   {
     frameIndex: 3,
@@ -1226,15 +584,6 @@ const SLIME_GLIDE_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Loop Alignment: Smoothly connect the final resting frame back to the cycle start.',
     recommendedHoldMs: 130,
-    grid16: rows([
-      [7,  '.......oooo.....'],
-      [8,  '.....oo....oo...'],
-      [9,  '....o........o..'],
-      [10, '...o..........o.'],
-      [11, '...o..........o.'],
-      [12, '...o..........o.'],
-      [13, '...oooooooooooo.'],
-    ]),
   },
 ];
 
@@ -1250,10 +599,6 @@ const TWINKLING_STAR_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Center Alignment: Keep the origin centered at (8,8) across all glare pulses.',
     recommendedHoldMs: 110,
-    grid16: rows([
-      [7,  '.......oo.......'],
-      [8,  '.......oo.......'],
-    ]),
   },
   {
     frameIndex: 1,
@@ -1265,16 +610,6 @@ const TWINKLING_STAR_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Ray Symmetry: Extend 4 cardinal spikes 4 pixels outward from the central core.',
     recommendedHoldMs: 90,
-    grid16: rows([
-      [4,  '.......oo.......'],
-      [5,  '.......oo.......'],
-      [6,  '......oooo......'],
-      [7,  '..oooooooooooo..'],
-      [8,  '..oooooooooooo..'],
-      [9,  '......oooo......'],
-      [10, '.......oo.......'],
-      [11, '.......oo.......'],
-    ]),
   },
   {
     frameIndex: 2,
@@ -1286,18 +621,6 @@ const TWINKLING_STAR_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Diagonal Spikes: Add 1-pixel corners at 45-degree angles to create full bloom.',
     recommendedHoldMs: 90,
-    grid16: rows([
-      [3,  '.......oo.......'],
-      [4,  '..o....oo....o..'],
-      [5,  '...o...oo...o...'],
-      [6,  '....oooooooo....'],
-      [7,  '.oooooooooooooo.'],
-      [8,  '.oooooooooooooo.'],
-      [9,  '....oooooooo....'],
-      [10, '...o...oo...o...'],
-      [11, '..o....oo....o..'],
-      [12, '.......oo.......'],
-    ]),
   },
   {
     frameIndex: 3,
@@ -1309,14 +632,6 @@ const TWINKLING_STAR_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Hollow Ring: A hollow 1-pixel border simulates decaying optical afterglow.',
     recommendedHoldMs: 120,
-    grid16: rows([
-      [5,  '.......oo.......'],
-      [6,  '.....oo..oo.....'],
-      [7,  '....o......o....'],
-      [8,  '....o......o....'],
-      [9,  '.....oo..oo.....'],
-      [10, '.......oo.......'],
-    ]),
   },
 ];
 
@@ -1332,14 +647,6 @@ const WATER_RIPPLE_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Impact Point: Draw a clean vertical 2-pixel column emerging from the center floor.',
     recommendedHoldMs: 100,
-    grid16: rows([
-      [5,  '.......oo.......'],
-      [6,  '.......oo.......'],
-      [7,  '.......oo.......'],
-      [8,  '.......oo.......'],
-      [9,  '......oooo......'],
-      [10, '.....oooooo.....'],
-    ]),
   },
   {
     frameIndex: 1,
@@ -1351,13 +658,6 @@ const WATER_RIPPLE_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Perspective Ratio: Use a 2:1 isometric ratio (width is twice height) for surface ripples.',
     recommendedHoldMs: 110,
-    grid16: rows([
-      [8,  '......oooo......'],
-      [9,  '....oo....oo....'],
-      [10, '...o........o...'],
-      [11, '....oo....oo....'],
-      [12, '......oooo......'],
-    ]),
   },
   {
     frameIndex: 2,
@@ -1369,14 +669,6 @@ const WATER_RIPPLE_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Thinning Wave: Keep the wave ring strictly 1-pixel thick to show diminishing amplitude.',
     recommendedHoldMs: 120,
-    grid16: rows([
-      [7,  '....oooooooo....'],
-      [8,  '..oo........oo..'],
-      [9,  '.o............o.'],
-      [10, '.o............o.'],
-      [11, '..oo........oo..'],
-      [12, '....oooooooo....'],
-    ]),
   },
   {
     frameIndex: 3,
@@ -1388,12 +680,6 @@ const WATER_RIPPLE_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Broken Stride: Leaving 2-pixel gaps along the edge creates the illusion of fading water.',
     recommendedHoldMs: 140,
-    grid16: rows([
-      [6,  '..oo........oo..'],
-      [7,  '.o............o.'],
-      [11, '.o............o.'],
-      [12, '..oo........oo..'],
-    ]),
   },
 ];
 
@@ -1409,17 +695,6 @@ const SWORD_SLASH_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Diagonal Tension: A straight diagonal 2-pixel blade line at the upper left creates strong anticipation.',
     recommendedHoldMs: 150,
-    grid16: rows([
-      [1,  '..oo............'],
-      [2,  '...oo...........'],
-      [3,  '....oo..........'],
-      [4,  '.....oo.........'],
-      [5,  '......oo........'],
-      [6,  '.......oo.......'],
-      [7,  '........oooo....'],
-      [8,  '..........oo....'],
-      [9,  '...........oo...'],
-    ]),
   },
   {
     frameIndex: 1,
@@ -1431,18 +706,6 @@ const SWORD_SLASH_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Crescent Smear: A 2-pixel thick curved crescent communicates lightning-fast speed without multi-frame lag.',
     recommendedHoldMs: 70,
-    grid16: rows([
-      [2,  '....oooooooo....'],
-      [3,  '..oo........oo..'],
-      [4,  '.o............o.'],
-      [5,  'o..............o'],
-      [6,  'o..............o'],
-      [7,  'o..............o'],
-      [8,  'o..............o'],
-      [9,  '.o............o.'],
-      [10, '..oo........oo..'],
-      [11, '....oooooooo....'],
-    ]),
   },
   {
     frameIndex: 2,
@@ -1454,21 +717,24 @@ const SWORD_SLASH_FRAMES: LessonFrameTemplate[] = [
     artisanRule:
       'Low Resting Guard: The sword tip rests at (14,14), grounding the weight of the strike.',
     recommendedHoldMs: 130,
-    grid16: rows([
-      [7,  '....oo..........'],
-      [8,  '.....oo.........'],
-      [9,  '......oo........'],
-      [10, '.......oo.......'],
-      [11, '........oo......'],
-      [12, '.........oo.....'],
-      [13, '..........oo....'],
-      [14, '...........oo...'],
-    ]),
   },
 ];
 
 
-export const PLAYGROUND_LESSONS: PlaygroundLesson[] = [
+// Beginner-first: the default lesson is the first entry.
+const LESSONS: PlaygroundLesson[] = [
+  {
+    id: 'bouncing-mochi',
+    title: 'The Bouncing Mochi',
+    badge: 'Physics 101',
+    concept: 'Squash, Stretch & Mass Invariance',
+    description:
+      'Master the core physics of 2D pixel animation: apex float, terminal velocity stretch, ground impact squash, and elastic rebound.',
+    fps: 10,
+    totalFrames: 4,
+    canvasSize: 16,
+    frames: BOUNCING_MOCHI_FRAMES,
+  },
   {
     id: 'master-bouncing-ball',
     title: 'The Master Bouncing Ball',
@@ -1516,18 +782,6 @@ export const PLAYGROUND_LESSONS: PlaygroundLesson[] = [
     totalFrames: 5,
     canvasSize: 32,
     frames: CHARACTER_HOP_SHOCK_FRAMES,
-  },
-  {
-    id: 'bouncing-mochi',
-    title: 'The Bouncing Mochi',
-    badge: 'Physics 101',
-    concept: 'Squash, Stretch & Mass Invariance',
-    description:
-      'Master the core physics of 2D pixel animation: apex float, terminal velocity stretch, ground impact squash, and elastic rebound.',
-    fps: 10,
-    totalFrames: 4,
-    canvasSize: 16,
-    frames: BOUNCING_MOCHI_FRAMES,
   },
   {
     id: 'hearth-flame',
@@ -1614,3 +868,21 @@ export const PLAYGROUND_LESSONS: PlaygroundLesson[] = [
     frames: SWORD_SLASH_FRAMES,
   },
 ];
+
+const ART = buildLessonArt();
+
+/** Attach each lesson's painted poses; a frame's pixel area is counted from its art (ground shadows excluded). */
+export const PLAYGROUND_LESSONS: PlaygroundLesson[] = LESSONS.map(lesson => ({
+  ...lesson,
+  frames: lesson.frames.map((frame, i) => {
+    const gridRows = ART[lesson.id]?.[i];
+    if (!gridRows) throw new Error(`Lesson ${lesson.id} has no art for frame ${i + 1}`);
+    const area = gridRows.reduce((sum, row) => sum + [...row].filter(c => c !== '.' && c !== 'p').length, 0);
+    return {
+      ...frame,
+      gridRows,
+      canvasSize: lesson.canvasSize,
+      ...(frame.effectivePixelArea !== undefined ? { effectivePixelArea: area } : {}),
+    };
+  }),
+}));

@@ -4,7 +4,7 @@ For the tested revision and remaining accessibility, device and host checks, see
 
 [Handbook](README.md) · [Variations](variations-and-scenes.md) · [All features](../features.md)
 
-Open **PixiTools → Add light and depth**. The three sections are **Light your sprite**, **Shape the surface**, and **Add a shadow**. Start with a small finished sprite, then explore one effect at a time. These tools use local mathematical and image heuristics; they do not reconstruct a general 3D model or call a trained generative model.
+Open **Effects → Add light and depth**. The three sections are **Light your sprite**, **Shape the surface**, and **Add a shadow**. Start with a small finished sprite, then explore one effect at a time. These tools use local mathematical and image heuristics; they do not reconstruct a general 3D model or call a trained generative model.
 
 ## Move a light before applying it
 

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { recolorCanvas } from '@/lib/theme/sceneRecolor';
-import { useSceneRecolor } from './useSceneRecolor';
+import { useSceneRecolorRef } from './useSceneRecolor';
 import { BAYER_4X4 } from '@/lib/canvas/ditherMatrix';
 import { drawBun, type BunPose } from '@/lib/art/bunSprite';
 
@@ -378,7 +378,8 @@ export const CottageBackdrop: React.FC<{ chapter: number; reduceMotion: boolean 
   const chapterRef = useRef(chapter);
   const hopAt = useRef(-1e9);
   const start = useRef(0);
-  const recolor = useSceneRecolor();
+  const repaint = useRef<() => void>(() => {});
+  const recolor = useSceneRecolorRef(() => repaint.current());
 
   useEffect(() => {
     if (chapterRef.current !== chapter) {
@@ -414,8 +415,9 @@ export const CottageBackdrop: React.FC<{ chapter: number; reduceMotion: boolean 
     const draw = () => {
       if (!room) return;
       drawRoom(ctx, room, reduceMotion ? 0 : performance.now() - start.current, chapterRef.current, hopAt.current);
-      recolorCanvas(ctx, recolor);
+      recolorCanvas(ctx, recolor.current);
     };
+    repaint.current = draw;
     const loop = () => {
       draw();
       if (visible && !reduceMotion) raf = requestAnimationFrame(loop);

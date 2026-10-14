@@ -124,6 +124,35 @@ it('executes the real worker update handler: open tabs defer, zero windows permi
   expect(skipWaiting).toHaveBeenCalledTimes(1);
 });
 
+it('activates an explicitly requested update from a real window while other tabs remain open', async () => {
+  const listeners = new Map<string, (event: { data: unknown; source?: { id: string }; waitUntil: (p: Promise<unknown>) => void }) => void>();
+  const skipWaiting = vi.fn();
+  const self = { addEventListener: (type: string, callback: (event: { data: unknown; source?: { id: string }; waitUntil: (p: Promise<unknown>) => void }) => void) => listeners.set(type, callback),
+    clients: { matchAll: vi.fn(async () => [{ id: 'restarting' }, { id: 'editing' }]) }, skipWaiting };
+  new Function('self', buildServiceWorkerScript('test'))(self);
+  let pending!: Promise<unknown>;
+  listeners.get('message')!({ data: { type: 'APPLY_UPDATE' }, source: { id: 'unknown' }, waitUntil: p => { pending = p; } });
+  await pending; expect(skipWaiting).not.toHaveBeenCalled();
+  listeners.get('message')!({ data: { type: 'APPLY_UPDATE' }, source: { id: 'restarting' }, waitUntil: p => { pending = p; } });
+  await pending; expect(skipWaiting).toHaveBeenCalledTimes(1);
+});
+
+it('preserves old assets for another open page during activation', async () => {
+  let activate!: (event: { waitUntil: (p: Promise<unknown>) => void }) => void;
+  const remove = vi.fn();
+  const matchAll = vi.fn(async () => [{ id: 'one' }, { id: 'two' }]);
+  const claim = vi.fn();
+  const self = { addEventListener: (type: string, callback: typeof activate) => { if (type === 'activate') activate = callback; }, clients: { matchAll, claim } };
+  const caches = { keys: async () => ['pixibun-old', 'pixibun-new', 'another-app'], delete: remove };
+  new Function('self', 'caches', buildServiceWorkerScript('new'))(self, caches);
+  let pending!: Promise<unknown>;
+  activate({ waitUntil: p => { pending = p; } }); await pending;
+  expect(remove).not.toHaveBeenCalled(); expect(claim).toHaveBeenCalledTimes(1);
+  matchAll.mockResolvedValue([{ id: 'one' }]);
+  activate({ waitUntil: p => { pending = p; } }); await pending;
+  expect(remove).toHaveBeenCalledExactlyOnceWith('pixibun-old');
+});
+
 it('precaches same-origin shell dependencies and retains them while bounding dynamic cache entries', async () => {
   const records = new Map<string, Response>();
   const origin = 'https://pixibun.test';

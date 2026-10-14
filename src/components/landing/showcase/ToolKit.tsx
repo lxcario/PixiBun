@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useId } from 'react';
+import React, { useId, useState } from 'react';
 import { motion } from 'motion/react';
 
 /**
@@ -20,14 +20,14 @@ export const ToolWindow: React.FC<{
   >
     <div className="flex items-center gap-2 px-3 py-2 bg-[var(--state-active)] border-b-2 border-[var(--ink)]">
       <span aria-hidden="true" className="flex gap-1.5">
-        <span className="w-2.5 h-2.5 rounded-full bg-[#e08ca6] shadow-[inset_0_-1px_0_rgba(0,0,0,0.3)]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--accent-plum)] shadow-[inset_0_-1px_0_rgba(0,0,0,0.3)]" />
         <span className="w-2.5 h-2.5 rounded-full bg-[var(--primary-bg)] shadow-[inset_0_-1px_0_rgba(0,0,0,0.3)]" />
-        <span className="w-2.5 h-2.5 rounded-full bg-[#a8e092] shadow-[inset_0_-1px_0_rgba(0,0,0,0.3)]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--accent-sage)] shadow-[inset_0_-1px_0_rgba(0,0,0,0.3)]" />
       </span>
       <span className="ml-1 font-mono text-[11px] text-[var(--text-muted)] truncate">{name}</span>
       {status && <span className="ml-auto font-mono text-[11px] text-[var(--accent-gold)] whitespace-nowrap">{status}</span>}
     </div>
-    <div className="p-4">{children}</div>
+    <div className="p-3">{children}</div>
   </div>
 );
 
@@ -41,12 +41,12 @@ export const ArtFrame: React.FC<{
   <figure className="flex flex-col items-center">
     <div
       className={`relative p-[6px] rounded-[2px] bg-[var(--frame-wood)] border-2 border-[var(--ink)] shadow-[inset_2px_2px_0_var(--frame-light),inset_-2px_-2px_0_var(--frame-dark),0_4px_0_var(--ink)] ${
-        glow ? 'ring-2 ring-[var(--accent-gold)]/60 ring-offset-2 ring-offset-[#241640]' : ''
+        glow ? 'ring-2 ring-[var(--accent-gold)]/60 ring-offset-2 ring-offset-[var(--surface-0)]' : ''
       }`}
     >
       <span
         className={`absolute -top-3 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap px-2 py-0.5 rounded-[2px] border-2 border-[var(--ink)] font-mono text-[10px] font-bold uppercase tracking-wider ${
-          glow ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)]' : 'bg-[#f6ead6] text-[var(--text-body)]'
+          glow ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)]' : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)]'
         }`}
       >
         {tag}
@@ -81,6 +81,8 @@ export function Picker<T extends string | number>({
   columns?: number;
 }) {
   const id = useId();
+  // Each pick sends a little ring out of the chosen pill, so a click always visibly lands.
+  const [pokes, setPokes] = useState(0);
   return (
     <div>
       <div className="flex items-baseline justify-between mb-1.5">
@@ -97,9 +99,12 @@ export function Picker<T extends string | number>({
             <button
               key={String(option.value)}
               type="button"
-              onClick={() => onChange(option.value)}
+              onClick={() => {
+                setPokes((n) => n + 1);
+                onChange(option.value);
+              }}
               aria-pressed={active}
-              className={`relative px-2 py-1.5 rounded-[2px] font-mono text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] ${
+              className={`relative min-h-8 px-1 py-1.5 rounded-[2px] font-mono text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] ${
                 active ? 'text-[var(--primary-fg)]' : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--desk-surface-raised)]'
               }`}
             >
@@ -110,7 +115,8 @@ export function Picker<T extends string | number>({
                   transition={{ type: 'spring', stiffness: 500, damping: 34 }}
                 />
               )}
-              <span className="relative z-10 inline-flex items-center justify-center gap-1.5">
+              {active && pokes > 0 && <span key={pokes} aria-hidden="true" className="picker-pop" />}
+              <span className="relative z-10 inline-flex flex-wrap items-center justify-center gap-1">
                 {option.icon && <span aria-hidden="true">{option.icon}</span>}
                 {option.label}
               </span>

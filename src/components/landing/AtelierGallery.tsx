@@ -186,8 +186,8 @@ export const AtelierGallery: React.FC = () => {
       className="relative py-24 bg-[var(--desk-surface)]/75 text-[var(--text-heading)] overflow-hidden scroll-mt-14 border-t-2 border-b-2 border-[var(--desk-border)]"
       style={{
         backgroundImage: `
-          linear-gradient(rgba(208, 196, 223, 0.04) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(208, 196, 223, 0.04) 1px, transparent 1px)
+          linear-gradient(color-mix(in srgb, var(--text-muted) 4%, transparent) 1px, transparent 1px),
+          linear-gradient(90deg, color-mix(in srgb, var(--text-muted) 4%, transparent) 1px, transparent 1px)
         `,
         backgroundSize: '24px 24px',
       }}
@@ -247,7 +247,7 @@ export const AtelierGallery: React.FC = () => {
                   return (
                     <CozyScrollReveal key={template.id} variant="fade" delayMs={180 + i * 80} className="h-full">
                       <SpotlightCard
-                        spotlightColor="rgba(240, 190, 124, 0.12)"
+                        spotlightColor="color-mix(in srgb, var(--accent-gold) 12%, transparent)"
                         className="rounded-[2px] h-full"
                       >
                         <figure
@@ -297,7 +297,7 @@ export const AtelierGallery: React.FC = () => {
                             {/* Paint CTA Button with Specular CC Light-Sweep */}
                             <Link
                               href={`/studio?template=${template.id}`}
-                              className="mt-3.5 text-center text-xs font-display font-bold px-3 py-2.5 rounded-[2px] pixel-primary-btn text-[#140d1f] tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c]"
+                              className="mt-3.5 text-center text-xs font-display font-bold px-3 py-2.5 rounded-[2px] pixel-primary-btn text-[var(--primary-fg)] tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)]"
                               title={`Open ${template.name} in studio`}
                             >
                               <span>GIVE IT A TRY</span>
@@ -326,22 +326,22 @@ export const AtelierGallery: React.FC = () => {
 
               {/* Left Bracket */}
               <div className="w-7 h-4 bg-[var(--desk-border)] rounded-b-[1px] flex flex-col items-center justify-center">
-                <div className="w-4 h-2 bg-[#f0be7c] rounded-none" />
+                <div className="w-4 h-2 bg-[var(--primary-bg)] rounded-none" />
               </div>
 
               {/* Center-Left Bracket */}
               <div className="w-7 h-4 bg-[var(--desk-border)] rounded-b-[1px] flex flex-col items-center justify-center">
-                <div className="w-4 h-2 bg-[#d89a55] rounded-none" />
+                <div className="w-4 h-2 bg-[var(--primary-shade)] rounded-none" />
               </div>
 
               {/* Center-Right Bracket */}
               <div className="w-7 h-4 bg-[var(--desk-border)] rounded-b-[1px] flex flex-col items-center justify-center">
-                <div className="w-4 h-2 bg-[#d89a55] rounded-none" />
+                <div className="w-4 h-2 bg-[var(--primary-shade)] rounded-none" />
               </div>
 
               {/* Right Bracket */}
               <div className="w-7 h-4 bg-[var(--desk-border)] rounded-b-[1px] flex flex-col items-center justify-center">
-                <div className="w-4 h-2 bg-[#f0be7c] rounded-none" />
+                <div className="w-4 h-2 bg-[var(--primary-bg)] rounded-none" />
               </div>
             </div>
           </div>

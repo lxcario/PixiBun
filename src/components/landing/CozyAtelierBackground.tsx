@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect } from 'react';
-import { useThemeStore } from '@/stores/themeStore';
+import { useLiveThemeChoice, useThemeStore } from '@/stores/themeStore';
 import { isSceneTheme } from '@/lib/theme/registry';
 import { SceneCanvas } from '@/components/layout/StudioSkyBackdrop';
 
@@ -12,9 +12,11 @@ import { SceneCanvas } from '@/components/layout/StudioSkyBackdrop';
  * A soft glow follows the cursor in the theme's accent colors.
  */
 export const CozyAtelierBackground: React.FC = () => {
-  const studioTheme = useThemeStore((s) => s.studioTheme);
-  const day = useThemeStore((s) => s.colorScheme) === 'light';
-  const scene = isSceneTheme(studioTheme);
+  // Markup follows the hydration-safe store value; the canvas paints the saved theme from the first frame.
+  const scene = isSceneTheme(useThemeStore((s) => s.studioTheme));
+  const live = useLiveThemeChoice();
+  const studioTheme = live.studioTheme;
+  const day = live.colorScheme === 'light';
   const glowRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -73,8 +75,7 @@ export const CozyAtelierBackground: React.FC = () => {
           {/* A veil in the theme's own background color keeps section text readable over the scene */}
           <div
             aria-hidden="true"
-            className="absolute inset-0"
-            style={{ background: `linear-gradient(to bottom, color-mix(in srgb, var(--desk-bg) ${day ? 58 : 52}%, transparent), color-mix(in srgb, var(--desk-bg) ${day ? 40 : 30}%, transparent) 70%, color-mix(in srgb, var(--desk-bg) 15%, transparent))` }}
+            className="absolute inset-0 landing-veil"
           />
         </>
       ) : (
