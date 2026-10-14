@@ -4,6 +4,18 @@ Maintenance update — 13 October 2026: see the [current status](docs/current-st
 
 > **Historical phase ledger:** Each entry describes its recorded checkpoint, including superseded controls, counts and verification. [Current status](docs/current-status.md) and the [issue registry](docs/research/issue-registry.md) govern present claims. Test assertions are not a formal proof of the full application.
 
+## Strategy phases — 2026-10-14
+
+Source: the Strategy and Audit & Roadmap documents of 13 October 2026, summarized in the [strategy roadmap](docs/plans/2026-10-14-strategy-roadmap.md).
+
+- [x] Phase 0: precache every Studio file, contain lazy-panel failures, save before claiming saved on the crash screen.
+- [x] Phase 0.5: product name PixiBun, no user-facing AI wording, landing copy, dated `/pledge`.
+- [x] Requested addition: eight Night/Day studio styles, theme hydration fix, first-run welcome and level-based tips.
+- [ ] Rename `src/lib/ai` to `src/lib/graphics`.
+- [ ] Phase 1: selection masks for every raster tool, transparency checkerboard, co-draw selective undo, quick fixes, standard keymap, tool flyouts and fit-to-view, byte-budgeted undo.
+- [ ] Carts, phone cart player, Light Sweep and Handmade Receipt (strategy launch bets).
+- [ ] Fix the two production failures that predate this work: navigator square-pixel alignment and the color dock's 10px edge expectation under the floating layout.
+
 ## Nibbli and Studio source publication — 2026-10-13
 
 - [x] Publish scripted Tester, conversation/mock Artist planning/critique and bounded Hands Move, Copy/Paste, Flip H/V and exact quarter-turn editing through the real UI.

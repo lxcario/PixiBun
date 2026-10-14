@@ -6,11 +6,11 @@
 
 Current engineering verification and remaining release checks are recorded in the [current status](docs/current-status.md).
 
-**A quiet little studio for pixel art and animation.**
+**Pixels with a pulse.** A cozy studio for hand-made pixel art and animation.
 
-Make a small character, a flickering flame, or the first tile of a world. PixiBun gives you a place to draw, try colors and bring those little things to life, right in your browser. No account needed.
+Make a small character, a flickering flame, or the first tile of a world. PixiBun gives you a place to draw, light it with the Lamp and bring those little things to life, right in your browser. Hand-made, never generated: PixiBun contains no generative AI ([our pledge](src/app/pledge/page.tsx), published at `/pledge`). No account needed.
 
-Plum shadows, wisteria accents, amber buttons and a few live pixel glints make Cozy Classic feel like a desk with the lamp still on.
+Plum shadows, wisteria accents, amber buttons and a few live pixel glints make Plum (called Cozy Classic when this was captured) feel like a desk with the lamp still on.
 
 ![PixiBun in Cozy Classic dark, with the Hearth Ghost, Little Shroom and Bun on the canvas, a palette beside them and three animation frames below.](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/studio-cozy-dark.png)
 

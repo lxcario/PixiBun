@@ -1,4 +1,15 @@
-# Architecture & System Design — PixiBun Atelier
+# Architecture & System Design — PixiBun
+
+## Strategy Phase 0 and 0.5 update — 14 October 2026
+
+| Area | Ownership |
+| --- | --- |
+| Offline precache | `next build` runs [writePrecacheManifest.mjs](scripts/writePrecacheManifest.mjs), which lists every emitted `/_next/static` file in `public/precache-manifest.json`. The [service worker](src/app/sw.js/route.ts) precaches that list at install only when its version matches and it contains every file the served shell references, so development servers and other builds fall back to shell-only precaching. |
+| Lazy panel failure | Code-split dialogs and the PixiTools panel load through [lazyPanel](src/components/system/lazyPanel.tsx): a failed chunk stays inside its panel with Try again instead of unmounting the Studio route. |
+| Truthful crash screen | The [Studio error screen](src/app/studio/error.tsx) saves through the registered route session ([studioCrashSave](src/lib/project/studioCrashSave.ts)) and publishes a resume ticket before claiming the drawing is saved. |
+| Themes | Eight styles live in [themes.json](src/lib/theme/themes.json); [generateThemeCss.mjs](scripts/generateThemeCss.mjs) writes `src/app/themes.generated.css` (core tokens per style and mode plus one derived-token block). Scene styles draw [procedural scenes](src/lib/theme/scenes.ts) behind floating panels. The theme store starts at server defaults (zustand serves `getInitialState()` for hydration) and [ThemeSync](src/components/system/ThemeSync.tsx) re-applies the `<html>` attributes React drops. |
+| Onboarding | [WelcomeJourney](src/components/onboarding/WelcomeJourney.tsx) and [CoachTips](src/components/onboarding/CoachTips.tsx) read [preferencesStore](src/stores/preferencesStore.ts) (experience, onboarded time, seen tips, tips switch). Automated browsers skip the journey unless `?welcome=1` is present. |
+
 
 ## Nibbli and Studio ownership update — 13 October 2026
 
@@ -67,13 +78,13 @@ This document describes subsystem ownership and integration. For artist workflow
 
 - [1. System Topology Overview](#1-system-topology-overview)
 - [2. Canvas & Rendering Pipeline](#2-canvas--rendering-pipeline)
-- [3. PixiBud Smart Math & Computer Graphics Engine (`src/lib/ai/math/`)](#3-pixibud-smart-math--computer-graphics-engine-srclibaimath)
+- [3. Deterministic Graphics Math Engine (`src/lib/ai/math/`)](#3-deterministic-graphics-math-engine-srclibaimath)
 - [4. State Management, Layer Security & Undo Architecture](#4-state-management-layer-security--undo-architecture)
 - [5. Local-First Storage & Multi-Project Lifecycle (`src/lib/storage/db.ts`, `src/lib/project/schema.ts`)](#5-local-first-storage--multi-project-lifecycle-srclibstoragedbts-srclibprojectschemats)
 - [6. Multi-Engine Export & Web Worker Pipeline (`src/lib/export/`)](#6-multi-engine-export--web-worker-pipeline-srclibexport)
 - [7. 3D Minecraft Skin Recognition & Domain Shading Engine (`src/lib/ai/math/minecraftSkin.ts`)](#7-3d-minecraft-skin-recognition--domain-shading-engine-srclibaimathminecraftskints)
 - [8. Signed Distance Field (SDF) In-Between Animation Morphing (`src/lib/ai/pixelAiEngine.ts`)](#8-signed-distance-field-sdf-in-between-animation-morphing-srclibaipixelaienginets)
-- [9. Intelligent Image-to-Pixel-Art Synthesis Pipeline (`src/lib/ai/pixelizeEngine.ts`)](#9-intelligent-image-to-pixel-art-synthesis-pipeline-srclibaipixelizeenginets)
+- [9. Image-to-Pixel-Art Conversion Pipeline (`src/lib/ai/pixelizeEngine.ts`)](#9-image-to-pixel-art-conversion-pipeline-srclibaipixelizeenginets)
 - [10. Theme Architecture (`src/stores/themeStore.ts`)](#10-theme-architecture-srcstoresthemestorets)
 - [11. Bounded Idle Buffer Pooling (`src/lib/engine/bufferPool.ts`)](#11-bounded-idle-buffer-pooling-srclibenginebufferpoolts)
 - [12. Multithreaded Worker & Deterministic CG Math Architecture](#12-multithreaded-worker--deterministic-cg-math-architecture)
@@ -109,7 +120,7 @@ graph TD
         AtelierRail["AtelierRail (Project Actions, Zoom, Tool Params, CVD, Appearance)"]
         LeftRail["LeftToolbar (Categorized Tool Rails & Dual Color Wells)"]
         ViewportShell["CenterViewport (Five Logical-Size Canvases & CSS HUD)"]
-        RightStudio["RightInspector (Layers / Palettes / PixiBud Math Studio)"]
+        RightStudio["RightInspector (Layers / Palettes / PixiTools)"]
         TimelineDock["BottomTimeline (Frame Scrubbing, Onion Skin, Scrub Preview)"]
         StatusBar["StatusBar (Cursor, Tool, Canvas, Zoom)"]
         Modals["Modals (Import, Export, Resize, Palette, Shortcuts, CommandPalette)"]
@@ -124,7 +135,7 @@ graph TD
 
     subgraph Core_Engines ["Computational & Raster Engines"]
         RasterCore["Artisan Raster Engine (Bresenham, 2:1 Iso Stepper, Bézier)"]
-        MathCore["PixiBud Smart Math Engine (Felzenszwalb EDT, Sobel Normals, Blinn-Phong, Laplace AO)"]
+        MathCore["Graphics Math Engine (Felzenszwalb EDT, Sobel Normals, Blinn-Phong, Laplace AO)"]
         PixelizeCore["Image Synthesis Engine (Gradient Salience, OKLab Median-Cut, Floyd-Steinberg)"]
         DitherCore["Dither Suite (Bayer Matrix, Atkinson, Riemersma Hilbert)"]
     end
@@ -201,7 +212,9 @@ The undo/redo ledger is independent of React rendering in `HistoryEngine`; its m
 
 ---
 
-## 3. PixiBud Smart Math & Computer Graphics Engine (`src/lib/ai/math/`)
+## 3. Deterministic Graphics Math Engine (`src/lib/ai/math/`)
+
+The `ai` folder name is historical; nothing in it is a generative or trained model. A rename to `src/lib/graphics` is planned.
 
 The graphics intelligence engine is decomposed into modular, deterministic mathematical modules under `src/lib/ai/math/` and `src/lib/ai/`:
 - `edtNormalMap.ts`: Felzenszwalb-Huttenlocher $O(N)$ EDT, non-linear dome inflation ($\gamma = 0.5$), bilateral smoothing, content-aware heightmaps, anatomical part segmentation, frontal face cushion plateau (level camera-facing plateau), independent ear cone ridges, and Sobel tangent normal vector fields.
@@ -298,7 +311,7 @@ graph TD
 The application state is managed by Zustand with Immer middleware:
 * **`useStudioStore`:** Single source of truth for tool settings, primary/secondary colors, frame lists, layer hierarchies, zoom/pan parameters, and UI visibility.
 * **50-Step Undo History:** Undo and redo stacks are independently depth-bounded (up to 50 entries each, `createHistoryEngine(50)` matching `src/hooks/viewport/useViewportDrawing.ts`), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope. Undo/Redo restores saved pixels with `putImageData`; work scales with the affected pixel region and does not re-run unrelated effect calculations.
-* **History Layer Lifecycle (`createdLayerId`):** When AI operations (`Photometric`, `Specular`, `Cast Shadow`) create a new layer, the history snapshot tracks `createdLayerId`. Undoing the action removes the layer entirely from the frame stack and purges its buffer memory, while redoing cleanly restores it.
+* **History Layer Lifecycle (`createdLayerId`):** When PixiTools operations (`Photometric`, `Specular`, `Cast Shadow`) create a new layer, the history snapshot tracks `createdLayerId`. Undoing the action removes the layer entirely from the frame stack and purges its buffer memory, while redoing cleanly restores it.
 * **Locked Layer Drawing Protection:** `handlePointerDown` checks `currentLayer.locked` prior to dispatching raster strokes. When locked, execution returns immediately and triggers an animated HUD warning toast (`Active layer is locked! Unlock it in the Layers panel to draw.`) with `<PixelIcon name="lock" />`.
 * **`bufferVersion` Signal & Stroke Decoupling:** A raster invalidation counter supports leaf previews and the current viewport's motion-preview subscription. Cursor coordinates remain in a separate HUD subscriber, but artwork changes can render `CenterViewport`. Subscription structure is not a measured guarantee of zero parent renders or sub-16ms interaction.
 * **Layer Merge Down (`mergeLayerDown`):** Admits editable layers, composites their visible Normal (`source-over`) contribution with opacity, and publishes a neutral raster on the lower layer with generated provenance cleared. Visible non-Normal blending is refused because its backdrop-dependent result cannot generally be flattened into an independent layer. Pixel composition/history work scales with affected area; registry deletion alone is not the cost of the whole merge.
@@ -389,7 +402,7 @@ The frame morphing engine generates smooth intermediate tween frames between key
 
 ---
 
-## 9. Intelligent Image-to-Pixel-Art Synthesis Pipeline (`src/lib/ai/pixelizeEngine.ts`)
+## 9. Image-to-Pixel-Art Conversion Pipeline (`src/lib/ai/pixelizeEngine.ts`)
 
 ```mermaid
 graph TD
@@ -422,7 +435,7 @@ graph TD
 
 ## 10. Theme Architecture (`src/stores/themeStore.ts`)
 
-The two axes are studio theme (`atelier` / `cozy-classic`) and color scheme (`dark` / `light`). `themeStore.ts` temporarily suppresses CSS transitions, updates root attributes/classes and performs a synchronous style read before restoring transitions on a following animation frame. This avoids overlapping transition animations; it still performs layout/repaint work and is not a zero-lag guarantee. Appearance choices are under the Studio menu. Qualify rendered colors, focus and reduced-motion states with the relevant UI checks.
+The two axes are studio style (eight ids from `src/lib/theme/themes.json`; Graphite and Plum keep the stored ids `atelier` and `cozy-classic`) and color scheme (`dark` / `light`, shown as Night / Day). `themeStore.ts` temporarily suppresses CSS transitions, updates root attributes/classes and performs a synchronous style read before restoring transitions on a following animation frame. This avoids overlapping transition animations; it still performs layout/repaint work and is not a zero-lag guarantee. Appearance choices are under the Studio menu. Qualify rendered colors, focus and reduced-motion states with the relevant UI checks.
 
 ---
 
@@ -565,13 +578,14 @@ The following describes the named browser-test fixture's database teardown, not 
 
 ## 22. Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine
 
-* **RotSprite v2 (`src/lib/canvas/rotSprite.ts`):** A PixiBun-specific adaptation with voting, bounded candidate search and restoration heuristics; it is not a claim of canonical RotSprite equivalence. Quarter turns use direct pixel-center mapping within requested bounds. Arbitrary angles follow these stages:
+* **RotSprite v3 (`rotSpriteContour` in `src/lib/canvas/rotSprite.ts`):** Arbitrary angles now rotate structural layers separately: Scale8x coverage of filled cells for the silhouette, one-pixel strokes redrawn as a rotated graph, outline rings rebuilt at their measured 0–3 px width and coloured from the same source ring, a Scale8x vote over interior cells, and area-preserving connected stamps for small or one-pixel-thin details. Output colours are copied from the source. See the [current contract](docs/contracts/rendering.md#pixel-art-rotation-rotsprite-v3).
+* **RotSprite v2 (`rotSpriteV2`, retained for comparison):** A PixiBun-specific adaptation with voting, bounded candidate search and restoration heuristics; it is not a claim of canonical RotSprite equivalence. Quarter turns use direct pixel-center mapping within requested bounds. Its arbitrary-angle stages were:
   1. **Scale8x Cascade:** Three sequential passes of the Scale2x (EPX / AdvMAME2x) corner-connectivity operator expand the original sprite by $8\times$ ($2\times \to 4\times \to 8\times$). Scale2x interpolates diagonal slopes using 4-neighborhood comparison without introducing new intermediate color values:
      Neighbor similarity is decided by a Manhattan RGBA distance threshold rather than exact color equality.
   2. **Subpixel Inverse Affine Rotation:** The $8\times$ supersampled buffer is rotated onto a destination grid via backward mapping around the chosen pivot crosshair $(p_x, p_y)$, utilizing nearest-neighbor sampling on the dense grid.
   3. **Weighted Voting:** Each $8\times8$ block votes for sampled packed RGBA values rather than averaged colors. Solid thresholds depend on pixel-perfect mode and whether the center core is occupied: 0.40/0.46 in pixel-perfect mode and 0.38/0.45 otherwise. These thresholds are heuristics, not guaranteed thin-line preservation.
   4. **Candidate Search and Detail Restoration:** Fractional offsets (0, ±0.25 source px) produce nine candidates for sources up to 1,024 pixels, five up to 4,096, and one above that. Candidate penalties consider competing claims, enclosed holes, eight-connected alpha silhouettes and visible area. Small color-component restoration and boundary/interior color restoration address observed fixtures; they do not prove semantic feature or topology preservation. Contour restoration uses source RGB with retained output alpha, which can form a new RGBA combination; classification stops above 4,096 distinct source colors.
-  - **Paeth option:** [paethRotation.ts](src/lib/canvas/paethRotation.ts) provides an integer-sampled three-shear variant with fractional pivots and separate quarter-turn handling. Its name or UI label does not establish universal bijection or preservation of a dither pattern. Normal data uses [normalMapRotation.ts](src/lib/canvas/normalMapRotation.ts). Source fractional alpha, clipping and later alpha-over composition have separate semantics. [Current contract](docs/contracts/rendering.md#pixel-art-rotation-rotsprite-v2).
+  - **Paeth option:** [paethRotation.ts](src/lib/canvas/paethRotation.ts) provides an integer-sampled three-shear variant with fractional pivots and separate quarter-turn handling. Its name or UI label does not establish universal bijection or preservation of a dither pattern. Normal data uses [normalMapRotation.ts](src/lib/canvas/normalMapRotation.ts). Source fractional alpha, clipping and later alpha-over composition have separate semantics. [Current contract](docs/contracts/rendering.md#pixel-art-rotation-rotsprite-v3).
 * **Selection Free-Transform Gizmo & Marching Ants (`src/lib/canvas/selectionUtils.ts`, `src/hooks/viewport/useViewportSelectionTransform.ts`, `src/components/studio/SelectionTransformGizmo.tsx`):**
   - **Orthogonal Boundary Extraction (`extractSelectionBoundarySegments`):** Traverses arbitrary 1-bit binary selection masks and extracts pixel boundary segments along cell edges $(x, y) \to (x+1, y)$ and $(x, y) \to (x, y+1)$ where selection state transitions $0 \leftrightarrow 1$. Converts contiguous edge segments into SVG path strings (`boundarySegmentsToSvgPath`) rendered with dual-pass contrasting strokes (white on black) and animated CSS dashoffset marching ants.
   - **Screen-Space Hitbox Invariance:** 8 transformation handles (4 corners, 4 midpoints) maintain a constant 18x18px screen-space hit area regardless of canvas zoom factor ($100\% - 6400\%$).
@@ -708,7 +722,7 @@ graph TD
     subgraph Shell ["Studio Workspace Shell"]
         Rail["AtelierRail (Project, Zoom, Tool Params, CVD, Appearance)"]
         Viewport["CenterViewport (Five Logical-Size Canvases & CSS HUD)"]
-        Inspector["RightInspector (Layers / Palette / PixiBud)"]
+        Inspector["RightInspector (Layers / Palette / PixiTools)"]
         Timeline["BottomTimeline (Frames, Onion Skin, Scrub Preview)"]
         Status["StatusBar (Cursor, Tool, Canvas, Zoom)"]
         CmdPalette["CommandPaletteModal (Ctrl+K Fuzzy Search)"]
@@ -760,7 +774,7 @@ The monolithic pointer event architecture has been decomposed into dedicated per
 
 ### Dual-Axis Theme Architecture
 The theme system (`src/stores/themeStore.ts`) supports two orthogonal axes:
-1. **Studio Theme** (`studioTheme`): `'atelier'` (modern midnight default) or `'cozy-classic'` (original plum/wisteria identity)
+1. **Studio Theme** (`studioTheme`): any id in `src/lib/theme/themes.json`; Moonlit is the default, scene styles add an animated backdrop and floating panels, Graphite (`'atelier'`) and Plum (`'cozy-classic'`) stay flat
 2. **Color Scheme** (`colorScheme`): `'dark'` or `'light'`
 
 Theme mutations apply synchronously via `applyThemeToDOM()`, which injects a temporary `transition: none !important` stylesheet to suppress reflow/repaint flicker, sets `data-studio-theme` and `data-color-scheme` attributes on `<html>`, and removes the suppression after one animation frame.
