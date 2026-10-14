@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform, type MotionValue } from 'motion/react';
 import { STARTER_TEMPLATES, TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
 import { CottageBackdrop } from './CottageBackdrop';
-import { NIGHT_VARS } from './nightPalette';
 
 const CHAPTERS = [
   {
@@ -101,12 +100,12 @@ function renderChapter(ctx: CanvasRenderingContext2D, chapter: number, cp: numbe
     for (let y = 0; y < 16; y += 2) {
       for (let x = 0; x < 16; x += 2) ctx.fillRect(GX + x, GY + y, 1, 1);
     }
-    const inked = clamp01(cp * 1.3) * INK_ORDER.length;
+    const inked = clamp01(cp) * INK_ORDER.length;
     const n = Math.ceil(inked);
     for (let i = 0; i < n; i++) {
       const px = INK_ORDER[i];
-      // The newest few pixels fade in so the pencil glides instead of ticking.
-      ctx.globalAlpha = clamp01(inked - i + 0.15);
+      // The newest few pixels fade in over a short window so the pencil glides instead of ticking.
+      ctx.globalAlpha = clamp01((inked - i) / 4 + 0.1);
       ctx.fillStyle = px.c;
       ctx.fillRect(GX + px.x, GY + px.y, 1, 1);
     }
@@ -137,8 +136,9 @@ function renderChapter(ctx: CanvasRenderingContext2D, chapter: number, cp: numbe
   }
 
   if (chapter === 1) {
-    // Lamp orbits; every pixel is shaded by a fake normal facing out of the sprite.
-    const angle = -Math.PI * 0.9 + cp * Math.PI * 1.8 + Math.sin(t / 900) * 0.05;
+    // The lamp drifts slowly back and forth; every pixel is shaded by a fake normal facing out of the sprite.
+    const sweep = 0.5 - 0.5 * Math.cos(t / 3400);
+    const angle = -Math.PI * 0.9 + sweep * Math.PI * 1.8;
     const lx = Math.cos(angle);
     const ly = Math.sin(angle) * 0.7 - 0.3;
     const lz = 0.55;
@@ -189,16 +189,12 @@ function renderChapter(ctx: CanvasRenderingContext2D, chapter: number, cp: numbe
   }
 
   if (chapter === 2) {
-    const frame = Math.floor(t / 170) % 4;
+    const frame = Math.floor(t / 340) % 4;
     const prev = (frame + 3) % 4;
     const next = (frame + 1) % 4;
-    drawGhost(ctx, GX, GY + BOB[prev] + 1, 0.3, '#c792df');
-    drawGhost(ctx, GX, GY + BOB[next] + 1, 0.22, '#7fae6b');
+    drawGhost(ctx, GX, GY + BOB[prev] + 1, 0.2, '#c792df');
+    drawGhost(ctx, GX, GY + BOB[next] + 1, 0.14, '#7fae6b');
     drawGhost(ctx, GX, GY + BOB[frame] + 1);
-    if (frame % 2 === 0) {
-      ctx.fillStyle = '#fff3c4';
-      ctx.fillRect(GX + 8, GY + BOB[frame] + 10, 1, 1);
-    }
     // Timeline strip
     for (let i = 0; i < 4; i++) {
       const x = 15 + i * 9;
@@ -213,7 +209,7 @@ function renderChapter(ctx: CanvasRenderingContext2D, chapter: number, cp: numbe
   }
 
   // Chapter 3: four frames glide out into a sprite sheet.
-  const k = ease(clamp01(cp * 1.4));
+  const k = ease(clamp01(cp * 1.2));
   const sheetY = 6;
   ctx.fillStyle = '#2a1945';
   ctx.globalAlpha = k;
@@ -233,7 +229,7 @@ function renderChapter(ctx: CanvasRenderingContext2D, chapter: number, cp: numbe
   ctx.fillStyle = '#5b3a2a';
   ctx.fillRect(6, shelf + 5, W - 12, 2);
   ['#f0be7c', '#dcabdf', '#a8e092'].forEach((c, i) => {
-    const pp = ease(clamp01(cp * 1.6 - 0.35 - i * 0.12));
+    const pp = ease(clamp01(cp * 1.4 - 0.3 - i * 0.14));
     if (pp <= 0) return;
     const x = Math.round(16 + i * 14);
     const y = Math.round(sheetY + 16 + (shelf - sheetY - 16) * pp);
@@ -246,13 +242,15 @@ function renderChapter(ctx: CanvasRenderingContext2D, chapter: number, cp: numbe
   });
 }
 
-// Each chapter's share of the scroll: the drawing eases in, holds finished
-// long enough to read, then cross-fades slowly into the next chapter.
-const DRAW_END = 0.6;
+// Scroll only chooses the chapter; each chapter then plays at its own calm,
+// fixed pace, so a fast flick of the wheel never rushes the drawing.
 const FADE_START = 0.78;
+const FADE_MS = 800;
+/** How long each chapter's one-time animation takes; 0 means it is an idle loop. */
+const PLAY_MS = [6500, 0, 0, 3200];
 const smoothstep = (x: number) => x * x * (3 - 2 * x);
 
-/** The chapter whose words are shown: it changes halfway through the cross-fade, with the picture. */
+/** The chapter on show: it changes late in the chapter's share of the scroll, with its words. */
 export function storyChapter(progress: number): number {
   const pos = clamp01(progress) * 4;
   const chapter = Math.min(3, Math.floor(pos));
@@ -266,24 +264,27 @@ function makeLayer() {
   return c;
 }
 
-/** Composites the stage at overall progress `p`, cross-fading across chapter boundaries. */
-function renderStage(ctx: CanvasRenderingContext2D, layers: [HTMLCanvasElement, HTMLCanvasElement], p: number, t: number) {
-  const pos = clamp01(p) * 4;
-  const chapter = Math.min(3, Math.floor(pos));
-  const cp = Math.min(1, pos - chapter);
+interface StageView {
+  from: number;
+  fromProgress: number;
+  to: number;
+  toProgress: number;
+  /** 0 shows `from`, 1 shows `to`. */
+  mix: number;
+}
+
+/** Composites the stage, cross-fading from one chapter to the next. */
+function renderStage(ctx: CanvasRenderingContext2D, layers: [HTMLCanvasElement, HTMLCanvasElement], view: StageView, t: number) {
   ctx.clearRect(0, 0, W, H);
   drawBackdrop(ctx);
-  const a = layers[0].getContext('2d')!;
-  const fade = chapter < 3 ? smoothstep(clamp01((cp - FADE_START) / (1 - FADE_START))) : 0;
-  renderChapter(a, chapter, smoothstep(clamp01(cp / DRAW_END)), t);
-  ctx.globalAlpha = 1 - fade;
-  ctx.drawImage(layers[0], 0, 0);
-  if (fade > 0) {
-    const b = layers[1].getContext('2d')!;
-    renderChapter(b, chapter + 1, 0, t);
-    ctx.globalAlpha = fade;
-    ctx.drawImage(layers[1], 0, 0);
+  if (view.from >= 0 && view.mix < 1) {
+    renderChapter(layers[0].getContext('2d')!, view.from, view.fromProgress, t);
+    ctx.globalAlpha = 1 - view.mix;
+    ctx.drawImage(layers[0], 0, 0);
   }
+  renderChapter(layers[1].getContext('2d')!, view.to, view.toProgress, t);
+  ctx.globalAlpha = view.from >= 0 ? view.mix : 1;
+  ctx.drawImage(layers[1], 0, 0);
   ctx.globalAlpha = 1;
 }
 
@@ -335,11 +336,35 @@ export const NightStory: React.FC = () => {
     let visible = false;
     const layers: [HTMLCanvasElement, HTMLCanvasElement] = [makeLayer(), makeLayer()];
     const progressNow = () => (reduceMotion ? scrollYProgress.get() : smooth.get());
+    // When each chapter started playing; a chapter that already played shows finished.
+    const startedAt = [-1, -1, -1, -1];
+    let current = -1;
+    let previous = -1;
+    let switchedAt = -Infinity;
+    const played = (chapter: number, now: number) => {
+      if (reduceMotion || PLAY_MS[chapter] === 0) return 1;
+      if (startedAt[chapter] < 0) return 0;
+      return smoothstep(clamp01((now - startedAt[chapter]) / PLAY_MS[chapter]));
+    };
+    const view = (now: number): StageView => {
+      const chapter = storyChapter(progressNow());
+      if (chapter !== current) {
+        previous = current;
+        current = chapter;
+        switchedAt = now;
+      }
+      // Start drawing once the stage is really in view (not while the hero still fills the screen).
+      if (startedAt[current] < 0 && section.getBoundingClientRect().top < window.innerHeight * 0.25) {
+        startedAt[current] = now + (previous >= 0 ? FADE_MS / 2 : 250);
+      }
+      const mix = reduceMotion || previous < 0 ? 1 : smoothstep(clamp01((now - switchedAt) / FADE_MS));
+      return { from: previous, fromProgress: previous >= 0 ? played(previous, now) : 0, to: current, toProgress: played(current, now), mix };
+    };
     const loop = (t: number) => {
-      renderStage(ctx, layers, progressNow(), reduceMotion ? 0 : t);
+      renderStage(ctx, layers, view(t), reduceMotion ? 0 : t);
       if (visible) raf = requestAnimationFrame(loop);
     };
-    renderStage(ctx, layers, progressNow(), 0);
+    renderStage(ctx, layers, view(performance.now()), 0);
     const io = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
       cancelAnimationFrame(raf);
@@ -359,8 +384,8 @@ export const NightStory: React.FC = () => {
       id="a-night-at-the-desk"
       ref={ref}
       aria-labelledby="night-story-title"
-      className="relative scroll-mt-0 bg-[#20152b]"
-      style={{ ...NIGHT_VARS, height: '560vh' }}
+      className="relative scroll-mt-0 bg-[var(--desk-bg)]"
+      style={{ height: '560vh' }}
     >
       <h2 id="night-story-title" className="sr-only">
         A night at the Desk
@@ -378,7 +403,7 @@ export const NightStory: React.FC = () => {
         <CottageBackdrop chapter={chapter} reduceMotion={reduceMotion} />
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse 55% 60% at 30% 50%, rgba(255, 196, 120, 0.10), transparent 70%), linear-gradient(to bottom, rgba(13,10,28,0.55), transparent 18%)' }}
+          style={{ background: 'radial-gradient(ellipse 55% 60% at 30% 50%, color-mix(in srgb, var(--primary-bg) 12%, transparent), transparent 70%), linear-gradient(to bottom, color-mix(in srgb, var(--desk-bg) 55%, transparent), transparent 18%)' }}
         />
         <div className="relative max-w-7xl w-full mx-auto px-6 sm:px-8 grid lg:grid-cols-[1.1fr_1fr] gap-8 lg:gap-16 items-center">
           {/* Stage */}
@@ -388,12 +413,12 @@ export const NightStory: React.FC = () => {
               animate={{ backgroundColor: active.accent }}
               transition={{ duration: 0.8 }}
             />
-            <div className="relative p-3 bg-[#140e22] border-2 border-[#3a2e4c] shadow-[0_8px_0_#0b0714] rounded-[2px]">
+            <div className="relative p-3 bg-[var(--surface-0)] border-2 border-[var(--desk-border)] shadow-[0_8px_0_var(--ink)] rounded-[2px]">
               <div className="flex items-center gap-1.5 pb-2 px-1">
                 <span className="w-2 h-2 bg-[#e08ca6]" />
                 <span className="w-2 h-2 bg-[#f0be7c]" />
                 <span className="w-2 h-2 bg-[#7fae6b]" />
-                <span className="ml-auto font-mono text-[10px] text-[#968ca2]">hearth-ghost.pixi</span>
+                <span className="ml-auto font-mono text-[10px] text-[var(--text-muted)]">hearth-ghost.pixi</span>
               </div>
               <canvas
                 ref={canvasRef}
@@ -412,7 +437,7 @@ export const NightStory: React.FC = () => {
                         animate={{ y: 0, opacity: 1, rotate: i === 1 ? 2 : -2 }}
                         exit={{ y: 8, opacity: 0 }}
                         transition={{ type: 'spring', stiffness: 420, damping: 18, delay: i * 0.08 }}
-                        className="px-2 py-1 bg-[#fff3e0] text-[#2a1945] font-mono text-[11px] font-bold border-2 border-[#3a2e4c] shadow-[0_3px_0_#0b0714]"
+                        className="px-2 py-1 bg-[var(--primary-bg)] text-[var(--primary-fg)] font-mono text-[11px] font-bold border-2 border-[var(--ink)] shadow-[0_3px_0_var(--ink)]"
                       >
                         {label}
                       </motion.span>

@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CozyScrollReveal, PixelCorners } from './CozyScrollReveal';
 import { CardGoldenChains } from './CardGoldenChains';
 import { SceneBackdrop } from './night/SceneBackdrop';
-import { NIGHT_VARS } from './night/nightPalette';
 import { PhotometricShowcase } from './showcase/PhotometricShowcase';
 import { RotSpriteShowcase } from './showcase/RotSpriteShowcase';
 import { PixelizeShowcase } from './showcase/PixelizeShowcase';
@@ -66,11 +65,10 @@ export const AtelierEngineShowcase: React.FC = () => {
   return (
     <section
       id="engine-showcase"
-      className="relative py-28 sm:py-32 overflow-hidden scroll-mt-14 bg-[#1c1424] text-[var(--text-heading)]"
-      style={NIGHT_VARS}
+      className="relative py-28 sm:py-32 overflow-hidden scroll-mt-14 bg-[var(--surface-0)] text-[var(--text-heading)]"
     >
       <SceneBackdrop scene="workbench" />
-      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#20152b] to-transparent pointer-events-none" />
+      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[var(--desk-bg)] to-transparent pointer-events-none" />
 
       <div className="relative max-w-6xl mx-auto px-6 sm:px-8">
         <CozyScrollReveal variant="fade-up">
@@ -106,14 +104,14 @@ export const AtelierEngineShowcase: React.FC = () => {
                   animate={{ y: isActive ? -6 : 0, rotate: isActive ? 0 : i % 2 ? 1.5 : -1.5 }}
                   whileHover={{ y: isActive ? -6 : -3, rotate: 0 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-                  className={`relative flex items-center gap-2.5 pl-3 pr-4 py-2.5 rounded-[2px] border-2 font-mono text-xs font-bold select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] ${
+                  className={`relative flex items-center gap-2.5 pl-3 pr-4 py-2.5 rounded-[2px] border-2 font-mono text-xs font-bold select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] ${
                     isActive
-                      ? 'bg-[#fff3e0] text-[#2a1945] border-[#0b0714] shadow-[0_5px_0_#0b0714]'
-                      : 'bg-[#2a1945]/90 text-[var(--text-body)] border-[#46306a] shadow-[0_3px_0_#0b0714] hover:text-[var(--text-heading)]'
+                      ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)] shadow-[0_5px_0_var(--ink)]'
+                      : 'bg-[var(--desk-surface-raised)]/90 text-[var(--text-body)] border-[var(--desk-border)] shadow-[0_3px_0_var(--ink)] hover:text-[var(--text-heading)]'
                   }`}
                 >
                   {/* the string the tag hangs from */}
-                  <span aria-hidden="true" className="absolute -top-3 left-1/2 w-px h-3 bg-[#5d4486]" />
+                  <span aria-hidden="true" className="absolute -top-3 left-1/2 w-px h-3 bg-[var(--desk-border-highlight)]" />
                   <span
                     aria-hidden="true"
                     className="grid place-items-center w-6 h-6 rounded-[2px]"
@@ -122,7 +120,7 @@ export const AtelierEngineShowcase: React.FC = () => {
                     <TabIcon />
                   </span>
                   <span>{tab.title}</span>
-                  <span className={`text-[10px] ${isActive ? 'text-[#7a5a8a]' : 'text-[var(--text-muted)]'}`}>{tab.number}</span>
+                  <span className={`text-[10px] ${isActive ? 'text-[var(--text-muted)]' : 'text-[var(--text-muted)]'}`}>{tab.number}</span>
                 </motion.button>
               );
             })}
@@ -134,7 +132,7 @@ export const AtelierEngineShowcase: React.FC = () => {
             role="tabpanel"
             id={`panel-${activeTab.id}`}
             aria-labelledby={`tab-${activeTab.id}`}
-            className="relative rounded-[2px] border-2 border-[#46306a] bg-[#1d1336]/92 backdrop-blur-sm px-6 sm:px-12 pt-10 pb-8 shadow-[0_10px_0_#0b0714,0_30px_60px_rgba(0,0,0,0.45)]"
+            className="relative rounded-[2px] border-2 border-[var(--desk-border)] bg-[var(--desk-surface)]/92 backdrop-blur-sm px-6 sm:px-12 pt-10 pb-8 shadow-[0_10px_0_var(--ink),0_30px_60px_var(--shadow-far)]"
           >
             <PixelCorners />
             <CardGoldenChains />
@@ -151,7 +149,7 @@ export const AtelierEngineShowcase: React.FC = () => {
               </motion.div>
             </AnimatePresence>
 
-            <div className="mt-8 pt-5 border-t border-[#46306a]/70 flex items-center justify-between gap-4 font-mono text-[11px] text-[var(--text-muted)]">
+            <div className="mt-8 pt-5 border-t border-[var(--desk-border)]/70 flex items-center justify-between gap-4 font-mono text-[11px] text-[var(--text-muted)]">
               <div className="flex items-center gap-1.5" aria-hidden="true">
                 {SHOWCASE_TABS.map((tab) => (
                   <span
@@ -165,7 +163,7 @@ export const AtelierEngineShowcase: React.FC = () => {
                 <button
                   onClick={() => step(-1)}
                   aria-label="Previous feature"
-                  className="px-3 py-1.5 rounded-[2px] border border-[#46306a] bg-[#2a1945] text-[var(--text-heading)] hover:border-[var(--accent-gold)] transition-colors active:translate-y-px"
+                  className="px-3 py-1.5 rounded-[2px] border border-[var(--desk-border)] bg-[var(--desk-surface-raised)] text-[var(--text-heading)] hover:border-[var(--accent-gold)] transition-colors active:translate-y-px"
                 >
                   ← prev
                 </button>
@@ -175,7 +173,7 @@ export const AtelierEngineShowcase: React.FC = () => {
                 <button
                   onClick={() => step(1)}
                   aria-label="Next feature"
-                  className="px-3 py-1.5 rounded-[2px] border border-[#46306a] bg-[#2a1945] text-[var(--text-heading)] hover:border-[var(--accent-gold)] transition-colors active:translate-y-px"
+                  className="px-3 py-1.5 rounded-[2px] border border-[var(--desk-border)] bg-[var(--desk-surface-raised)] text-[var(--text-heading)] hover:border-[var(--accent-gold)] transition-colors active:translate-y-px"
                 >
                   next →
                 </button>

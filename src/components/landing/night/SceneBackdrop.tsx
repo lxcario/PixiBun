@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { recolorCanvas } from '@/lib/theme/sceneRecolor';
+import { useSceneRecolor } from './useSceneRecolor';
 import { useReducedMotion } from 'motion/react';
 import { BAYER_4X4 } from '@/lib/canvas/ditherMatrix';
 import { STARTER_TEMPLATES, TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
@@ -351,10 +353,11 @@ function draw(ctx: CanvasRenderingContext2D, scene: BackdropScene, b: Built, t: 
 export const SceneBackdrop: React.FC<{ scene: BackdropScene }> = ({ scene }) => {
   const ref = useRef<HTMLCanvasElement | null>(null);
   const reduceMotion = Boolean(useReducedMotion());
+  const recolor = useSceneRecolor();
 
   useEffect(() => {
     const el = ref.current;
-    const ctx = el?.getContext('2d');
+    const ctx = el?.getContext('2d', { willReadFrequently: true });
     const host = el?.parentElement;
     if (!el || !ctx || !host) return;
     let built: Built | null = null;
@@ -374,7 +377,11 @@ export const SceneBackdrop: React.FC<{ scene: BackdropScene }> = ({ scene }) => 
       el.style.height = `${h * PX}px`;
       built = scene === 'workbench' ? buildWorkbench(w, h) : buildGarden(w, h);
     };
-    const paint = () => built && draw(ctx, scene, built, reduceMotion ? 0 : performance.now() - start);
+    const paint = () => {
+      if (!built) return;
+      draw(ctx, scene, built, reduceMotion ? 0 : performance.now() - start);
+      recolorCanvas(ctx, recolor);
+    };
     const loop = () => {
       paint();
       if (visible && !reduceMotion) raf = requestAnimationFrame(loop);
@@ -398,7 +405,7 @@ export const SceneBackdrop: React.FC<{ scene: BackdropScene }> = ({ scene }) => 
       ro.disconnect();
       io.disconnect();
     };
-  }, [scene, reduceMotion]);
+  }, [scene, reduceMotion, recolor]);
 
   return (
     <canvas

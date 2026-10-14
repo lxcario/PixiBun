@@ -24,7 +24,7 @@ export const ShowcaseNote: React.FC<ShowcaseNoteProps> = ({ kicker, title, body,
         <li key={tip} className="flex items-start gap-3 text-sm text-[var(--text-body)]">
           <span
             aria-hidden="true"
-            className="mt-0.5 shrink-0 grid place-items-center w-5 h-5 rounded-[2px] font-mono text-[10px] font-bold text-[#1d1336]"
+            className="mt-0.5 shrink-0 grid place-items-center w-5 h-5 rounded-[2px] font-mono text-[10px] font-bold text-[var(--primary-fg)]"
             style={{ backgroundColor: ['#ffd285', '#dcabdf', '#a8e092'][i % 3] }}
           >
             {i + 1}
@@ -36,7 +36,7 @@ export const ShowcaseNote: React.FC<ShowcaseNoteProps> = ({ kicker, title, body,
 
     <Link
       href={href}
-      className="group mt-8 inline-flex items-center gap-2 px-5 py-2.5 rounded-[2px] pixel-primary-btn text-xs font-display font-bold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c]"
+      className="group mt-8 inline-flex items-center gap-2 px-5 py-2.5 rounded-[2px] pixel-primary-btn text-xs font-display font-bold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)]"
     >
       <span>{cta}</span>
       <span aria-hidden="true" className="inline-block transition-transform group-hover:translate-x-1">

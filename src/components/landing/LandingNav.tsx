@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { motion, useScroll, useSpring } from 'motion/react';
 import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { NIGHT_VARS } from './night/nightPalette';
 
 const NAV_LINKS = [
     { href: '/playground', label: 'Playground', isExternal: true },
@@ -70,7 +69,6 @@ export const LandingNav: React.FC = () => {
           : 'bg-transparent border-b-2 border-transparent'
       }`}
       // Over the night-sky hero the bar is transparent, so it always uses the night palette there.
-      style={isScrolled ? undefined : NIGHT_VARS}
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-8 h-14 sm:h-16 flex items-center justify-between relative">
         {/* Brand / Logo */}

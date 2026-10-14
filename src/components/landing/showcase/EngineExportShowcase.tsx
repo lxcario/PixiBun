@@ -197,10 +197,10 @@ const BunSheetStrip: React.FC = () => {
     });
   }, []);
   return (
-    <div className="relative w-full max-w-[480px] rounded-[3px] border-2 border-[#0b0714] bg-[#140b21] p-2 shadow-[0_4px_0_#0b0714]">
-      <div className="flex justify-between font-mono text-[11px] text-[#cdbfdf] mb-1.5 px-1">
+    <div className="relative w-full max-w-[480px] rounded-[3px] border-2 border-[var(--ink)] bg-[var(--surface-0)] p-2 shadow-[0_4px_0_var(--ink)]">
+      <div className="flex justify-between font-mono text-[11px] text-[var(--text-muted)] mb-1.5 px-1">
         <span>sprite sheet</span>
-        <span className="text-[#ffd285]">4 frames · 20×22</span>
+        <span className="text-[var(--accent-gold)]">4 frames · 20×22</span>
       </div>
       <div className="relative">
         <canvas
@@ -211,7 +211,7 @@ const BunSheetStrip: React.FC = () => {
           style={{ imageRendering: 'pixelated', aspectRatio: '80 / 22' }}
           aria-label="Sprite sheet with four frames of Bun hopping"
         />
-        <span aria-hidden="true" className="sheet-playhead absolute top-0 bottom-0 w-1/4 border-2 border-[#ffd285] rounded-[2px]" />
+        <span aria-hidden="true" className="sheet-playhead absolute top-0 bottom-0 w-1/4 border-2 border-[var(--accent-gold)] rounded-[2px]" />
       </div>
     </div>
   );
@@ -305,39 +305,39 @@ export const EngineExportShowcase: React.FC = () => {
               <button
                 type="button"
                 onClick={handleCopy}
-                className="px-2 py-0.5 rounded-[2px] border-2 border-[#0b0714] bg-[#ffd285] text-[#2a1945] font-bold shadow-[0_2px_0_#0b0714] active:translate-y-px active:shadow-none"
+                className="px-2 py-0.5 rounded-[2px] border-2 border-[var(--ink)] bg-[var(--primary-bg)] text-[var(--primary-fg)] font-bold shadow-[0_2px_0_var(--ink)] active:translate-y-px active:shadow-none"
               >
                 {copied ? 'Copied' : isSpecification ? 'Copy notes' : 'Copy sample'}
               </button>
               <button
                 type="button"
                 onClick={handleDownloadSample}
-                className="px-2 py-0.5 rounded-[2px] border-2 border-[#0b0714] bg-[#2a1945] text-[#fff3e0] font-bold shadow-[0_2px_0_#0b0714] active:translate-y-px active:shadow-none"
+                className="px-2 py-0.5 rounded-[2px] border-2 border-[var(--ink)] bg-[var(--desk-surface-raised)] text-[var(--text-heading)] font-bold shadow-[0_2px_0_var(--ink)] active:translate-y-px active:shadow-none"
               >
                 {isSpecification ? 'Download notes (.txt)' : 'Download sample'}
               </button>
             </span>
           }
         >
-          <p className="-mt-1 mb-3 text-[12px] text-[#cdbfdf]">
+          <p className="-mt-1 mb-3 text-[12px] text-[var(--text-muted)]">
             {isSpecification
               ? 'Notes about the format. Make your own animation in the studio.'
               : 'A real example file with a sample bunny. Your own export brings its image along.'}
           </p>
           {copyError && (
-            <p role="status" className="mb-3 text-[12px] text-[#f2b8c6]">
+            <p role="status" className="mb-3 text-[12px] text-[var(--accent-plum)]">
               Copy could not start. You can select the text or download it instead.
             </p>
           )}
-          <div className="flex max-h-[240px] overflow-auto rounded-[2px] border-2 border-[#0b0714] bg-[#140b21] font-mono text-[11px] leading-relaxed">
-            <div aria-hidden="true" className="sticky left-0 shrink-0 py-2 pl-2 pr-2 text-right text-[#5d4486] bg-[#140b21] select-none">
+          <div className="flex max-h-[240px] overflow-auto rounded-[2px] border-2 border-[var(--ink)] bg-[var(--surface-0)] font-mono text-[11px] leading-relaxed">
+            <div aria-hidden="true" className="sticky left-0 shrink-0 py-2 pl-2 pr-2 text-right text-[var(--text-muted)] bg-[var(--surface-0)] select-none">
               {getCode()
                 .split(/\r?\n/)
                 .map((_, i) => (
                   <div key={i}>{i + 1}</div>
                 ))}
             </div>
-            <pre className={`py-2 pr-3 text-[#e9dcf2] select-text ${isSpecification ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'}`}>
+            <pre className={`py-2 pr-3 text-[var(--text-body)] select-text ${isSpecification ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'}`}>
               {getCode()}
             </pre>
           </div>

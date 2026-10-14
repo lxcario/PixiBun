@@ -76,7 +76,7 @@ export const PixelizeShowcase: React.FC = () => {
             <ArtFrame tag="before" caption={sceneType === 'mountain' ? 'Sunset Alpine' : 'Lamplit Desk'}>
               <canvas ref={sourceDisplayCanvasRef} className="block w-24 h-24 sm:w-28 sm:h-28" aria-label="Original source artwork" />
             </ArtFrame>
-            <span aria-hidden="true" className="flex flex-col items-center gap-1 text-[#ffd285] font-mono text-lg">
+            <span aria-hidden="true" className="flex flex-col items-center gap-1 text-[var(--accent-gold)] font-mono text-lg">
               <span className="animate-pulse">✦</span>
               <span>→</span>
             </span>
@@ -91,16 +91,16 @@ export const PixelizeShowcase: React.FC = () => {
           </div>
 
           {paletteColors.length > 0 && (
-            <div className="mt-5 pt-3 border-t-2 border-dashed border-[#3d2a5c]">
-              <div className="flex justify-between font-mono text-[11px] text-[#cdbfdf] mb-2">
+            <div className="mt-5 pt-3 border-t-2 border-dashed border-[var(--desk-border)]">
+              <div className="flex justify-between font-mono text-[11px] text-[var(--text-muted)] mb-2">
                 <span>colours it kept</span>
-                <span className="text-[#ffd285]">{paletteColors.length}</span>
+                <span className="text-[var(--accent-gold)]">{paletteColors.length}</span>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {paletteColors.map((hex, i) => (
                   <span
                     key={i}
-                    className="w-5 h-5 rounded-[2px] border-2 border-[#0b0714] shadow-[inset_-2px_-2px_0_rgba(0,0,0,0.25),inset_2px_2px_0_rgba(255,255,255,0.18)] transition-transform hover:-translate-y-0.5"
+                    className="w-5 h-5 rounded-[2px] border-2 border-[var(--ink)] shadow-[inset_-2px_-2px_0_rgba(0,0,0,0.25),inset_2px_2px_0_rgba(255,255,255,0.18)] transition-transform hover:-translate-y-0.5"
                     style={{ backgroundColor: hex }}
                     title={hex}
                   />

@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { recolorCanvas } from '@/lib/theme/sceneRecolor';
+import { useSceneRecolor } from './useSceneRecolor';
 import { BAYER_4X4 } from '@/lib/canvas/ditherMatrix';
 import { drawBun, type BunPose } from '@/lib/art/bunSprite';
 
@@ -376,6 +378,7 @@ export const CottageBackdrop: React.FC<{ chapter: number; reduceMotion: boolean 
   const chapterRef = useRef(chapter);
   const hopAt = useRef(-1e9);
   const start = useRef(0);
+  const recolor = useSceneRecolor();
 
   useEffect(() => {
     if (chapterRef.current !== chapter) {
@@ -386,7 +389,7 @@ export const CottageBackdrop: React.FC<{ chapter: number; reduceMotion: boolean 
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
+    const ctx = canvas?.getContext('2d', { willReadFrequently: true });
     const host = canvas?.parentElement;
     if (!canvas || !ctx || !host) return;
     start.current = performance.now();
@@ -409,7 +412,9 @@ export const CottageBackdrop: React.FC<{ chapter: number; reduceMotion: boolean 
       room = buildRoom(w, h);
     };
     const draw = () => {
-      if (room) drawRoom(ctx, room, reduceMotion ? 0 : performance.now() - start.current, chapterRef.current, hopAt.current);
+      if (!room) return;
+      drawRoom(ctx, room, reduceMotion ? 0 : performance.now() - start.current, chapterRef.current, hopAt.current);
+      recolorCanvas(ctx, recolor);
     };
     const loop = () => {
       draw();
@@ -433,7 +438,7 @@ export const CottageBackdrop: React.FC<{ chapter: number; reduceMotion: boolean 
       ro.disconnect();
       io.disconnect();
     };
-  }, [reduceMotion]);
+  }, [reduceMotion, recolor]);
 
   return (
     <canvas
