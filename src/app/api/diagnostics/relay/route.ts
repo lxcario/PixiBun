@@ -98,7 +98,7 @@ export async function POST(request: Request) {
 
     if (!targetUrl || typeof targetUrl !== 'string') {
       return NextResponse.json(
-        { error: 'Diagnostics relay is not configured on this server; reports stay local.' },
+        { error: 'Diagnostics relay is not configured on this server; no reports were forwarded.' },
         { status: 503 }
       );
     }

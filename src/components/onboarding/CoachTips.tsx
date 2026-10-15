@@ -16,18 +16,20 @@ export interface CoachTip {
   target: string;
   title: string;
   body: string;
+  classicBody?: string;
 }
 
 export const COACH_TIPS: CoachTip[] = [
   {
     id: 'first-edit', levels: ['new'], trigger: 'first-edit', target: '[data-testid="main-composite-canvas"]',
-    title: 'Your first pixels!',
-    body: 'Ctrl+Z takes a stroke back. Scroll to zoom, and hold Alt and drag to move around the canvas.',
+    title: 'Your first edit',
+    body: 'Ctrl/Cmd+Z takes an edit back. Scroll to zoom, and hold Space and drag to move around the canvas.',
+    classicBody: 'Ctrl/Cmd+Z takes an edit back. Scroll to zoom, and hold Alt and drag to move around the canvas.',
   },
   {
     id: 'lamp', levels: ['new', 'some'], trigger: 'fx-tab', target: '[data-testid="right-inspector"]',
     title: 'Meet the Lamp',
-    body: 'Lighting shades your sprite with colors from your own palette, by hand-written math, never a model. Pick Lighting, then drag the bulb.',
+    body: 'Open Effects → Add light and depth → Light your sprite. Choose Preview lighting and move the bulb. Apply keeps the result; Cancel returns to your artwork.',
   },
   {
     id: 'second-frame', levels: ['new', 'some'], trigger: 'second-frame', target: '[data-testid="bottom-timeline"]',
@@ -78,12 +80,25 @@ export const CoachTips: React.FC<{ exportOpen: boolean }> = ({ exportOpen }) => 
 
   // Watch the studio for the moments each tip belongs to.
   useEffect(() => useStudioStore.subscribe((state, previous) => {
+    if (state.currentProjectId !== previous.currentProjectId) {
+      edits.current = 0;
+      setFired([]);
+      setActive(null);
+      return;
+    }
     if (state.canUndo && !previous.canUndo) fire('first-edit');
     if (state.activeInspectorTab === 'ai' && previous.activeInspectorTab !== 'ai') fire('fx-tab');
     if (state.frames.length >= 2 && previous.frames.length < 2) fire('second-frame');
-    const layers = state.frames[state.activeFrameIndex]?.layers.length ?? 0;
-    const before = previous.frames[previous.activeFrameIndex]?.layers.length ?? 0;
-    if (layers >= 2 && before < 2 && state.frames.length === previous.frames.length) fire('second-layer');
+    const frame = state.frames[state.activeFrameIndex];
+    const beforeFrame = previous.frames[previous.activeFrameIndex];
+    if (frame && beforeFrame && frame.id === beforeFrame.id && frame.layers !== beforeFrame.layers && state.frames.length === previous.frames.length) {
+      // Generated layers carry a tag before their recipe is attached. Count
+      // ordinary drawing layers, including a later manual layer above an effect.
+      const layers = frame.layers.filter(layer => !layer.tag && !layer.effect && !layer.research);
+      const before = beforeFrame.layers.filter(layer => !layer.tag && !layer.effect && !layer.research);
+      const previousIds = new Set(beforeFrame.layers.map(layer => layer.id));
+      if (layers.length >= 2 && before.length < 2 && layers.some(layer => !previousIds.has(layer.id))) fire('second-layer');
+    }
     if (state.editRevision !== previous.editRevision && ++edits.current >= BUSY_EDITS) fire('busy');
   }), [fire]);
 
@@ -126,7 +141,9 @@ export const CoachTips: React.FC<{ exportOpen: boolean }> = ({ exportOpen }) => 
 const CARD_W = 290;
 
 const TipCard: React.FC<{ tip: CoachTip; reduce: boolean; onDismiss: () => void; onTurnOff: () => void }> = ({ tip, reduce, onDismiss, onTurnOff }) => {
+  const keymap = usePreferencesStore(s => s.keymap);
   const [pos, setPos] = useState<{ left: number; top: number; side: 'left' | 'right' | 'above' | 'below' } | null>(null);
+  const body = keymap === 'classic' ? tip.classicBody ?? tip.body : tip.body;
 
   useLayoutEffect(() => {
     const place = () => {
@@ -176,7 +193,7 @@ const TipCard: React.FC<{ tip: CoachTip; reduce: boolean; onDismiss: () => void;
         </motion.span>
         <div className="flex min-w-0 flex-col gap-1">
           <span className="text-[13px] font-bold">{tip.title}</span>
-          <span className="text-xs leading-relaxed text-[var(--text-body)]">{tip.body}</span>
+          <span className="text-xs leading-relaxed text-[var(--text-body)]">{body}</span>
         </div>
       </div>
       <div className="mt-3 flex items-center justify-between">

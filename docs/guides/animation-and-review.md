@@ -54,7 +54,7 @@ Open **Clips** at the right of the timeline to reach **Animation Tags & Clips**.
 
 Existing tags can be renamed, resized, reordered, recolored or deleted. Choose Forward, Reverse or Ping-Pong for the tag's ordering, and use **Filter** to preview that range. **All frames** clears a clip filter when the timeline presents it. Tags and clips use the shared animation model; they are not a second copy of the pixels.
 
-Sprite sheets and game-delivery exports can include clip metadata; format support differs. The in-app sentence about “Aseprite formats” does **not** mean there is an `.aseprite` project exporter. The current export choices are [listed individually](exporting.md). Verify a generated resource in the engine you will actually use.
+Sprite sheets and game-delivery exports can include clip metadata; format support differs. The dialog identifies this as metadata for supported formats and explicitly states that `.ase` and `.aseprite` project files are not exported. The current export choices are [listed individually](exporting.md). Verify a generated resource in the engine you will actually use.
 
 ## Review animation
 

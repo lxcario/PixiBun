@@ -12,8 +12,8 @@ const PLEDGE_DATE = '2026-10-14';
 const PROMISES = [
   'PixiBun contains no generative AI model and never will.',
   'We never train anything on anyone’s art.',
-  'Every automatic tool (lighting, image to pixels, cleanup, rotation) is a documented algorithm: the same input always makes the same pixels.',
-  'Your drawings stay on your device. No accounts, no uploads, no telemetry. Co-draw sends strokes straight to the person you invite, and crash reports leave your device only if you turn them on.',
+  'Lighting, image to pixels, cleanup and rotation use documented graphics algorithms with settings you control. They do not call a generative model.',
+  'Drawings are saved in your browser, without an account or automatic artwork uploads. Local error and performance logs stay on your device unless you enable remote reporting. You choose whether to share a cart or join co-draw; Internet co-draw also contacts Google to help connect the peers.',
 ];
 
 export default function PledgePage() {
@@ -28,6 +28,7 @@ export default function PledgePage() {
           <h1 className="font-display text-3xl sm:text-4xl leading-tight">Every pixel placed by a person.</h1>
           <p className="font-mono text-sm text-[var(--accent-gold)]">
             Our pledge, <time dateTime={PLEDGE_DATE}>14 October 2026</time>
+            {' · '}wording clarified <time dateTime="2026-10-15">15 October 2026</time>
           </p>
         </header>
 
