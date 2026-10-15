@@ -33,7 +33,7 @@ export function InspectorSection({
           {icon && <PixelIcon name={icon} size={11} className="text-[var(--accent-gold)]" />}
           {title}
         </h3>
-        {meta && <div className="flex items-center gap-1 shrink-0 text-[10px] text-[var(--text-muted)]">{meta}</div>}
+        {meta && <div className="flex items-center gap-1 shrink-0 text-[11px] text-[var(--text-muted)]">{meta}</div>}
       </div>
       {children}
     </section>
@@ -115,7 +115,7 @@ export function RangeRow({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-2 accent-[var(--accent-gold)] cursor-pointer"
+        className="w-full h-6 accent-[var(--accent-gold)] cursor-pointer"
       />
     </div>
   );

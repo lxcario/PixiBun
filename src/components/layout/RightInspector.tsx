@@ -45,7 +45,7 @@ export const RightInspector: React.FC = () => {
       className="h-full border-x shrink-0 bg-[var(--desk-surface)] border-[var(--desk-border)] flex flex-col justify-between select-none z-10 text-[var(--text-heading)]"
     >
       {/* Tab bar: each tab carries a live hint of what is inside it */}
-      <div role="group" aria-label="Inspector sections" className="flex bg-[var(--desk-surface)] border-b border-[var(--desk-border)] h-9 p-1 gap-1">
+      <div role="group" aria-label="Inspector sections" className="grid grid-cols-4 bg-[var(--desk-surface)] border-b border-[var(--desk-border)] p-1 gap-1">
         {TABS.map((tab) => {
           const active = activeInspectorTab === tab.id;
           return (
@@ -56,22 +56,24 @@ export const RightInspector: React.FC = () => {
               aria-label={tab.ariaLabel}
               data-testid={`tab-${tab.id}`}
               aria-pressed={active}
-              title={tab.title}
-              className={`flex-auto min-w-0 h-7 flex items-center justify-center gap-1 text-[11px] whitespace-nowrap font-sans rounded-[2px] border px-1 overflow-hidden transition-all duration-100 ${
+              title={tab.id === 'layers' ? `${tab.title} (${layerCount})` : tab.title}
+              className={`min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-xs whitespace-nowrap font-sans rounded-[2px] border px-0.5 transition-colors duration-100 ${
                 active
                   ? 'bg-[var(--inspector-tab-active-bg)] text-[var(--inspector-tab-active-fg)] border-[var(--inspector-tab-active-border)] font-bold shadow-[inset_1px_1px_0_rgba(255,255,255,0.15),0_1px_0_var(--btn-shadow)]'
                   : 'pixel-tactile-btn border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)]'
               }`}
             >
+              <span aria-hidden="true" className="flex items-center justify-center gap-1 h-3.5">
               {tab.id === 'palette' ? (
                 <span aria-hidden="true" className="w-2.5 h-2.5 shrink-0 rounded-[2px] border border-current" style={{ backgroundColor: primaryColor }} />
               ) : (
                 <PixelIcon name={tab.id === 'tools' ? activeToolIcon : tab.icon} size={11} className="shrink-0" />
               )}
-              <span className="truncate">{tab.label}</span>
               {tab.id === 'layers' && layerCount > 1 && (
-                <span aria-hidden="true" className="shrink-0 min-w-[14px] h-[14px] px-0.5 rounded-full bg-current/15 text-[9px] leading-[14px] font-mono font-bold text-center">{layerCount}</span>
+                <span className="shrink-0 text-[11px] leading-[14px] font-mono font-bold">{layerCount > 99 ? '99+' : layerCount}</span>
               )}
+              </span>
+              <span data-inspector-tab-label>{tab.label}</span>
             </button>
           );
         })}

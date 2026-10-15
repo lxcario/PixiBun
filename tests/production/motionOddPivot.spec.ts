@@ -1,3 +1,4 @@
+import { openMotionCapture } from '../helpers/motion';
 import { expect, test, type Page } from '@playwright/test';
 import { chooseTool } from '../helpers/tools';
 const pixels=(page:Page,id='main-composite-canvas')=>page.getByTestId(id).evaluate((c:HTMLCanvasElement)=>Array.from(c.getContext('2d')!.getImageData(0,0,c.width,c.height).data));
@@ -9,7 +10,7 @@ test('odd-sized centered motion preserves a square on a quarter turn and Center 
   for(const row of [4,5,6]){const start=point(4.25,row+0.25),end=point(6.25,row+0.25);await page.mouse.move(start.x,start.y);await page.mouse.down();await page.mouse.move(end.x,end.y,{steps:3});await page.mouse.up();}
   await expect.poll(async()=> (await pixels(page)).filter((v,i)=>i%4===3&&v>0).length).toBe(9);const original=await pixels(page);
   await chooseTool(page, 'select-box');const start=point(4.25,4.25),end=point(6.75,6.75);await page.mouse.move(start.x,start.y);await page.mouse.down();await page.mouse.move(end.x,end.y,{steps:3});await page.mouse.up();
-  await page.getByTestId('tab-tools').click();await page.getByTestId('create-motion-part-btn').click();await expect(page.getByTestId('piximotion-panel')).toBeVisible();
+  await page.getByTestId('tab-tools').click();await openMotionCapture(page); await page.getByTestId('create-motion-part-btn').click();await expect(page.getByTestId('piximotion-panel')).toBeVisible();
   await numeric(page,'Rotation degrees','90');await expect(page.getByTestId('piximotion-preview-canvas')).toHaveAttribute('aria-busy','false');
   await expect.poll(()=>pixels(page,'piximotion-preview-canvas')).toEqual(original);
   await expect(page.getByRole('spinbutton',{name:'Pivot X pixels',exact:true})).toHaveValue('5.5');await expect(page.getByRole('spinbutton',{name:'Pivot Y pixels',exact:true})).toHaveValue('5.5');

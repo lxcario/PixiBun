@@ -9,7 +9,7 @@ The studio has a small shelf of tools on the left, your canvas in the middle, **
 ![The current studio with three original little-friend poses.](../assets/screenshots/2026-10-02-docs/studio-atelier-dark.png)
 
 
-The right inspector tabs are **Tools**, **Layers**, **Palette** and **Effects**. Effects contains PixiTools tasks such as lighting, cleanup, tiles and animation review; its accessible name is Effects (PixiTools). Existing screenshots show the earlier PixiTools label.
+The right inspector tabs are **Tools**, **Layers**, **Palette** and **Effects**. Full 12 px labels sit below their icons so they fit the admitted 260 px minimum width; the Layers icon row shows a count capped visually at 99+, with the full count in the tab's title. Effects contains PixiTools tasks such as lighting, cleanup, tiles and animation review; its accessible name is Effects (PixiTools). Existing screenshots show the earlier PixiTools label. In Tools, expand **Animate artwork** to capture a whole layer or merge visible color layers for motion; an active selection opens this group for capturing a detail.
 
 ## Projects and names
 

@@ -1,3 +1,4 @@
+import { openMotionCapture } from '../helpers/motion';
 import { expect, test, type Page } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
 
@@ -19,7 +20,7 @@ for (const translation of ['4.3', '-1.5']) {
     await expect.poll(() => page.getByTestId('main-composite-canvas').evaluate((c: HTMLCanvasElement) => c.width)).toBe(16);
     await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
     const original = await digest(page, 'main-composite-canvas');
-    await page.getByTestId('tab-tools').click(); await page.getByTestId('create-motion-part-btn').click();
+    await page.getByTestId('tab-tools').click(); await openMotionCapture(page); await page.getByTestId('create-motion-part-btn').click();
     await number(page, 'Rotation degrees', '33.3'); await number(page, 'Pivot X pixels', '8.3');
     await number(page, 'Motion frames', '3');
     await page.getByRole('textbox', { name: 'Rig name', exact: true }).fill('Fractional');

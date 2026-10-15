@@ -1,30 +1,17 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
+import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
 import { BUN_ACTIONS, INTRO_MS, MoonlitScene, type BunAction, type Constellation } from './moonlitScene';
 import { useLiveThemeChoice } from '@/stores/themeStore';
 import { isSceneTheme } from '@/lib/theme/registry';
 import { buildScene, paintSceneParticles, type BuiltScene } from '@/lib/theme/scenes';
 import { recolorCanvas, sceneRecolor } from '@/lib/theme/sceneRecolor';
+import { nextConstellationName, placeConstellationLabels } from './constellationLabels';
 
 const SEEN_KEY = 'pixibun_night_intro_v1';
 const MAX_STARS = 14;
-const NAMES = [
-  'The Sleepy Teacup',
-  "Bun's Left Ear",
-  'The Lost Mitten',
-  'The Great Dumpling',
-  'Two Moths Gossiping',
-  'The Midnight Snack',
-  'The Wobbly Kettle',
-  'A Cat Pretending Not to Care',
-  'The Little Paintbrush',
-  "Grandma's Cardigan",
-  'The Forgotten Sock',
-  'Three Peas, Arguing',
-];
 
 const REACTIONS: Record<BunAction, string> = {
   hop: 'Bun hops happily.',
@@ -39,7 +26,46 @@ interface Label {
   name: string;
   x: number;
   y: number;
-  points: Array<{ x: number; y: number }>;
+}
+
+function ConstellationNames({ labels, reduceMotion }: { labels: Label[]; reduceMotion: boolean }) {
+  const overlayRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const overlay = overlayRef.current;
+    const section = overlay?.parentElement;
+    const copy = section?.querySelector<HTMLElement>('[data-hero-copy]');
+    if (!overlay || !section || !copy) return;
+    let raf = 0, disposed = false;
+    const measure = () => {
+      if (disposed) return;
+      const host = section.getBoundingClientRect(), text = copy.getBoundingClientRect();
+      const px = host.width >= 1024 ? 4 : 3;
+      const shift = Math.round((reduceMotion ? 0 : Math.max(0, window.scrollY) / px) * 0.5) * px;
+      const spans = Array.from(overlay.querySelectorAll<HTMLElement>('[data-constellation-label]'));
+      const measured = spans.map((span, i) => ({ id: labels[i].id, x: labels[i].x * px, y: labels[i].y * px + shift - 30, width: span.offsetWidth, height: span.offsetHeight }));
+      const slots = placeConstellationLabels(measured,
+        { x: 8, y: 80, width: Math.max(0, host.width - 16), height: Math.max(0, host.height * 0.64 - 80) },
+        [{ x: text.x - host.x, y: text.y - host.y, width: text.width, height: text.height }]);
+      for (let i = 0; i < spans.length; i++) {
+        const slot = slots.get(labels[i].id);
+        spans[i].style.visibility = slot ? 'visible' : 'hidden';
+        if (slot) { spans[i].style.left = `${slot.x}px`; spans[i].style.top = `${slot.y}px`; }
+      }
+    };
+    const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(measure); };
+    const observer = new ResizeObserver(schedule);
+    observer.observe(section); observer.observe(copy);
+    window.addEventListener('scroll', schedule, { passive: true });
+    void document.fonts.ready.then(measure);
+    measure();
+    return () => { disposed = true; cancelAnimationFrame(raf); observer.disconnect(); window.removeEventListener('scroll', schedule); };
+  }, [labels, reduceMotion]);
+  return <div ref={overlayRef} className="absolute inset-0 pointer-events-none" aria-hidden="true">
+    {labels.map(label => <span key={label.id} data-constellation-label style={{ visibility: 'hidden' }}
+      className="absolute whitespace-nowrap font-mono text-[11px] tracking-wide text-[var(--accent-plum)] [text-shadow:0_1px_0_var(--desk-bg)]">
+      ✦ {label.name}
+    </span>)}
+  </div>;
 }
 
 /** Text overlay timing: lines rise in as the town lights up. */
@@ -94,7 +120,6 @@ export const NightHero: React.FC = () => {
   }, [studioTheme, day]);
 
   const { scrollY } = useScroll();
-  const labelShift = useTransform(scrollY, (v) => v * 0.5);
   // On wide screens the copy drifts and fades as the scene scrolls away.
   const [wide, setWide] = useState(false);
   useEffect(() => {
@@ -226,12 +251,11 @@ export const NightHero: React.FC = () => {
   const finishConstellation = useCallback((c: Constellation | null) => {
     if (!c || c.stars.length === 0) return;
     if (c.stars.length >= 3) {
-      c.name = NAMES[Math.floor(Math.random() * NAMES.length)];
+      c.name = nextConstellationName(constellations.current.flatMap(item => item.name ? [item.name] : []));
       const cx = c.stars.reduce((s, p) => s + p.x, 0) / c.stars.length;
       const top = Math.min(...c.stars.map((p) => p.y));
-      const PX = pxRef.current;
       const id = labelId.current++;
-      setLabels((all) => [...all, { id, name: c.name!, x: cx * PX, y: top * PX - 30, points: c.stars.map(({ x, y }) => ({ x, y })) }].slice(-4));
+      setLabels((all) => [...all, { id, name: c.name!, x: cx, y: top }].slice(-4));
       setAnnounce(`You drew a constellation of ${c.stars.length} stars. Bun named it ${c.name}.`);
     }
     constellations.current = [...constellations.current, c].slice(-6);
@@ -334,23 +358,7 @@ export const NightHero: React.FC = () => {
       />
 
       {/* Constellation names float with the sky */}
-      <motion.div style={{ y: labelShift }} className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        <AnimatePresence>
-          {labels.map((label) => (
-            <motion.span
-              key={label.id}
-              initial={{ opacity: 0, y: 8, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="absolute -translate-x-1/2 whitespace-nowrap font-mono text-[11px] tracking-wide text-[var(--accent-plum)] [text-shadow:0_1px_0_var(--desk-bg)]"
-              style={{ left: label.x, top: label.y }}
-            >
-              ✦ {label.name}
-            </motion.span>
-          ))}
-        </AnimatePresence>
-      </motion.div>
+      <ConstellationNames labels={labels} reduceMotion={reduceMotion} />
 
       {/* Soft vignette so the copy always reads */}
       <div
@@ -364,7 +372,7 @@ export const NightHero: React.FC = () => {
           style={{ y: copyY, opacity: copyOpacity }}
           className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 pt-28 sm:pt-32 lg:pt-36 pb-20 sm:pb-24 lg:pb-0"
         >
-          <div className="max-w-xl">
+          <div data-hero-copy className="max-w-xl">
             <motion.p
               {...reveal(1.3, skip)}
               className="inline-flex items-center gap-2 font-mono text-xs tracking-[0.2em] uppercase text-[var(--accent-gold)]"
