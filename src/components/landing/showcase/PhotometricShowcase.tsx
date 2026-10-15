@@ -26,7 +26,7 @@ export const PhotometricShowcase: React.FC = () => {
   const palette = useThemePalette();
   const { complete } = useQuests();
   const shouldReduceMotion = useReducedMotion();
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('hearth-ghost');
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('bun');
   const [material, setMaterial] = useState<MaterialType>('matte');
   const [displayMode, setDisplayMode] = useState<'cel' | 'normals' | 'base'>('cel');
   const [shadowMode, setShadowMode] = useState<'cast' | 'drop' | 'none'>('cast');

@@ -22,7 +22,7 @@ import { litColor, SHADOW_OFFSET, storyAzimuth, storyShadow, warmStoryLighting }
 
 /**
  * The tour: one continuous little film, scrubbed by scrolling. It opens zoomed
- * all the way into a single pixel, pulls back while the ghost inks itself,
+ * all the way into a single pixel, pulls back while Bun inks herself,
  * dims the room for the lamp, fans out into animation frames and finally
  * packs the frames into a sprite sheet. Nothing cuts or fades between
  * chapters: every stage of the drawing is a function of the scroll position.
@@ -67,7 +67,8 @@ const CX = 96;
 const CY = 66;
 const BOB = [0, -1, -2, -1];
 
-const GHOST = STARTER_TEMPLATES.find((t) => t.id === 'hearth-ghost')!;
+/** Bun is the tour's model: she inks herself, takes the lamp and learns to hop. */
+const GHOST = STARTER_TEMPLATES.find((t) => t.id === 'bun')!;
 type Px = { x: number; y: number; c: string; key: string };
 const PIXELS: Px[] = [];
 GHOST.rows.forEach((row, y) => {
@@ -189,7 +190,7 @@ interface SpriteOpts {
   bob?: number;
 }
 
-/** Draws the ghost with its art center (8, 8) at (cx, cy), `s` canvas pixels per art pixel. */
+/** Draws Bun with her art center (8, 8) at (cx, cy), `s` canvas pixels per art pixel. */
 function drawSprite(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number, palette: ThemePalette, opts: SpriteOpts = {}) {
   const { inked = INK_ORDER.length, alpha = 1, tint, lit = 0, azimuth, bob = 0 } = opts;
   const count = Math.min(INK_ORDER.length, Math.ceil(inked));
@@ -309,7 +310,7 @@ function render(ctx: CanvasRenderingContext2D, shot: Shot, t: number, palette: T
     ctx.globalAlpha = 1;
   }
 
-  // Frames: one ghost while sketching and lighting; four when it learns to move.
+  // Frames: one Bun while sketching and lighting; four when it learns to move.
   const frame = shot.play > 0 ? Math.floor(t / 170) % 4 : 0;
   if (shot.sheet > 0) {
     // Into a sprite sheet along the top, then little parcels drop onto the shelf.
@@ -345,7 +346,7 @@ function render(ctx: CanvasRenderingContext2D, shot: Shot, t: number, palette: T
       ctx.fillRect(x, y + 7, 26, 3);
     });
   } else if (shot.spread > 0.001) {
-    // The ghost fans out into four frames like cards on the desk, then gathers back up.
+    // Bun fans out into four frames like cards on the desk, then gathers back up.
     const k = shot.spread;
     const sc = lerp(REST, 2.7, k);
     for (let i = 0; i < 4; i++) {
@@ -421,7 +422,7 @@ function render(ctx: CanvasRenderingContext2D, shot: Shot, t: number, palette: T
     ctx.globalAlpha = 1;
   }
 
-  // The timeline slides up while the ghost breathes.
+  // The timeline slides up while Bun breathes.
   if (shot.timeline > 0) {
     const y0 = H - Math.round(shot.timeline * 26);
     ctx.fillStyle = palette.border;
@@ -606,7 +607,7 @@ export const NightStory: React.FC = () => {
                 <span className="w-2 h-2 bg-[var(--accent-plum)]" />
                 <span className="w-2 h-2 bg-[var(--primary-bg)]" />
                 <span className="w-2 h-2 bg-[var(--accent-sage)]" />
-                <span className="ml-2 font-mono text-[10px] text-[var(--text-muted)]">hearth-ghost.pixi</span>
+                <span className="ml-2 font-mono text-[10px] text-[var(--text-muted)]">bun.pixi</span>
                 <span ref={statusRef} className="ml-auto font-mono text-[10px] text-[var(--accent-gold)] tabular-nums">
                   zoom 3200% · 1 px
                 </span>

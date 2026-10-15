@@ -324,7 +324,7 @@ export const NightHero: React.FC = () => {
       <canvas
         ref={canvasRef}
         role="img"
-        aria-label="A pixel-art night: a little town under the moon, fireflies, and Bun the rabbit painting a ghost at an easel beside a lantern."
+        aria-label="A pixel-art night: a little town under the moon, fireflies, and Bun the rabbit painting her own portrait at an easel beside a lantern."
         className="absolute top-0 left-0 pixelated"
         style={{ imageRendering: 'pixelated' }}
       />

@@ -39,7 +39,7 @@ async function openCart(page: Page, bytes: Buffer, name: string) {
 
 test('a cart carries the whole drawing out and back in, and remixes credit it', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 1000 });
-  await page.goto('/studio?template=hearth-ghost');
+  await page.goto('/studio?template=mochi');
   await starterReady(page);
   const original = await pixels(page);
 
@@ -73,7 +73,7 @@ test('a cart carries the whole drawing out and back in, and remixes credit it', 
 
 test('an ordinary PNG still imports as a picture, and a damaged cart explains itself', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 1000 });
-  await page.goto('/studio?template=hearth-ghost');
+  await page.goto('/studio?template=mochi');
   await starterReady(page);
   const cart = await saveCart(page);
   const at = cart.bytes.lastIndexOf(Buffer.from('pxBn'));

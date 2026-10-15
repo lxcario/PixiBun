@@ -2,36 +2,25 @@
 
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { STARTER_TEMPLATES } from '@/lib/art/starterTemplates';
+import { STARTER_TEMPLATES, TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
+import type { StarterTemplate } from '@/types/landing';
 import { paintTemplate } from '@/lib/render/templateRenderer';
 import { CozyScrollReveal, PixelCorners } from './CozyScrollReveal';
 import { PixelGoldenAccents } from './PixelGoldenAccents';
 import { ShinyText } from '@/components/reactbits/ShinyText';
 import { SpotlightCard } from '@/components/reactbits/SpotlightCard';
 
-// Key color swatches for each starter sprite to display on the card
-const SPRITE_METADATA = [
-  {
-    tag: '#01 / GHOST',
-    size: '16×16',
-    palette: ['#3a2e4c', '#ede8f4', '#e08ca6', '#f0be7c'],
-  },
-  {
-    tag: '#02 / SHROOM',
-    size: '16×16',
-    palette: ['#3a2e4c', '#dcabdf', '#c792df', '#7fae6b'],
-  },
-  {
-    tag: '#03 / BUN',
-    size: '16×16',
-    palette: ['#3a2e4c', '#ffffff', '#ede8f4', '#e08ca6'],
-  },
-  {
-    tag: '#04 / LANTERN',
-    size: '16×16',
-    palette: ['#3a2e4c', '#f0be7c', '#fbe9c6', '#d89a55'],
-  },
-];
+/** A card's tag, size and its four most-used colors, read from the sprite itself. */
+function spriteMetadata(template: StarterTemplate, index: number) {
+  const counts = new Map<string, number>();
+  for (const row of template.rows) for (const key of row) if (key !== '.') counts.set(key, (counts.get(key) ?? 0) + 1);
+  const palette = [...counts].sort((a, b) => b[1] - a[1]).slice(0, 4).map(([key]) => TEMPLATE_PALETTE[key]);
+  return {
+    tag: `#${String(index + 1).padStart(2, '0')} / ${template.name.toUpperCase()}`,
+    size: `${template.width}×${template.height}`,
+    palette,
+  };
+}
 
 // 1. Left Shelf Prop: Stacked Art Books, Candle, & Potted Vine
 const LeftWorkshopProp: React.FC = () => (
@@ -243,7 +232,7 @@ export const AtelierGallery: React.FC = () => {
               {/* Center 4 Sprite Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 items-end flex-1 max-w-4xl">
                 {STARTER_TEMPLATES.map((template, i) => {
-                  const meta = SPRITE_METADATA[i];
+                  const meta = spriteMetadata(template, i);
                   return (
                     <CozyScrollReveal key={template.id} variant="fade" delayMs={180 + i * 80} className="h-full">
                       <SpotlightCard

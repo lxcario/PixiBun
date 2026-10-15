@@ -32,7 +32,7 @@ import type { ExportType } from '@/components/modals/export/ExportTabsNav';
 import { openBlankWorkspace, openPostcardWorkspace, openStarterWorkspace } from '@/lib/project/starterWorkspace';
 import { PostcardPicker } from '@/components/cart/PostcardPicker';
 import { POSTCARDS } from '@/lib/postcards/scenes';
-import { STARTER_TEMPLATES } from '@/lib/art/starterTemplates';
+import { findStarterTemplate } from '@/lib/art/starterTemplates';
 
 import { useStudioAutosave } from '@/hooks/studio/useStudioAutosave';
 import { useStudioClipboard } from '@/hooks/studio/useStudioClipboard';
@@ -169,7 +169,7 @@ export const StudioLayout: React.FC = () => {
     const postcardId = url.searchParams.get('postcard');
     const blankSize = [16, 24, 32, 48].find(size => url.searchParams.get('width') === String(size) && url.searchParams.get('height') === String(size));
     const knownPostcard = !!postcardId && POSTCARDS.some(card => card.id === postcardId);
-    if (!knownPostcard && (templateId ? !STARTER_TEMPLATES.some(template => template.id === templateId) : !blankSize)) return;
+    if (!knownPostcard && (templateId ? !findStarterTemplate(templateId) : !blankSize)) return;
     if (lifecycleState.pendingRecovery || lifecycleState.startupIssue) {
       studioEvents.emit('pixibun:toast', { type: 'error', message: 'Resolve the current drawing recovery or storage problem before opening a new drawing.' });
       return;

@@ -1,4 +1,4 @@
-import { STARTER_TEMPLATES, TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
+import { findStarterTemplate, TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
 import { createBlankProjectFile } from '@/lib/storage/db';
 import { useStudioStore } from '@/stores/studioStore';
 import { createEntry, getBufferGeneration, getBufferRevision, replaceAllBuffers } from '@/lib/engine/bufferRegistry';
@@ -13,7 +13,7 @@ import { postcard, postcardRgba, type Postcard } from '@/lib/postcards/scenes';
 
 /** Open supplied starter artwork as a separate document after preserving the old one. */
 export async function openStarterWorkspace(templateId: string, checkpoint: () => Promise<SaveResult>, signal?: AbortSignal): Promise<boolean> {
-  const template = STARTER_TEMPLATES.find(candidate => candidate.id === templateId);
+  const template = findStarterTemplate(templateId);
   if (!template) return false;
   return openWelcomeWorkspace(template, template.width, checkpoint, signal);
 }
