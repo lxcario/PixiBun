@@ -50,6 +50,7 @@ import { ShaderExportTab } from './export/ShaderExportTab';
 import { ProjectExportTab } from './export/ProjectExportTab';
 import { GodotKitExportTab } from './export/GodotKitExportTab';
 import { CartExportTab, type CartExportHandle } from './export/CartExportTab';
+import { LightSweepExportTab, type LightSweepHandle } from './export/LightSweepExportTab';
 import { buildGodotKit } from '@/lib/export/godotKit';
 import { buildAnimationModel, playbackOrder } from '@/lib/export/animationModel';
 import { downloadCompanionAsset } from '@/lib/export/downloadAsset';
@@ -76,6 +77,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
 
   const [exportType, setExportType] = useState<ExportType>(initialType);
   const cartRef = React.useRef<CartExportHandle>(null);
+  const sweepRef = React.useRef<LightSweepHandle>(null);
   const [isCartBusy, setIsCartBusy] = useState(false);
   const [projectExportError, setProjectExportError] = useState<string | null>(null);
   const [isProjectExporting, setIsProjectExporting] = useState(false);
@@ -93,6 +95,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   // Isolated export scale state per export tab to prevent cross-tab clamping and state bleed
   const [tabScales, setTabScales] = useState<Record<ExportType, number>>({
     cart: 1,
+    'light-sweep': 1,
     png: 4,
     gif: 4,
     apng: 4,
@@ -865,7 +868,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       />
 
       {/* Export Scope (Tag Clips) Selector */}
-      {clips.length > 0 && exportType !== 'cart' && exportType !== 'project' && exportType !== 'palette-cycle' && exportType !== 'shader' && (
+      {clips.length > 0 && exportType !== 'cart' && exportType !== 'light-sweep' && exportType !== 'project' && exportType !== 'palette-cycle' && exportType !== 'shader' && (
         <ExportScopeSelector
           clips={clips}
           selectedClipId={selectedClipId}
@@ -886,6 +889,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       {/* Modular Export Configuration Options */}
       {exportType === 'cart' && (
         <CartExportTab ref={cartRef} disabled={isCartBusy} onBusy={setIsCartBusy} onDone={onClose} />
+      )}
+      {exportType === 'light-sweep' && (
+        <LightSweepExportTab ref={sweepRef} onBusy={setIsCartBusy} onDone={onClose} />
       )}
 
       {exportType === 'png' && (
@@ -1018,6 +1024,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
           onClick={
             exportType === 'cart'
               ? () => void cartRef.current?.save()
+              : exportType === 'light-sweep'
+              ? () => void sweepRef.current?.save()
               : exportType === 'godot-kit'
               ? handleExportGodotKit
               : exportType === 'shader'
@@ -1045,7 +1053,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
           className="bg-[var(--primary-bg)] text-[var(--primary-fg)] hover:bg-[var(--primary-hover)] hover:shadow-[0_2px_0_#8c5120] border-2 border-[var(--ink)] font-display font-bold shadow-[0_2px_0_#8c5120]"
         >
           <PixelIcon name="export" size={12} />
-          <span>{exportType === 'cart' ? (isCartBusy ? 'Packing the cart…' : 'Save cart') : isProjectExporting ? 'Preparing backup…' : isExporting ? 'Preparing export…' : exportType === 'project' ? 'Download project backup' : exportType === 'godot-kit' ? 'Download Godot kit' : exportType === 'palette-cycle' ? 'Download cycle animation' : `Download ${exportType.toUpperCase()}`}</span>
+          <span>{exportType === 'cart' ? (isCartBusy ? 'Packing the cart…' : 'Save cart') : exportType === 'light-sweep' ? (isCartBusy ? 'Making the video…' : 'Save video') : isProjectExporting ? 'Preparing backup…' : isExporting ? 'Preparing export…' : exportType === 'project' ? 'Download project backup' : exportType === 'godot-kit' ? 'Download Godot kit' : exportType === 'palette-cycle' ? 'Download cycle animation' : `Download ${exportType.toUpperCase()}`}</span>
         </TactileButton>
       </div>
     </ModalWrapper>

@@ -4,6 +4,7 @@ import React from 'react';
 
 export type ExportType =
   | 'cart'
+  | 'light-sweep'
   | 'png'
   | 'gif'
   | 'apng'
@@ -19,6 +20,7 @@ export type ExportType =
 
 export const EXPORT_TYPES: readonly ExportType[] = [
   'cart',
+  'light-sweep',
   'png',
   'gif',
   'apng',
@@ -42,7 +44,7 @@ interface ExportTabsNavProps {
 const INTENT_GROUPS: { label: string; types: readonly ExportType[] }[] = [
   {
     label: 'Share',
-    types: ['cart'],
+    types: ['cart', 'light-sweep'],
   },
   {
     label: 'Image & Animation',
@@ -67,6 +69,8 @@ export const ExportTabsNav: React.FC<ExportTabsNavProps> = ({
     switch (type) {
       case 'cart':
         return 'Cart';
+      case 'light-sweep':
+        return 'Light Sweep';
       case 'spritesheet':
         return 'Sprite Sheet';
       case 'godot-kit':
