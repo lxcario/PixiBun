@@ -8,7 +8,7 @@ Start with [current status](current-status.md) for scoped engineering results an
 | --- | --- |
 | Get started and contribute | [Project README](../README.md), [Contributing](../CONTRIBUTING.md), [agent rules](../AGENTS.md) |
 | Product and architecture | [Scope](../MAIN.md), [architecture](../ARCHITECTURE.md), [design](../DESIGN.md), [benchmarks](../BENCHMARKS.md) |
-| Artwork and behavior contracts | [Storage](contracts/storage.md), [rendering](contracts/rendering.md), [exports](contracts/exports.md), [shortcuts](contracts/shortcuts.md), [learning](contracts/learning.md), [carts](contracts/carts.md) |
+| Artwork and behavior contracts | [Storage](contracts/storage.md), [rendering](contracts/rendering.md), [exports](contracts/exports.md), [shortcuts](contracts/shortcuts.md), [learning](contracts/learning.md), [carts](contracts/carts.md) and [where carts survive](guides/cart-survival.md) |
 | Security and operations | [Security](../SECURITY.md), [security boundaries](contracts/security-boundaries.md), [deployment](guides/deployment.md), [testing](guides/testing.md), [Nibbli](guides/nibbli.md), [Nibbli agent contract](guides/nibbli-agent.md), [release readiness](guides/release-readiness.md) |
 | Active work and research | [Tasks](../TASKS.md), [plans](plans/README.md), [issue registry](research/issue-registry.md), [artist study](guides/artist-study.md), [v2 proposals](../V2_VISION.md) |
 | Discovery and receipts | [Test inventory](generated/test-inventory.json), [source contracts](generated/source-contracts.json), [CI witness](verification/README.md) |

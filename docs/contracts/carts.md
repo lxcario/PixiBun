@@ -38,4 +38,4 @@ Opening a cart uses the normal project import: the current drawing is saved firs
 
 ## Limits
 
-Sites that re-encode uploads (to JPEG or WebP, or by stripping private chunks) remove the drawing; the card still shows. A receipt is a record of how a drawing was made in PixiBun, not proof: a determined person can script strokes. Nothing identifying is added by default; the maker name, note and receipt are chosen at export.
+Sites that re-encode uploads (to JPEG or WebP, or by stripping private chunks) remove the drawing; the card still shows. Which sites keep it is recorded only from real checks in [Where carts survive](../guides/cart-survival.md). A receipt is a record of how a drawing was made in PixiBun, not proof: a determined person can script strokes. Nothing identifying is added by default; the maker name, note and receipt are chosen at export.
