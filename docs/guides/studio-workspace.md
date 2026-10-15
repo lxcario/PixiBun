@@ -84,7 +84,7 @@ Choose **Layers**, then select the layer you want to edit. Each animation frame 
 | Lock | Use the lock control | It prevents supported edits to that layer; unlock it to draw |
 | Reorder | Drag the grip, or use arrow keys while the grip is focused | Higher layers cover lower ones in the stack |
 | Opacity | Adjust the slider | It changes the layer contribution, not every stored pixel's alpha |
-| Blend | Choose Normal, Multiply, Screen, Overlay, Color Dodge or On artwork only | Check the visible result; a target engine may not reproduce these as independent layers |
+| Blend | Choose Normal, Multiply, Screen, Overlay, Color Dodge or On artwork only | Check the visible result; a target engine may not reproduce these as independent layers. On artwork only (used by photometric mattes) shows the layer only over artwork below it: paint beside that artwork stays in the layer and its thumbnail but not on the stage. The status bar marks such a layer, and the first stroke it hides offers to switch layer or blend |
 | Merge Down | Combine with the layer below when both are editable | Their separate editability is lost; undo if you need it back |
 | Delete Layer | Remove the selected layer when allowed | Keep at least one layer; protect important work with a backup |
 | Saved effect | Select a generated lighting/glint layer and reopen its effect | [Lighting recipes](lighting-and-surfaces.md#saved-lighting-and-glint-effects) retain settings and source information |
