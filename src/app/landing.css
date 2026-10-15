@@ -56,9 +56,10 @@ html[data-color-scheme="light"] .landing-veil {
 }
 /* The workbench mat: a soft fabric panel with a stitched seam. */
 .workbench-mat {
+  /* Nearly opaque instead of blurred: re-blurring the animated scene behind it every frame cost about 40% of a frame. */
   background:
     radial-gradient(ellipse 80% 60% at 30% 0%, color-mix(in srgb, var(--primary-bg) 7%, transparent), transparent 70%),
-    color-mix(in srgb, var(--desk-surface) 94%, transparent);
+    color-mix(in srgb, var(--desk-surface) 97%, transparent);
 }
 .workbench-mat::before {
   content: '';

@@ -66,7 +66,7 @@ export const LandingNav: React.FC = () => {
     <header
       className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-200 ${
         isScrolled
-          ? 'bg-[var(--desk-surface)]/95 backdrop-blur-sm border-b-2 border-[var(--desk-border)] shadow-[0_4px_12px_rgba(0,0,0,0.4)]'
+          ? 'bg-[var(--desk-surface)]/[0.97] border-b-2 border-[var(--desk-border)] shadow-[0_4px_12px_rgba(0,0,0,0.4)]'
           : 'bg-transparent border-b-2 border-transparent'
       }`}
       // Over the night-sky hero the bar is transparent, so it always uses the night palette there.

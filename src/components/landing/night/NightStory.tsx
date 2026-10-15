@@ -13,9 +13,12 @@ import {
   type MotionValue,
 } from 'motion/react';
 import { STARTER_TEMPLATES, TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
+import { BAYER_4X4 } from '@/lib/canvas/ditherMatrix';
 import { useThemePalette } from '@/lib/theme/useThemePalette';
 import type { ThemePalette } from '@/lib/theme/registry';
 import { CottageBackdrop } from './CottageBackdrop';
+import { ambientTicker, tickWhileVisible, type AmbientTicker } from '../ambientClock';
+import { litColor, SHADOW_OFFSET, storyAzimuth, storyShadow, warmStoryLighting } from './storyLighting';
 
 /**
  * The tour: one continuous little film, scrubbed by scrolling. It opens zoomed
@@ -97,10 +100,19 @@ function rgb(hex: string) {
   const n = parseInt(hex.slice(1), 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
+/** Blends are memoized in 1/32 steps: the film reuses a few hundred colors every frame. */
+const mixes = new Map<string, string>();
 function mix(a: string, b: string, t: number) {
+  const step = Math.round(clamp01(t) * 32);
+  const key = `${a}|${b}|${step}`;
+  const hit = mixes.get(key);
+  if (hit) return hit;
   const A = rgb(a);
   const B = rgb(b);
-  return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',')})`;
+  const out = `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * (step / 32))).join(',')})`;
+  if (mixes.size > 4096) mixes.clear();
+  mixes.set(key, out);
+  return out;
 }
 
 export function storyChapter(progress: number): number {
@@ -172,13 +184,14 @@ interface SpriteOpts {
   alpha?: number;
   tint?: string;
   lit?: number;
-  light?: [number, number, number];
+  /** Light azimuth in degrees for the real lighting engine. */
+  azimuth?: number;
   bob?: number;
 }
 
 /** Draws the ghost with its art center (8, 8) at (cx, cy), `s` canvas pixels per art pixel. */
 function drawSprite(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number, palette: ThemePalette, opts: SpriteOpts = {}) {
-  const { inked = INK_ORDER.length, alpha = 1, tint, lit = 0, light, bob = 0 } = opts;
+  const { inked = INK_ORDER.length, alpha = 1, tint, lit = 0, azimuth, bob = 0 } = opts;
   const count = Math.min(INK_ORDER.length, Math.ceil(inked));
   for (let i = 0; i < count; i++) {
     const px = INK_ORDER[i];
@@ -186,15 +199,9 @@ function drawSprite(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: nu
     const pop = clamp01(inked - i);
     const grow = pop < 1 ? 1 + (1 - easeOut(pop)) * 0.7 : 1;
     let color = tint ? (px.key === 'o' ? tint : mix(px.c, tint, 0.55)) : px.c;
-    if (lit > 0 && light && px.key !== 'o') {
-      const nx = (px.x - 7.5) / 8;
-      const ny = (px.y - 7) / 8;
-      const nz = Math.sqrt(Math.max(0.05, 1 - nx * nx - ny * ny));
-      const [lx, ly, lz] = light;
-      const d = clamp01((nx * lx + ny * ly + nz * lz) / Math.hypot(lx, ly, lz));
-      const shaded = d > 0.82 ? mix(px.c, palette.primaryShine, 0.6) : mix(px.c, palette.sunken, (1 - d) * 0.75);
-      color = lit >= 1 ? shaded : mix(rgbHex(color), rgbHex(shaded), lit);
-    }
+    // The Studio's own 2.5D lighting, cached per 15° (see storyLighting.ts).
+    const shaded = lit > 0 && azimuth !== undefined ? litColor(azimuth, px.x, px.y) : null;
+    if (shaded) color = lit >= 1 ? shaded : mix(rgbHex(color), rgbHex(shaded), lit);
     const size = s * grow;
     const x0 = Math.round(cx + (px.x - 8) * s + (s - size) / 2);
     const y0 = Math.round(cy + (px.y - 8 + bob) * s + (s - size) / 2);
@@ -214,18 +221,32 @@ function rgbHex(color: string): string {
   return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
 }
 
+/** Dithered discs are drawn once per size and color, then stamped: the lamp's glow moves every frame. */
+const discs = new Map<string, HTMLCanvasElement>();
 function ditherDisc(ctx: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: number, color: string, strength: number) {
-  ctx.fillStyle = color;
-  for (let dy = -Math.ceil(ry); dy <= ry; dy++) {
-    for (let dx = -Math.ceil(rx); dx <= rx; dx++) {
-      const d = Math.hypot(dx / rx, dy / ry);
-      if (d > 1) continue;
-      const level = (1 - d) * strength;
-      const bayer = ((dx & 1) * 2 + (dy & 1)) / 4;
-      if (level <= bayer) continue;
-      ctx.fillRect(Math.round(x + dx), Math.round(y + dy), 1, 1);
+  const key = `${rx}|${ry}|${color}|${strength}`;
+  let disc = discs.get(key);
+  if (!disc) {
+    const w = Math.ceil(rx) * 2 + 1, h = Math.ceil(ry) * 2 + 1;
+    disc = document.createElement('canvas');
+    disc.width = w; disc.height = h;
+    const g = disc.getContext('2d')!;
+    g.fillStyle = color;
+    for (let dy = -Math.ceil(ry); dy <= ry; dy++) {
+      for (let dx = -Math.ceil(rx); dx <= rx; dx++) {
+        const d = Math.hypot(dx / rx, dy / ry);
+        if (d > 1) continue;
+        const level = (1 - d) * strength;
+        const bayer = (BAYER_4X4[dy & 3][dx & 3] + 0.5) / 16;
+        if (level <= bayer) continue;
+        g.fillRect(dx + Math.ceil(rx), dy + Math.ceil(ry), 1, 1);
+      }
     }
+    if (discs.size > 64) discs.clear();
+    discs.set(key, disc);
   }
+  // Stamp on a 4-pixel grid so the 4×4 dither pattern stays put as the disc moves.
+  ctx.drawImage(disc, Math.round(x - Math.ceil(rx)) & ~3, Math.round(y - Math.ceil(ry)) & ~3);
 }
 
 function render(ctx: CanvasRenderingContext2D, shot: Shot, t: number, palette: ThemePalette) {
@@ -269,13 +290,22 @@ function render(ctx: CanvasRenderingContext2D, shot: Shot, t: number, palette: T
 
   const lampX = CX + Math.cos(shot.lampAngle) * 72;
   const lampY = CY + Math.sin(shot.lampAngle) * 46;
-  const light: [number, number, number] = [Math.cos(shot.lampAngle), Math.sin(shot.lampAngle) * 0.7 - 0.3, 0.55];
+  const azimuth = storyAzimuth(shot.lampAngle);
+  // Load and warm the real lighting as the sketch finishes, before the lamp comes on.
+  if (shot.inked >= INK_ORDER.length * 0.6 || shot.dark > 0) warmStoryLighting(PIXELS);
   if (shot.lit > 0) {
+    // A pool of lamplight on the paper, so the cast shadow has something to fall on.
+    ctx.globalAlpha = shot.lit * 0.22;
+    ditherDisc(ctx, lerp(cx, lampX, 0.35), lerp(cy, lampY, 0.35) + 10, 74, 56, palette.primary, 0.9);
     ctx.globalAlpha = shot.lit * 0.5;
     ditherDisc(ctx, lampX, lampY, 26, 26, palette.primary, 1);
-    ctx.globalAlpha = shot.lit * 0.35;
-    // A cast shadow on the floor, thrown away from the lamp.
-    ditherDisc(ctx, CX - light[0] * 26, CY + 8 * REST + 3, 30, 5, palette.ink, 1.4);
+    // The real ray-marched cast shadow, thrown away from the lamp.
+    const shadow = storyShadow(azimuth, palette.ink);
+    if (shadow) {
+      ctx.globalAlpha = shot.lit;
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(shadow, Math.round(cx - (8 + SHADOW_OFFSET.x) * s), Math.round(cy - (8 + SHADOW_OFFSET.y) * s), Math.round(SHADOW_OFFSET.size * s), Math.round(SHADOW_OFFSET.size * s));
+    }
     ctx.globalAlpha = 1;
   }
 
@@ -338,7 +368,7 @@ function render(ctx: CanvasRenderingContext2D, shot: Shot, t: number, palette: T
       drawSprite(ctx, cx, cy, s, palette, { bob: BOB[(frame + 3) % 4], alpha: 0.22 * shot.onion, tint: palette.accent2 });
       drawSprite(ctx, cx, cy, s, palette, { bob: BOB[(frame + 1) % 4], alpha: 0.16 * shot.onion, tint: palette.positive });
     }
-    drawSprite(ctx, cx, cy, s, palette, { inked: shot.inked, lit: shot.lit, light, bob: BOB[frame] * shot.play });
+    drawSprite(ctx, cx, cy, s, palette, { inked: shot.inked, lit: shot.lit, azimuth, bob: BOB[frame] * shot.play });
   }
 
   // The lamp itself.
@@ -495,7 +525,10 @@ export const NightStory: React.FC = () => {
     return () => ro.disconnect();
   }, [slot]);
 
+  const tickerRef = useRef<AmbientTicker | null>(null);
   useMotionValueEvent(progress, 'change', (v) => {
+    // Scrubbing redraws at full rate; the film rests at a calm pace in between.
+    tickerRef.current?.boost(400);
     const next = storyChapter(v);
     setChapter((c) => (c === next ? c : next));
     setExportsShown(clamp01(v) * 4 > 3.82);
@@ -506,8 +539,6 @@ export const NightStory: React.FC = () => {
     const ctx = canvas?.getContext('2d');
     const section = ref.current;
     if (!canvas || !ctx || !section) return;
-    let raf = 0;
-    let visible = false;
     let lastStatus = '';
     const paint = (t: number) => {
       const p = progress.get();
@@ -519,21 +550,12 @@ export const NightStory: React.FC = () => {
         lastStatus = status;
       }
     };
-    const loop = (t: number) => {
-      paint(reduceMotion ? 0 : t);
-      if (visible) raf = requestAnimationFrame(loop);
-    };
     paint(0);
-    const io = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-      cancelAnimationFrame(raf);
-      if (visible) raf = requestAnimationFrame(loop);
-    });
-    io.observe(section);
-    return () => {
-      cancelAnimationFrame(raf);
-      io.disconnect();
-    };
+    // Reduced motion still follows the scroll, with time held still.
+    const ticker = ambientTicker(now => paint(reduceMotion ? 0 : now), 24);
+    tickerRef.current = ticker;
+    const stop = tickWhileVisible(section, ticker);
+    return () => { stop(); tickerRef.current = null; };
   }, [reduceMotion, progress, palette]);
 
   const pick = (i: number) => {
