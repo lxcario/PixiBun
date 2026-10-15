@@ -3,7 +3,7 @@
 import React from 'react';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { CART_LICENSE_LABELS, type CartRecord } from '@/lib/cart/cartFormat';
-import { formatDuration } from '@/lib/cart/receiptText';
+import { formatReceipt } from '@/lib/cart/receiptText';
 
 interface CartArrivalProps {
   cart: Omit<CartRecord, 'project'>;
@@ -33,7 +33,7 @@ export function CartArrival({ cart, frames, size, error, onCancel, onOpen }: Car
           {cart.receipt && (
             <>
               <dt className="text-[var(--text-muted)]">Made in</dt>
-              <dd className="text-[var(--text-heading)]">{cart.receipt.strokes.toLocaleString()} strokes · {formatDuration(cart.receipt.activeMs)} of drawing</dd>
+              <dd className="text-[var(--text-heading)]">{formatReceipt(cart.receipt)}</dd>
             </>
           )}
           {cart.light && (

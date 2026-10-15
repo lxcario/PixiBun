@@ -10,7 +10,7 @@ async function saveCart(page: Page, fields: { title?: string; maker?: string; no
   await page.getByTestId('export-button').click();
   await page.getByTestId('export-tab-cart').click();
   const form = page.getByTestId('cart-export');
-  if (fields.title !== undefined) await form.getByLabel('Title').fill(fields.title);
+  if (fields.title !== undefined) await form.getByLabel('Title', { exact: true }).fill(fields.title);
   if (fields.maker !== undefined) await form.getByLabel('Your name').fill(fields.maker);
   if (fields.note !== undefined) await form.getByLabel('A note').fill(fields.note);
   if (fields.license) await form.getByLabel('License').selectOption({ label: fields.license });

@@ -6,3 +6,8 @@ export function formatDuration(ms: number): string {
   const hours = Math.floor(minutes / 60), rest = minutes % 60;
   return rest ? `${hours} h ${rest} min` : `${hours} h`;
 }
+
+/** "1 stroke · under a minute of drawing", "412 strokes · 38 min of drawing". */
+export function formatReceipt(receipt: { strokes: number; activeMs: number }): string {
+  return `${receipt.strokes.toLocaleString('en-US')} ${receipt.strokes === 1 ? 'stroke' : 'strokes'} · ${formatDuration(receipt.activeMs)} of drawing`;
+}
