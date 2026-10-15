@@ -26,9 +26,12 @@ export const StatusBar: React.FC = React.memo(() => {
   const saveTitle = saveStatus === 'saving' ? 'Saving changes to local storage…' : saveStatus === 'error' ? 'Save paused. Your artwork remains safe in memory.' : isDirty ? 'You have unsaved changes' : 'All changes saved to local storage';
 
   /* Derive active layer name */
-  const activeLayerName = frames[activeFrameIndex]?.layers.find(
+  const activeLayer = frames[activeFrameIndex]?.layers.find(
     (l) => l.id === activeLayerId
-  )?.name;
+  );
+  const activeLayerName = activeLayer?.name;
+  // Clipped layers keep paint that lands off the artwork below but never show it.
+  const activeLayerClipped = activeLayer?.blendMode === 'source-atop';
 
   /* Derive selection dimensions */
   const selectionInfo =
@@ -97,6 +100,15 @@ export const StatusBar: React.FC = React.memo(() => {
       <span className="truncate max-w-[140px] text-[var(--text-body)]" title="Active layer">
         {activeLayerName ?? 'No layer'}
       </span>
+      {activeLayerClipped && (
+        <span
+          data-testid="status-bar-clip-hint"
+          className="shrink-0 whitespace-nowrap text-[var(--accent-plum)]"
+          title="This layer is set to On artwork only: paint shows only over artwork on the layers below. Change Blend in Layers, or pick another layer, to paint anywhere."
+        >
+          On artwork only
+        </span>
+      )}
 
       {/* Separator + Active Tool — push to far right */}
       <span className="flex-1" />

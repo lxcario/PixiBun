@@ -13,6 +13,7 @@ import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 import { DEFAULT_HISTORY_MAX_BYTES } from '@/lib/engine/historyEngine';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { compositeFrame } from '@/lib/render/compositor';
+import { maybeHintClippedStroke } from '@/lib/render/clippedStrokeHint';
 import type { HistoryStep } from '@/types/canvas';
 import { resolveFrameLayerTargets } from '@/lib/project/frameLayerTargets';
 import { isSpaceHeld, pointerIntent, strokeUsesSecondary } from '@/lib/input/keymap';
@@ -111,6 +112,16 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     const hex = rgbaToHex(pixel[0], pixel[1], pixel[2], pixel[3]);
     if (secondary) useStudioStore.getState().setSecondaryColor(hex);
     else props.setPrimaryColor(hex);
+  };
+
+  /** Tell the artist when an "On artwork only" layer hid part of the stroke just committed. */
+  const hintIfClipped = (stroke: HistoryStep | null) => {
+    if (!stroke || stroke.type === 'structural' || stroke.x !== undefined || !stroke.layerId) return;
+    const after = props.getOrCreateLayerCanvas(stroke.layerId).getContext('2d', { willReadFrequently: true })
+      ?.getImageData(0, 0, stroke.imageData.width, stroke.imageData.height);
+    if (!after) return;
+    const state = useStudioStore.getState();
+    maybeHintClippedStroke({ frames: state.frames, frameIndex: stroke.frameIndex, layerId: stroke.layerId, before: stroke.imageData, after });
   };
 
   const brushHandler = useBrushPointerHandler({
@@ -559,7 +570,12 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
           tools.activeTool !== 'select-lasso' &&
           tools.activeTool !== 'select-wand'
         ) {
-          if (changed && !isGradientNewLayer) { props.commitSnapshot(); bumpBufferVersion(); }
+          if (changed && !isGradientNewLayer) {
+            const stroke = props.currentStrokeSnapshotRef.current;
+            props.commitSnapshot();
+            bumpBufferVersion();
+            hintIfClipped(stroke);
+          }
           else if (changed && isGradientNewLayer) { props.discardSnapshot?.(); props.currentStrokeSnapshotRef.current = null; bumpBufferVersion(); }
           else { props.discardSnapshot?.(); props.currentStrokeSnapshotRef.current = null; }
         }
