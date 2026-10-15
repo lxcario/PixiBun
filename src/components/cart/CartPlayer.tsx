@@ -12,6 +12,7 @@ import { setPendingCart, PENDING_CART_QUERY } from '@/lib/cart/pendingCart';
 import { formatReceipt } from '@/lib/cart/receiptText';
 import { unpackTrack } from '@/lib/cart/receiptRecorder';
 import { applyStep, type TrackStep } from '@/lib/cart/receiptTrack';
+import { createCycleRenderer } from '@/lib/color/cycleRenderer';
 
 type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready' };
 
@@ -144,6 +145,26 @@ export function CartPlayer() {
       setNotice('The making-of in this cart could not be read.');
     }
   };
+
+  // Color cycling: postcards and other cycling palettes keep moving here too.
+  const cycling = useMemo(() => {
+    if (!cart) return null;
+    const palette = cart.project.palettes.find(p => p.id === cart.project.currentPaletteId) ?? cart.project.palettes[0];
+    return palette?.cycleTracks?.some(track => track.enabled && track.rate > 0) ? palette : null;
+  }, [cart]);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !frames || !cycling || replay || lampOn) return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    const cycler = createCycleRenderer(frames.frames[frameIndex], cycling.colors, cycling.cycleTracks);
+    const ctx = canvas.getContext('2d');
+    if (!cycler || !ctx) return;
+    let handle = 0;
+    const start = performance.now();
+    const tick = (now: number) => { cycler.render((now - start) / 1000, ctx); handle = requestAnimationFrame(tick); };
+    handle = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(handle);
+  }, [cycling, frames, frameIndex, replay, lampOn, scale]);
 
   // Paint the stage.
   useEffect(() => {

@@ -6,6 +6,10 @@ A small palette makes it easier to keep a drawing together. You can build one by
 
 [Handbook](README.md) · [Colors and workspace](studio-workspace.md#colors-close-to-hand) · [All features](../features.md)
 
+## Start from a living postcard
+
+**File → Living postcard…** offers six little scenes painted for color cycling, each already moving in the picker: **Campfire**, **Waterfall**, **Rainy Window**, **Neon Café**, **Tide at Dusk** and **Lava Cave**. Choosing one saves your current drawing first, then opens the 64×48 scene with its palette and cycle tracks and cycling switched on. The motion lives in the palette order, so recoloring a ramp in the Palette panel (a blue fire, a pink waterfall) keeps it moving. Save a **Cycle Loop** to post it, or a cart: the cart player keeps it cycling on phones. [Scenes](../../src/lib/postcards/scenes.ts).
+
 ## Gather your colors
 
 1. Open **Palette → Create palette** and give the draft a name.

@@ -45,6 +45,7 @@ export interface AtelierRailProps {
   onOpenShortcuts?: () => void;
   onOpenResize?: () => void;
   onNewDrawing?: () => void;
+  onOpenPostcards?: () => void;
   onSaveNow?: () => void;
   onOpenGallery?: () => void;
   onOpenCoDraw?: () => void;
@@ -60,6 +61,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   onOpenShortcuts,
   onOpenResize,
   onNewDrawing,
+  onOpenPostcards,
   onSaveNow,
   onOpenGallery,
   onOpenCoDraw,
@@ -283,6 +285,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
         <HeaderFileMenu actions={[
           { label: 'Projects', icon: 'layers', testId: 'gallery-button', onSelect: () => onOpenGallery?.() },
           { label: 'New drawing', icon: 'plus', testId: 'new-drawing-button', onSelect: () => onNewDrawing?.() },
+          { label: 'Living postcard…', icon: 'sparkles', testId: 'postcard-button', onSelect: () => onOpenPostcards?.() },
           { label: 'Import…', icon: 'import', testId: 'import-button', onSelect: () => fileInputRef.current?.click() },
           { label: 'Canvas size…', icon: 'rectangle', testId: 'resize-canvas-button', onSelect: () => onOpenResize?.() },
         ]} />
