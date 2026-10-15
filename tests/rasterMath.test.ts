@@ -3,6 +3,7 @@ import {
   getBresenhamLine,
   getDDALine,
   getClippedLine,
+  getUndirectedLine,
   filterPixelPerfect,
   getRectanglePoints,
   applySymmetry,
@@ -38,6 +39,14 @@ describe('getBresenhamLine', () => {
 });
 
 describe('filterPixelPerfect', () => {
+  it('ignores duplicate dwell samples without mutating input or deleting nonconsecutive revisits', () => {
+    const path = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }];
+    const withDwells = path.flatMap(point => [point, point, point]);
+    expect(filterPixelPerfect(withDwells)).toEqual(filterPixelPerfect(path));
+    expect(withDwells).toHaveLength(9);
+    expect(filterPixelPerfect([path[0], path[1], path[0]])).toEqual([path[0], path[1], path[0]]);
+    expect(filterPixelPerfect([path[0], path[0]])).toEqual([path[0]]);
+  });
   it('removes the corner pixel of an L-shaped step', () => {
     const stroke = [
       { x: 0, y: 0 },
@@ -56,6 +65,22 @@ describe('filterPixelPerfect', () => {
       { x: 2, y: 0 },
     ];
     expect(filterPixelPerfect(stroke)).toHaveLength(3);
+  });
+});
+
+describe('undirected straight lines', () => {
+  it('retains caller order with identical ties in all octants, clipped and subpixel cases', () => {
+    const coordinates = [-4, -0.5, 0, 1, 2, 7, 15, 20];
+    for (const x0 of coordinates) for (const y0 of coordinates) for (const x1 of coordinates) for (const y1 of coordinates) {
+      const forward = getUndirectedLine(x0, y0, x1, y1, 16, 16);
+      expect(forward).toEqual(getUndirectedLine(x1, y1, x0, y0, 16, 16).reverse());
+      for (const point of forward) {
+        expect(Number.isInteger(point.x) && Number.isInteger(point.y)).toBe(true);
+        expect(point.x >= 0 && point.x < 16 && point.y >= 0 && point.y < 16).toBe(true);
+      }
+    }
+    expect(getUndirectedLine(0, 0, 1, 2)).toEqual([{ x: 0, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 2 }]);
+    expect(getBresenhamLine(1, 2, 0, 0)).toEqual([{ x: 1, y: 2 }, { x: 1, y: 1 }, { x: 0, y: 0 }]);
   });
 });
 

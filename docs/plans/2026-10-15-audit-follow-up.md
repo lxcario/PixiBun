@@ -6,7 +6,7 @@ These phases follow the source-checked product audit. They are separate from the
 | --- | --- | --- |
 | 1. Instructions, claims and coaching | Saved-keymap pan help; actual lighting navigation; ordinary-layer tip triggers; precise clip/export and local/reporting disclosures | Complete; verification below |
 | 2. Reproduced interface problems | Measure inspector label clipping and tiny controls at laptop widths; reproduce constellation collisions; clarify the intentional Animate entry while preserving whole-layer capture | Complete; integrated recheck follows phase 3 |
-| 3. Drawing consistency and measurement | Specify direction behavior for Line, protect preview/commit parity, and measure browser input/render work before changing pointer sampling | Planned |
+| 3. Drawing consistency and measurement | Specify direction behavior for Line, protect preview/commit parity, and measure browser input/render work before changing pointer sampling | Implemented; final integrated qualification in progress |
 | 4. Current documentation pictures | Refresh operating-guide screenshots and show all eight Studio themes in Day and Night | Requested; follows the final code build |
 
 ## Phase 1 behavior
@@ -31,6 +31,14 @@ Names are unique among the six retained constellations; up to four labels use me
 Phase 2 passed lint, production compilation and 15 focused unit cases. The first compiled browser selection retained **42 passes /3 failures**, zero skips/retries: all 21 new interface cases and the existing motion cases passed. The three failures were the previously recorded edge-aligned color-dock fixture running in the now-default floating scene theme. It now explicitly selects Graphite, the intended flat layout, keeping its original geometry and interaction assertions. That case then passed in all three engines. These results are separate runs, not a rewritten 45-case pass.
 
 The 45-case candidate used build `BPpE5DxOMoExApy85CE_V` on merge base `3cce4602ccbb4157c4f45fd7879d9d660eb41036`. The before/after guard retained **952 non-Markdown inputs outside `docs/`**, SHA-256 `a586cbc41f2a43377e832b84f3b6f3d39dd8fec80f2f1cc715da06074cc1dcb3`. The later fixture clarification and added rendered contrast checks are included in the final integrated recheck, not attributed to that earlier source guard.
+
+## Phase 3 behavior and initial checks
+
+Line, unsnapped Iso Line and Standard Shift-click segments canonicalize endpoints before clipping/rasterization, returning points in caller order. Freehand Bresenham ordering is unchanged. Shape preview and commit share geometry, and preview stamping now applies the current selection mask, thick footprint and symmetry; a newly locked source clears its preview. The pixel-perfect helper discards consecutive dwell samples before testing corners, preserving nonconsecutive revisits. The live brush already skips repeated coordinates; this helper change is defensive hardening, not a claim that ordinary live strokes were retaining those duplicates.
+
+The new shape selection/direction regression selection initially retained **10 failures /1 pass** on the original code. After the corrections, the four-file drawing selection passed **59 cases**, including 4,096 clipped/subpixel endpoint combinations. An initial compiled Chromium selection passed **14 cases**, including exact shape preview/commit/Undo/Redo, rendered contrast checks for Graphite and Sakura Day/Night, and response observations at 128² and 512².
+
+The response probe records synthetic `pointerdown` capture → first matching canvas raster and → next animation-frame callback, with two warmups and twelve measured dots per size/engine. It includes instrumentation/readback and does not measure physical stylus input, coalesced hardware samples, compositor presentation or user drawing feel. There is no new latency budget or sub-16 ms promise. Pointer sampling and React state ownership were not changed speculatively. Final integrated results and the screenshot capture scope follow below.
 
 ## Phase 1 verification and remaining scope
 

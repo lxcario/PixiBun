@@ -16,6 +16,8 @@ Raster artwork supports fractional alpha. The legacy Clean Jaggies operation fil
 
 ## Pixel history, selection and display
 
+Explicit Line, unsnapped Iso Line and Standard Shift-click straight segments use [getUndirectedLine](../../src/lib/canvas/rasterMath.ts): endpoints are ordered by x then y before clipping/rasterization, then the array is reversed back for caller order. Reversing endpoints keeps the pixel set, including Bresenham ties and subpixel clipping. The low-level Bresenham/freehand path retains directional ordering. Shape preview and commit share one geometry function; preview stamping applies the same selection mask, brush footprint and symmetry as layer stamping. The pixel-perfect filter drops consecutive duplicate samples before corner tests, retaining nonconsecutive revisits.
+
 Drawing history defaults to 4,096 entries per direction and a combined 64 MiB retained-step budget. [pixelPatch](../../src/lib/engine/pixelPatch.ts) crops ordinary edits to before/expected-after rectangles with x/y offsets; commit still captures and compares full-layer pixels. The first pixel edit after structural history keeps the whole layer. Replay seeds each edited layer's full origin once and remains separately accounted; retained patches do not eliminate baseline or transient capture memory.
 
 During Co-Draw, [selectiveRestore](../../src/lib/engine/selectiveRestore.ts) changes a pixel only if before/after differ and the live RGBA still equals the expected result. Differing later peer colors survive Undo/Redo. This is an RGBA test, not per-pixel author identity for equal-color overwrites, and excludes structural/created-layer restoration.
