@@ -4,6 +4,10 @@ Experimental studio UI. Every lab can be switched off at runtime from
 **Studio ▸ Labs** (or all at once with **Classic studio**), and each one can be
 deleted without touching the others.
 
+Labs only appear on the cozy scene themes. The professional flat themes,
+Graphite (`atelier`) and Plum (`cozy-classic`), always keep the classic studio
+whatever the switches say (`useLabsAvailable` in `labsStore.ts`).
+
 Flags live in `localStorage["pixibun:labs:v1"]`. Labs default on for people and
 off for automated runs (Vitest, and Playwright through `navigator.webdriver`), so
 the existing suites keep covering the classic studio. A test can opt in by
