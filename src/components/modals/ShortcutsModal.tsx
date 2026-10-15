@@ -94,7 +94,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
       {/* Modal Footer with Privacy & Diagnostics Link (UX-8 IA Separation) */}
       <div className="shrink-0 flex items-center justify-between pt-2.5 border-t border-[var(--desk-border)] text-xs font-mono">
         <div className="text-[11px] text-[var(--text-muted)] flex items-center gap-2">
-          <span>Zero telemetry by default.</span>
+          <span>Diagnostic reports stay local by default.</span>
           {onOpenDiagnostics && (
             <button
               type="button"

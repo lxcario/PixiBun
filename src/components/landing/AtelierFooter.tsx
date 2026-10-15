@@ -109,7 +109,7 @@ export const AtelierFooter: React.FC = () => {
               </h3>
               <div className="space-y-3 text-xs font-sans text-[var(--text-body)]">
                 <p className="leading-relaxed">
-                  No trackers, no uploads. Your drawings stay on your device.
+                  Drawings save in your browser. You choose whether to share them or send diagnostic reports.
                 </p>
                 <p className="leading-relaxed">
                   <Link href="/pledge" className="text-[var(--accent-gold)] underline underline-offset-2 hover:opacity-80">

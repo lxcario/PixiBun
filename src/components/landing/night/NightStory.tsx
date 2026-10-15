@@ -35,7 +35,7 @@ const CHAPTERS = [
   {
     kicker: '02 · light',
     title: 'Then give it a lamp.',
-    body: 'Move a little light around your sprite and watch the shading follow, with real lighting and cast shadows painted right onto the pixels, using colors from your own palette.',
+    body: 'Move a little light around your sprite and watch its shading and cast shadow follow. Graphics algorithms build the new tones from your artwork and the light settings; preview the result before keeping it.',
     accent: 'var(--accent-gold)',
   },
   {

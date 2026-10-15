@@ -50,13 +50,13 @@ Open **Studio → Help**, or **?** when the canvas owns keyboard input. The guid
 | Control | What it does | A useful habit |
 | --- | --- | --- |
 | Enable local diagnostic ring buffer | Local diagnostic/performance records, enabled by default; bounded to 200 entries | Turn it off if you do not want ongoing local logging |
-| Opt-in remote crash relay | Enables the optional reporting path; off by default; destination is operator-configured | Enable deliberately only when you want that reporting path |
+| Send diagnostic reports (off by default) | Sends error/performance records to the site's reporting endpoint; the operator controls any onward destination | Inspect an exported report before opting in |
 | Export Diagnostics JSON | Downloads local records for inspection/sharing | Read the file before sharing it; free-text errors can include paths or context |
 | Clear Stored Logs | Clears retained diagnostic records | This is separate from deleting your artwork/projects |
 
 Repeated diagnostic events are suppressed for ten seconds, and burst/rate and pending-write limits can drop excess entries. Remote reporting sends small delayed batches and rechecks consent before sending; turning it off clears queued batches. Reports are best-effort and may be lost on page close.
 
-“Zero telemetry” in the in-app paragraph means remote reporting is off by default. Local logging does run by default; an opted-in configured relay can send reports. No upstream configuration means no forwarding to an upstream service. These distinctions are documented in the [security boundaries](../contracts/security-boundaries.md).
+Local logging runs by default; remote reporting is off by default. With reporting enabled, requests leave the browser for the site's server even if that server has no onward destination configured. In that case it returns an unavailable response and does not forward the report upstream. The pledge, footer and dialogs distinguish automatic local saving/logging from chosen sharing/reporting. Internet Co-Draw's Google connection service is disclosed separately from artwork transfer between peers. See the [security boundaries](../contracts/security-boundaries.md).
 
 To report a vulnerability privately, follow [SECURITY.md](../../SECURITY.md) and contact **resquedzn05@gmail.com**. No response deadline or bounty is promised. Do not post sensitive project files, secrets or an exploit publicly just to obtain a troubleshooting record.
 
