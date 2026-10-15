@@ -3,6 +3,8 @@
 All notable changes and architectural enhancements to the PixiBun codebase are documented below.
 ## Unreleased
 
+- Carts, part 2: **Export → Cart** makes the card. A trading-card PNG on cream paper or a starry night stock: the title with a postmark number, the drawing on a mat at a crisp whole-number scale, a row of its colors, who made it and what it remixes, and Bun's "Made in PixiBun · open me" footer. The card updates as you type; your name and license are remembered on this device only. `tests/production/carts.spec.ts` saves a cart, paints over the drawing, opens the cart to restore it exactly, and checks a remix credits its source, in Chromium, Firefox and WebKit.
+
 - Carts, part 1: a PNG can now carry a whole drawing. Its frames, layers, palettes and their cycle tracks, the light, an optional receipt, a license and the remix lineage ride in one private `pxBn` chunk (`src/lib/cart/`). Opening, dropping or pasting a cart shows who made it and what it remixes, then opens the drawing with its light; anything made from it credits it. Carts are untrusted input: sizes are capped during unpacking, and the drawing goes through the normal safe project import. [Cart format](docs/contracts/carts.md).
 
 - 15 October documentation correction follow-up: reconciled remaining export-note, worker/live-lighting, logo/FX, scroll-story, shortcut, gate-stage and historical-status claims with source `0662de6b`; corrected additional onion-skin, layout and component-mounting mismatches. [Findings and verification](docs/releases/2026-10-15-codebase-and-documentation.md#follow-up-corrections).

@@ -3,7 +3,7 @@ import { SafeJson } from '@/lib/safety/safeJson';
 import { ImageHeaderProbe } from '@/lib/safety/imageHeaderProbe';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { RECOVERY_INSPECTION_CEILINGS } from '@/lib/recovery/recoveryLimits';
-import { CartError, readCart } from '@/lib/cart/cartFormat';
+import { CART_CHUNK, CartError, readCart } from '@/lib/cart/cartFormat';
 import { isPng } from '@/lib/cart/pngChunks';
 
 export function importErrorMessage(error: unknown): string {
@@ -31,8 +31,9 @@ export async function readImportFile(file: File): Promise<ImportPayload> {
     const bytes = new Uint8Array(await file.arrayBuffer());
     if (isPng(bytes)) {
       const cart = await readCart(bytes).catch(error => {
-        // A damaged chunk in an ordinary image is not a cart; a damaged cart chunk is.
         if (error instanceof CartError) throw error;
+        // The PNG itself is damaged. If it was a cart, say so rather than import half a picture.
+        if (containsAscii(bytes, CART_CHUNK)) throw new CartError('This cart is damaged, so the drawing inside could not be read.');
         return null;
       });
       if (cart) {
@@ -49,6 +50,15 @@ export async function readImportFile(file: File): Promise<ImportPayload> {
     reader.readAsDataURL(file);
   });
   return { type: 'image', filename: file.name, dataUrl, imgWidth: dimensions.width, imgHeight: dimensions.height };
+}
+
+function containsAscii(bytes: Uint8Array, text: string): boolean {
+  const codes = Array.from(text, ch => ch.charCodeAt(0));
+  outer: for (let i = 0; i <= bytes.length - codes.length; i++) {
+    for (let j = 0; j < codes.length; j++) if (bytes[i + j] !== codes[j]) continue outer;
+    return true;
+  }
+  return false;
 }
 
 export function reportImportError(error: unknown): void {

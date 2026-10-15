@@ -3,6 +3,7 @@
 import React from 'react';
 
 export type ExportType =
+  | 'cart'
   | 'png'
   | 'gif'
   | 'apng'
@@ -17,6 +18,7 @@ export type ExportType =
   | 'project';
 
 export const EXPORT_TYPES: readonly ExportType[] = [
+  'cart',
   'png',
   'gif',
   'apng',
@@ -39,6 +41,10 @@ interface ExportTabsNavProps {
 
 const INTENT_GROUPS: { label: string; types: readonly ExportType[] }[] = [
   {
+    label: 'Share',
+    types: ['cart'],
+  },
+  {
     label: 'Image & Animation',
     types: ['png', 'gif', 'apng', 'webm', 'mp4', 'svg', 'replay'],
   },
@@ -59,6 +65,8 @@ export const ExportTabsNav: React.FC<ExportTabsNavProps> = ({
 }) => {
   const getTabLabel = (type: ExportType) => {
     switch (type) {
+      case 'cart':
+        return 'Cart';
       case 'spritesheet':
         return 'Sprite Sheet';
       case 'godot-kit':
