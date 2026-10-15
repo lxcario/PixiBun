@@ -6,14 +6,16 @@ For the tested revision and remaining accessibility, device and host checks, see
 
 The studio has a small shelf of tools on the left, your canvas in the middle, **Tools / Layers / Palette / Effects** in the inspector, and animation frames below. The **Workspace** row provides Drawing, Animation and Lighting layouts, a left/right inspector, saved arrangements, optional color and navigator panels, and canvas-only mode. Follow [Arrange a desk](artist-workspace.md) for these controls. Start with a little canvas and a few colors; there is no need to learn every panel at once.
 
-![The current studio with three original little-friend poses.](../assets/screenshots/2026-10-02-docs/studio-atelier-dark.png)
+Compare the [current Studio screenshots of every theme in Day and Night](themes.md).
+
+![Graphite Night Studio with the same original three-frame built-in artwork.](../assets/screenshots/2026-10-15-current-ui/studio-atelier-dark.png)
 
 
-The right inspector tabs are **Tools**, **Layers**, **Palette** and **Effects**. Full 12 px labels sit below their icons so they fit the admitted 260 px minimum width; the Layers icon row shows a count capped visually at 99+, with the full count in the tab's title. Effects contains PixiTools tasks such as lighting, cleanup, tiles and animation review; its accessible name is Effects (PixiTools). Existing screenshots show the earlier PixiTools label. In Tools, expand **Animate artwork** to capture a whole layer or merge visible color layers for motion; an active selection opens this group for capturing a detail.
+The right inspector tabs are **Tools**, **Layers**, **Palette** and **Effects**. Full 12 px labels sit below their icons so they fit the admitted 260 px minimum width; the Layers icon row shows a count capped visually at 99+, with the full count in the tab's title. Effects contains PixiTools tasks such as lighting, cleanup, tiles and animation review; its accessible name is Effects (PixiTools). In Tools, expand **Animate artwork** to capture a whole layer or merge visible color layers for motion; an active selection opens this group for capturing a detail.
 
 ## Projects and names
 
-![Local project gallery with the saved sample artwork.](../assets/screenshots/2026-10-02-feature-guide/projects-gallery.png)
+![Local project gallery showing the saved original sample project.](../assets/screenshots/2026-10-15-current-ui/projects-gallery.png)
 
 1. Open **File → New drawing** for a blank project. Wait for the current save to finish before switching. A failed save should be resolved or backed up first.
 2. Click the project title along the top to rename it. Confirm the edit; the name travels with a project backup.
@@ -24,7 +26,7 @@ This gallery belongs to the current browser storage and site origin. It is not a
 
 ## Bring in an image
 
-![The real image importer with size, quality and destination choices.](../assets/screenshots/2026-10-02-feature-guide/import-image.png)
+![Actual single-image import choices using original built-in artwork.](../assets/screenshots/2026-10-15-current-ui/import-image.png)
 
 Open **File → Import…** and choose a PNG, JPEG, WebP or `.pixibun` project. Drag-and-drop import is also available in the workspace. For an ordinary image, choose **Single Sprite / Layer** and follow these steps:
 
@@ -42,7 +44,7 @@ When the browser supplies an image file in a **Paste** event outside a text/edit
 
 ## Slice a sprite sheet
 
-![Sprite Sheet Slicer with cell size and cutline preview.](../assets/screenshots/2026-10-02-feature-guide/import-spritesheet.png)
+![Actual sprite-sheet slicer, 8 by 8 cells over sample artwork; no frames imported in this capture.](../assets/screenshots/2026-10-15-current-ui/import-spritesheet.png)
 
 1. Import the sheet and switch to **Sprite Sheet Slicer**.
 2. Set cell width and height; use the size presets or your own values. Set spacing and margins when the sheet has gutters or borders. Check the cutline preview rather than assuming the whole sheet divides evenly.
@@ -55,13 +57,13 @@ Empty-cell filtering checks original image pixels in tiles of at most 256×64 pi
 
 ## Resize the canvas
 
-![Canvas dimensions, resampling and anchor controls.](../assets/screenshots/2026-10-02-feature-guide/canvas-resize.png)
+![Actual canvas resize dialog, dimensions and anchor choices; no resize committed.](../assets/screenshots/2026-10-15-current-ui/canvas-resize.png)
 
 Open **File → Canvas size…**. Choose a preset or enter width and height. **Lock Aspect Ratio** couples the dimensions. With **Scale Artwork (Resample)** off, the anchor chooses where the existing pixels sit within the new bounds; shrinking can crop them. With resampling on, artwork is resized rather than just given new bounds. Review both settings, apply the resize, and inspect every important frame. Undo can restore an admitted resize while it remains in history.
 
 ## Layers
 
-![The Layers panel alongside the selected Pen tool and canvas.](../assets/screenshots/2026-10-02-feature-guide/tool-pen.png)
+![Pen selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.](../assets/screenshots/2026-10-15-current-ui/tool-pen.png)
 
 Choose **Layers**, then select the layer you want to edit. Each animation frame has its **own pixels**. A blank added frame keeps layer names and settings but does not copy the artwork; **Duplicate frame** copies a pose.
 
@@ -85,13 +87,13 @@ Merge Down accepts visible Normal-blend contributions with their opacity and ref
 
 ## Colors close to hand
 
-![The color picker opened from a color well.](../assets/screenshots/2026-10-02-feature-guide/color-picker.png)
+![Actual primary-color picker with numeric controls; no color change committed.](../assets/screenshots/2026-10-15-current-ui/color-picker.png)
 
 Click a color well at the lower left for quick swatches; double-click for the picker. Set a color with the hue ring and triangle (or square), HSV sliders or hex field, then confirm. **View → Arrange... → Color picker** pins the picker in the inspector for immediate drawing-color changes. The Palette tab also offers **Pin color panel** and **Unpin color panel**. The quick flyout includes palette and recent colors. **X** swaps primary and secondary; the reset control restores black and white. [Browse palette previews](artist-workspace.md#compare-palettes-before-choosing), or follow the [palette authoring guide](palettes-and-cycling.md) for ramps, roles and cycling.
 
 ## Selections and transforms
 
-![A Bun selection with eight handles, pivot and transform action bar.](../assets/screenshots/2026-10-02-feature-guide/selection-transform.png)
+![A native rectangular Bun selection with transform handles and HUD; before applying a transform.](../assets/screenshots/2026-10-15-current-ui/selection-transform.png)
 
 1. Use **Marquee Box (M)**, **Lasso (Q)** or **Magic Wand (W)** to select pixels. Shift adds; Alt subtracts. On selection tools, Alt's subtract gesture takes priority over viewport panning.
 2. Drag inside to move, or use arrow keys to nudge. Shift can lock a drag axis. Use the resize handles to scale; the outer rotation zones rotate, with Shift snapping to 15° steps. The pivot sets the rotation center.
@@ -104,7 +106,7 @@ Selection masks matter: a lasso or wand selection does not fill its entire bound
 
 ## View and symmetry
 
-![View options with grids, previews, lenses and drawing symmetry.](../assets/screenshots/2026-10-02-feature-guide/view-options.png)
+![Actual grids, composition overlays, tile/PiP previews, CVD/silhouette lenses and symmetry choices.](../assets/screenshots/2026-10-15-current-ui/view-options.png)
 
 | Feature | A gentle first use | Artwork effect |
 | --- | --- | --- |
@@ -122,7 +124,7 @@ Selection masks matter: a lasso or wand selection does not fill its entire bound
 
 For an exact selected tile's repeating preview and download, use [Patterns & Tilesets](pixitools-cleanup-and-tiles.md#repeat-a-selected-tile). The View preview repeats the canvas instead.
 
-![The current floating preview with backdrop and playback controls.](../assets/screenshots/2026-10-02-feature-repairs-phase3/single-live-preview.png)
+![One current floating live-preview window beside the drawing.](../assets/screenshots/2026-10-15-current-ui/single-live-preview.png)
 
 Choose **View → Live PiP** to open one floating **Live Preview** window. You can also search for Picture-in-Picture in **Ctrl/Cmd+K**.
 
@@ -131,27 +133,27 @@ Choose **View → Live PiP** to open one floating **Live Preview** window. You c
 3. Use **Minimize**, then **Expand** when you need it again; the current artwork is redrawn after expansion. Play/Pause shares the Studio timeline.
 4. Close it with **×**, or toggle Live PiP off in View. Reopening gives you the same single preview. It follows artwork changes and Undo/Redo; it does not create a second project.
 
-The [new capture record](../assets/screenshots/2026-10-02-feature-repairs-phase3/run.json) shows the corrected single-window controls. The earlier duplicate-window screenshot remains historical evidence.
+The [new capture record](../assets/screenshots/2026-10-15-current-ui/run.json) shows the corrected single-window controls. The earlier duplicate-window screenshot remains historical evidence.
 
 ## Right-click quick tools
 
-![The canvas's right-click tools and color swap menu.](../assets/screenshots/2026-10-08-motion-layout/canvas-tools.png)
+![Actual right-click quick tools and color swap menu.](../assets/screenshots/2026-10-15-current-ui/radial-menu.png)
 
 Right-click beside the artwork for **Canvas tools** (in the PixiBun classic keymap, anywhere on the drawing surface; the standard keymap paints with the secondary color on the artwork itself): Pen, Eraser, Flood Fill, Eyedropper, Marquee Box, Lasso, Magic Wand, Line, Rectangle, Ellipse and color swap. Either mouse button chooses an action. With the canvas focused, **Shift+F10** or the **Context Menu** key also opens it. Arrow keys move between buttons; Enter selects; Tab stays inside the popup. Escape or an outside click closes it and restores the opener when still visible. The popup stays inside the window and closes if Studio switches to its small-screen notice. Its clicks do not paint underneath. The full left shelf remains available for the other tools. Right-click on a palette swatch selects the secondary color.
 
-The picture shows the compiled 8 October follow-up. The earlier four-tool capture remains preserved with its original date.
+The picture shows the 15 October production build. Replaced pictures retain their original bytes and dates in the local screenshot archive.
 
 The bottom status area helps you check cursor coordinates, canvas size, zoom, current frame, layer/tool and selection size. The top save badge tells you about persistence; the cursor readout is not evidence that a project has saved.
 
 ## Appearance, help and command search
 
-![Studio menu with appearance and help choices.](../assets/screenshots/2026-10-02-feature-guide/studio-options.png)
+![Actual studio theme, color scheme and tool preview preferences.](../assets/screenshots/2026-10-15-current-ui/studio-options.png)
 
 Open **Studio** to choose a style and **Night / Day**. Moonlit, Sakura, Tidepool, Ember, Moss and Arcade float the panels over an animated pixel scene with Bun perched on the canvas frame; Graphite and Plum keep a flat, quiet desk. Every style has a Day and a Night palette, and a unit test checks each palette's text colors against its panel colors at WCAG AA contrast (palette pairs, not a full conformance audit). The same menu opens **Co-Draw**, **Help**, the tool-preview and **Tips** preferences, and **Replay welcome**.
 
 On your first visit, a short welcome asks how much pixel art you have made, lets you pick a style while the studio changes behind it, shows where to change it later, and opens a first drawing. Your answer only tunes help: newcomers get one-time tips beside the canvas, the Lamp, the timeline and Export; people with some experience get tips for PixiBun's own features; pros get none, and tool previews start off. The first-edit tip follows the saved Standard/classic pan gesture, including changes while the tip is open. The layer tip counts newly added ordinary drawing layers in the same frame; tagged/effect/research layers and navigation to existing layers do not trigger it. Project changes clear queued tips. Automated browsers skip the welcome unless the address includes `?welcome=1`. Animated tool previews illustrate tools with procedural mini-canvases, pro tips, and a three-step storyboard (before / action / result); turn them off if you prefer a quieter desk. Reduced-motion behavior is supported where implemented; this is not a claim of completed assistive-technology studies.
 
-![The command palette with searchable studio actions.](../assets/screenshots/2026-10-02-feature-guide/command-palette.png)
+![Searchable command palette opened with Ctrl+K.](../assets/screenshots/2026-10-15-current-ui/command-palette.png)
 
 Press **Ctrl+K** to search drawing tools, view controls, playback or project actions by name. Use arrows to choose a result and Enter to run it. **Studio → Help** opens the shortcut guide and its **Privacy & Diagnostics** link. Shortcuts are context-sensitive and normally yield to text fields and dialogs; use the [shortcut contract](../contracts/shortcuts.md) for the exact exceptions.
 

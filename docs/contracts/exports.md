@@ -30,9 +30,9 @@ The local pre-S4 run found Firefox returning a supported H.264 configuration whi
 
 The local replay repair captures the authored active-frame composite independently of Undo and appends a copied/scaled terminal frame. GIF now uses the supplied eviction baseline. The source workspace is checked before encoding and before download; temporary surfaces/reservations are released on all outcomes. Retained snapshots with different canvas dimensions refuse with project-backup/animation-export advice. This does not reconstruct complete historical multi-frame/multi-layer authoring or qualify actual MP4 timelapse playback.
 
-![The current Cycle Loop export panel, with two seconds at 8 FPS producing a settings summary of 16 frames.](../assets/screenshots/2026-10-02-docs/cycle-loop-export.png)
+![Current palette-cycle export configuration. UI capture only; this run does not certify the resulting download or engine import.](../assets/screenshots/2026-10-15-current-ui/export-palette-cycle.png)
 
-*Local UI on 2 October 2026, before download; the screenshot documents available controls rather than a decoded-file verdict. [Artist walkthrough](../guides/palettes-and-cycling.md), [capture details](../assets/screenshots/2026-10-02-docs/run.json).*
+*Local production UI on 15 October 2026, before download; this picture illustrates controls. [Artist walkthrough](../guides/palettes-and-cycling.md), [capture details](../assets/screenshots/2026-10-15-current-ui/run.json).*
 
 Shared animation export models preserve selected clip pose order and durations where the format can represent them. GIF rounds holds; MediaRecorder samples in real time. Browser playback scheduling is not guaranteed by encoded frame timestamps. Inspect the chosen scope before exporting.
 

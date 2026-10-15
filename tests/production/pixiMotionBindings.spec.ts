@@ -90,6 +90,10 @@ test('compiled stale source refuses bake; fresh capture previews, bakes, undoes,
 
 test('compiled frame duplication never retargets a captured part and bake Undo restores the previously active copy', async ({ page }) => {
   const original = await readyWithMark(page); await capture(page); await setArc(page);
+  // A first-install WebKit worker notification can cover this timeline control.
+  // Dismiss it through the UI; keep the full frame and history assertions.
+  const dismissUpdate = page.getByRole('button', { name: 'Dismiss update banner', exact: true });
+  if (await dismissUpdate.isVisible()) await dismissUpdate.click();
   await page.locator('summary').filter({ hasText: 'Frame actions' }).click();
   await page.getByRole('button', { name: 'Duplicate frame', exact: true }).click(); await expect(frame(page, 2)).toBeVisible();
   await page.getByRole('button', { name: 'BAKE TO TIMELINE', exact: true }).click();

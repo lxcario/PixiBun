@@ -8,7 +8,7 @@ When an update is ready, **Restart to update** saves the active Studio drawing b
 
 ## Co-Draw
 
-![The Co-Draw host/join and routing controls before connecting.](../assets/screenshots/2026-10-02-feature-guide/co-draw.png)
+![Co-Draw initial routing and host/join controls, before any connection or invite is generated.](../assets/screenshots/2026-10-15-current-ui/co-draw.png)
 
 Open **Studio → Co-Draw**. The current workflow connects **one host and one guest** using WebRTC and manually exchanged tokens. There is no account, lobby, multi-person room or cloud-sync service.
 
@@ -41,11 +41,11 @@ Browser install/home-screen options depend on browser support and deployment. An
 
 ## Help and diagnostics
 
-![The in-app shortcut guide and link to Privacy & Diagnostics.](../assets/screenshots/2026-10-02-feature-guide/shortcuts-help.png)
+![The in-app Guide & Shortcuts; shortcuts for text fields are qualified in the handbook.](../assets/screenshots/2026-10-15-current-ui/shortcuts-help.png)
 
 Open **Studio → Help**, or **?** when the canvas owns keyboard input. The guide lists tool/edit/view/animation shortcuts; its **Privacy & Diagnostics** link opens the settings below. **Ctrl/Cmd+K** is an alternative way to find commands by name.
 
-![Local diagnostic logging and opt-in remote crash relay settings.](../assets/screenshots/2026-10-02-feature-guide/privacy-diagnostics.png)
+![Local diagnostics and disabled-by-default remote crash relay settings; no relay was enabled.](../assets/screenshots/2026-10-15-current-ui/privacy-diagnostics.png)
 
 | Control | What it does | A useful habit |
 | --- | --- | --- |

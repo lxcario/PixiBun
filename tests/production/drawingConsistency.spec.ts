@@ -14,6 +14,12 @@ async function preview(page: Page, from: [number, number], to: [number, number])
 async function ready(page: Page) {
   await page.setViewportSize({ width: 1280, height: 900 }); await page.goto('/studio');
   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
+  // Keep the help card from covering the initial drag point on slower engines.
+  // Use the saved user preference through its real control.
+  await page.getByTestId('appearance-button').click();
+  const previews = page.getByRole('checkbox', { name: 'Tool Previews', exact: true });
+  await previews.focus(); await previews.press('Space'); await expect(previews).not.toBeChecked();
+  await page.getByRole('button', { name: 'Close studio options', exact: true }).click();
 }
 
 test('Line keeps exact preview, pixels, Undo and Redo when the drag direction reverses', async ({ page }) => {
@@ -37,7 +43,7 @@ for (const tool of ['line', 'isometric-line', 'rectangle', 'ellipse']) {
     await preview(page, [8, 8], [17, 17]); await page.mouse.up();
     await chooseTool(page, tool); await page.getByTestId('tab-tools').click();
     const size = page.getByRole('slider', { name: 'Tool panel brush size', exact: true });
-    await size.focus(); await size.press('Home'); await size.press('ArrowRight'); await size.press('ArrowRight');
+    await size.focus(); await size.press('Home'); await size.press('ArrowRight'); await size.press('ArrowRight'); await expect(size).toHaveValue('3');
     const seen = await preview(page, [4, 11], [20, 14]);
     expect(seen.some((v, i) => i % 4 === 3 && v > 0)).toBe(true);
     for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) if (x < 8 || x > 17 || y < 8 || y > 17) expect(seen[(y * 32 + x) * 4 + 3]).toBe(0);

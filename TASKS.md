@@ -2,7 +2,7 @@
 
 ## Source reconciliation — 15 October 2026
 
-The [source/documentation review](docs/releases/2026-10-15-codebase-and-documentation.md) records the latest integrated candidate and current verification. Selection masks, transparency, selective Co-Draw Undo, before/after history patches (4,096-step cap / 64 MiB), Standard/classic keymaps and the folding shelf are implemented. The desktop coach and eight Pocket lessons, real homepage GIF/APNG/game-kit exports, saved canvas palettes, inspector primitives and save-before-update restart are included. Moving the stroke loop out of React, carts/launch, participant outcomes and production-host qualification remain open. The phase ledger below retains earlier completed/failing attempt scope; old 50-step drawing limits are historical, while motion parameter history still uses 50.
+The [audit follow-up](docs/plans/2026-10-15-audit-follow-up.md) records the latest integrated candidate and verification, following the [corpus review](docs/releases/2026-10-15-codebase-and-documentation.md). Selection masks, transparency, selective Co-Draw Undo, before/after history patches (4,096-step cap / 64 MiB), Standard/classic keymaps and the folding shelf are implemented. The desktop coach and eight Pocket lessons, real homepage GIF/APNG/game-kit exports, saved canvas palettes, inspector primitives and save-before-update restart are included. Carts, the phone player, Light Sweep, Handmade Receipt and Living Postcards are implemented. The audit's four scoped phases and current screenshot refresh are complete. Moving the stroke loop out of React, launch, participant outcomes, cart survival across sharing platforms and production-host qualification remain open. The phase ledger below retains earlier completed/failing attempt scope; old 50-step drawing limits are historical, while motion parameter history still uses 50.
 
 Maintenance update — 13 October 2026: see the [current status](docs/current-status.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
 
@@ -17,8 +17,9 @@ Source: the Strategy and Audit & Roadmap documents of 13 October 2026, summarize
 - [x] Requested addition: eight Night/Day studio styles, theme hydration fix, first-run welcome and level-based tips.
 - [ ] Rename `src/lib/ai` to `src/lib/graphics`.
 - [x] Phase 1: selection masks for every raster tool, transparency checkerboard, co-draw selective undo, quick fixes, standard keymap, tool flyouts and fit-to-view, byte-budgeted undo.
-- [ ] Carts, phone cart player, Light Sweep and Handmade Receipt (strategy launch bets).
-- [ ] Fix the two production failures that predate this work: navigator square-pixel alignment and the color dock's 10px edge expectation under the floating layout.
+- [x] Implement carts, phone cart player, Light Sweep, Handmade Receipt and Living Postcards. Launch and per-platform sharing survival remain separate qualification.
+- [x] Clarify the color dock's edge-alignment fixture to select the flat Graphite desk; retain its original geometry and color-interaction assertions. Scene desks intentionally use margins.
+- [ ] Qualify the previously recorded navigator square-pixel alignment failure; the scoped audit browser selection does not close that separate case.
 
 ## Nibbli and Studio source publication — 2026-10-13
 

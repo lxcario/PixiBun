@@ -2,6 +2,8 @@
 
 This review covers PixiBun 1.14.1 on main through **e9b5e682b9cc0111358f3b91f41d98249001a7a5** and the integrated playground, homepage, inspector, theme and application-update changes. This is source publication and scoped local verification, not a production deployment/release approval.
 
+The subsequent [four-phase audit follow-up](../plans/2026-10-15-audit-follow-up.md) integrates carts through Living Postcards, fixes confirmed instruction/interface/drawing issues and replaces the handbook pictures with the current build. The source and original test verdicts below retain their earlier scope; the follow-up owns current results and the complete Day/Night theme gallery.
+
 ## Changes checked against source
 
 | Area | Current behavior and owner | Documentation corrections |

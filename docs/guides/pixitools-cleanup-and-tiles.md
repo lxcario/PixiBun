@@ -4,7 +4,7 @@ For the tested revision and remaining accessibility, device and host checks, see
 
 [Handbook](README.md) · [Animation review](animation-and-review.md) · [Variations](variations-and-scenes.md) · [All features](../features.md)
 
-![The five task choices in the current PixiTools panel.](../assets/screenshots/2026-10-02-feature-guide/pixitools-chooser.png)
+![All five current PixiTools task choices and Show every tool on one page.](../assets/screenshots/2026-10-15-current-ui/pixitools-chooser.png)
 
 Choose **Effects** (the PixiTools tab) in the right inspector, then choose a task. **Choose another task** brings you back; **Browse all tools** shows the sections together. The task choice is remembered for the browser session. The five current groups are **Add light and depth**, **Build tiles and patterns**, **Clean and refine**, **Review animation**, and **Try a new look**.
 
@@ -12,7 +12,7 @@ These are local tools with bounded algorithms. A folder named `ai` in the source
 
 ## Scan before cleaning
 
-![A real cleanup scan with counts and before/preview thumbnails.](../assets/screenshots/2026-10-02-feature-guide/cleanup-scan.png)
+![Actual non-destructive cleanup scan of the sample layer with counts and before/preview thumbnails.](../assets/screenshots/2026-10-15-current-ui/cleanup-scan.png)
 
 Open **Clean and refine → Pixel Cleanup & RotSprite**:
 
@@ -26,7 +26,7 @@ Protected rectangles from the active [animation review clip](animation-and-revie
 
 ## Clean rotation and lines
 
-![Smooth Jaggies showing the actual before/after preview.](../assets/screenshots/2026-10-02-feature-guide/cleanup-lines-preview.png)
+![Actual Smooth Jaggies before/after preview; Apply to Layer remains uncommitted.](../assets/screenshots/2026-10-15-current-ui/cleanup-lines-preview.png)
 
 | Tool | Steps | When it changes artwork |
 | --- | --- | --- |
@@ -39,11 +39,11 @@ Preview actions offer **Cancel** and refuse stale artwork/palette inputs. A zero
 
 ## Color moods and dithering
 
-![Sunset Mood preview with original and proposed artwork.](../assets/screenshots/2026-10-02-feature-guide/color-mood-preview.png)
+![Actual Sunset color mood preview, before applying.](../assets/screenshots/2026-10-15-current-ui/color-mood-preview.png)
 
 In the same task, scroll to **Color Moods & Palette**. **Sunset**, **Moonlight** and **Neon** preview atmospheric recoloring on the selected layer. Compare the result, then Apply to Layer or Cancel. They are presets, not a guarantee that the resulting colors stay in your palette.
 
-![The palette, dither and in-between actions beneath cleanup.](../assets/screenshots/2026-10-02-feature-guide/cleanup-color-actions.png)
+![Current dithering, palette snap, harmonized accents and in-between frame controls.](../assets/screenshots/2026-10-15-current-ui/cleanup-color-actions.png)
 
 | Action | Use it this way | Scope and limit |
 | --- | --- | --- |
@@ -57,7 +57,7 @@ For authoring swatches, ramps, roles and animated color ranges, follow [palettes
 
 ## Repeat a selected tile
 
-![The exact selected mushroom rectangle repeated in a 3×3 preview.](../assets/screenshots/2026-10-02-feature-guide/tiles-repeat.png)
+![Selected mushroom pixels repeated 3 by 3; repeated imagery is a seam inspection aid.](../assets/screenshots/2026-10-15-current-ui/tiles-repeat.png)
 
 Choose **Build tiles and patterns → Patterns & Tilesets** and open the section. Select a rectangular tile on the canvas. **Repeat Preview** shows that rectangle from the visible frame repeated three times in each direction. Edit the source tile to check whether its edges meet; the preview updates from the current source.
 
@@ -65,7 +65,7 @@ Choose **Build tiles and patterns → Patterns & Tilesets** and open the section
 
 ## Slice into unique tiles
 
-![The selected layer sliced into unique tiles, with a PNG and maps download.](../assets/screenshots/2026-10-02-feature-repairs-phase4/unique-tile-bundle.png)
+![Current unique-tile bundle and stale-source controls, exercised through the existing workflow.](../assets/screenshots/2026-10-15-current-ui/unique-tile-bundle.png)
 
 1. Select the source **layer** and choose 8, 16 or 32 px **Tile Size**. Both canvas dimensions must divide evenly by that size; a partial edge is refused so pixels are not silently cropped.
 2. Choose **Slice Into Unique Tiles**. It scans that layer's stored canvas pixels, including transparency. Repeat Preview instead uses the visible frame composite. Layer opacity, blend effects and other layers are not baked into this bundle.
@@ -80,7 +80,7 @@ Choose **Build tiles and patterns → Patterns & Tilesets** and open the section
 
 The PNG and both maps are prepared from one snapshot and downloaded together. Changing artwork, frame, layer, dimensions or tile size makes the result stale and disables Copy/Download. Slice again to use the new source. Switching back to the earlier frame or tile size does not restore a released bundle; prepare it again. If you edit while encoding, the pending result is discarded. **Cancel tile export** also stops preparation without changing artwork.
 
-![A changed frame disables the previous tile bundle until it is sliced again.](../assets/screenshots/2026-10-02-feature-repairs-phase4/unique-tile-stale.png)
+![Current unique-tile bundle and stale-source controls, exercised through the existing workflow.](../assets/screenshots/2026-10-15-current-ui/unique-tile-stale.png)
 
 Admission allows up to 4096 source tiles, 4096 px per side and four million source pixels, within the shared artwork memory budget. Try a larger tile size or smaller canvas if refused. PNG preparation has a 30-second timeout. These bounds limit work; they do not guarantee success on every device.
 
@@ -88,7 +88,7 @@ Open map.tmj in your intended Tiled version, keeping tileset.png beside it, and 
 
 ## Preview 47-blob contours
 
-![47-blob contour thumbnails with a separate Apply Contours action.](../assets/screenshots/2026-10-02-feature-guide/tiles-contours.png)
+![Actual 47-blob contour before/after preview, before applying the separate contour layer.](../assets/screenshots/2026-10-15-current-ui/tiles-contours.png)
 
 Choose **Preview 47-blob Contours** to inspect highlighted/shaded contours derived from the implemented neighbor-mask rules. Read the proposed pixel count and Before / After thumbnails. **Apply Contours** writes a separate contour layer; **Cancel** leaves the project unchanged. If artwork changes, prepare a new preview.
 

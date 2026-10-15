@@ -1,13 +1,13 @@
 # Audit follow-up — 15 October 2026
 
-These phases follow the source-checked product audit. They are separate from the numbered strategy milestones in the [strategy roadmap](2026-10-14-strategy-roadmap.md). Work starts from main at `21411d89067b0d803c444971714a898cf5213b99`; concurrent Living Postcard edits in the primary checkout are outside this phase.
+These phases follow the source-checked product audit. They are separate from the numbered strategy milestones in the [strategy roadmap](2026-10-14-strategy-roadmap.md). Work started from main at `21411d89067b0d803c444971714a898cf5213b99`. Before phases 2–4, main through `422b47d4cf0b8fd918f976dc2abc04a6a89de401`, including Living Postcards, was integrated at `3cce4602ccbb4157c4f45fd7879d9d660eb41036`. Phase 2 is committed at `e8f458a`; phase 3 application source is `626b45be15bf2875d085148be388461a1b252bec`.
 
 | Phase | Scope | Status |
 | --- | --- | --- |
 | 1. Instructions, claims and coaching | Saved-keymap pan help; actual lighting navigation; ordinary-layer tip triggers; precise clip/export and local/reporting disclosures | Complete; verification below |
-| 2. Reproduced interface problems | Measure inspector label clipping and tiny controls at laptop widths; reproduce constellation collisions; clarify the intentional Animate entry while preserving whole-layer capture | Complete; integrated recheck follows phase 3 |
-| 3. Drawing consistency and measurement | Specify direction behavior for Line, protect preview/commit parity, and measure browser input/render work before changing pointer sampling | Implemented; final integrated qualification in progress |
-| 4. Current documentation pictures | Refresh operating-guide screenshots and show all eight Studio themes in Day and Night | Requested; follows the final code build |
+| 2. Reproduced interface problems | Measure inspector label clipping and tiny controls at laptop widths; reproduce constellation collisions; clarify the intentional Animate entry while preserving whole-layer capture | Complete; original and integrated verdicts below |
+| 3. Drawing consistency and measurement | Specify direction behavior for Line, protect preview/commit parity, and measure browser input/render work before changing pointer sampling | Complete within the stated scope; device latency and playback qualification remain open |
+| 4. Current documentation pictures | Refresh operating-guide screenshots and show all eight Studio themes in Day and Night | Complete; 129 current screenshots and native-pixel verification |
 
 ## Phase 1 behavior
 
@@ -39,6 +39,41 @@ Line, unsnapped Iso Line and Standard Shift-click segments canonicalize endpoint
 The new shape selection/direction regression selection initially retained **10 failures /1 pass** on the original code. After the corrections, the four-file drawing selection passed **59 cases**, including 4,096 clipped/subpixel endpoint combinations. An initial compiled Chromium selection passed **14 cases**, including exact shape preview/commit/Undo/Redo, rendered contrast checks for Graphite and Sakura Day/Night, and response observations at 128² and 512².
 
 The response probe records synthetic `pointerdown` capture → first matching canvas raster and → next animation-frame callback, with two warmups and twelve measured dots per size/engine. It includes instrumentation/readback and does not measure physical stylus input, coalesced hardware samples, compositor presentation or user drawing feel. There is no new latency budget or sub-16 ms promise. Pointer sampling and React state ownership were not changed speculatively. Final integrated results and the screenshot capture scope follow below.
+
+## Integrated verification
+
+The integrated application at `626b45be15bf2875d085148be388461a1b252bec` passed all six configured gates on Node **22.23.3**: documentation, type checking, lint, **2,542 unit tests /241 files** with coverage, unchanged performance budgets and production compilation. Coverage was **65.21% statements /59.73% branches /60.15% functions /66.43% lines**. RotSprite p90 was **0.23272 ms** against the unchanged 10 ms limit. The full gate completed in **216.22 s**. Discovery enumerates **256 editor cases /45 files** and **516 production cases /51 files**; those complete browser inventories were not executed.
+
+The compiled build is `RhUR8p-Rib8ldc4yuuDRo`, cache `v1.14.1-626b45be15bf2875d085148be388461a1b252bec`, with **86 static precache assets**. The original gate/browser/capture candidate's guard covered **955 tracked or new non-ignored, non-Markdown inputs outside `docs/`**, SHA-256 `3bd182b9a02159368ccf65aab8cbdd373fcb6e3c13b75a428bacdc076e338e64`. This is a scoped source guard, not a complete compiled-artifact fingerprint.
+
+The integrated browser selection covered interface labels/targets/contrast, line and selected-shape pixels, welcome downloads/keymaps, motion binding/history, Studio geometry/playback and Living Postcards across Chromium, Firefox and WebKit. Its original verdict is **73 passed /2 failed**, with zero skips/retries. In WebKit, a hover-help card covered the initial Iso Line drag point, and the application-update banner intercepted the Frame actions click. The retained screenshot/trace identifies those actual overlays. The drawing fixture now turns Tool Previews off through Studio's preference control and verifies brush size; the motion fixture dismisses the update banner through its button. All original pixel, frame, bake and Undo/Redo assertions remain. These fixture changes do not qualify application-update notification behavior or change production application bytes.
+
+The follow-up ran both complete drawing and motion suites in all three engines: **20 passed /1 failed**, zero skips/retries. Both original overlay failures passed; the long WebKit save/reload motion case reached its unchanged 60 s total limit near its final pixel assertion. With other verification work finished, a separate isolated WebKit motion run passed **both cases**, retaining the same deadline and all assertions. This remains an observed timing limitation, not a rewritten 21-case pass. The separate 955-input guard is `f18ad8588110ec9cfe4ea8eeb10edcd9d6d7c80451f93a89a4cef1be726d8879`, on the same compiled build. Only the two test fixtures changed after the original gate and capture guard. Original failures remain failures rather than being combined into a rewritten 75-case pass.
+
+The separate response probe passed **6 cases**, zero failures/skips/retries. Each row includes two warmups and twelve measured dots; observations are milliseconds from synthetic pointerdown capture, with instrumentation/readback included.
+
+| Engine | Canvas | Median matching raster | p90 matching raster | p90 next animation-frame callback |
+| --- | --- | ---: | ---: | ---: |
+| Chromium | 128 × 128 | 0.6 | 0.9 | 9.7 |
+| Chromium | 512 × 512 | 0.9 | 1.2 | 10.1 |
+| Firefox | 128 × 128 | 1 | 2 | 55 |
+| Firefox | 512 × 512 | 2 | 3 | 47 |
+| WebKit | 128 × 128 | 1 | 1 | 268 |
+| WebKit | 512 × 512 | 2 | 2 | 189 |
+
+The late WebKit callbacks remain a limitation. Matching canvas readback does not prove compositor presentation, physical pen latency, continuous-stroke feel or stable playback. No timeout, retry policy, latency/coverage/performance budget or pointer-sampling behavior was relaxed. Actual Safari/devices, screen readers, real collaboration networks, long sessions, M3 scheduling, arbitrary-angle artwork quality, the separate navigator alignment case and production-host update/rollback remain outside this scoped completion.
+
+## Phase 4 pictures and documentation
+
+The handbook now has **129 current PNG pictures /15,081,102 bytes**, captured from that production build in isolated Chromium **151.0.7922.34** contexts. Coverage includes the current welcome/story, desktop lessons and picker, Pocket lessons/free pad, Teaching Board, all seventeen drawing tools, Curve handles, motion capture/pose, timeline/layers, palettes/cycling, lighting, research/cleanup/tiles, import/recovery/archive boundaries, privacy/Co-Draw controls, exports, the phone cart player, Light Sweep and Living Postcards. The captures illustrate actual available states; they are not a claim that every codec, lesson outcome, accessibility path or device was qualified.
+
+The [theme gallery](../guides/themes.md) shows **all eight Studio themes in both Night and Day**, sixteen pictures at 1280 × 900, device scale 1. Each uses the same original 56 × 32 three-frame sample assembled from built-in artwork and imported through the normal project dialog. General guide pictures use a legible 1440 × 960 Graphite desk; phone pictures use 390 × 844. Reduced motion keeps the scenes still. No real artist data, diagnostic opt-in or live Co-Draw connection was used.
+
+Every published PNG was independently decoded and its full RGBA hash matched the retained native screenshot after lossless container compression. All 129 were visually inspected in five contact sheets, with selected full-size review of scene themes, the completed lesson, motion pose and pending Curve controls. An unrelated toast in the first Curve illustration was removed by a clean UI retake; both the superseded capture and original run attempts remain local. The [capture manifest](../assets/screenshots/2026-10-15-current-ui/run.json) records each final image's dimensions, bytes, file/native hashes and decoded-pixel hash.
+
+All current Markdown image references were redirected to the new pictures. Captions, lesson names, inspector/motion navigation, dates and theme names were reconciled. The task/strategy summaries now distinguish implemented carts, phone player, Light Sweep, Handmade Receipt and Living Postcards from remaining launch and sharing-platform qualification. Older review verdicts, proposal boundaries and dated benchmark/token tables keep their original scope.
+
+The **109 replaced PNGs /12,479,941 bytes** matched their original Git blobs before being copied byte for byte into the [local screenshot archive](../archives.md#replaced-handbook-pictures--15-october-2026). The tracked [retirement receipt](../assets/screenshots/2026-10-15-current-ui/retired-images.json) has SHA-256 `035d7c240cf652eceafa0faafc64467ae15e3cc762388406d0003875e367eb45`. Originals remain recoverable from Git history. Their earlier capture manifests retain their original labels. No raw traces/logs or private transcripts were added to the source repository, and the 40 MiB checkout budget is unchanged.
 
 ## Phase 1 verification and remaining scope
 
