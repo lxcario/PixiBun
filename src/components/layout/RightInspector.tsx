@@ -16,6 +16,7 @@ import { PixiMotionPanel } from './inspector/PixiMotionPanel';
 import { MotionRigLibrary } from './inspector/MotionRigLibrary';
 import { useLab } from '@/experimental/labsStore';
 import { PaintPotPalette } from '@/experimental/palette/PaintPotPalette';
+import { LiquidTabs } from '@/experimental/liquid/LiquidTabs';
 
 const AiToolsPanel = lazyPanel(
   () => import('./inspector/AiToolsPanel').then((m) => m.AiToolsPanel),
@@ -40,6 +41,21 @@ export const RightInspector: React.FC = () => {
   const layerCount = useStudioStore((s) => s.frames[s.activeFrameIndex]?.layers.length ?? 0);
   const paintPot = useLab('paletteStudio');
   const activeToolIcon = useStudioStore((s) => CANONICAL_TOOLS.find((tool) => tool.id === s.tools.activeTool)?.icon ?? 'pen');
+  const liquidTabs = useLab('liquidTabs');
+
+  const tabInner = (tab: (typeof TABS)[number]) => (
+    <>
+      {tab.id === 'palette' ? (
+        <span aria-hidden="true" className="w-2.5 h-2.5 shrink-0 rounded-[2px] border border-current" style={{ backgroundColor: primaryColor }} />
+      ) : (
+        <PixelIcon name={tab.id === 'tools' ? activeToolIcon : tab.icon} size={11} className="shrink-0" />
+      )}
+      <span className="truncate">{tab.label}</span>
+      {tab.id === 'layers' && layerCount > 1 && (
+        <span aria-hidden="true" className="shrink-0 min-w-[14px] h-[14px] px-0.5 rounded-full bg-current/15 text-[9px] leading-[14px] font-mono font-bold text-center">{layerCount}</span>
+      )}
+    </>
+  );
 
   return (
     <aside
@@ -48,6 +64,9 @@ export const RightInspector: React.FC = () => {
       className="h-full border-x shrink-0 bg-[var(--desk-surface)] border-[var(--desk-border)] flex flex-col justify-between select-none z-10 text-[var(--text-heading)]"
     >
       {/* Tab bar: each tab carries a live hint of what is inside it */}
+      {liquidTabs ? (
+        <LiquidTabs tabs={TABS} active={activeInspectorTab} onSelect={setActiveInspectorTab} renderTab={tabInner} />
+      ) : (
       <div role="group" aria-label="Inspector sections" className="flex bg-[var(--desk-surface)] border-b border-[var(--desk-border)] h-9 p-1 gap-1">
         {TABS.map((tab) => {
           const active = activeInspectorTab === tab.id;
@@ -66,19 +85,12 @@ export const RightInspector: React.FC = () => {
                   : 'pixel-tactile-btn border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)]'
               }`}
             >
-              {tab.id === 'palette' ? (
-                <span aria-hidden="true" className="w-2.5 h-2.5 shrink-0 rounded-[2px] border border-current" style={{ backgroundColor: primaryColor }} />
-              ) : (
-                <PixelIcon name={tab.id === 'tools' ? activeToolIcon : tab.icon} size={11} className="shrink-0" />
-              )}
-              <span className="truncate">{tab.label}</span>
-              {tab.id === 'layers' && layerCount > 1 && (
-                <span aria-hidden="true" className="shrink-0 min-w-[14px] h-[14px] px-0.5 rounded-full bg-current/15 text-[9px] leading-[14px] font-mono font-bold text-center">{layerCount}</span>
-              )}
+              {tabInner(tab)}
             </button>
           );
         })}
       </div>
+      )}
 
       {/* Main Content Area: Dedicated Panels per Tab */}
       <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-gutter:stable]">
