@@ -9,6 +9,7 @@ import { getTemplateGridSize, getTemplateRows } from '@/lib/art/playgroundLesson
 import { LESSON_PALETTE } from '@/lib/art/lessonPalette';
 import { evaluateStencilCoverage } from '@/lib/art/stencilEvaluator';
 import { compositeFrame } from '@/lib/render/compositor';
+import { usePlaygroundUi } from './playgroundUi';
 
 /** Score the active layer against the current lesson pose. */
 export function scoreActiveLayer() {
@@ -24,6 +25,7 @@ export function scoreActiveLayer() {
 export function useLessonActions() {
   // Trace overlays existing pixels; the pre-trace artwork stays in Undo.
   const trace = useCallback(() => {
+    usePlaygroundUi.getState().clearCue();
     const template = useOnboardingStore.getState().getCurrentFrameTemplate();
     if (!template) return;
     const { canvasWidth, canvasHeight } = useStudioStore.getState();
@@ -46,6 +48,7 @@ export function useLessonActions() {
   }, []);
 
   const clearFrame = useCallback(() => {
+    usePlaygroundUi.getState().clearCue();
     const { canvasWidth, canvasHeight } = useStudioStore.getState();
     const committed = applyLessonEdit('Clear lesson layer', ctx => ctx.clearRect(0, 0, canvasWidth, canvasHeight));
     if (committed) scoreActiveLayer();
@@ -53,6 +56,7 @@ export function useLessonActions() {
 
   /** Start this frame from a copy of the one before, so only the moving parts need redrawing. */
   const copyPrevious = useCallback(() => {
+    usePlaygroundUi.getState().clearCue();
     const { frames, activeFrameIndex, canvasWidth, canvasHeight } = useStudioStore.getState();
     if (activeFrameIndex < 1) return;
     let composite: HTMLCanvasElement | null = null;

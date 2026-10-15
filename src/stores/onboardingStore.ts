@@ -261,6 +261,8 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
     useStudioStore.getState().setActiveFrame(0);
     set({
       isPlaygroundActive: true,
+      // Studio hides the tracing guide; a new practice always starts with it showing.
+      showStencilGuide: true,
       steps: generateLessonSteps(lesson),
       currentStepIndex: 0,
       completedStepIndices: new Set<number>(),

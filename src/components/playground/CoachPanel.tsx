@@ -144,7 +144,7 @@ const DrawStep: React.FC<{ scores: number[] }> = ({ scores }) => {
   const nextStep = steps[step.stepIndex + 1];
   const nextLabel = nextStep?.type === 'DRAW_FRAME' && nextStep.frameIndex !== undefined
     ? `Next: ${coachForFrame(lesson, nextStep.frameIndex).title}`
-    : 'Next: watch it play';
+    : 'Watch it play';
 
   // Celebrate the moment the drawing first matches, not on revisiting a finished frame.
   const [burst, setBurst] = useState<number | null>(null);

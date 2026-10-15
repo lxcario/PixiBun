@@ -95,6 +95,12 @@ describe('onboardingStore', () => {
     expect(useOnboardingStore.getState().currentStepIndex).toBe(0);
   });
 
+  it('shows the tracing guide again when a practice starts after Studio hid it', () => {
+    useOnboardingStore.setState({ isPlaygroundActive: false, showStencilGuide: false });
+    useOnboardingStore.getState().startPlayground();
+    expect(useOnboardingStore.getState().showStencilGuide).toBe(true);
+  });
+
   it('toggles stencil guide visibility and sets opacity', () => {
     expect(useOnboardingStore.getState().showStencilGuide).toBe(true);
     useOnboardingStore.getState().toggleStencilGuide();

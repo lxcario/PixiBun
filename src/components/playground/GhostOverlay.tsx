@@ -22,6 +22,7 @@ export const GhostOverlay: React.FC<{ template: LessonFrameTemplate | null }> = 
   const clearCue = usePlaygroundUi((s) => s.clearCue);
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
   const canvasHeight = useStudioStore((s) => s.canvasHeight);
+  const isPlaying = useStudioStore((s) => s.isPlaying);
   const reduceMotion = Boolean(useReducedMotion());
   // Repaint in the saved theme's accent from the first frame.
   const { studioTheme, colorScheme } = useLiveThemeChoice();
@@ -32,6 +33,8 @@ export const GhostOverlay: React.FC<{ template: LessonFrameTemplate | null }> = 
     if (!canvas || !ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!cue || !template) return;
+    // Playback shows the learner's own frames; a demo would draw over them.
+    if (isPlaying) { clearCue(); return; }
 
     const grid = getTemplateGridSize(template);
     const cellW = canvasWidth / grid;
@@ -86,7 +89,7 @@ export const GhostOverlay: React.FC<{ template: LessonFrameTemplate | null }> = 
       window.removeEventListener('pointerdown', stop, true);
       ctx.globalAlpha = 1;
     };
-  }, [cue, template, canvasWidth, canvasHeight, reduceMotion, clearCue, studioTheme, colorScheme]);
+  }, [cue, template, canvasWidth, canvasHeight, reduceMotion, clearCue, isPlaying, studioTheme, colorScheme]);
 
   return (
     <canvas
