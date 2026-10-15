@@ -10,12 +10,22 @@ Maintenance update — 13 October 2026: see the [current status](docs/current-st
 
 ## Studio Labs motion integration — 15 October 2026
 
-- [x] Integrate the four scene-theme Labs behind saved switches and retain classic Graphite/Plum controls.
+- [x] Integrate the scene-theme Labs behind saved switches and retain classic Graphite/Plum controls.
 - [x] Stage tool-name blur transitions, stabilize menu layout, reset inherited scale velocity and tune one small text bounce.
 - [x] Retain the remote audit’s readable classic tabs alongside the Labs liquid-tab branch.
 - [x] Reconcile current Markdown entry points and guides; retain historical source/build claims with their original scope.
 
 The [Studio Labs motion update](docs/releases/2026-10-15-studio-labs-motion.md) records publication checks separately from earlier production-build qualification.
+
+## Studio Labs island refinement, liquid controls and landing bench — 15 October 2026
+
+- [x] Replace hover squeeze with droplet bud, neck, pinch-off and recoil; tool names and carets stay full size with fixed hit targets.
+- [x] Direct shortcuts for all 17 tools; Pen, Eraser and Line cycle 1 → 2 → 3 → 4 px; Clean corners lives in expanded brush controls.
+- [x] Implement Liquid controls lab: glass slider handles and vertical liquid tab lens on the tool rail.
+- [x] Explain clipped strokes on On artwork only layers via status bar indicator and one-time hint.
+- [x] Replace four-tab landing workbench with unified 16×16 interactive bench (drawing, photometric lighting, RotSprite and hop GIF).
+
+Records: [island refinement and Liquid controls](docs/releases/2026-10-15-labs-liquid-controls.md), [welcome guide](docs/guides/welcome-and-demos.md#the-bench).
 
 ## Strategy phases — 2026-10-14
 
