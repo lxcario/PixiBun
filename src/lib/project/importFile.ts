@@ -3,6 +3,8 @@ import { SafeJson } from '@/lib/safety/safeJson';
 import { ImageHeaderProbe } from '@/lib/safety/imageHeaderProbe';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { RECOVERY_INSPECTION_CEILINGS } from '@/lib/recovery/recoveryLimits';
+import { CartError, readCart } from '@/lib/cart/cartFormat';
+import { isPng } from '@/lib/cart/pngChunks';
 
 export function importErrorMessage(error: unknown): string {
   const code = error && typeof error === 'object' && 'code' in error ? error.code : undefined;
@@ -12,6 +14,7 @@ export function importErrorMessage(error: unknown): string {
     return error instanceof RangeError ? 'The image dimensions exceed the import limits or are invalid. Choose a smaller valid image.'
       : 'The image file is damaged or unsupported. Choose a PNG, JPEG, GIF, WebP or BMP image.';
   }
+  if (error instanceof CartError) return error.message;
   return error instanceof Error ? error.message : 'The file could not be imported.';
 }
 
@@ -22,6 +25,21 @@ export async function readImportFile(file: File): Promise<ImportPayload> {
     return { type: 'project', filename: file.name, projectJson: SafeJson.parse(await file.text(), {
       maxTraversedNodes: RECOVERY_INSPECTION_CEILINGS.MAX_METADATA_NODES,
     }) };
+  }
+  // A cart is a PNG with a drawing inside: open the drawing, not the card picture.
+  if (/\.png$/i.test(file.name) || file.type === 'image/png') {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (isPng(bytes)) {
+      const cart = await readCart(bytes).catch(error => {
+        // A damaged chunk in an ordinary image is not a cart; a damaged cart chunk is.
+        if (error instanceof CartError) throw error;
+        return null;
+      });
+      if (cart) {
+        const { project, ...details } = cart;
+        return { type: 'project', filename: file.name, projectJson: project, cart: details };
+      }
+    }
   }
   const dimensions = await ImageHeaderProbe.probe(file);
   const dataUrl = await new Promise<string>((resolve, reject) => {

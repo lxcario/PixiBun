@@ -11,6 +11,8 @@ export interface ImportPayload {
   dataUrl?: string;
   /** Raw parsed JSON, validated before anything touches studio state. */
   projectJson?: unknown;
+  /** Set when the file was a PixiBun cart: its card details besides the drawing. */
+  cart?: Omit<import('@/lib/cart/cartFormat').CartRecord, 'project'>;
   imgWidth?: number;
   imgHeight?: number;
 }

@@ -36,6 +36,7 @@ import { useStudioAutosave } from '@/hooks/studio/useStudioAutosave';
 import { useStudioClipboard } from '@/hooks/studio/useStudioClipboard';
 import { useStudioFileSystem } from '@/hooks/studio/useStudioFileSystem';
 import { useStudioKeyboard } from '@/hooks/studio/useStudioKeyboard';
+import { applyOpenedCart } from '@/lib/cart/applyCart';
 
 // Heavy dialogs are code-split client-side (Phase 33): none of these bundles
 // are part of the /studio first-load JS. They render only while open, so the
@@ -356,6 +357,10 @@ export const StudioLayout: React.FC = () => {
         return;
       }
       await hydrateProject(result.value);
+      if (importPayload.cart) {
+        applyOpenedCart(importPayload.cart);
+        studioEvents.emit('pixibun:toast', { type: 'success', message: `Opened “${importPayload.cart.title}”. Remix away; your cart will credit it.` });
+      }
       setImportError(null);
       setIsImportOpen(false);
       void runAutosave();
