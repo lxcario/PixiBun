@@ -5,8 +5,9 @@ These phases follow the source-checked product audit. They are separate from the
 | Phase | Scope | Status |
 | --- | --- | --- |
 | 1. Instructions, claims and coaching | Saved-keymap pan help; actual lighting navigation; ordinary-layer tip triggers; precise clip/export and local/reporting disclosures | Complete; verification below |
-| 2. Reproduced interface problems | Measure inspector label clipping and tiny controls at laptop widths; reproduce constellation collisions; clarify the intentional Animate entry while preserving whole-layer capture | Next |
+| 2. Reproduced interface problems | Measure inspector label clipping and tiny controls at laptop widths; reproduce constellation collisions; clarify the intentional Animate entry while preserving whole-layer capture | Complete; integrated recheck follows phase 3 |
 | 3. Drawing consistency and measurement | Specify direction behavior for Line, protect preview/commit parity, and measure browser input/render work before changing pointer sampling | Planned |
+| 4. Current documentation pictures | Refresh operating-guide screenshots and show all eight Studio themes in Day and Night | Requested; follows the final code build |
 
 ## Phase 1 behavior
 
@@ -17,7 +18,21 @@ These phases follow the source-checked product audit. They are separate from the
 - The pledge distinguishes local saving, optional sharing/reporting and the Google connection service used by Internet Co-Draw. It describes documented graphics algorithms without claiming a universal cross-browser pixel-identity proof.
 - Privacy dialogs explain local logs (on by default), reporting (off by default), and the site's reporting endpoint. Missing upstream configuration prevents forwarding; it does not mean an opted-in browser request never left the device. Existing consent, rate, admission and networking policies are unchanged.
 
-## Verification and remaining scope
+## Phase 2 behavior
+
+At the supported 260 px inspector width with two layers, the compiled phase-1 baseline truncated all four labels regardless of the selected tab. With controlled repeated random choices, three hero names repeated over the headline. These are reproduced defects, unlike the earlier unconfirmed default-width clipping claim.
+
+Tabs now keep full 12 px labels below their icons, with a separate count row. Shared section headings and shortcut text, timeline Preview/Frame time labels, and status text use at least 11 px. The existing Studio range hit area already measured 24 px; the shared RangeRow now also declares that height directly. This is a scoped readability change, not a global interface-size setting or a whole-app type-size floor.
+
+**Tools → Animate artwork** is a collapsible action group. It opens for a selected area and remains available without a selection for whole-layer or merged-visible-layer capture. Existing motion tests use that disclosure through the UI; their pixel, cancellation, bake, Undo/Redo and persistence expectations are retained. The canvas's accessible pan instruction now follows the saved keymap too.
+
+Names are unique among the six retained constellations; up to four labels use measured text boxes and avoid the copy, one another and the available bounds. Resize, fonts and scroll trigger placement; a name hides if no slot fits while its creation remains announced. Scene hues remain decorative randomness. This does not change saved artwork or claim the landing scene is deterministic.
+
+Phase 2 passed lint, production compilation and 15 focused unit cases. The first compiled browser selection retained **42 passes /3 failures**, zero skips/retries: all 21 new interface cases and the existing motion cases passed. The three failures were the previously recorded edge-aligned color-dock fixture running in the now-default floating scene theme. It now explicitly selects Graphite, the intended flat layout, keeping its original geometry and interaction assertions. That case then passed in all three engines. These results are separate runs, not a rewritten 45-case pass.
+
+The 45-case candidate used build `BPpE5DxOMoExApy85CE_V` on merge base `3cce4602ccbb4157c4f45fd7879d9d660eb41036`. The before/after guard retained **952 non-Markdown inputs outside `docs/`**, SHA-256 `a586cbc41f2a43377e832b84f3b6f3d39dd8fec80f2f1cc715da06074cc1dcb3`. The later fixture clarification and added rendered contrast checks are included in the final integrated recheck, not attributed to that earlier source guard.
+
+## Phase 1 verification and remaining scope
 
 All eight new coaching regressions failed against the original implementation; after the correction, the six-file focused selection passed **52 tests** on Node **22.23.3**. Cases cover both keymaps and live switching, tagged/effect output, adding an ordinary layer above an effect, frame navigation, project loading and queued-tip cancellation. The existing relay test retains its 503 expectation and additionally asserts no upstream request when no destination is configured. Compiled welcome checks exercise both saved keymaps.
 

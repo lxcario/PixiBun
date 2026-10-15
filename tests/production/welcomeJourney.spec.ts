@@ -43,6 +43,7 @@ test(`a newcomer gets the ${keymap} pan tip beside the canvas and can turn tips 
   const tip = page.getByTestId('coach-tip-first-edit');
   await expect(tip).toBeVisible();
   await expect(tip).toContainText(`hold ${panKey} and drag`);
+  await expect(page.getByRole('application', { name: /^Pixel art drawing canvas/ })).toHaveAttribute('aria-label', new RegExp(`${panKey}\\+drag to pan`));
   // The tip never covers the canvas it is talking about.
   const tipBox = (await tip.boundingBox())!;
   const overlaps = tipBox.x < box.x + box.width && tipBox.x + tipBox.width > box.x && tipBox.y < box.y + box.height && tipBox.y + tipBox.height > box.y;

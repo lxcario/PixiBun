@@ -97,6 +97,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   plainPaper = false,
 }) => {
   const focusMode = useWorkspaceStore(s => s.focusMode);
+  const keymap = usePreferencesStore(s => s.keymap);
   const containerRef = useRef<HTMLDivElement>(null);
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const stencilCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -1011,7 +1012,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         data-tutorial="canvas"
         role="application"
         tabIndex={0}
-        aria-label="Pixel art drawing canvas. Use mouse or stylus to paint, arrow keys to pan viewport or nudge selection, and Alt+drag to pan."
+        aria-label={`Pixel art drawing canvas. Use mouse or stylus to paint, arrow keys to pan viewport or nudge selection, and ${keymap === 'classic' ? 'Alt' : 'Space'}+drag to pan.`}
         className="relative shrink-0 outline outline-1 outline-[var(--desk-border)] focus:ring-2 focus:ring-[var(--accent-gold)]"
         style={{
           width: `${stageWidth}px`,

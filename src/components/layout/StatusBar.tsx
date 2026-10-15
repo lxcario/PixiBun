@@ -46,7 +46,7 @@ export const StatusBar: React.FC = React.memo(() => {
   return (
     <div
       data-testid="status-bar"
-      className="flex items-center h-6 px-[var(--space-4)] gap-[var(--space-5)] bg-[var(--desk-surface)] border-t border-[var(--desk-border)] text-[var(--text-muted)] font-mono text-[10px] select-none shrink-0"
+      className="flex items-center h-6 px-[var(--space-4)] gap-[var(--space-5)] bg-[var(--desk-surface)] border-t border-[var(--desk-border)] text-[var(--text-muted)] font-mono text-[11px] select-none shrink-0"
     >
       <StudioBuddy />
 
