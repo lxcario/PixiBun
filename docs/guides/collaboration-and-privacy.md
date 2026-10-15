@@ -35,6 +35,8 @@ Undo/Redo on supported pixel edits restores only changed cells whose current RGB
 
 Load Studio online first so the application/service-worker cache can be populated. A production build installs every Studio file, including panels and dialogs not yet opened, so the warm-cache workflow supports drawing, editing, every panel and export tab, and local persistence while offline. If a panel still cannot load, it shows **Try again** in place without closing the canvas; if Studio itself fails, its error screen saves the open drawing first and reports whether that save succeeded. A first visit with no cached app cannot be assumed to work offline, and clearing the cache or site data can remove what the browser needs.
 
+Studio also keeps a receipt for each drawing in this browser (stroke count, drawing time and a making-of replay); it leaves your device only if you tick **Include the making-of** when you make a cart. Carts you keep from the cart player stay on this browser's desk shelf.
+
 Browser install/home-screen options depend on browser support and deployment. An installed icon is still the web app using browser-managed storage; it does not create a native application or cloud backup. Use [Project Backup](artwork-safety.md) to preserve editable work outside that storage.
 
 ## Help and diagnostics

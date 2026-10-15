@@ -5,6 +5,8 @@ import { useStudioStore } from '@/stores/studioStore';
 import { CART_LICENSE_LABELS, CART_LICENSES, cartId, type CartLicense } from '@/lib/cart/cartFormat';
 import { buildCart, buildCartRecord, cartFileName, previewCard, type CartOptions } from '@/lib/cart/buildCart';
 import { CART_LINK_COMFORTABLE, cartLink } from '@/lib/cart/cartLink';
+import { currentReceipt, receiptSummary } from '@/lib/cart/receiptRecorder';
+import { formatReceipt } from '@/lib/cart/receiptText';
 import type { CardStock } from '@/lib/cart/cartCard';
 import { buildProjectFile } from '@/lib/project/serialize';
 import { studioEvents } from '@/lib/events/studioEvents';
@@ -15,6 +17,7 @@ export interface CartExportHandle {
 
 const MAKER_KEY = 'pixibun-cart-maker';
 const LICENSE_KEY = 'pixibun-cart-license';
+const RECEIPT_KEY = 'pixibun-cart-receipt';
 
 function remembered(key: string): string {
   try { return window.localStorage.getItem(key) ?? ''; } catch { return ''; }
@@ -40,6 +43,8 @@ export const CartExportTab = React.forwardRef<CartExportHandle, CartExportTabPro
   const [stock, setStock] = useState<CardStock>('cream');
   const [error, setError] = useState<string | null>(null);
   const [linkNote, setLinkNote] = useState<string | null>(null);
+  const [withReceipt, setWithReceipt] = useState(false);
+  const [summary, setSummary] = useState(() => receiptSummary());
   const previewRef = useRef<HTMLDivElement>(null);
   const ids = useId();
 
@@ -49,9 +54,19 @@ export const CartExportTab = React.forwardRef<CartExportHandle, CartExportTabPro
     const saved = remembered(LICENSE_KEY) as CartLicense;
     if (CART_LICENSES.includes(saved)) setLicense(saved);
     if (document.documentElement.dataset.colorScheme === 'night') setStock('night');
+    setWithReceipt(remembered(RECEIPT_KEY) === 'yes');
   }, []);
+  // The receipt keeps counting while the dialog is open.
+  useEffect(() => { setSummary(receiptSummary()); }, [bufferVersion]);
 
-  const options: CartOptions = { title: title || projectName, maker, note, license, stock };
+  const previewReceipt = withReceipt && summary && summary.strokes > 0 ? { strokes: summary.strokes, activeMs: summary.activeMs } : undefined;
+  const options: CartOptions = { title: title || projectName, maker, note, license, stock, receipt: previewReceipt };
+  /** The full receipt, with its making-of track, only when asked for. */
+  const withMakingOf = async (): Promise<CartOptions> => {
+    if (!withReceipt) return { ...options, receipt: undefined };
+    const receipt = await currentReceipt();
+    return { ...options, receipt: receipt && receipt.strokes > 0 ? receipt : undefined };
+  };
 
   // The postmark number follows the drawing, so recompute it only when pixels change.
   const [previewId, setPreviewId] = useState('');
@@ -82,16 +97,17 @@ export const CartExportTab = React.forwardRef<CartExportHandle, CartExportTabPro
     }, 180);
     return () => { cancelled = true; window.clearTimeout(timer); };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- options is rebuilt from these fields each render.
-  }, [title, maker, note, license, stock, previewId, projectName]);
+  }, [title, maker, note, license, stock, previewId, projectName, withReceipt, summary?.strokes]);
 
   useImperativeHandle(ref, () => ({
     save: async () => {
       setError(null);
       onBusy(true);
       try {
-        const { record, png } = await buildCart(options);
+        const { record, png } = await buildCart(await withMakingOf());
         remember(MAKER_KEY, maker.trim());
         remember(LICENSE_KEY, license);
+        remember(RECEIPT_KEY, withReceipt ? 'yes' : 'no');
         const url = URL.createObjectURL(new Blob([png], { type: 'image/png' }));
         const link = document.createElement('a');
         link.download = cartFileName(record);
@@ -141,6 +157,17 @@ export const CartExportTab = React.forwardRef<CartExportHandle, CartExportTabPro
               {CART_LICENSES.map(value => <option key={value} value={value}>{CART_LICENSE_LABELS[value]}</option>)}
             </select>
           </label>
+          <label className="flex items-start gap-2 cursor-pointer" data-testid="cart-receipt">
+            <input type="checkbox" className="mt-0.5" checked={withReceipt} onChange={e => setWithReceipt(e.target.checked)} disabled={disabled || !summary || summary.strokes === 0} />
+            <span className="flex flex-col">
+              <span className="text-[var(--text-heading)]">Include the making-of</span>
+              <span className="text-[var(--text-muted)]">
+                {summary && summary.strokes > 0
+                  ? `${formatReceipt(summary)}. Others can watch it come together.`
+                  : 'Draw something here first; the receipt starts with your first stroke.'}
+              </span>
+            </span>
+          </label>
           <fieldset className="flex flex-col gap-1">
             <legend className="text-[var(--text-muted)] mb-1">Card stock</legend>
             <div className="flex gap-1">
@@ -163,7 +190,7 @@ export const CartExportTab = React.forwardRef<CartExportHandle, CartExportTabPro
           onClick={() => void (async () => {
             setError(null); setLinkNote(null); onBusy(true);
             try {
-              const link = await cartLink(await buildCartRecord(options), window.location.origin);
+              const link = await cartLink(await buildCartRecord(await withMakingOf()), window.location.origin);
               await navigator.clipboard.writeText(link);
               setLinkNote(link.length > CART_LINK_COMFORTABLE
                 ? `Link copied (${link.length.toLocaleString()} characters). Some apps cut long links; the card is the sturdier way to share this one.`

@@ -19,7 +19,7 @@ async function cartLinkFrom(page: Page) {
   await page.getByTestId('export-button').click();
   await page.getByTestId('export-tab-cart').click();
   const form = page.getByTestId('cart-export');
-  await form.getByLabel('Title').fill('Hearth Ghost');
+  await form.getByLabel('Title', { exact: true }).fill('Hearth Ghost');
   await form.getByLabel('Your name').fill('Rowan');
   const pending = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Save cart', exact: true }).click();
@@ -91,4 +91,43 @@ test('the player hands a cart to Studio on a wide screen, and refuses a broken l
   await arrival.getByTestId('cart-open').click();
   await expect.poll(() => pixels(page)).toEqual(original);
   await expect(page).not.toHaveURL(/cart=/);
+});
+
+test('a receipt counts the strokes and the player replays the making-of', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 1000 });
+  await page.goto('/studio?width=16&height=16');
+  await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
+  const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
+  const at = (x: number, y: number) => ({ x: box.x + (x + 0.5) * box.width / 16, y: box.y + (y + 0.5) * box.height / 16 });
+  for (const [x0, x1, y] of [[2, 12, 3], [2, 12, 7], [4, 9, 11]]) {
+    await page.mouse.move(at(x0, y).x, at(x0, y).y); await page.mouse.down();
+    await page.mouse.move(at(x1, y).x, at(x1, y).y, { steps: 6 }); await page.mouse.up();
+    await page.waitForTimeout(600);
+  }
+  const final = await pixels(page);
+
+  await page.getByTestId('export-button').click();
+  await page.getByTestId('export-tab-cart').click();
+  const option = page.getByTestId('cart-receipt');
+  await expect(option).toContainText('3 strokes');
+  await option.getByRole('checkbox').check();
+  await page.getByTestId('cart-export').getByLabel('Title', { exact: true }).fill('Three lines');
+  const pending = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Save cart', exact: true }).click();
+  const bytes = readFileSync((await (await pending).path())!);
+
+  await page.goto('/open');
+  await page.locator('input[type=file]').setInputFiles({ name: 'three-lines.cart.png', mimeType: 'image/png', buffer: bytes });
+  await expect(page.getByTestId('cart-details')).toContainText('3 strokes');
+  await page.getByTestId('cart-watch-making').click();
+  await expect(page.getByText(/Watching it come together/)).toBeVisible();
+  // The replay ends on the finished drawing, then the stage returns to the cart.
+  await expect(page.getByTestId('cart-watch-making')).toBeVisible({ timeout: 25_000 });
+  const stage = await page.getByTestId('cart-canvas').evaluate((canvas: HTMLCanvasElement) => {
+    const small = document.createElement('canvas'); small.width = 16; small.height = 16;
+    const ctx = small.getContext('2d')!; ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(canvas, 0, 0, 16, 16);
+    return Array.from(ctx.getImageData(0, 0, 16, 16).data);
+  });
+  expect(stage).toEqual(final);
 });

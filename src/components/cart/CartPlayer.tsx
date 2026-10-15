@@ -9,12 +9,17 @@ import { renderCartFrames, type CartFrames } from '@/lib/cart/cartFrames';
 import { lampFromPointer, relight, type Lamp } from '@/lib/cart/relight';
 import { cartFromShelf, keepOnShelf, listShelf, removeFromShelf, type ShelfEntry } from '@/lib/cart/shelf';
 import { setPendingCart, PENDING_CART_QUERY } from '@/lib/cart/pendingCart';
-import { formatDuration } from '@/lib/cart/receiptText';
+import { formatReceipt } from '@/lib/cart/receiptText';
+import { unpackTrack } from '@/lib/cart/receiptRecorder';
+import { applyStep, type TrackStep } from '@/lib/cart/receiptTrack';
 
 type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready' };
 
 const STUDIO_MIN_WIDTH = 1024;
 const DEFAULT_LAMP: Lamp = { azimuth: 315, elevation: 45 };
+/** A making-of replays in about this long, however many strokes it has. */
+const REPLAY_MS = 15_000;
+const REPLAY_HOLD_MS = 1_200;
 
 function displayScale(width: number, height: number, room: number): number {
   return Math.max(1, Math.floor((Math.min(room, 520) - 24) / Math.max(width, height, 1)));
@@ -38,6 +43,8 @@ export function CartPlayer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
+  const [replay, setReplay] = useState<{ steps: TrackStep[]; at: number } | null>(null);
+  const replayBufferRef = useRef<{ width: number; height: number; data: Uint8ClampedArray } | null>(null);
 
   const refreshShelf = useCallback(() => { void listShelf().then(setShelf, () => setShelf([])); }, []);
 
@@ -47,7 +54,7 @@ export function CartPlayer() {
       const rendered = await renderCartFrames(next.project);
       setCart(next); setFrames(rendered); setFrameIndex(0); setPlaying(rendered.frames.length > 1);
       setLamp(next.light ? { azimuth: next.light.azimuth, elevation: next.light.elevation } : DEFAULT_LAMP);
-      setLampOn(false); setLit(null); setKept(false);
+      setLampOn(false); setLit(null); setKept(false); setReplay(null);
       setStatus({ kind: 'ready' });
     } catch (error) {
       setStatus({ kind: 'error', message: error instanceof CartError ? error.message : 'This cart could not be opened.' });
@@ -96,17 +103,59 @@ export function CartPlayer() {
 
   const scale = frames ? displayScale(frames.width, frames.height, room) : 1;
 
+  // Replay the making-of: several steps per tick so any receipt takes about 15 seconds.
+  useEffect(() => {
+    if (!replay || !frames) return;
+    const canvas = canvasRef.current;
+    if (replay.at >= replay.steps.length) {
+      const timer = window.setTimeout(() => setReplay(null), REPLAY_HOLD_MS);
+      return () => window.clearTimeout(timer);
+    }
+    const tick = Math.max(30, REPLAY_MS / replay.steps.length);
+    const perTick = Math.max(1, Math.ceil((replay.steps.length * tick) / REPLAY_MS));
+    const timer = window.setTimeout(() => {
+      let buffer = replayBufferRef.current;
+      const end = Math.min(replay.steps.length, replay.at + perTick);
+      for (let i = replay.at; i < end; i++) buffer = applyStep(replay.steps[i], buffer);
+      replayBufferRef.current = buffer;
+      if (canvas && buffer) {
+        const ctx = canvas.getContext('2d')!;
+        const picture = new ImageData(new Uint8ClampedArray(buffer.data), buffer.width, buffer.height);
+        const scratch = document.createElement('canvas');
+        scratch.width = buffer.width; scratch.height = buffer.height;
+        scratch.getContext('2d')!.putImageData(picture, 0, 0);
+        ctx.imageSmoothingEnabled = false;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(scratch, 0, 0, canvas.width, canvas.height);
+      }
+      setReplay({ steps: replay.steps, at: end });
+    }, tick);
+    return () => window.clearTimeout(timer);
+  }, [replay, frames]);
+
+  const watchMaking = async () => {
+    if (!cart?.receipt?.track) return;
+    try {
+      const steps = await unpackTrack(cart.receipt.track);
+      if (steps.length === 0) return;
+      replayBufferRef.current = null;
+      setPlaying(false); setLampOn(false); setReplay({ steps, at: 0 });
+    } catch {
+      setNotice('The making-of in this cart could not be read.');
+    }
+  };
+
   // Paint the stage.
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !frames) return;
+    if (!canvas || !frames || replay) return;
     canvas.width = frames.width * scale; canvas.height = frames.height * scale;
     const ctx = canvas.getContext('2d')!;
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const source = lampOn && lit && lit.width === frames.width ? lit : frames.frames[frameIndex];
     ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
-  }, [frames, frameIndex, lit, lampOn, scale]);
+  }, [frames, frameIndex, lit, lampOn, scale, replay]);
 
   const moveLamp = (event: React.PointerEvent) => {
     const rect = stageRef.current?.getBoundingClientRect();
@@ -206,7 +255,9 @@ export function CartPlayer() {
                   <span aria-hidden="true" data-testid="cart-lamp" className="pointer-events-none absolute w-5 h-5 -ml-2.5 -mt-2.5 rounded-full bg-[#ffd68c] shadow-[0_0_18px_6px_rgba(255,214,140,0.7)] border-2 border-[#fff3d6]" style={lampPosition} />
                 )}
               </div>
-              <p className="text-[11px] text-[var(--text-muted)]">{lampOn ? 'Drag to move the lamp.' : 'Drag across the drawing to light it with a lamp.'}</p>
+              <p className="text-[11px] text-[var(--text-muted)]" aria-live="polite">
+                {replay ? `Watching it come together… ${Math.min(replay.at, replay.steps.length)} of ${replay.steps.length}` : lampOn ? 'Drag to move the lamp.' : 'Drag across the drawing to light it with a lamp.'}
+              </p>
               <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
                 {frames.frames.length > 1 && (
                   <>
@@ -222,7 +273,12 @@ export function CartPlayer() {
                     </div>
                   </>
                 )}
-                <button type="button" className="pixel-tactile-btn px-3 py-1.5 rounded-[6px]" onClick={() => setLampOn(value => !value)} aria-pressed={lampOn}>{lampOn ? 'Lamp off' : 'Lamp on'}</button>
+                <button type="button" className="pixel-tactile-btn px-3 py-1.5 rounded-[6px]" onClick={() => setLampOn(value => !value)} aria-pressed={lampOn} disabled={!!replay}>{lampOn ? 'Lamp off' : 'Lamp on'}</button>
+                {cart.receipt?.track && (
+                  replay
+                    ? <button type="button" className="pixel-tactile-btn px-3 py-1.5 rounded-[6px]" onClick={() => setReplay(null)}>Skip</button>
+                    : <button type="button" className="pixel-tactile-btn px-3 py-1.5 rounded-[6px]" onClick={() => void watchMaking()} data-testid="cart-watch-making">Watch the making</button>
+                )}
               </div>
             </section>
 
@@ -233,7 +289,7 @@ export function CartPlayer() {
               <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs font-mono">
                 <dt className="text-[var(--text-muted)]">Canvas</dt>
                 <dd>{frames.width}×{frames.height} · {frames.frames.length} {frames.frames.length === 1 ? 'frame' : 'frames'}</dd>
-                {cart.receipt && (<><dt className="text-[var(--text-muted)]">Made in</dt><dd>{cart.receipt.strokes.toLocaleString()} strokes · {formatDuration(cart.receipt.activeMs)} of drawing</dd></>)}
+                {cart.receipt && (<><dt className="text-[var(--text-muted)]">Made in</dt><dd>{formatReceipt(cart.receipt)}</dd></>)}
                 <dt className="text-[var(--text-muted)]">License</dt><dd>{CART_LICENSE_LABELS[cart.license]}</dd>
                 <dt className="text-[var(--text-muted)]">Cart</dt><dd>No. {cart.lineage.id.slice(0, 8)}</dd>
               </dl>

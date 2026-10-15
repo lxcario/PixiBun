@@ -7,7 +7,7 @@
  * and a starry night card. Everything is drawn on whole pixels.
  */
 import type { CartAncestor, CartLicense, CartReceipt } from './cartFormat';
-import { formatDuration } from './receiptText';
+import { formatReceipt } from './receiptText';
 
 export type CardStock = 'cream' | 'night';
 
@@ -89,7 +89,7 @@ export function dominantColors(data: Uint8ClampedArray, limit = 16): string[] {
 export function cardCaptionLines(input: Pick<CardInput, 'maker' | 'receipt' | 'parents'>): string[] {
   const lines: string[] = [];
   if (input.maker) lines.push(`by ${input.maker}`);
-  if (input.receipt) lines.push(`${input.receipt.strokes.toLocaleString('en-US')} strokes · ${formatDuration(input.receipt.activeMs)} of drawing`);
+  if (input.receipt) lines.push(formatReceipt(input.receipt));
   const parent = input.parents?.[0];
   if (parent) {
     const more = (input.parents?.length ?? 1) - 1;

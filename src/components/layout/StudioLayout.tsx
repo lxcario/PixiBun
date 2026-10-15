@@ -38,6 +38,7 @@ import { useStudioFileSystem } from '@/hooks/studio/useStudioFileSystem';
 import { useStudioKeyboard } from '@/hooks/studio/useStudioKeyboard';
 import { applyOpenedCart } from '@/lib/cart/applyCart';
 import { PENDING_CART_QUERY, takePendingCart } from '@/lib/cart/pendingCart';
+import { startReceiptRecorder } from '@/lib/cart/receiptRecorder';
 import { reportImportError } from '@/lib/project/importFile';
 
 // Heavy dialogs are code-split client-side (Phase 33): none of these bundles
@@ -340,6 +341,9 @@ export const StudioLayout: React.FC = () => {
   }, []);
 
   useStudioClipboard(handleOpenImport);
+
+  // Every drawing keeps its receipt (stroke count, drawing time, making-of) in this browser.
+  useEffect(() => startReceiptRecorder(), []);
 
   // A cart handed over from the player (/open → Open in Studio) is offered once Studio is ready.
   const restorationActive = lifecycleState.phase === 'active';
