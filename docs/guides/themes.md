@@ -4,7 +4,7 @@
 
 All eight Studio themes have a **Night** and a **Day** appearance. Open the **Studio** menu to choose one; the setting is saved in this browser. Graphite and Plum use a flat desk, while the other six place panels over their own pixel scenes. The Daylight switch changes Day/Night without changing the selected theme.
 
-These are actual local production-build screenshots from **15 October 2026**, at 1280 × 900 and device scale 1. Every picture uses the same original 56 × 32 three-frame PixiBun sample, assembled from its built-in artwork and imported through the normal project dialog. Reduced motion keeps the scenes still for the pictures. These illustrate appearance; browser/device qualification and contrast checks have their own scope in [current status](../current-status.md).
+These are actual local production-build screenshots from **15 October 2026**, at 1280 × 900 and device scale 1. Every picture uses the same original 56 × 32 three-frame PixiBun sample, assembled from the current Mochi, Sprout and Bun artwork and imported through the normal project dialog. Reduced motion keeps the scenes still for the pictures. These illustrate appearance; browser/device qualification and contrast checks have their own scope in [current status](../current-status.md).
 
 | Theme | Night | Day |
 | --- | --- | --- |
