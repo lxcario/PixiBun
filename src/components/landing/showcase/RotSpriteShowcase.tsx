@@ -7,6 +7,7 @@ import { ArtFrame, Dot, Picker, ToolWindow } from './ToolKit';
 import { STARTER_TEMPLATES } from '@/lib/art/starterTemplates';
 import { templateToCanvas, SWORD_TEMPLATE } from './showcaseSprites';
 import { rotateWithRotSprite } from '@/lib/ai/smartMathEngine';
+import { ambientTicker, tickWhileVisible } from '../ambientClock';
 
 export const RotSpriteShowcase: React.FC = () => {
   const [spriteType, setSpriteType] = useState<'sword' | 'ghost' | 'bun'>('sword');
@@ -18,7 +19,6 @@ export const RotSpriteShowcase: React.FC = () => {
   const rotSpriteCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const standardCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const baseCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const animFrameRef = useRef<number | null>(null);
   const [spriteVersion, setSpriteVersion] = useState<number>(0);
 
   // Render both RotSprite and Standard Canvas Rotation
@@ -87,19 +87,18 @@ export const RotSpriteShowcase: React.FC = () => {
   useEffect(() => {
     if (!isSpinning) return;
 
+    const element = rotSpriteCanvasRef.current;
+    if (!element) return;
     let lastTime = performance.now();
-    const loop = (now: number) => {
-      const dt = (now - lastTime) / 1000;
+    // Each step reruns real RotSprite; 12 steps a second reads as a smooth pixel spin.
+    const step = (now: number) => {
+      // A long gap means the demo was off screen; carry on from where it paused.
+      const gap = (now - lastTime) / 1000;
+      const dt = gap > 2 ? 0 : gap;
       lastTime = now;
-
       setAngle((prev) => (prev + dt * 45) % 360);
-      animFrameRef.current = requestAnimationFrame(loop);
     };
-
-    animFrameRef.current = requestAnimationFrame(loop);
-    return () => {
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-    };
+    return tickWhileVisible(element, ambientTicker(step, 12));
   }, [isSpinning]);
 
   return (

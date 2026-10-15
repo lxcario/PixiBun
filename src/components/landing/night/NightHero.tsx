@@ -8,6 +8,7 @@ import { useLiveThemeChoice } from '@/stores/themeStore';
 import { isSceneTheme } from '@/lib/theme/registry';
 import { buildScene, paintSceneParticles, type BuiltScene } from '@/lib/theme/scenes';
 import { recolorCanvas, sceneRecolor } from '@/lib/theme/sceneRecolor';
+import { ambientTicker, tickWhileVisible, type AmbientTicker } from '../ambientClock';
 
 const SEEN_KEY = 'pixibun_night_intro_v1';
 const MAX_STARS = 14;
@@ -70,6 +71,7 @@ export const NightHero: React.FC = () => {
   const pxRef = useRef(4);
   const startRef = useRef(0);
   const look = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
+  const tickerRef = useRef<AmbientTicker | null>(null);
   const constellations = useRef<Constellation[]>([]);
   const drawing = useRef<Constellation | null>(null);
   const bunAction = useRef<{ type: BunAction; start: number } | null>(null);
@@ -133,8 +135,6 @@ export const NightHero: React.FC = () => {
     const ctx = canvas?.getContext('2d', { willReadFrequently: true });
     if (!section || !canvas || !ctx) return;
 
-    let raf = 0;
-    let visible = true;
     const frozen = reduceMotion;
     let recolor = sceneRecolor(themeRef.current.studioTheme, themeRef.current.day);
     let motes: BuiltScene | null = null;
@@ -187,30 +187,24 @@ export const NightHero: React.FC = () => {
       draw();
     };
 
-    const loop = () => {
-      draw();
-      if (visible && !frozen) raf = requestAnimationFrame(loop);
-    };
-
     build();
-    loop();
+    draw();
 
     const ro = new ResizeObserver(() => {
       build();
       draw();
     });
     ro.observe(section);
-    const io = new IntersectionObserver(([entry]) => {
-      const was = visible;
-      visible = entry.isIntersecting;
-      if (visible && !was && !frozen) raf = requestAnimationFrame(loop);
-    });
-    io.observe(section);
+    // Calm 20 fps when idle; full rate through the intro and whenever the pointer moves.
+    const ticker = ambientTicker(draw, 20);
+    tickerRef.current = ticker;
+    const stop = tickWhileVisible(section, ticker, !frozen);
+    if (!frozen) ticker.boost(Math.max(0, INTRO_MS + 1200 - now()));
 
     return () => {
-      cancelAnimationFrame(raf);
+      stop();
+      tickerRef.current = null;
       ro.disconnect();
-      io.disconnect();
       retheme.current = () => {};
     };
   }, [skipIntro, reduceMotion, now]);
@@ -250,6 +244,7 @@ export const NightHero: React.FC = () => {
     target instanceof Element && Boolean(target.closest('a, button, [data-hero-copy-text]'));
 
   const onPointerDown = (e: React.PointerEvent) => {
+    tickerRef.current?.boost(1500);
     const scene = sceneRef.current;
     if (!scene || isInteractive(e.target)) return;
     const t = now();
@@ -273,6 +268,7 @@ export const NightHero: React.FC = () => {
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
+    tickerRef.current?.boost(1000);
     const section = sectionRef.current;
     const scene = sceneRef.current;
     if (!section || !scene) return;

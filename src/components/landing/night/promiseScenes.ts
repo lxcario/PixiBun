@@ -28,29 +28,53 @@ function p(g: G, x: number, y: number, c: string) {
   g.fillRect(x, y, 1, 1);
 }
 
+/**
+ * Static pieces (the sky gradient, dithered glows) are drawn once into small
+ * offscreen canvases and stamped each frame, instead of thousands of
+ * single-pixel fills per frame per card.
+ */
+const stamps = new Map<string, HTMLCanvasElement>();
+function stamp(key: string, w: number, h: number, paint: (s: G) => void): HTMLCanvasElement {
+  let canvas = stamps.get(key);
+  if (!canvas) {
+    if (stamps.size > 256) stamps.clear();
+    canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, w); canvas.height = Math.max(1, h);
+    paint(canvas.getContext('2d')!);
+    stamps.set(key, canvas);
+  }
+  return canvas;
+}
+
 /** Dithered glow of radius `rad` around a point. */
 function glow(g: G, cx: number, cy: number, rad: number, color: string, strength = 0.8) {
-  g.fillStyle = color;
-  for (let y = -rad; y <= rad; y++) {
-    for (let x = -rad; x <= rad; x++) {
-      const d = Math.hypot(x, y) / rad;
-      if (d <= 1 && (1 - d) * strength > bayer(cx + x, cy + y)) g.fillRect(cx + x, cy + y, 1, 1);
+  const ix = Math.round(cx), iy = Math.round(cy);
+  const disc = stamp(`glow:${ix}:${iy}:${rad}:${color}:${strength}`, rad * 2 + 1, rad * 2 + 1, s => {
+    s.fillStyle = color;
+    for (let y = -rad; y <= rad; y++) {
+      for (let x = -rad; x <= rad; x++) {
+        const d = Math.hypot(x, y) / rad;
+        if (d <= 1 && (1 - d) * strength > bayer(ix + x, iy + y)) s.fillRect(x + rad, y + rad, 1, 1);
+      }
     }
-  }
+  });
+  g.drawImage(disc, ix - rad, iy - rad);
 }
 
 /** Night sky with a dithered gradient, twinkling stars and an optional moon. */
 function sky(g: G, t: number, bottom: number, moon?: [number, number]) {
-  const a = [20, 11, 33];
-  const b = [58, 32, 82];
-  for (let y = 0; y < bottom; y++) {
-    for (let x = 0; x < SCENE_W; x++) {
-      const k = y / bottom + (bayer(x, y) - 0.5) * 0.25;
-      const c = a.map((v, i) => Math.round(v + (b[i] - v) * clamp01(k)));
-      g.fillStyle = `rgb(${c.join(',')})`;
-      g.fillRect(x, y, 1, 1);
+  g.drawImage(stamp(`sky:${bottom}`, SCENE_W, bottom, s => {
+    const a = [20, 11, 33];
+    const b = [58, 32, 82];
+    for (let y = 0; y < bottom; y++) {
+      for (let x = 0; x < SCENE_W; x++) {
+        const k = y / bottom + (bayer(x, y) - 0.5) * 0.25;
+        const c = a.map((v, i) => Math.round(v + (b[i] - v) * clamp01(k)));
+        s.fillStyle = `rgb(${c.join(',')})`;
+        s.fillRect(x, y, 1, 1);
+      }
     }
-  }
+  }), 0, 0);
   for (let i = 0; i < 12; i++) {
     const tw = Math.sin(t / 500 + i * 2.3);
     if (tw < -0.2) continue;
@@ -306,7 +330,8 @@ function home(g: G, t: number, k: number) {
   g.globalAlpha = 1;
   // Windows and door
   const lit = 0.6 + k * 0.4;
-  glow(g, hx + 8, hy + 10, 6, `rgba(255, 200, 120, ${0.3 * lit})`);
+  // Quantized so the stamp cache holds a handful of glow strengths, not one per frame.
+  glow(g, hx + 8, hy + 10, 6, `rgba(255, 200, 120, ${(Math.round(lit * 20) / 20) * 0.3})`);
   for (const [wx, wy] of [[hx + 2, hy + 9], [hx + 7, hy + 9]] as const) {
     r(g, wx, wy, 4, 4, INK);
     r(g, wx + 1, wy + 1, 2, 2, k > 0.75 && wx === hx + 7 ? '#f2b8c6' : '#ffd285');
