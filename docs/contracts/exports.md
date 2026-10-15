@@ -9,6 +9,7 @@ The direct **Export** button opens format choices. **E selects Eraser**; there i
 | Output | Actual path | Fidelity and timing limits |
 | --- | --- | --- |
 | Cart | `src/lib/cart/` card renderer + `pxBn` chunk | Card art is the active frame at an integer scale on a PNG card; the drawing inside is the full project plus light, license, optional receipt and lineage. Sites that re-encode images drop the drawing. [Cart format](carts.md) |
+| Light Sweep | `src/lib/cart/lightSweep.ts` + MP4/WebM encoders | 270×480 whole-pixel frames doubled to 540×960, 12 fps, 5 s; the cart player's relighting per 15°; MP4 when WebCodecs H.264 is available, else WebM, else a refusal message |
 | PNG / sprite sheet | Canvas PNG + `spriteSheetPacker.ts` | Raster output, alpha; nearest-neighbor admitted scaling. A sheet needs metadata for pose order/holds |
 | APNG | `apngEncoder.ts` | Admitted RGBA and rational frame delays; native zlib-framed compression where available, otherwise stored DEFLATE blocks. Builds a Blob from chunks; can be large; no streaming sink contract |
 | GIF | worker/shared `gifEncoderCore.ts` | Palette quantization, at most 256 table entries including transparency policy; binary rather than arbitrary RGBA alpha. Delays rounded to GIF centiseconds; LZW dictionary reset fixed, old damaged files need re-export |

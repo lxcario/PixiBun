@@ -4,7 +4,7 @@ For the tested revision and remaining accessibility, device and host checks, see
 
 [Handbook](README.md) · [Backup safety](artwork-safety.md) · [Format contract](../contracts/exports.md) · [All features](../features.md)
 
-Choose **Export** at the upper right. The panel has **13 format choices**, grouped into sharing, images/animation, game delivery and backup. Choose the kind of file you need, review its settings, then use the download action. Opening this panel does not mean a file has been saved: check your browser's downloads and open the result.
+Choose **Export** at the upper right. The panel has **14 format choices**, grouped into sharing, images/animation, game delivery and backup. Choose the kind of file you need, review its settings, then use the download action. Opening this panel does not mean a file has been saved: check your browser's downloads and open the result.
 
 Video availability is checked when you choose a video format. You can open image, game-delivery and backup options without waiting for a video codec check. For Timelapse MP4, availability follows your chosen replay frame rate.
 
@@ -17,6 +17,10 @@ Homepage downloads use a separate Bun sample: actual GIF/APNG animation files or
 Choose **Cart** to make a trading-card PNG with your whole drawing tucked inside: frames, layers, palettes, their color cycling and your light. Give it a title, and if you like your name, a note for the next person and a license; the card updates as you type. Tick **Include the making-of** to add your receipt: the stroke count, drawing time and a replay anyone can watch in the cart player (it is off until you choose it). Choose **Cream** or **Night** card stock, then **Save cart**, or **Copy link** for a link that carries the drawing itself (nothing is uploaded). Nothing about you goes in unless you type it.
 
 Anyone can view the card as an ordinary picture. Dropping, pasting or opening it in PixiBun shows who made it and what it remixes, then **Open on my desk** opens the drawing (your current drawing is saved to Projects first). A cart made from an opened cart credits it. A cart link opens the cart player, which works on phones: drag across the drawing to light it with a lamp, keep it on your desk for later, or open it in Studio on a wider screen. Some sites shrink or convert images and drop the drawing inside; the card still shows. [Cart format](../contracts/carts.md).
+
+## Light Sweep
+
+Choose **Light Sweep** for a five-second tall video (540 × 960) made for phones: a lamp drifts over your drawing at night, from the left over the top to the right and back, and lights it as it goes. Animated drawings keep playing underneath, and the title, your name (from the Cart tab) and Bun's "open me" sit above and below. The poster shows the first moment. **Save video** makes an MP4 where your browser can, otherwise WebM; a browser that can make neither says so. Post it with your cart link so people can light it themselves.
 
 ## PNG
 
