@@ -994,6 +994,30 @@ html[data-color-scheme="light"] [data-layout="scene"] {
   bottom: calc(8rem + 20px);
 }
 
+/* The compact strip keeps its sprocket rows clear of its 28 px controls */
+[data-layout="scene"] .moon-slot-timeline > footer[data-timeline="compact"] {
+  height: 48px;
+}
+
+[data-layout="scene"]:has(.moon-slot-timeline:not([hidden]) [data-timeline="compact"]) .moon-slot-status {
+  bottom: calc(48px + 20px);
+}
+
+/* A menu rising out of the timeline (preview speeds) opens above the floating status pill */
+[data-layout="scene"] .moon-slot-timeline:has(.pb-panel) {
+  position: relative;
+  z-index: 26;
+}
+
+/* The status pill rides the timeline's spring (curves in surfaces.css) */
+[data-layout="scene"] .moon-slot-status {
+  transition: bottom var(--spring-morph-h-duration) var(--spring-morph-h);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-layout="scene"] .moon-slot-status { transition: none; }
+}
+
 [data-layout="scene"] .moon-slot-status > [data-testid="status-bar"] {
   height: 28px;
   border-radius: 999px;
@@ -1292,7 +1316,7 @@ body.moon-ui input[type="checkbox"]:not(.sr-only):not([class*="opacity-0"]):not(
 }
 
 /* Menus and lists that pop out: rounded cards whose items slide toward you on hover */
-body.moon-ui [role="menu"],
+body.moon-ui [role="menu"]:not(.pb-panel),
 body.moon-ui [role="listbox"] {
   border: 2px solid var(--moon-ink) !important;
   border-radius: 10px !important;
@@ -1314,17 +1338,11 @@ body.moon-ui :is([role="menuitem"], [role="menuitemradio"], [role="menuitemcheck
   outline: none !important;
 }
 
-/* Popovers and dialogs */
-body.moon-ui [role="dialog"][aria-modal="false"] {
+/* Popovers and dialogs (shared surfaces style themselves in surfaces.css) */
+body.moon-ui [role="dialog"][aria-modal="false"]:not(.pb-panel) {
   border: 2px solid var(--moon-ink) !important;
   border-radius: 12px !important;
   box-shadow: 0 4px 0 var(--moon-ink), 0 18px 40px var(--shadow-far) !important;
-}
-
-body.moon-ui dialog[open] > div {
-  border: 2px solid var(--moon-ink) !important;
-  border-radius: 14px !important;
-  box-shadow: 0 6px 0 var(--moon-ink), 0 30px 80px var(--shadow-far) !important;
 }
 
 body.moon-ui [role="tooltip"] {

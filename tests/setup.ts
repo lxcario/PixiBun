@@ -58,6 +58,19 @@ if (typeof (globalThis as unknown as { ErrorEvent?: unknown }).ErrorEvent === 'u
   });
 }
 
+// Web Animations: cancelling rejects `finished` with AbortError and marks that promise
+// handled, so browsers never report it. happy-dom leaves it unhandled; match the spec here so
+// motion stopping a native animation (a surface closing mid-entrance) is not a test failure.
+const AnimationClass = (globalThis as unknown as { Animation?: { prototype: { cancel: () => void; finished?: Promise<unknown> } } }).Animation;
+if (AnimationClass && !(AnimationClass.prototype as { __handledCancel?: boolean }).__handledCancel) {
+  const cancel = AnimationClass.prototype.cancel;
+  AnimationClass.prototype.cancel = function cancelHandled(this: { finished?: Promise<unknown> }) {
+    this.finished?.catch(() => {});
+    return cancel.call(this);
+  };
+  (AnimationClass.prototype as { __handledCancel?: boolean }).__handledCancel = true;
+}
+
 afterEach(() => {
   storage.clear();
 });

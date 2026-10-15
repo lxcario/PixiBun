@@ -2,7 +2,9 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { AnimatePresence } from 'motion/react';
 import { PixelIcon, type PixelIconName } from '@/components/ui/PixelIcon';
+import { SpringSurface } from '@/components/ui/surfaces/SpringSurface';
 
 interface FileAction {
   label: string;
@@ -18,6 +20,9 @@ export function HeaderFileMenu({ actions }: { actions: FileAction[] }) {
   const menu = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
   const initialIndex = useRef(0);
+  // Where the menu was, so it can melt away in place after closing.
+  const shownAt = useRef<{ top: number; left: number } | null>(null);
+  if (position) shownAt.current = position;
 
   const focusItem = (index: number) => {
     const items = menu.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]');
@@ -66,8 +71,8 @@ export function HeaderFileMenu({ actions }: { actions: FileAction[] }) {
       className="h-7 px-2.5 flex items-center gap-1.5 text-xs pixel-tactile-btn rounded-[2px] border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)]">
       File <span aria-hidden="true" className="text-[8px] text-[var(--text-muted)]">▼</span>
     </button>
-    {position && createPortal(<div ref={menu} id={id} role="menu" tabIndex={-1} aria-label="File"
-      style={position}
+    {typeof document !== 'undefined' && createPortal(<AnimatePresence>{position && <SpringSurface key="file" origin="top left" ref={menu} id={id} role="menu" tabIndex={-1} aria-label="File"
+      style={shownAt.current ?? position}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget) && event.relatedTarget !== trigger.current) setPosition(null);
       }}
@@ -84,13 +89,13 @@ export function HeaderFileMenu({ actions }: { actions: FileAction[] }) {
           trigger.current?.focus();
         }
       }}
-      className="fixed z-[9999] w-56 max-w-[calc(100vw-16px)] bg-[var(--surface-2)] border border-[var(--desk-border-highlight)] rounded-[2px] shadow-xl p-1 font-sans text-xs">
+      className="pb-panel pb-menu fixed z-[9999] w-56 max-w-[calc(100vw-16px)] !p-1.5 font-sans text-xs">
       {actions.map((action) => <button key={action.testId} type="button" role="menuitem" tabIndex={-1}
         data-testid={action.testId}
         onClick={() => { setPosition(null); trigger.current?.focus(); action.onSelect(); }}
-        className="w-full min-h-9 px-2 flex items-center gap-2 rounded-[2px] text-left text-[var(--text-body)] hover:bg-[var(--surface-3)] focus-visible:bg-[var(--surface-3)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[var(--accent-gold)]">
-        <PixelIcon name={action.icon} size={12} /><span>{action.label}</span>
+        className="pb-menu-item">
+        <span className="pb-chip" aria-hidden="true"><PixelIcon name={action.icon} size={13} /></span><span>{action.label}</span>
       </button>)}
-    </div>, document.body)}
+    </SpringSurface>}</AnimatePresence>, document.body)}
   </>;
 }

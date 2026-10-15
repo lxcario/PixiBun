@@ -97,13 +97,13 @@ export const ExportTabsNav: React.FC<ExportTabsNavProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-2 bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)]">
+    <div className="pb-box flex flex-col gap-3">
       {INTENT_GROUPS.map((group) => (
-        <div key={group.label} className="flex flex-col gap-1">
-          <span className="text-[9px] font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
+        <div key={group.label} className="flex flex-col gap-1.5">
+          <span className="pb-eyebrow !m-0 !mx-0.5">
             {group.label}
           </span>
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {group.types.map((type) => (
               <button
                 key={type}
@@ -111,12 +111,9 @@ export const ExportTabsNav: React.FC<ExportTabsNavProps> = ({
                 disabled={isExporting}
                 onClick={() => onSelectType(type)}
                 aria-label={getTabLabel(type)}
+                aria-pressed={exportType === type}
                 data-testid={`export-tab-${type}`}
-                className={`py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer ${
-                  exportType === type
-                    ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] shadow-xs'
-                    : 'text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)]'
-                } ${isExporting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`pb-pill ${isExporting ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {getTabLabel(type)}
               </button>

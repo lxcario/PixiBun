@@ -13,13 +13,15 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 // Render motion elements as plain elements (happy-dom has no Web Animations), as other component tests do.
 const motionComponents: Record<string, React.ComponentType<Record<string, unknown>>> = {};
-vi.mock('motion/react', () => ({
+// The real module supplies everything not stubbed here (presence hooks, animate, motion values).
+vi.mock('motion/react', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('motion/react')>()),
   useReducedMotion: () => true,
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   motion: new Proxy({}, {
     get: (_target, tag: string) => {
       motionComponents[tag] ??= React.forwardRef((props: Record<string, unknown>, ref: React.Ref<unknown>) => {
-        const { initial: _i, animate: _a, exit: _e, transition: _t, layoutId: _l, ...rest } = props;
+        const { initial: _i, animate: _a, exit: _e, transition: _t, layoutId: _l, variants: _v, ...rest } = props;
         return React.createElement(tag, { ...rest, ref });
       });
       return motionComponents[tag];
