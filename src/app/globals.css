@@ -1006,6 +1006,18 @@ html[data-color-scheme="light"] [data-layout="scene"] {
   display: none;
 }
 
+/* The save badge sits inside the pill, so it is a pill too (concentric corners) */
+[data-layout="scene"] .moon-slot-status [data-testid="save-status-badge"] {
+  height: 20px;
+  border-radius: 999px;
+  padding: 0 9px 0 7px;
+}
+
+/* Frame chips keep clear of the film strip's sprocket rows, hover lift included */
+[data-layout="scene"] .moon-slot-timeline button[aria-label^="Select frame"] {
+  height: 56px;
+}
+
 /* The canvas hangs in a wooden frame with brass corners and a lamp glow behind it */
 [data-layout="scene"] .canvas-platen {
   inset: -14px !important;

@@ -451,8 +451,10 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                     aria-label={tools.pixelPerfect ? 'Disable clean corners. Pixel-Perfect' : 'Enable clean corners. Pixel-Perfect'}
                     aria-pressed={tools.pixelPerfect}
                     title="Clean corners (pixel-perfect): removes doubled corner pixels from 1px lines"
-                    className={`${hasExpandedToolParams ? 'flex' : 'hidden 2xl:flex'} items-center gap-1 h-6 px-1.5 rounded-[2px] text-[10px] font-sans border transition-colors ${tools.pixelPerfect ? 'border-[var(--accent-gold)] bg-[var(--accent-gold)]/15 text-[var(--text-heading)] font-medium' : 'border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:border-[var(--text-muted)]'}`}
+                    data-testid="clean-corners-toggle"
+                    className={`${hasExpandedToolParams ? 'flex' : 'hidden 2xl:flex'} ml-1 items-center gap-1 h-6 px-2 rounded-[2px] text-[10px] font-sans transition-colors ${tools.pixelPerfect ? 'bg-[var(--accent-gold)] text-[var(--surface-0)] font-bold' : 'bg-[var(--surface-1)] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)]'}`}
                   >
+                    <span aria-hidden="true" className={`w-2.5 h-2.5 shrink-0 rounded-[2px] border-[1.5px] border-current flex items-center justify-center text-[8px] leading-none ${tools.pixelPerfect ? 'bg-[var(--surface-0)] text-[var(--accent-gold)]' : ''}`}>{tools.pixelPerfect ? '✓' : ''}</span>
                     <span>Clean corners</span>
                   </button>
                 )}
