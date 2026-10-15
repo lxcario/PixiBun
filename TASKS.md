@@ -17,7 +17,9 @@ Source: the Strategy and Audit & Roadmap documents of 13 October 2026, summarize
 - [x] Requested addition: eight Night/Day studio styles, theme hydration fix, first-run welcome and level-based tips.
 - [ ] Rename `src/lib/ai` to `src/lib/graphics`.
 - [x] Phase 1: selection masks for every raster tool, transparency checkerboard, co-draw selective undo, quick fixes, standard keymap, tool flyouts and fit-to-view, byte-budgeted undo.
-- [ ] Carts, phone cart player, Light Sweep and Handmade Receipt (strategy launch bets).
+- [x] Carts, cart links, phone cart player, Handmade Receipt, Light Sweep and Living Postcards (strategy launch bets).
+- [ ] Check cart survival on Discord, Bluesky, Cara, itch.io, Reddit and email ([Where carts survive](docs/guides/cart-survival.md)).
+- [ ] Five artist sessions with the top three frictions each, before launch.
 - [ ] Fix the two production failures that predate this work: navigator square-pixel alignment and the color dock's 10px edge expectation under the floating layout.
 
 ## Nibbli and Studio source publication — 2026-10-13
