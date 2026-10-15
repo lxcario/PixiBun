@@ -169,7 +169,7 @@ function cloudSprite(rand: () => number, width: number) {
   return c;
 }
 
-const GHOST = STARTER_TEMPLATES.find((t) => t.id === 'hearth-ghost')!;
+const GHOST = STARTER_TEMPLATES.find((t) => t.id === 'bun')!;
 const GHOST_PIXELS: Array<[number, number, string]> = [];
 GHOST.rows.forEach((row, y) => {
   for (let x = 0; x < row.length; x++) {
@@ -744,7 +744,7 @@ export class MoonlitScene {
       }
     }
 
-    // ---- Easel with the Hearth Ghost being painted ---------------------------
+    // ---- Easel with Bun being painted ---------------------------
     const easelShow = span(t, 1700, 2050);
     if (easelShow > 0) {
       const ex = bx - 31;

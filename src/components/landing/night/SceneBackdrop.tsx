@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { recolorCanvas } from '@/lib/theme/sceneRecolor';
+import { ambientTicker, tickWhileVisible } from '../ambientClock';
 import { useSceneRecolorRef } from './useSceneRecolor';
 import { useReducedMotion } from 'motion/react';
 import { BAYER_4X4 } from '@/lib/canvas/ditherMatrix';
@@ -362,8 +363,6 @@ export const SceneBackdrop: React.FC<{ scene: BackdropScene }> = ({ scene }) => 
     const host = el?.parentElement;
     if (!el || !ctx || !host) return;
     let built: Built | null = null;
-    let raf = 0;
-    let visible = false;
     const start = performance.now();
     const build = () => {
       const rect = host.getBoundingClientRect();
@@ -384,28 +383,18 @@ export const SceneBackdrop: React.FC<{ scene: BackdropScene }> = ({ scene }) => 
       recolorCanvas(ctx, recolor.current);
     };
     repaint.current = paint;
-    const loop = () => {
-      paint();
-      if (visible && !reduceMotion) raf = requestAnimationFrame(loop);
-    };
     build();
     paint();
-    if (typeof ResizeObserver === 'undefined' || typeof IntersectionObserver === 'undefined') return;
+    if (typeof ResizeObserver === 'undefined') return;
     const ro = new ResizeObserver(() => {
       build();
       paint();
     });
     ro.observe(host);
-    const io = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-      cancelAnimationFrame(raf);
-      if (visible) raf = requestAnimationFrame(loop);
-    });
-    io.observe(host);
+    const stop = tickWhileVisible(host, ambientTicker(paint, 12), !reduceMotion);
     return () => {
-      cancelAnimationFrame(raf);
+      stop();
       ro.disconnect();
-      io.disconnect();
     };
   }, [scene, reduceMotion, recolor]);
 

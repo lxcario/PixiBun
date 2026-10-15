@@ -2,10 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { countClippedMotionPixels, copyPlacedMotionRaster, renderPlacedMotionRaster, stampPlacedMotionRaster } from '@/lib/animation/motionRaster';
 import { interpolatePose } from '@/lib/animation/pixiMotion';
 import { rotSprite, rotSpriteV1, rotSpriteV2 } from '@/lib/canvas/rotSprite';
-import { STARTER_TEMPLATES, TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
+import { TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
+
+/** The retired Hearth Ghost starter, frozen here as this suite's rotation fixture. */
+const GHOST_ROWS = [
+  '......oooo......', '....ooFFFFoo....', '...oFFffffFFo...', '..oFfffffffffo..', '..offffffffffo..',
+  '..offooffooffo..', '..offffffffffo..', '..ofrffffffrfo..', '.oFfffaAAafffFo.', '.oFffaAwwAAafFo.',
+  '..offfaAAaffso..', '..offfffffffso..', '..osssssssssso..', '..ofsoffsofsoo..', '...oo.oo..oo....', '................',
+];
 
 function source() {
-  const ghost = STARTER_TEMPLATES.find(t => t.id === 'hearth-ghost')!, data = new Uint8ClampedArray(16 * 16 * 4);
+  const ghost = { rows: GHOST_ROWS }, data = new Uint8ClampedArray(16 * 16 * 4);
   for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
     const hex = TEMPLATE_PALETTE[ghost.rows[y][x]];
     if (hex) { const rgb = parseInt(hex.slice(1), 16); data.set([rgb >> 16, (rgb >> 8) & 255, rgb & 255, 255], (y * 16 + x) * 4); }

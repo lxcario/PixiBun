@@ -16,7 +16,7 @@ for (const translation of ['4.3', '-1.5']) {
   test(`saved fractional translation ${translation} previews the same sampled pixels as bake and Undo/Redo`, async ({ page }, info) => {
     await page.addInitScript(() => { Object.defineProperty(window, 'showSaveFilePicker', { value: undefined, configurable: true }); });
     await page.setViewportSize({ width: 1600, height: 1100 });
-    await page.goto('/studio?template=hearth-ghost');
+    await page.goto('/studio?template=mochi');
     await expect.poll(() => page.getByTestId('main-composite-canvas').evaluate((c: HTMLCanvasElement) => c.width)).toBe(16);
     await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
     const original = await digest(page, 'main-composite-canvas');

@@ -14,11 +14,12 @@ The [3 October session record (local archive)](archives.md#record-docs-research-
 | --- | --- | --- | --- |
 | Interactive welcome scene | Animated town opening, Bun reactions and temporary sky constellations; scroll story from sketch to export | [Desk](guides/welcome-and-demos.md#a-small-moment-at-the-desk) | [Welcome](assets/screenshots/2026-10-15-current-ui/welcome-overview.png) |
 | Blank drawing entry | Small canvas presets and full Studio entry | [Begin](guides/welcome-and-demos.md#ready-to-draw) | [Welcome](assets/screenshots/2026-10-15-current-ui/welcome-overview.png) |
-| Four starter sprites | Hearth Ghost, Little Shroom, Bun and Little Lantern open as editable starting points | [Starter shelf](guides/welcome-and-demos.md#choose-a-starter-friend) | [All four](assets/screenshots/2026-10-15-current-ui/starter-shelf.png) |
+| Four starter sprites | Bun (the mascot), Mochi the marmalade cat, Sprout the mint slime and Teacup Frog open as editable starting points | [Starter shelf](guides/welcome-and-demos.md#choose-a-starter-friend) | [All four](assets/screenshots/2026-10-15-current-ui/starter-shelf.png) |
 | 2.5D Lighting & Shadows demonstration | Sample material, light, normal/tone and shadow comparisons | [Lighting demo](guides/welcome-and-demos.md#25d-lighting--shadows) | [Panel](assets/screenshots/2026-10-15-current-ui/welcome-photometric.png) |
 | RotSprite Precision demonstration | Sample angle/presets/spin; RotSprite versus nearest-neighbor | [Rotation demo](guides/welcome-and-demos.md#rotsprite-precision) | [Panel](assets/screenshots/2026-10-15-current-ui/welcome-rotsprite.png) |
 | Photo to pixels demonstration | Two sample scenes, three target sizes, sampling/color/dither comparison | [Image demo](guides/welcome-and-demos.md#photo-to-pixels) | [Panel](assets/screenshots/2026-10-15-current-ui/welcome-pixelize.png) |
 | Into your game demonstration | Four-frame Bun preview; Godot/Unity/Phaser image/metadata ZIP kits and actual APNG/GIF downloads; game metadata copying | [Example downloads](guides/welcome-and-demos.md#game-engine-exports) | [Panel](assets/screenshots/2026-10-15-current-ui/welcome-export.png) |
+
 
 Source: [moonlit atelier](../src/components/landing/night/NightHero.tsx), [starter definitions](../src/lib/art/starterTemplates.ts), [showcase](../src/components/landing/AtelierEngineShowcase.tsx). Showcase state and downloads are separate from Studio project state.
 

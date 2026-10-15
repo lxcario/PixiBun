@@ -1,8 +1,8 @@
 {
   "kind": "runner-enumeration-not-execution",
   "unit": {
-    "tests": 2542,
-    "suites": 241
+    "tests": 2545,
+    "suites": 242
   },
   "editor": {
     "tests": 256,

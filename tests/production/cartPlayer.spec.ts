@@ -36,7 +36,7 @@ async function cartLinkFrom(page: Page) {
 
 test('a cart link opens in the phone player, relights with a finger and stays on the desk', async ({ page, browser, browserName }) => {
   await page.setViewportSize({ width: 1600, height: 1000 });
-  await page.goto('/studio?template=hearth-ghost');
+  await page.goto('/studio?template=mochi');
   await starterReady(page);
   const { fragment } = await cartLinkFrom(page);
 
@@ -76,7 +76,7 @@ test('a cart link opens in the phone player, relights with a finger and stays on
 
 test('the player hands a cart to Studio on a wide screen, and refuses a broken link kindly', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 1000 });
-  await page.goto('/studio?template=hearth-ghost');
+  await page.goto('/studio?template=mochi');
   await starterReady(page);
   const original = await pixels(page);
   const { fragment } = await cartLinkFrom(page);

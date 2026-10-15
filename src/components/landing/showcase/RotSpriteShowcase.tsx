@@ -7,9 +7,10 @@ import { ArtFrame, Dot, Picker, ToolWindow } from './ToolKit';
 import { STARTER_TEMPLATES } from '@/lib/art/starterTemplates';
 import { templateToCanvas, SWORD_TEMPLATE } from './showcaseSprites';
 import { rotateWithRotSprite } from '@/lib/ai/smartMathEngine';
+import { ambientTicker, tickWhileVisible } from '../ambientClock';
 
 export const RotSpriteShowcase: React.FC = () => {
-  const [spriteType, setSpriteType] = useState<'sword' | 'ghost' | 'bun'>('sword');
+  const [spriteType, setSpriteType] = useState<'sword' | 'mochi' | 'bun'>('sword');
   // Starts off the 45° snap, so pressing it shows the biggest change.
   const [angle, setAngle] = useState<number>(30);
   const { complete } = useQuests();
@@ -18,7 +19,6 @@ export const RotSpriteShowcase: React.FC = () => {
   const rotSpriteCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const standardCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const baseCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const animFrameRef = useRef<number | null>(null);
   const [spriteVersion, setSpriteVersion] = useState<number>(0);
 
   // Render both RotSprite and Standard Canvas Rotation
@@ -68,8 +68,8 @@ export const RotSpriteShowcase: React.FC = () => {
   useEffect(() => {
     if (spriteType === 'sword') {
       baseCanvasRef.current = templateToCanvas(SWORD_TEMPLATE);
-    } else if (spriteType === 'ghost') {
-      const tmpl = STARTER_TEMPLATES.find((t) => t.id === 'hearth-ghost')!;
+    } else if (spriteType === 'mochi') {
+      const tmpl = STARTER_TEMPLATES.find((t) => t.id === 'mochi')!;
       baseCanvasRef.current = templateToCanvas(tmpl);
     } else {
       const tmpl = STARTER_TEMPLATES.find((t) => t.id === 'bun')!;
@@ -87,19 +87,18 @@ export const RotSpriteShowcase: React.FC = () => {
   useEffect(() => {
     if (!isSpinning) return;
 
+    const element = rotSpriteCanvasRef.current;
+    if (!element) return;
     let lastTime = performance.now();
-    const loop = (now: number) => {
-      const dt = (now - lastTime) / 1000;
+    // Each step reruns real RotSprite; 12 steps a second reads as a smooth pixel spin.
+    const step = (now: number) => {
+      // A long gap means the demo was off screen; carry on from where it paused.
+      const gap = (now - lastTime) / 1000;
+      const dt = gap > 2 ? 0 : gap;
       lastTime = now;
-
       setAngle((prev) => (prev + dt * 45) % 360);
-      animFrameRef.current = requestAnimationFrame(loop);
     };
-
-    animFrameRef.current = requestAnimationFrame(loop);
-    return () => {
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-    };
+    return tickWhileVisible(element, ambientTicker(step, 12));
   }, [isSpinning]);
 
   return (
@@ -184,7 +183,7 @@ export const RotSpriteShowcase: React.FC = () => {
             onChange={setSpriteType}
             options={[
               { value: 'sword', label: 'Little blade', icon: <Dot color="var(--accent-wisteria)" /> },
-              { value: 'ghost', label: 'Hearth Ghost', icon: <Dot color="var(--text-heading)" /> },
+              { value: 'mochi', label: 'Mochi', icon: <Dot color="var(--accent-gold)" /> },
               { value: 'bun', label: 'Bun', icon: <Dot color="var(--accent-plum)" /> },
             ]}
           />
