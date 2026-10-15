@@ -8,7 +8,7 @@ Open **Effects → Add light and depth**. The three sections are **Light your sp
 
 ## Move a light before applying it
 
-![Bun under an actual uncommitted live lighting preview.](../assets/screenshots/2026-10-02-feature-guide/lighting-live.png)
+![Auto lighting on Bun with live bulb, angle and Apply/Cancel controls.](../assets/screenshots/2026-10-15-current-ui/lighting-live.png)
 
 1. Keep the sprite's source artwork available and open **Light your sprite**. **Auto setup** estimates a form, material and existing light cues from the visible artwork. Read **Detected lighting settings** when available; they are estimates you can revise.
 2. Choose **Preview lighting**. Move the bulb around the canvas to change direction. The live toolbar offers direction/height/strength and shading/glint choices. Keyboard controls are labeled on the preview; use its **Apply** or **Cancel** deliberately.
@@ -19,7 +19,7 @@ The source colors and their painted shading influence the estimate. Two sprites 
 
 ## Manual light and shading style
 
-![Manual lighting setup with direction and material choices.](../assets/screenshots/2026-10-02-feature-guide/lighting-manual.png)
+![Actual manual lighting controls; no light bake committed.](../assets/screenshots/2026-10-15-current-ui/lighting-manual.png)
 
 Choose **Manual setup** for direct control. The direction dome and **Direction / Height** sliders set the light. Choose a material: **Matte Clay**, **Gold / Brass**, **Polished Metal**, **Glossy Glass**, or **Velvet Fabric**. Material names describe the shading preset; they do not turn transparent sprite pixels into a physical simulation of glass or cloth.
 
@@ -43,7 +43,7 @@ Keep its source artwork intact. Changing source pixels can make a recipe's sourc
 
 ## More lighting actions
 
-![Normal-map, glint and selective-outline actions.](../assets/screenshots/2026-10-02-feature-guide/lighting-extra-actions.png)
+![Normal-map bake/preview, glint and selective-outline lighting actions.](../assets/screenshots/2026-10-15-current-ui/lighting-extra-actions.png)
 
 Open **More lighting actions** for the following tools:
 
@@ -56,7 +56,7 @@ Open **More lighting actions** for the following tools:
 
 ## Shape the surface
 
-![A Normal Facets layer with active chisel direction, width and blending controls.](../assets/screenshots/2026-10-02-feature-guide/normal-sculpting.png)
+![A newly created Normal Facets layer with the Normal Chisel controls; source color layer remains separate.](../assets/screenshots/2026-10-15-current-ui/normal-sculpting.png)
 
 1. Open **Shape the surface → Create surface layer**. Select an unlocked Normal layer; painting raised edges stays disabled until this requirement is met.
 2. Choose **Paint raised edges / Normal Chisel (K)**. Drag on the direction sphere or use compass presets to set the slope's direction. The sphere shows the RGB encoding, direction and incline.
@@ -67,7 +67,7 @@ These encoded colors are lighting data. Do not paint ordinary face colors on the
 
 ## Add a shadow
 
-![The shadow section with setup and projection-style choices.](../assets/screenshots/2026-10-02-feature-guide/shadow-options.png)
+![Current automatic floor-shadow choices and projection style, before casting.](../assets/screenshots/2026-10-15-current-ui/shadow-options.png)
 
 Open **Add a shadow**. Choose **From the light** for a projected silhouette, or **Under sprite** for a soft ground oval. **Auto → Add Floor Shadow** analyzes the artwork and commits a generated shadow layer; it is not a preview-only button. Detected settings describe that estimate.
 

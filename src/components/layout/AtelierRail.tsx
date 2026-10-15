@@ -406,7 +406,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
 
       {/* Center Zone: Active tool options are symmetrically centered */}
       <div ref={toolMenuRef} role="group" aria-label="Drawing controls" className="relative flex-1 min-w-0 flex items-center justify-center">
-        <IslandSlot contentKey={tools.activeTool} idleLabel={hasToolParams || hasExpandedToolParams ? undefined : toolLabel}>
+        <IslandSlot contentKey={tools.activeTool} panelKey={`${isToolMenuOpen}:${isBrushMenuOpen}`} idleLabel={hasToolParams || hasExpandedToolParams ? undefined : toolLabel}>
         {hasExpandedToolParams && <button type="button" data-testid="tool-options-button"
           aria-label={`${toolLabel} tool options`} aria-expanded={isToolMenuOpen} aria-controls={toolOptionsId}
           onClick={() => setToolMenuFor(isToolMenuOpen ? null : tools.activeTool)}
@@ -414,7 +414,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
           <span className="truncate">{toolLabel}</span><span aria-hidden="true" className="shrink-0 text-[8px]">▼</span>
         </button>}
         {hasToolParams ? (
-          <div id={toolOptionsId} role={hasExpandedToolParams ? 'group' : undefined} data-testid="tool-options-rail" aria-label={hasExpandedToolParams ? `${toolLabel} settings` : 'Tool options rail'} className={`${hasExpandedToolParams ? `${isToolMenuOpen ? 'flex' : 'hidden'} absolute top-full left-0 mt-1 z-[100] w-[360px] max-w-[calc(100vw-16px)] p-3 shadow-xl` : 'flex h-7 px-2 xl:px-2.5'} bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] flex-wrap items-center gap-2`}>
+          <div id={toolOptionsId} role={hasExpandedToolParams ? 'group' : undefined} data-island-panel={hasExpandedToolParams ? '' : undefined} data-testid="tool-options-rail" aria-label={hasExpandedToolParams ? `${toolLabel} settings` : 'Tool options rail'} className={`${hasExpandedToolParams ? `${isToolMenuOpen ? 'flex' : 'hidden'} absolute top-full left-0 mt-1 z-[100] w-[360px] max-w-[calc(100vw-16px)] p-3 shadow-xl` : 'flex h-7 px-2 xl:px-2.5'} bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] flex-wrap items-center gap-2`}>
             {/* Tool indicator */}
             <span className={`text-[10px] font-sans font-medium text-[var(--text-heading)] shrink-0 ${hasExpandedToolParams ? 'w-full' : 'hidden xl:inline'}`}>
               {toolLabel}
@@ -426,7 +426,8 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               tools.activeTool === 'eraser' ||
               tools.activeTool === 'dither' ||
               isShapeTool) && (
-              <div ref={brushMenuRef} className="relative shrink-0 flex items-center gap-1">
+              <div ref={brushMenuRef} data-island-brush-anchor className="relative shrink-0 flex items-center gap-1">
+                <div data-island-brush-row className="flex items-center gap-1">
                 <button type="button" onClick={() => setIsBrushMenuOpen((open) => !open)}
                   aria-label={`Brush size ${tools.brushSize} pixels. Size ${tools.brushSize} px`} aria-expanded={isBrushMenuOpen}
                   className="h-6 px-2 flex items-center gap-1.5 rounded-[2px] text-xs text-[var(--text-heading)] hover:bg-[var(--surface-2)]">
@@ -446,22 +447,8 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                     </button>
                   ))}
                 </div>
-                {(tools.activeTool === 'pen' || tools.activeTool === 'curve') && (
-                  <button
-                    type="button"
-                    onClick={() => setPixelPerfect(!tools.pixelPerfect)}
-                    aria-label={tools.pixelPerfect ? 'Disable clean corners. Pixel-Perfect' : 'Enable clean corners. Pixel-Perfect'}
-                    aria-pressed={tools.pixelPerfect}
-                    title="Clean corners (pixel-perfect): removes doubled corner pixels from 1px lines"
-                    data-testid="clean-corners-toggle"
-                    className={`${hasExpandedToolParams ? 'flex' : 'hidden 2xl:flex'} ml-1 items-center gap-1 h-6 px-2 rounded-[2px] text-[10px] font-sans transition-colors ${tools.pixelPerfect ? 'bg-[var(--accent-gold)] text-[var(--surface-0)] font-bold' : 'bg-[var(--surface-1)] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)]'}`}
-                  >
-                    <span aria-hidden="true" className={`w-2.5 h-2.5 shrink-0 rounded-[2px] border-[1.5px] border-current flex items-center justify-center text-[8px] leading-none ${tools.pixelPerfect ? 'bg-[var(--surface-0)] text-[var(--accent-gold)]' : ''}`}>{tools.pixelPerfect ? '✓' : ''}</span>
-                    <span>Clean corners</span>
-                  </button>
-                )}
-                {isBrushMenuOpen && (
-                  <div role="group" aria-label="Brush size controls"
+                </div>
+                  <div role="group" aria-label="Brush size controls" data-island-panel hidden={!isBrushMenuOpen} inert={!isBrushMenuOpen}
                     className="absolute top-full left-0 mt-1 z-[100] w-56 bg-[var(--surface-2)] border border-[var(--desk-border-highlight)] rounded-[2px] p-3 shadow-lg space-y-3">
                     <label className="flex items-center gap-2 text-xs text-[var(--text-heading)]">
                       <span>Size</span>
@@ -495,7 +482,6 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                       </label>
                     )}
                   </div>
-                )}
               </div>
             )}
 

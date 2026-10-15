@@ -4,21 +4,23 @@ For the tested revision and remaining accessibility, device and host checks, see
 
 [Handbook](README.md) · [Studio workspace](studio-workspace.md) · [All features](../features.md)
 
-The welcome page opens on a pixel town, then follows a drawing through sketching, lighting, movement and export. Its demos use their own sample state; they do not edit your Studio project. The screenshots below were captured on **2 October 2026** and show earlier layouts and download behavior. The [15 October review](../releases/2026-10-15-codebase-and-documentation.md) records the newer source.
+The welcome page opens on a pixel town, then follows a drawing through sketching, lighting, movement and export. Its demos use their own sample state; they do not edit your Studio project. The pictures below show the current local production build on **15 October 2026**. [Capture details](../assets/screenshots/2026-10-15-current-ui/run.json) record the exact build, image hashes and scope.
 
-![The earlier welcome layout, captured on 2 October.](../assets/screenshots/2026-10-02-feature-repairs-phase5/welcome-overview.png)
+![Current Pixels with a pulse homepage, painted town and Open the Desk entry.](../assets/screenshots/2026-10-15-current-ui/welcome-overview.png)
 
 ## A small moment at the desk
 
-Tap Bun in the opening scene for a reaction, or drag in its sky to make temporary constellations. A tap during the opening fast-forwards it; the logo can replay the intro. Those sky marks are page-local scene state, with no project save/export path. The earlier lamp/pet/mini-sketchpad desk is no longer this homepage's interface. Use Studio or [Pocket Doodle Pad](learning-and-playground.md#pocket-doodle-pad) for editable/exportable artwork.
+Tap Bun in the opening scene for a reaction, or drag in its sky to make temporary constellations. Names stay unique among the retained constellations. Their measured labels fit around the introduction and each other, adjust on resize/scroll, and hide when no slot fits. A tap during the opening fast-forwards it; the logo can replay the intro. Those sky marks are page-local scene state, with no project save/export path. The earlier lamp/pet/mini-sketchpad desk is no longer this homepage's interface. Use Studio or [Pocket Doodle Pad](learning-and-playground.md#pocket-doodle-pad) for editable/exportable artwork.
 
 The Daylight switch changes Night/Day for the saved studio style. Where supported, a circular reveal and pixel sun/moon accompany the change; reduced motion and unsupported browsers switch immediately. The scenes and canvas demos read the selected palette. Navigation leads to Playground, Studio, Tour, Engine, Promises, Shelf and Story. The creation story tracks scrolling; its chapter controls can jump through sketch, lamp, frames and sheet. Reduced motion stops timed scene motion while scrolling still moves through the story.
+
+![The current scroll-driven creation story.](../assets/screenshots/2026-10-15-current-ui/scroll-story.png)
 
 The final drawing invitation has 16, 24, 32 and 48 px blank-canvas choices. Studio checkpoints an existing workspace before creating that separate drawing and consumes the URL request, so reload keeps saved edits. Studio's Canvas size dialog provides additional choices.
 
 ## Choose a starter friend
 
-![The earlier four-character starter shelf.](../assets/screenshots/2026-10-02-feature-guide/starter-shelf.png)
+![Current starter shelf with Bun, Mochi, Sprout and Teacup Frog.](../assets/screenshots/2026-10-15-current-ui/starter-shelf.png)
 
 Choose **Give it a try** beneath **Bun**, **Mochi**, **Sprout** or **Teacup Frog**. Bun is the PixiBun mascot herself (`src/lib/art/bunSprite.ts`), one ear row and one body row shorter to fit 16×16; she is also the model in the homepage tour, the hero's easel and the lighting demo. Each opens its 16×16 raster in a separate drawing after restore/checkpoint. Failed saving or unfinished recovery, motion, floating artwork or Co-Draw prevents replacement. The starter parameter is removed after opening. Old links still work: `?template=hearth-ghost` opens Mochi, `mushroom` opens Sprout and `lantern` opens Teacup Frog. Your prior projects remain in Projects; keep a portable backup of important artwork.
 
@@ -30,7 +32,7 @@ The workbench tabs are **Light & shadow**, **Smooth rotation**, **Photo to pixel
 
 The current tab is named **Light & shadow**.
 
-![The 2 October lighting demonstration.](../assets/screenshots/2026-10-02-feature-repairs-phase5-welcome/welcome-photometric.png)
+![Actual welcome-page photometric demonstration, separate from editable studio project state.](../assets/screenshots/2026-10-15-current-ui/welcome-photometric.png)
 
 Choose a sample/material, drag the lamp or try auto-orbit. Compare color shading with the RGB normal field, smooth/stepped tones and Cast Ray/Drop AO/None shadows. Reduced motion starts auto-orbit stopped. The surface is estimated from bounded sprite data; it is a stylized 2.5D demonstration rather than imported 3D geometry or physically measured depth. Use [lighting and surface sculpting](lighting-and-surfaces.md) on your own art.
 
@@ -38,7 +40,7 @@ Choose a sample/material, drag the lamp or try auto-orbit. Compare color shading
 
 The current tab is named **Smooth rotation**.
 
-![The 2 October rotation comparison.](../assets/screenshots/2026-10-02-feature-repairs-phase5-welcome/welcome-rotsprite.png)
+![Actual welcome-page rotsprite demonstration, separate from editable studio project state.](../assets/screenshots/2026-10-15-current-ui/welcome-rotsprite.png)
 
 Choose the sword, ghost or Bun, adjust the angle, try presets or Spin, and compare RotSprite with nearest-neighbor. Current free-angle rotation uses the contour-aware v3 engine. These examples expose edge differences rather than proving that all shapes improve. [Studio rotation and cleanup](pixitools-cleanup-and-tiles.md#clean-rotation-and-lines) works on your selected layer.
 
@@ -46,11 +48,13 @@ Choose the sword, ghost or Bun, adjust the angle, try presets or Spin, and compa
 
 <a id="image-synthesis"></a>
 
-![The 2 October image simplification sample.](../assets/screenshots/2026-10-02-feature-repairs-phase5/welcome-pixelize.png)
+![Actual welcome-page pixelize demonstration, separate from editable studio project state.](../assets/screenshots/2026-10-15-current-ui/welcome-pixelize.png)
 
 Choose the mountain or hearth scene and a 16, 24 or 32 px target. Compare Preserve edges sampling with Nearest neighbor, eight/sixteen colors with true color, and None/Atkinson/Bayer dithering. The extracted palette comes from that generated sample scene. Linear-light averaging and bounded OKLab grouping run on-device; no photo upload or generative model is involved. Edge weighting cannot guarantee retention of every detail. Use [image import](studio-workspace.md#bring-in-an-image) for your file or [Simplify](variations-and-scenes.md#simplify) for a Studio layer.
 
 ### Game Engine Exports
+
+![Current Into your game demonstration and sample download choices.](../assets/screenshots/2026-10-15-current-ui/welcome-export.png)
 
 The current tab is named **Into your game**. It shows an independent four-frame **20×22** Bun loop, with holds **125, 125, 250 and 125 ms** and an **80×22** sprite sheet.
 

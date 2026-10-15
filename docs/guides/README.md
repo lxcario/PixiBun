@@ -6,7 +6,9 @@ A little drawing can begin with just one color and a few pixels. Pick the guide 
 
 For a facilitated observation session, use the [artist workflow study kit](artist-study.md). It separates complete automated journeys from real participant and device observations.
 
-![The studio in Plum (then named Cozy Classic), captured 2 October 2026, with its canvas, tools and little starter friends.](../assets/screenshots/2026-10-02-feature-repairs-phase5/studio-cozy-dark.png)
+![Plum Night Studio with the same original three-frame built-in artwork.](../assets/screenshots/2026-10-15-current-ui/studio-cozy-classic-dark.png)
+
+On scene themes, [Studio Labs](studio-workspace.md#studio-labs) offers a morphing tool island, liquid tabs, a paint-pot palette and quick effects. Switch them off individually or choose **Classic studio** from Studio → Labs; Graphite and Plum always stay classic.
 
 ## Your first small drawing
 
@@ -19,6 +21,7 @@ For a facilitated observation session, use the [artist workflow study kit](artis
 
 | When you want to… | Illustrated guide |
 | --- | --- |
+| Compare every Studio theme in Day and Night | [All 16 desk appearances](themes.md) |
 | Explore the welcome page, four starters and four demonstrations | [Meet the little studio](welcome-and-demos.md) |
 | Open, import, resize and organize a drawing; use layers, selections and view controls | [Settle into your studio](studio-workspace.md) |
 | Learn every drawing tool and its settings | [All 17 drawing tools](drawing-tools.md) |
@@ -34,12 +37,12 @@ For a facilitated observation session, use the [artist workflow study kit](artis
 | Draw with one guest, use the cached studio offline and choose diagnostic preferences | [Collaboration and privacy](collaboration-and-privacy.md) |
 | Keep a backup, handle save conflicts or recover damaged local records | [Artwork safety and backup](artwork-safety.md) |
 
-The [complete feature index](../features.md) connects available features to instructions and implementation, with dated illustrations where captured. New motion/rotation/Curve adjustment controls have no fresh handbook picture yet. For exact keys and file/resource limits, use the [shortcut](../contracts/shortcuts.md), [storage](../contracts/storage.md) and [export](../contracts/exports.md) references.
+The [complete feature index](../features.md) connects available features to instructions and implementation. Current pictures include tool settings, motion poses, Curve adjustment, Playground and [every theme](themes.md). For exact keys and file/resource limits, use the [shortcut](../contracts/shortcuts.md), [storage](../contracts/storage.md) and [export](../contracts/exports.md) references.
 
 For agent developers helping with drawing or verification, [Nibbli](nibbli.md) and its [agent contract](nibbli-agent.md) describe the separate repository tooling. Artist plans come from your conversation or mocks, and Hands currently supports bounded 32×32 edits. It is not an assistant button inside the Studio; functional checks and artistic opinions remain separate.
 
 ## About the pictures
 
-Most guides show the local application on **2 October 2026**; the [artist workspace](artist-workspace.md) also has **4 October** captures. Screenshots are actual UI captures, including previews before Apply, and do not depict every later control. Lesson images show provided templates traced through the UI. Recovery examples use deliberately damaged sample records in isolated browser storage. None are participant results or proof of a current public deployment.
+The guide pictures show the local production build on **15 October 2026**. They include previews before Apply, all twelve current desktop lessons, Pocket's two modes, game exports, recovery and sharing. Lesson images show provided templates traced through the UI. Recovery examples use deliberately damaged sample records in isolated browser storage. The [theme gallery](themes.md) shows all eight desks in Day and Night. These illustrate the UI; participant, device and public-deployment results have separate scope.
 
-The [new capture record](../assets/screenshots/2026-10-02-feature-guide/run.json) identifies the revision, image hashes and scope; the [earlier October illustrations](../assets/screenshots/2026-10-02-docs/run.json) have their own record. The later [practice captures](../assets/screenshots/2026-10-02-feature-repairs-phase2/run.json) show the separate Keep/Return workspace and all twelve earlier lesson illustrations; current lessons use redesigned artwork and coaching. The [phase 3 control captures](../assets/screenshots/2026-10-02-feature-repairs-phase3/run.json) show current Iso ON/FREE and the single floating preview. The [phase 4 export captures](../assets/screenshots/2026-10-02-feature-repairs-phase4/run.json) show manual-normal preflight, approximate SVG, the then-current welcome text notes (now replaced by animation/game-kit downloads) and current/stale tile bundles. The [phase 5 reconciliation captures](../assets/screenshots/2026-10-02-feature-repairs-phase5/run.json) refresh the cozy desk overview, welcome text, sampling explanation and qualified APNG/MP4 panels; the [additional welcome captures](../assets/screenshots/2026-10-02-feature-repairs-phase5-welcome/run.json) show the then-current lighting/rotation explanations and feature cards in reduced-motion mode. Historical research and release evidence keeps its original screenshots. See the [documentation map](../README.md) for contributor and operator guides.
+The [capture record](../assets/screenshots/2026-10-15-current-ui/run.json) identifies the source/build, image hashes, viewport sizes and procedures. The replaced originals retain their source Git blobs and verified [local archive receipt](../assets/screenshots/2026-10-15-current-ui/retired-images.json); dated research and release verdicts keep their original scope. See the [documentation map](../README.md) for contributor and operator guides.

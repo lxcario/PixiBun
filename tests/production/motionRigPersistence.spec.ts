@@ -1,3 +1,4 @@
+import { openMotionCapture } from '../helpers/motion';
 import { expect, test, type Page } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
 
@@ -30,7 +31,7 @@ async function capture(page: Page) {
   await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.2); await page.mouse.down();
   await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.8, { steps: 4 }); await page.mouse.up();
   await page.getByTestId('tab-tools').click();
-  await page.getByTestId('create-motion-part-btn').click(); await expect(page.getByTestId('piximotion-panel')).toBeVisible();
+  await openMotionCapture(page); await page.getByTestId('create-motion-part-btn').click(); await expect(page.getByTestId('piximotion-panel')).toBeVisible();
 }
 async function setArc(page: Page) {
   const translation = page.getByRole('slider', { name: 'Pose translation X', exact: true }); await translation.focus();
@@ -117,7 +118,7 @@ test('floating artwork blocks saved-rig opening and fresh capture until its sour
   await expect(page.getByTestId('gizmo-commit-btn')).toBeVisible();
   const open = page.getByRole('button', { name: 'Open rig Wave', exact: true });
   await expect(open).toBeDisabled();
-  await page.getByTestId('create-motion-part-btn').click();
+  await openMotionCapture(page); await page.getByTestId('create-motion-part-btn').click();
   await expect(page.getByText('Commit or cancel the floating selection before creating a motion part.', { exact: true })).toBeVisible();
   await expect(page.getByTestId('piximotion-panel')).toHaveCount(0);
   await page.getByTestId('gizmo-cancel-btn').click();

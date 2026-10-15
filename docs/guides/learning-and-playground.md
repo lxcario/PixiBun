@@ -8,11 +8,15 @@ Choose **Playground** from the welcome-page navigation. A wide screen gets the g
 
 ## Desktop lessons
 
-![A fresh desktop practice sheet with separate Keep and Return controls.](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-master-bouncing-ball.png)
+![Current The Full Bounce coach and first pose traced through the UI; demonstration artwork, not participant evidence.](../assets/screenshots/2026-10-15-current-ui/lesson-master-bouncing-ball.png)
 
-These [captures](../assets/screenshots/2026-10-02-feature-repairs-phase2/run.json) were taken on 2 October 2026 and show the earlier layout and lesson art; they remain as dated records. The 15 October redesign below changed the layout, the coaching and every lesson pose.
+These [15 October captures](../assets/screenshots/2026-10-15-current-ui/run.json) show the current coach, tool dock, filmstrip and lesson art.
 
 At 1024 px wide and above, the canvas fills the middle. A small tool dock sits beside it, one coach card on the right and the frames along the bottom. Change lesson with the **Lesson** button in the header; lessons are grouped from **First steps** to **Big projects**, and **Bouncy Mochi** comes first.
+
+![Current Playground introduction and its separate practice workspace.](../assets/screenshots/2026-10-15-current-ui/playground-desktop.png)
+
+![The current twelve-lesson picker.](../assets/screenshots/2026-10-15-current-ui/lesson-picker.png)
 
 1. Each lesson opens on a short intro that plays the finished animation and names the one idea it teaches. Choose **Let's start**.
 2. The coach shows one pose at a time: its name, one sentence on what to draw and why, a looping preview of the whole move and a "what changes" view of this pose over the previous one. The first time you reach an empty frame, a ghost pen draws the pose on the canvas; **Show me** replays it.
@@ -29,7 +33,7 @@ Practice shows the canvas on plain paper whatever View → Transparency says; th
 
 When you arrive from Studio, PixiBun finishes a local save of your drawing before it opens a fresh practice sheet. Practice uses a separate project identity, pixels, settings and history. Changing lessons or loading the Teaching Board changes this sheet. Studio autosave stays paused during practice; practice is temporary until you choose Keep.
 
-![The Teaching Board sample loaded into separate practice.](../assets/screenshots/2026-10-02-feature-repairs-phase2/isolated-practice.png)
+![Current temporary practice sheet, traced through the real lesson controls.](../assets/screenshots/2026-10-15-current-ui/isolated-practice.png)
 
 - **Return to drawing** restores the original workspace. Leaving through Home, the browser's Back navigation or a switch to Pocket also closes desktop practice; opening Studio returns to the original. Unkept practice is discarded.
 - **Keep practice in Studio** finishes a local save under a new project identity before opening Studio. A failed save leaves practice open so you can retry or Return. Keeping does not write through your original drawing's native-file association. Make a Project Backup of the new drawing if you want a portable copy.
@@ -37,34 +41,34 @@ When you arrive from Studio, PixiBun finishes a local save of your drawing befor
 - **If the initial save fails**, practice does not start. Return takes you back to the original in-memory drawing and its save warning. Export a Project Backup before closing if local storage cannot save it. Practice also refuses entry when its refresh-return pointer cannot be stored.
 - **Close Co-Draw first.** Practice cannot start while a host or guest session is active. PixiBun waits for an unfinished save. If you Return while it is still saving, Studio waits for that result and keeps the original in memory; it does not load older pixels. Resolve a save conflict before starting.
 
-![Practice kept as a separate saved Studio project.](../assets/screenshots/2026-10-02-feature-repairs-phase2/kept-practice-new-project.png)
+![Current practice kept as its own Studio project through the UI.](../assets/screenshots/2026-10-15-current-ui/kept-practice-new-project.png)
 
 The Pocket sketch uses its own temporary canvas. It does not adopt desktop lesson artwork. These safeguards are checked locally; they are not a cloud backup or a guarantee against browser storage loss.
 
 ## All 12 lessons
 
-Each pose is painted by [lesson art](../../src/lib/art/lessonArt.ts): an outline, fill, shadow side, highlight and ground shadow, moved and squashed by the motion the lesson teaches. The linked screenshots are the dated 2 October captures of the earlier art, cleared and then traced through the UI of that time.
+Each pose is painted by [lesson art](../../src/lib/art/lessonArt.ts): an outline, fill, shadow side, highlight and ground shadow, moved and squashed by the motion the lesson teaches. The linked 15 October pictures show each current lesson's first pose after clearing and tracing it through the UI.
 
-| Lesson (as shown) | Level | Poses / nominal FPS | What to practice | Earlier screenshot |
+| Lesson (as shown) | Level | Poses / nominal FPS | What to practice | Current screenshot |
 | --- | --- | --- | --- | --- |
-| Bouncy Mochi | First steps | 4 / 10 | Squash when it lands, stretch while it falls | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-bouncing-mochi.png) |
-| Cozy Flame | First steps | 3 / 8 | A flame that sways and sends up an ember | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-hearth-flame.png) |
-| Bun Hops | First steps | 3 / 9 | Crouch, jump with trailing ears, land | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-bun-hop.png) |
-| Twinkling Star | First steps | 4 / 10 | Grow a spark into a sparkle and fade it | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-twinkling-star.png) |
-| Potion Bubbles | Getting comfy | 4 / 9 | A bubble rising, doming the surface and popping | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-potion-bubble.png) |
-| Slime Slide | Getting comfy | 4 / 8 | Reach forward, pull the back along, settle | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-slime-glide.png) |
-| Water Ripple | Getting comfy | 4 / 8 | A drop and rings that widen and fade | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-water-ripple.png) |
-| Sword Swing | Getting comfy | 3 / 12 | Wind-up, a one-frame smear, follow-through | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-sword-slash.png) |
-| The Full Bounce | Big projects | 12 / 12 | A full bounce on 32×32 that keeps the ball's counted non-shadow area at 112–114 cells | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-master-bouncing-ball.png) |
-| Breathing Idle | Big projects | 3 / 8 | A one-pixel breath that leaves the head and base still | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-subpixel-idle.png) |
-| Power Slash | Big projects | 4 / 12 | Wind-up, smear, a freeze on the hit, recovery | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-combat-slash-hitstop.png) |
-| Big Hop | Big projects | 5 / 10 | Crouch, launch stretch, hang time, squash landing, settle | [2 Oct](../assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-character-hop-shock.png) |
+| Bouncy Mochi | First steps | 4 / 10 | Squash when it lands, stretch while it falls | [15 Oct](../assets/screenshots/2026-10-15-current-ui/lesson-bouncing-mochi.png) |
+| Cozy Flame | First steps | 3 / 8 | A flame that sways and sends up an ember | [15 Oct](../assets/screenshots/2026-10-15-current-ui/lesson-hearth-flame.png) |
+| Bun Hops | First steps | 3 / 9 | Crouch, jump with trailing ears, land | [15 Oct](../assets/screenshots/2026-10-15-current-ui/lesson-bun-hop.png) |
+| Twinkling Star | First steps | 4 / 10 | Grow a spark into a sparkle and fade it | [15 Oct](../assets/screenshots/2026-10-15-current-ui/lesson-twinkling-star.png) |
+| Potion Bubbles | Getting comfy | 4 / 9 | A bubble rising, doming the surface and popping | [15 Oct](../assets/screenshots/2026-10-15-current-ui/lesson-potion-bubble.png) |
+| Slime Slide | Getting comfy | 4 / 8 | Reach forward, pull the back along, settle | [15 Oct](../assets/screenshots/2026-10-15-current-ui/lesson-slime-glide.png) |
+| Water Ripple | Getting comfy | 4 / 8 | A drop and rings that widen and fade | [15 Oct](../assets/screenshots/2026-10-15-current-ui/lesson-water-ripple.png) |
+| Sword Swing | Getting comfy | 3 / 12 | Wind-up, a one-frame smear, follow-through | [15 Oct](../assets/screenshots/2026-10-15-current-ui/lesson-sword-slash.png) |
+| The Full Bounce | Big projects | 12 / 12 | A full bounce on 32×32 that keeps the ball's counted non-shadow area at 112–114 cells | [15 Oct](../assets/screenshots/2026-10-15-current-ui/lesson-master-bouncing-ball.png) |
+| Breathing Idle | Big projects | 3 / 8 | A one-pixel breath that leaves the head and base still | [15 Oct](../assets/screenshots/2026-10-15-current-ui/lesson-subpixel-idle.png) |
+| Power Slash | Big projects | 4 / 12 | Wind-up, smear, a freeze on the hit, recovery | [15 Oct](../assets/screenshots/2026-10-15-current-ui/lesson-combat-slash-hitstop.png) |
+| Big Hop | Big projects | 5 / 10 | Crouch, launch stretch, hang time, squash landing, settle | [15 Oct](../assets/screenshots/2026-10-15-current-ui/lesson-character-hop-shock.png) |
 
 Nominal FPS comes from the lesson configuration; per-frame holds can differ. The coach's plain-language copy lives in [playground coaching](../../src/lib/art/playgroundCoach.ts) and describes the intended exercise, not independently measured learning gains or a physical simulation guarantee.
 
 ## Teaching Animation Board
 
-![The 2 October 10-frame jump Teaching Animation Board.](../assets/screenshots/2026-10-02-feature-repairs-phase2/teaching-board.png)
+![Current ten-frame jump Teaching Board.](../assets/screenshots/2026-10-15-current-ui/teaching-board.png)
 
 Open the **Teaching Board** with the book button in the playground header, or from the bottom of the lesson picker. Choose **Bun (Mascot)** or **Gel Slime**. Hover the construction stages to examine the sample's assembly; select alternate colors to re-theme the demonstration. Click **Inspect frame 1–10** to examine a jump pose and its pacing note.
 
@@ -72,15 +76,17 @@ Play/pause the board, step backward/forward, choose playback FPS and toggle its 
 
 ## Pocket Doodle Pad
 
-![The narrow-screen Pocket Doodle Pad with a small drawn stroke.](../assets/screenshots/2026-10-02-feature-guide/pocket-doodle.png)
+![Current mobile Pocket Doodle Pad with a temporary brush stroke.](../assets/screenshots/2026-10-15-current-ui/pocket-doodle.png)
 
-The screenshot above is the 2 October capture of the earlier pad. Below 1024 px, `/playground` now opens **Pocket Doodle Pad** on its **Lesson** tab: the eight 16×16 lessons as cards, a coach card with the pose name, hint and tracing meter, and a large canvas showing the guide and a faint onion skin of your previous frame. A ghost pen draws each new pose; **Show me** replays it. Draw with **Pen**, **Fill** or **Eraser** in the pose's colors, use **Start from last frame**, **Guide** and **Clear frame**, step through the frames, then **Play** to watch them at their own timings. **Save PNG** downloads every frame side by side at native size.
+The picture above shows the current **Free doodle** tab. Below 1024 px, `/playground` opens **Pocket Doodle Pad** on its **Lesson** tab: the eight 16×16 lessons as cards, a coach card with the pose name, hint and tracing meter, and a large canvas showing the guide and a faint onion skin of your previous frame. A ghost pen draws each new pose; **Show me** replays it. Draw with **Pen**, **Fill** or **Eraser** in the pose's colors, use **Start from last frame**, **Guide** and **Clear frame**, step through the frames, then **Play** to watch them at their own timings. **Save PNG** downloads every frame side by side at native size.
+
+![Current Pocket lessons, pose coach and frame controls.](../assets/screenshots/2026-10-15-current-ui/pocket-lessons.png)
 
 The **Free doodle** tab keeps the **32×32** sketchpad: pick a color, draw with a finger, pointer or mouse, **Eraser**, **Clear** and **Save PNG** (native size with transparency).
 
 Both tabs keep their pixels only in the current page. There is no Pocket project gallery, autosave, layer stack or Undo control. Save the PNG before refreshing, leaving or widening the viewport into desktop lessons; switching between the two surfaces remounts their canvases. Home returns to the welcome page. Mobile mounts only Pocket, so hidden desktop lessons do not initialize or change Studio metadata. This is a small phone-friendly practice surface, rather than the full mobile Studio.
 
-![The 2 October full Studio narrow-screen message and Doodle Pad link.](../assets/screenshots/2026-10-02-feature-guide/mobile-studio-gate.png)
+![Actual narrow-screen studio gate offering Home or Pocket Doodle Pad.](../assets/screenshots/2026-10-15-current-ui/mobile-studio-gate.png)
 
 The full `/studio` displays **Desk Too Small** on narrow screens and offers Home or Pocket Doodle Pad. Use a viewport at least 1024 px wide for the full workbench. Rotating a tablet helps only when it actually reaches that width.
 

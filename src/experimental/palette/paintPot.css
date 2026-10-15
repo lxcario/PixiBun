@@ -50,7 +50,7 @@
   border: 2px solid var(--moon-ink, var(--ink));
   background: var(--pot);
   cursor: pointer;
-  transition: transform 180ms cubic-bezier(.34, 1.56, .64, 1), box-shadow 160ms ease;
+  transition: transform 180ms cubic-bezier(.3, 1.25, .6, 1), box-shadow 160ms ease;
   box-shadow:
     inset 0 -4px 0 color-mix(in srgb, black 22%, transparent),
     inset 3px 3px 0 color-mix(in srgb, white 28%, transparent),
@@ -79,7 +79,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 260ms cubic-bezier(.34, 1.56, .64, 1);
+  transition: transform 260ms cubic-bezier(.3, 1.25, .6, 1);
 }
 
 .pp-swap:hover { transform: rotate(180deg); color: var(--accent-gold); }
@@ -120,7 +120,7 @@
   border-radius: 12px;
   background: color-mix(in srgb, var(--surface-0) 70%, transparent);
   border: 2px solid var(--desk-border);
-  animation: pp-pop 260ms cubic-bezier(.34, 1.56, .64, 1);
+  animation: pp-pop 260ms cubic-bezier(.3, 1.25, .6, 1);
 }
 
 .pp-segment {
@@ -234,7 +234,7 @@ body.moon-ui .pp-palette-name select,
   border: 2px solid color-mix(in srgb, var(--moon-ink, #000) 70%, transparent);
   box-shadow: inset 0 -3px 0 color-mix(in srgb, black 20%, transparent), inset 2px 2px 0 color-mix(in srgb, white 22%, transparent);
   cursor: pointer;
-  transition: transform 200ms cubic-bezier(.34, 1.56, .64, 1), box-shadow 140ms ease;
+  transition: transform 200ms cubic-bezier(.3, 1.25, .6, 1), box-shadow 140ms ease;
 }
 
 .pp-swatch:hover { transform: translateY(-2px) scale(1.06); }
@@ -278,7 +278,7 @@ body.moon-ui .pp-palette-name select,
   cursor: pointer;
   opacity: 0;
   transform: scale(0.4);
-  transition: opacity 120ms ease, transform 200ms cubic-bezier(.34, 1.56, .64, 1);
+  transition: opacity 120ms ease, transform 200ms cubic-bezier(.3, 1.25, .6, 1);
 }
 
 .pp-swatch-wrap:hover .pp-remove,
@@ -324,7 +324,7 @@ body.moon-ui .pp-palette-name select,
   flex: 1;
   background: var(--sw);
   cursor: pointer;
-  transition: flex-grow 260ms cubic-bezier(.34, 1.56, .64, 1);
+  transition: flex-grow 260ms cubic-bezier(.3, 1.25, .6, 1);
 }
 
 .pp-ramp-step:hover { flex-grow: 1.8; }
@@ -343,7 +343,7 @@ body.moon-ui .pp-palette-name select,
   background: var(--sw);
   border: 2px solid color-mix(in srgb, var(--moon-ink, #000) 70%, transparent);
   cursor: pointer;
-  transition: transform 200ms cubic-bezier(.34, 1.56, .64, 1);
+  transition: transform 200ms cubic-bezier(.3, 1.25, .6, 1);
 }
 
 .pp-recent-dot:hover { transform: scale(1.18); }
@@ -380,14 +380,14 @@ body.moon-ui .pp-palette-name select,
 .pp-chevron {
   color: var(--text-muted);
   font-size: 16px;
-  transition: transform 220ms cubic-bezier(.34, 1.56, .64, 1);
+  transition: transform 220ms cubic-bezier(.3, 1.25, .6, 1);
 }
 
 .pp-chevron.is-open { transform: rotate(90deg); color: var(--accent-gold); }
 
 .pp-disclosure-body {
   margin: 6px -12px -10px;
-  animation: pp-pop 240ms cubic-bezier(.34, 1.56, .64, 1);
+  animation: pp-pop 240ms cubic-bezier(.3, 1.25, .6, 1);
 }
 
 @keyframes pp-pop {

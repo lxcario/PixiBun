@@ -65,7 +65,7 @@ export const DiagnosticsModal: React.FC<DiagnosticsModalProps> = ({ isOpen, onCl
     >
       <div className="flex flex-col gap-3 font-mono text-xs text-[var(--text-heading)]">
         <p className="text-[12px] text-[var(--text-muted)] leading-relaxed">
-          PixiBun honors a strict <strong className="text-[var(--accent-gold)]">zero-telemetry policy</strong>. Diagnostic events and web vitals are captured exclusively to your browser&apos;s local IndexedDB ring buffer (200 entries max) for troubleshooting and local performance profiling.
+          Error and performance logs <strong className="text-[var(--accent-gold)]">stay on this device by default</strong>. Local logging starts enabled and keeps up to 200 records. Sending reports to this site&apos;s server is a separate choice below.
         </p>
 
         <div className="p-3 bg-[var(--desk-surface)] rounded-[3px] border border-[var(--desk-border)] flex flex-col gap-3">
@@ -87,14 +87,12 @@ export const DiagnosticsModal: React.FC<DiagnosticsModalProps> = ({ isOpen, onCl
                 onChange={(e) => handleToggleRelay(e.target.checked)}
                 className="rounded border-[var(--desk-border)] accent-[#f0be7c]"
               />
-              <span className="font-bold">Opt-in remote crash relay (strictly off by default)</span>
+              <span className="font-bold">Send diagnostic reports (off by default)</span>
             </label>
 
-            {diagSettings.relayOptIn && (
-              <p className="pl-5 text-[10px] text-[var(--text-muted)] italic leading-tight">
-                The relay destination is configured by the server operator via <code className="text-[var(--accent-gold)]">DIAGNOSTICS_RELAY_URL</code>. If no upstream is configured, reports stay on this device.
-              </p>
-            )}
+            <p className="pl-5 text-[11px] text-[var(--text-muted)] leading-relaxed">
+              Reports leave this device for this site&apos;s server. The site operator controls any onward destination. Export Diagnostics JSON lets you inspect the records before choosing to send them.
+            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 mt-1 pt-2.5 border-t border-[var(--desk-border)]">

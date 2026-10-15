@@ -4,12 +4,13 @@ import React from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import {
   Point,
-  getClippedLine,
+  getUndirectedLine,
   getRectanglePoints,
   getEllipsePoints,
   applySymmetry,
   getIsometric2p1Line,
 } from '@/lib/canvas/rasterMath';
+import { fillRectMasked, resolveSelectionMask } from '@/lib/canvas/selectionMask';
 
 interface ShapeHandlerProps {
   canvasWidth: number;
@@ -33,6 +34,21 @@ export function useShapePointerHandler({
   const primaryColor = useStudioStore((s) => s.primaryColor);
   const secondaryColor = useStudioStore((s) => s.secondaryColor);
 
+  // Preview and commit share the same geometry; symmetry and masking are applied
+  // when stamping, just as they are for the active drawing layer.
+  const rasterize = (end: Point): Point[] => {
+    if (!strokeStart) return [];
+    switch (tools.activeTool) {
+      case 'line': return getUndirectedLine(strokeStart.x, strokeStart.y, end.x, end.y, canvasWidth, canvasHeight);
+      case 'isometric-line': return tools.isoAngleSnap
+        ? getIsometric2p1Line(strokeStart.x, strokeStart.y, end.x, end.y)
+        : getUndirectedLine(strokeStart.x, strokeStart.y, end.x, end.y, canvasWidth, canvasHeight);
+      case 'rectangle': return getRectanglePoints(strokeStart.x, strokeStart.y, end.x, end.y, tools.shapeFilled);
+      case 'ellipse': return getEllipsePoints(strokeStart.x, strokeStart.y, end.x, end.y, tools.shapeFilled);
+      default: return [];
+    }
+  };
+
   const onPointerDown = (_e: React.PointerEvent, _coords: Point) => {
     // Shapes only set strokeStart, which is handled in main hook
   };
@@ -54,30 +70,11 @@ export function useShapePointerHandler({
           pCtx.clearRect(0, 0, canvasWidth, canvasHeight);
           pCtx.imageSmoothingEnabled = false;
 
-          let previewPoints: Point[] = [];
-          if (tools.activeTool === 'line') {
-            previewPoints = getClippedLine(strokeStart.x, strokeStart.y, coords.x, coords.y, canvasWidth, canvasHeight);
-          } else if (tools.activeTool === 'isometric-line') {
-            previewPoints = tools.isoAngleSnap
-              ? getIsometric2p1Line(strokeStart.x, strokeStart.y, coords.x, coords.y)
-              : getClippedLine(strokeStart.x, strokeStart.y, coords.x, coords.y, canvasWidth, canvasHeight);
-          } else if (tools.activeTool === 'rectangle') {
-            previewPoints = getRectanglePoints(
-              strokeStart.x,
-              strokeStart.y,
-              coords.x,
-              coords.y,
-              tools.shapeFilled
-            );
-          } else if (tools.activeTool === 'ellipse') {
-            previewPoints = getEllipsePoints(
-              strokeStart.x,
-              strokeStart.y,
-              coords.x,
-              coords.y,
-              tools.shapeFilled
-            );
-          }
+          const state = useStudioStore.getState();
+          const layer = state.frames[state.activeFrameIndex]?.layers.find(item => item.id === state.activeLayerId);
+          if (!layer || layer.locked) return;
+          const mask = resolveSelectionMask(state.selection, state.selectionMask, canvasWidth, canvasHeight);
+          let previewPoints = rasterize(coords);
 
           if (
             tools.symmetryHorizontal ||
@@ -97,7 +94,7 @@ export function useShapePointerHandler({
           pCtx.fillStyle = drawColor;
           const offset = Math.floor(tools.brushSize / 2);
           previewPoints.forEach((p) => {
-            pCtx.fillRect(p.x - offset, p.y - offset, tools.brushSize, tools.brushSize);
+            fillRectMasked(pCtx, p.x - offset, p.y - offset, tools.brushSize, tools.brushSize, mask, canvasWidth, canvasHeight);
           });
         }
       }
@@ -113,30 +110,7 @@ export function useShapePointerHandler({
       strokeStart &&
       endCoords
     ) {
-      let shapePoints: Point[] = [];
-      if (tools.activeTool === 'line') {
-        shapePoints = getClippedLine(strokeStart.x, strokeStart.y, endCoords.x, endCoords.y, canvasWidth, canvasHeight);
-      } else if (tools.activeTool === 'isometric-line') {
-        shapePoints = tools.isoAngleSnap
-          ? getIsometric2p1Line(strokeStart.x, strokeStart.y, endCoords.x, endCoords.y)
-          : getClippedLine(strokeStart.x, strokeStart.y, endCoords.x, endCoords.y, canvasWidth, canvasHeight);
-      } else if (tools.activeTool === 'rectangle') {
-        shapePoints = getRectanglePoints(
-          strokeStart.x,
-          strokeStart.y,
-          endCoords.x,
-          endCoords.y,
-          tools.shapeFilled
-        );
-      } else if (tools.activeTool === 'ellipse') {
-        shapePoints = getEllipsePoints(
-          strokeStart.x,
-          strokeStart.y,
-          endCoords.x,
-          endCoords.y,
-          tools.shapeFilled
-        );
-      }
+      const shapePoints = rasterize(endCoords);
 
       const drawColor = usesSecondary(e) ? secondaryColor : primaryColor;
       drawPointsOnActiveLayer(shapePoints, drawColor, false);

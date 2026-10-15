@@ -68,44 +68,37 @@
 
 .isl-edge-flood { flood-color: var(--isl-edge); }
 
-/* ── Aurora: drifting theme light behind the island ── */
+/* Without the goo filter (no bubble out) the island draws its ink edge and drop with plain CSS */
+.isl-goo:not(.is-liquid) .isl-blob {
+  box-shadow: 0 0 0 2px var(--isl-edge), 0 4px 0 2px var(--moon-ink, var(--ink));
+}
+
+/* ── Aurora: a bounded halo; move the gradient rather than repaint its position. ── */
 .isl-aurora {
   position: absolute;
-  inset: -8px -14px;
+  inset: -6px -10px;
   z-index: -1;
-  border-radius: calc(var(--isl-r) + 10px);
+  border-radius: calc(var(--isl-r) + 8px);
+  overflow: hidden;
   pointer-events: none;
-  background:
-    radial-gradient(38% 110% at 12% 50%, var(--accent-gold), transparent 72%),
-    radial-gradient(38% 110% at 42% 50%, var(--accent-wisteria), transparent 72%),
-    radial-gradient(38% 110% at 70% 50%, var(--accent-plum), transparent 72%),
-    radial-gradient(38% 110% at 92% 50%, var(--accent-sage), transparent 72%);
-  background-size: 160% 100%;
-  background-repeat: no-repeat;
-  filter: blur(12px) saturate(1.2);
-  opacity: 0.42;
-  animation: isl-aurora 10s ease-in-out infinite alternate;
-  transition: opacity 420ms ease, transform 620ms cubic-bezier(.34, 1.56, .64, 1);
+  opacity: 0.16;
+  filter: blur(10px);
+  transition: opacity 600ms ease;
 }
 
-.isl:hover .isl-aurora { opacity: 0.6; }
-.isl.is-active .isl-aurora { opacity: 0.95; transform: scale(1.08, 1.25); }
-
-/* A brighter aurora wave sweeps through when the island has news */
-.isl-aurora::after {
-  content: '';
+.isl-aurora > span {
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(100deg, transparent 20%, var(--isl-tone) 45%, var(--accent-wisteria) 55%, transparent 80%);
-  background-size: 250% 100%;
-  background-position: 120% 0;
-  opacity: 0;
+  inset: 0 -40%;
+  background: linear-gradient(90deg, var(--accent-gold), var(--accent-wisteria), var(--accent-plum), var(--accent-sage), var(--accent-gold));
+  will-change: transform;
+  animation: isl-drift 14s ease-in-out infinite alternate;
 }
 
-.isl.is-active .isl-aurora::after { animation: isl-wave 1.4s ease-out both; }
+.isl:hover .isl-aurora { opacity: 0.24; }
+.isl.is-active .isl-aurora { opacity: 0.32; }
+.isl.is-expanded .isl-aurora { opacity: 0.2; }
 
-/* Aurora rim: a thin flowing line just inside the island's edge */
+/* Aurora rim: a quiet, still line of theme colors just inside the edge */
 .isl-rim {
   position: absolute;
   inset: 0;
@@ -113,59 +106,86 @@
   border-radius: var(--isl-r);
   padding: 1.5px;
   pointer-events: none;
-  background: linear-gradient(90deg, var(--accent-gold), var(--accent-wisteria), var(--accent-plum), var(--accent-sage), var(--accent-gold)) 0 0 / 300% 100%;
+  background: linear-gradient(90deg, var(--accent-gold), var(--accent-wisteria), var(--accent-plum), var(--accent-sage));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  opacity: 0.5;
-  animation: isl-flow 7s linear infinite;
-  transition: opacity 300ms ease;
+  opacity: 0.28;
+  transition: opacity 400ms ease;
 }
 
-.isl.is-active .isl-rim { opacity: 0.9; }
+.isl.is-active .isl-rim { opacity: 0.45; }
+
+/* ── Expanded wash: the theme's colors pooling inside the island, like a charging glow ── */
+.isl-wash {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: var(--isl-r);
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 520ms ease;
+}
+
+.isl-wash > span {
+  position: absolute;
+  inset: -35% -20%;
+  background:
+    radial-gradient(42% 60% at 88% 86%, color-mix(in srgb, var(--accent-gold) 55%, transparent), transparent 70%),
+    radial-gradient(38% 55% at 62% 100%, color-mix(in srgb, var(--accent-sage) 38%, transparent), transparent 72%),
+    radial-gradient(45% 60% at 12% 96%, color-mix(in srgb, var(--accent-wisteria) 40%, transparent), transparent 72%),
+    radial-gradient(30% 40% at 96% 10%, color-mix(in srgb, var(--accent-plum) 30%, transparent), transparent 70%);
+  will-change: transform;
+  animation: isl-wash 11s ease-in-out infinite alternate;
+}
+
+.isl.is-expanded .isl-wash { opacity: 1; }
 
 /* ── Content ── */
+/* Content hangs from the top: the first row is at the same height open or closed, so the shape
+   grows out of it and shrinks back into it without anything jumping */
 .isl-stage {
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 2;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 6px;
-}
-
-.isl-content {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  width: max-content;
-  white-space: nowrap;
-}
-
-/* While the island changes size its stage clips to the pill, so outgoing controls melt inside it */
-.isl.is-morphing .isl-stage {
   clip-path: inset(0 round var(--isl-r));
 }
 
-/* ── Expanded: a menu opened, so its controls live inside the island instead of a separate card ── */
-.isl.is-expanded .isl-stage {
-  align-items: flex-start;
-  justify-content: flex-start;
-  padding: 10px 12px;
+.isl-content,
+.isl-content-outgoing {
+  position: absolute;
+  top: var(--isl-row-top, 5px);
+  left: 50%;
+  translate: -50% 0;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  max-width: var(--isl-max-content, calc(100vw - 32px));
+  white-space: nowrap;
+  transform-origin: 50% 14px;
 }
 
-.isl-content:has(> [data-testid="tool-options-rail"].absolute.flex) {
+/* Only one outgoing visual copy can exist; it never changes measurement,
+   pointer targeting, keyboard navigation, or the accessible control tree. */
+.isl-outgoing { position: absolute; inset: 0; pointer-events: none; }
+.isl-outgoing *, .isl-content-outgoing { pointer-events: none !important; }
+.isl-content-outgoing { user-select: none; }
+
+/* ── Expanded: a menu opened, so its controls live inside the island instead of a separate card ── */
+.isl-content:has(> [data-testid="tool-options-rail"].absolute) {
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
 }
 
 .isl [data-testid="tool-options-rail"].absolute {
   position: static !important;
-  width: 340px !important;
-  max-width: none !important;
+  width: min(340px, var(--isl-max-content)) !important;
+  max-width: 100% !important;
   margin: 0 !important;
   padding: 8px 2px 0 !important;
   border: 0 !important;
@@ -178,9 +198,12 @@
 /* The button above already names the tool */
 .isl [data-testid="tool-options-rail"].absolute > span:first-child { display: none; }
 
-/* Brush size menu: unwrap its anchor so the menu becomes a second row of the bar */
+/* The anchor is ALWAYS unwrapped in the island; its controls remain one flex row.
+   Opening a menu no longer reparents individual buttons into the outer rail. */
 .isl [data-testid="tool-options-rail"]:not(.absolute) { height: auto !important; min-height: 28px; }
-.isl div:has(> [aria-label="Brush size controls"]) { display: contents; }
+.isl [data-island-brush-anchor] { display: contents; }
+.isl [data-testid="tool-options-rail"] { max-width: 100%; }
+.isl [data-island-brush-row] { min-height: 26px; flex-wrap: wrap; }
 
 .isl [aria-label="Brush size controls"] {
   position: static !important;
@@ -194,11 +217,35 @@
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+  white-space: normal;
 }
 
-.isl [data-testid="tool-options-rail"].absolute.flex,
-.isl [aria-label="Brush size controls"] {
-  animation: isl-reveal 460ms cubic-bezier(.34, 1.56, .64, 1) 60ms both;
+.isl [data-island-panel] {
+  opacity: 1;
+  filter: none;
+  transform: scale(1);
+  transform-origin: 50% 0;
+  /* Do not transition display: a reused, now-hidden tool panel would remain
+     measurable and make a compact tool switch briefly expand the shell. */
+  transition: opacity 500ms cubic-bezier(.22, .9, .3, 1) 90ms,
+    filter 500ms cubic-bezier(.22, .9, .3, 1) 90ms,
+    transform 500ms cubic-bezier(.22, .9, .3, 1) 90ms;
+}
+
+.isl [data-island-panel][hidden],
+.isl [data-island-panel].hidden {
+  opacity: 0;
+  filter: blur(10px);
+  transform: scale(0.88);
+  pointer-events: none;
+}
+
+@starting-style {
+  .isl [data-island-panel]:not([hidden]):not(.hidden) {
+    opacity: 0;
+    filter: blur(12px);
+    transform: scale(0.82);
+  }
 }
 
 .isl.is-expanded [data-testid="tool-options-button"] [aria-hidden="true"] {
@@ -208,6 +255,7 @@
 
 /* Inside the island the tool bar sheds its own box */
 .isl [data-testid="tool-options-rail"]:not(.absolute) {
+  justify-content: center;
   background: transparent !important;
   border-color: transparent !important;
   padding-left: 4px !important;
@@ -237,9 +285,39 @@
   height: 6px;
   border-radius: 999px;
   background: var(--accent-sage, #8fd18f);
-  box-shadow: 0 0 8px var(--accent-sage, #8fd18f);
+  box-shadow: 0 0 5px var(--accent-sage, #8fd18f);
   animation: isl-breathe 2.4s ease-in-out infinite;
 }
+
+/* A bridge includes the gap in the hover target without intercepting the canvas below. */
+.isl-satellite-bridge { position: absolute; left: 100%; top: 0; width: 50px; height: 38px; pointer-events: none; }
+.isl:has(.isl-quick-tool:not([inert])) .isl-satellite-bridge { pointer-events: auto; }
+.isl-quick-tool {
+  position: absolute; left: 100%; top: 0; z-index: 4;
+  display: flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 50%; background: transparent; color: var(--text-heading);
+  cursor: pointer; line-height: 1; padding: 0;
+}
+.isl-quick-face { display: flex; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; gap: 1px; pointer-events: none; }
+.isl-quick-face > span { font-size: 8px; font-weight: 750; }
+/* Override the scene skin's global press-down transform on this fixed hit target.
+   The visual face and fluid body move independently; clicking never teleports the circle. */
+body .isl .isl-quick-tool,
+body .isl .isl-quick-tool:hover,
+body .isl .isl-quick-tool:active:not(:disabled) {
+  transform: translateX(12px) !important; translate: none !important; scale: none !important;
+  border: 0 !important; border-radius: 50% !important; background: transparent !important;
+  box-shadow: none !important; transition: none !important;
+}
+.isl-glass, .isl-drop-glass { position: absolute; z-index: 1; pointer-events: none; }
+.isl-glass { inset: 0; border-radius: var(--isl-r); }
+.isl-drop-glass { left: 100%; top: 0; border-radius: 50%; }
+.isl-glass, .isl-drop-glass {
+  background: linear-gradient(160deg, #ffffff18, #ffffff03 42%, transparent 62%);
+  box-shadow: inset 0 1px 0 #ffffff2b, inset 0 -1px 0 #00000012;
+}
+.isl-quick-tool[aria-pressed="true"] { color: var(--accent-gold); }
+.isl-quick-tool:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 3px; }
 
 /* ── Bubble face ── */
 .isl-bubble {
@@ -256,26 +334,18 @@
   font-weight: 800;
   line-height: 1;
   color: var(--isl-tone);
-  text-shadow: 0 0 10px color-mix(in srgb, var(--isl-tone) 70%, transparent);
+  text-shadow: 0 0 6px color-mix(in srgb, var(--isl-tone) 45%, transparent);
 }
 
-@keyframes isl-aurora {
-  0% { background-position: 0% 50%, 30% 50%, 70% 50%, 100% 50%; }
-  50% { background-position: 45% 30%, 0% 70%, 100% 40%, 55% 60%; }
-  100% { background-position: 100% 60%, 70% 40%, 20% 55%, 0% 45%; }
+@keyframes isl-drift {
+  from { transform: translateX(-12%); }
+  to { transform: translateX(12%); }
 }
 
-@keyframes isl-flow { to { background-position: 300% 0; } }
-
-@keyframes isl-reveal {
-  from { opacity: 0; filter: blur(6px); transform: translateY(-6px) scale(0.96); }
-  to { opacity: 1; filter: blur(0); transform: none; }
-}
-
-@keyframes isl-wave {
-  0% { opacity: 0; background-position: 120% 0; }
-  25% { opacity: 0.9; }
-  100% { opacity: 0; background-position: -60% 0; }
+@keyframes isl-wash {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-6%, -4%) scale(1.06); }
+  100% { transform: translate(5%, 2%) scale(0.98); }
 }
 
 @keyframes isl-breathe {
@@ -284,5 +354,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .isl-aurora, .isl-aurora::after, .isl-rim, .isl-idle-dot, .isl [aria-label="Brush size controls"], .isl [data-testid="tool-options-rail"] { animation: none !important; }
+  .isl-aurora > span, .isl-wash > span, .isl-idle-dot, .isl [aria-label="Brush size controls"], .isl [data-testid="tool-options-rail"] { animation: none !important; }
+  .isl, .isl *, .isl *::before, .isl *::after { transition: none !important; }
+  .isl [data-island-panel] { filter: none; transform: none; }
 }
+
+.isl-goo:not(.is-liquid) .isl-bubble-blob { box-shadow: 0 0 0 2px var(--isl-edge), 0 4px 0 2px var(--moon-ink, var(--ink)); }

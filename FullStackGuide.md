@@ -3,6 +3,8 @@
 Maintenance update — 11 October 2026: see the [current status](docs/current-status.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
 
 > **Generic reference, not the PixiBun operating contract.** Its MUST/SHOULD gates and August 2026 assumptions are illustrative guidance and do not override [AGENTS.md](AGENTS.md), project instructions or current source-backed [documentation](docs/README.md). No new security/performance certification is implied.
+
+For the implemented scene-theme experiments and their animation ownership, use the [Studio Labs motion update](docs/releases/2026-10-15-studio-labs-motion.md) and [Studio Labs removal guide](src/experimental/README.md). This generic protocol does not define their spring values or their release verdict.
 ### The Hardened Engineering, Security, and Design Protocol for Full-Stack Web Apps
 
 *A comprehensive operational protocol and reference manual for human engineers and autonomous AI coding agents. Synthesized from modern web platform standards, design-system research, security incident post-mortems, and anti-slop engineering principles. Current as of August 2026.*
