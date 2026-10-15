@@ -110,11 +110,11 @@
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  opacity: 0.28;
+  opacity: calc(0.28 * var(--isl-rim-fade, 1));
   transition: opacity 400ms ease;
 }
 
-.isl.is-active .isl-rim { opacity: 0.45; }
+.isl.is-active .isl-rim { opacity: calc(0.45 * var(--isl-rim-fade, 1)); }
 
 /* ── Expanded wash: the theme's colors pooling inside the island, like a charging glow ── */
 .isl-wash {
@@ -273,21 +273,13 @@
 .isl-idle {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 0 10px;
+  height: 28px;
+  padding: 0 8px;
   font-size: 11px;
   font-weight: 700;
   color: var(--text-heading);
 }
 
-.isl-idle-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: var(--accent-sage, #8fd18f);
-  box-shadow: 0 0 5px var(--accent-sage, #8fd18f);
-  animation: isl-breathe 2.4s ease-in-out infinite;
-}
 
 /* A bridge includes the gap in the hover target without intercepting the canvas below. */
 .isl-satellite-bridge { position: absolute; left: 100%; top: 0; width: 50px; height: 38px; pointer-events: none; }
@@ -298,8 +290,10 @@
   border: 0; border-radius: 50%; background: transparent; color: var(--text-heading);
   cursor: pointer; line-height: 1; padding: 0;
 }
-.isl-quick-face { display: flex; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; gap: 1px; pointer-events: none; }
-.isl-quick-face > span { font-size: 8px; font-weight: 750; }
+.isl-quick-face { display: flex; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; gap: 2px; pointer-events: none; }
+/* Old and new values share one cell while they flip past each other. */
+.isl-quick-badge { display: grid; height: 9px; overflow: visible; font-size: 8.5px; font-weight: 750; line-height: 9px; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+.isl-quick-badge > span { grid-area: 1 / 1; justify-self: center; white-space: nowrap; }
 /* Override the scene skin's global press-down transform on this fixed hit target.
    The visual face and fluid body move independently; clicking never teleports the circle. */
 body .isl .isl-quick-tool,
@@ -317,6 +311,17 @@ body .isl .isl-quick-tool:active:not(:disabled) {
   box-shadow: inset 0 1px 0 #ffffff2b, inset 0 -1px 0 #00000012;
 }
 .isl-quick-tool[aria-pressed="true"] { color: var(--accent-gold); }
+/* Pointing at the droplet catches more light; an active toggle tints its glass. */
+.isl-drop-glass { transition: background-color 260ms ease, box-shadow 260ms ease; }
+.isl:has(.isl-quick-tool:hover:not([inert])) .isl-drop-glass {
+  background-color: #ffffff12;
+  box-shadow: inset 0 1px 0 #ffffff45, inset 0 -1px 0 #00000012, 0 0 0 1px color-mix(in srgb, var(--accent-gold) 35%, transparent);
+}
+/* A toggle that is on tints the droplet and wears an accent rim, clear of its label. */
+.isl.is-quick-on .isl-drop-glass {
+  background-color: color-mix(in srgb, var(--accent-gold) 14%, transparent);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent-gold) 70%, transparent), inset 0 1px 0 #ffffff2b;
+}
 .isl-quick-tool:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 3px; }
 
 /* ── Bubble face ── */
@@ -348,15 +353,15 @@ body .isl .isl-quick-tool:active:not(:disabled) {
   100% { transform: translate(5%, 2%) scale(0.98); }
 }
 
-@keyframes isl-breathe {
-  0%, 100% { opacity: 0.55; transform: scale(0.85); }
-  50% { opacity: 1; transform: scale(1.1); }
-}
 
 @media (prefers-reduced-motion: reduce) {
-  .isl-aurora > span, .isl-wash > span, .isl-idle-dot, .isl [aria-label="Brush size controls"], .isl [data-testid="tool-options-rail"] { animation: none !important; }
+  .isl-aurora > span, .isl-wash > span, .isl [aria-label="Brush size controls"], .isl [data-testid="tool-options-rail"] { animation: none !important; }
   .isl, .isl *, .isl *::before, .isl *::after { transition: none !important; }
   .isl [data-island-panel] { filter: none; transform: none; }
 }
 
 .isl-goo:not(.is-liquid) .isl-bubble-blob { box-shadow: 0 0 0 2px var(--isl-edge), 0 4px 0 2px var(--moon-ink, var(--ink)); }
+.isl.is-quick-on:has(.isl-quick-tool:hover:not([inert])) .isl-drop-glass {
+  background-color: color-mix(in srgb, var(--accent-gold) 20%, transparent);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent-gold) 70%, transparent), inset 0 1px 0 #ffffff45, 0 0 0 1px color-mix(in srgb, var(--accent-gold) 35%, transparent);
+}

@@ -8,7 +8,7 @@ For a facilitated observation session, use the [artist workflow study kit](artis
 
 ![Plum Night Studio with the same original three-frame built-in artwork.](../assets/screenshots/2026-10-15-current-ui/studio-cozy-classic-dark.png)
 
-On scene themes, [Studio Labs](studio-workspace.md#studio-labs) offers a morphing tool island, liquid tabs, a paint-pot palette and quick effects. Switch them off individually or choose **Classic studio** from Studio → Labs; Graphite and Plum always stay classic.
+On scene themes, [Studio Labs](studio-workspace.md#studio-labs) offers a morphing tool island, liquid tabs, liquid sliders and tool rail, a paint-pot palette and quick effects. Switch them off individually or choose **Classic studio** from Studio → Labs; Graphite and Plum always stay classic.
 
 ## Your first small drawing
 

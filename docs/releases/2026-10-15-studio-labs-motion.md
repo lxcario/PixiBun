@@ -12,6 +12,8 @@ This integration combines the local Labs history through `d2c588f6` with remote 
 
 ## Hover quick actions
 
+> Later the same day, the [island refinement and Liquid controls record](2026-10-15-labs-liquid-controls.md) replaced the resting squeeze and changed the Pen/Eraser/Line shortcut to a 1 → 2 → 3 → 4 px cycle. The behavior and verdicts below describe this record’s own source scope.
+
 The pill and right-hand droplet share one separation spring (opening stiffness/damping 420/26, closing 520/34, mass .9). The body compresses to 90% width during the pull and rests at 94% while the droplet is out; glyphs keep their original scale and position. A filtered neck joins the shapes during separation/merge, with a separate glass sheen. The circle has a fixed hit target: scene-wide button press styles no longer replace its positioning transform. Hover, keyboard focus, Escape, reversal and live reduced-motion changes are supported.
 
 | Tools | Direct shortcut |
