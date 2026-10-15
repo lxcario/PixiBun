@@ -14,9 +14,9 @@ Homepage downloads use a separate Bun sample: actual GIF/APNG animation files or
 
 ## Cart
 
-Choose **Cart** to make a trading-card PNG with your whole drawing tucked inside: frames, layers, palettes, their color cycling and your light. Give it a title, and if you like your name, a note for the next person and a license; the card updates as you type. Choose **Cream** or **Night** card stock, then **Save cart**. Nothing about you goes in unless you type it.
+Choose **Cart** to make a trading-card PNG with your whole drawing tucked inside: frames, layers, palettes, their color cycling and your light. Give it a title, and if you like your name, a note for the next person and a license; the card updates as you type. Choose **Cream** or **Night** card stock, then **Save cart**, or **Copy link** for a link that carries the drawing itself (nothing is uploaded). Nothing about you goes in unless you type it.
 
-Anyone can view the card as an ordinary picture. Dropping, pasting or opening it in PixiBun shows who made it and what it remixes, then **Open on my desk** opens the drawing (your current drawing is saved to Projects first). A cart made from an opened cart credits it. Some sites shrink or convert images and drop the drawing inside; the card still shows. [Cart format](../contracts/carts.md).
+Anyone can view the card as an ordinary picture. Dropping, pasting or opening it in PixiBun shows who made it and what it remixes, then **Open on my desk** opens the drawing (your current drawing is saved to Projects first). A cart made from an opened cart credits it. A cart link opens the cart player, which works on phones: drag across the drawing to light it with a lamp, keep it on your desk for later, or open it in Studio on a wider screen. Some sites shrink or convert images and drop the drawing inside; the card still shows. [Cart format](../contracts/carts.md).
 
 ## PNG
 

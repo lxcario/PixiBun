@@ -37,6 +37,8 @@ import { useStudioClipboard } from '@/hooks/studio/useStudioClipboard';
 import { useStudioFileSystem } from '@/hooks/studio/useStudioFileSystem';
 import { useStudioKeyboard } from '@/hooks/studio/useStudioKeyboard';
 import { applyOpenedCart } from '@/lib/cart/applyCart';
+import { PENDING_CART_QUERY, takePendingCart } from '@/lib/cart/pendingCart';
+import { reportImportError } from '@/lib/project/importFile';
 
 // Heavy dialogs are code-split client-side (Phase 33): none of these bundles
 // are part of the /studio first-load JS. They render only while open, so the
@@ -338,6 +340,21 @@ export const StudioLayout: React.FC = () => {
   }, []);
 
   useStudioClipboard(handleOpenImport);
+
+  // A cart handed over from the player (/open → Open in Studio) is offered once Studio is ready.
+  const restorationActive = lifecycleState.phase === 'active';
+  useEffect(() => {
+    if (!restorationActive) return;
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has(PENDING_CART_QUERY)) return;
+    url.searchParams.delete(PENDING_CART_QUERY);
+    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+    void takePendingCart().then(cart => {
+      if (!cart) return;
+      const { project, ...details } = cart;
+      handleOpenImport({ type: 'project', filename: `${cart.title}.cart.png`, projectJson: project, cart: details });
+    }, error => reportImportError(error));
+  }, [handleOpenImport, restorationActive]);
 
   // Confirm Project Import - validate before touching live state so a
   // malformed file explains itself instead of corrupting the session.

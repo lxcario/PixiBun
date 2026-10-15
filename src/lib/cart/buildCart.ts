@@ -61,11 +61,12 @@ function canvasPng(canvas: HTMLCanvasElement): Promise<Uint8Array> {
   }, 'image/png'));
 }
 
-export async function buildCart(options: CartOptions, signal?: AbortSignal): Promise<BuiltCart> {
+/** The cart record for the drawing on the desk, without drawing the card. */
+export async function buildCartRecord(options: CartOptions, signal?: AbortSignal): Promise<CartRecord> {
   const state = useStudioStore.getState();
   const project = await buildProjectFileAsync(signal);
   const id = await cartId(project);
-  const record: CartRecord = {
+  return {
     format: CART_FORMAT,
     version: CART_VERSION,
     title: options.title.trim() || project.name || 'Untitled cart',
@@ -78,6 +79,11 @@ export async function buildCart(options: CartOptions, signal?: AbortSignal): Pro
     lineage: { id, parents: cartParentsFor(state.currentProjectId) },
     project,
   };
+}
+
+export async function buildCart(options: CartOptions, signal?: AbortSignal): Promise<BuiltCart> {
+  const record = await buildCartRecord(options, signal);
+  const id = record.lineage.id;
   await fontsReady();
   const card = renderCartCard({
     art: currentArt(), title: record.title, id, maker: record.maker, note: record.note, license: record.license,

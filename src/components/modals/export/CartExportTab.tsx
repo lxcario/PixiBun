@@ -3,7 +3,8 @@
 import React, { useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { CART_LICENSE_LABELS, CART_LICENSES, cartId, type CartLicense } from '@/lib/cart/cartFormat';
-import { buildCart, cartFileName, previewCard, type CartOptions } from '@/lib/cart/buildCart';
+import { buildCart, buildCartRecord, cartFileName, previewCard, type CartOptions } from '@/lib/cart/buildCart';
+import { CART_LINK_COMFORTABLE, cartLink } from '@/lib/cart/cartLink';
 import type { CardStock } from '@/lib/cart/cartCard';
 import { buildProjectFile } from '@/lib/project/serialize';
 import { studioEvents } from '@/lib/events/studioEvents';
@@ -38,6 +39,7 @@ export const CartExportTab = React.forwardRef<CartExportHandle, CartExportTabPro
   const [license, setLicense] = useState<CartLicense>('all-rights-reserved');
   const [stock, setStock] = useState<CardStock>('cream');
   const [error, setError] = useState<string | null>(null);
+  const [linkNote, setLinkNote] = useState<string | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const ids = useId();
 
@@ -152,6 +154,29 @@ export const CartExportTab = React.forwardRef<CartExportHandle, CartExportTabPro
             </div>
           </fieldset>
         </div>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          data-testid="cart-copy-link"
+          disabled={disabled}
+          onClick={() => void (async () => {
+            setError(null); setLinkNote(null); onBusy(true);
+            try {
+              const link = await cartLink(await buildCartRecord(options), window.location.origin);
+              await navigator.clipboard.writeText(link);
+              setLinkNote(link.length > CART_LINK_COMFORTABLE
+                ? `Link copied (${link.length.toLocaleString()} characters). Some apps cut long links; the card is the sturdier way to share this one.`
+                : 'Link copied. The drawing travels inside it; nothing is uploaded.');
+            } catch (cause) {
+              setError(cause instanceof Error ? cause.message : 'The link could not be made.');
+            } finally { onBusy(false); }
+          })()}
+          className="pixel-tactile-btn px-3 py-1.5 rounded-[6px] text-xs"
+        >
+          Copy link
+        </button>
+        {linkNote && <span role="status" className="text-[11px] text-[var(--text-body)]">{linkNote}</span>}
       </div>
       <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
         Nothing about you goes in unless you type it here. Some sites shrink or convert images and drop the drawing inside; the card still shows.

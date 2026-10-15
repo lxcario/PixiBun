@@ -24,6 +24,12 @@ async function saveCart(page: Page, fields: { title?: string; maker?: string; no
   return { name: download.suggestedFilename(), bytes: readFileSync(path) };
 }
 
+/** The starter drawing paints after the workspace restores; wait for its pixels. */
+async function starterReady(page: Page) {
+  await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
+  await expect.poll(async () => (await pixels(page)).some((value, index) => index % 4 === 3 && value > 0)).toBe(true);
+}
+
 async function openCart(page: Page, bytes: Buffer, name: string) {
   await page.locator('input[type=file]').first().setInputFiles({ name, mimeType: 'image/png', buffer: bytes });
   const dialog = page.getByRole('dialog', { name: 'A cart arrived' });
@@ -34,7 +40,7 @@ async function openCart(page: Page, bytes: Buffer, name: string) {
 test('a cart carries the whole drawing out and back in, and remixes credit it', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto('/studio?template=hearth-ghost');
-  await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
+  await starterReady(page);
   const original = await pixels(page);
 
   const cart = await saveCart(page, { title: 'Hearth Ghost', maker: 'Rowan', note: 'keep it warm', license: 'CC BY 4.0' });
@@ -68,7 +74,7 @@ test('a cart carries the whole drawing out and back in, and remixes credit it', 
 test('an ordinary PNG still imports as a picture, and a damaged cart explains itself', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto('/studio?template=hearth-ghost');
-  await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
+  await starterReady(page);
   const cart = await saveCart(page);
   const at = cart.bytes.lastIndexOf(Buffer.from('pxBn'));
   const damaged = Buffer.from(cart.bytes); damaged[at + 10] ^= 0xff;
