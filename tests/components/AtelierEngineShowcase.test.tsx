@@ -1,429 +1,140 @@
 // @vitest-environment happy-dom
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup, act } from '@testing-library/react';
-import { AtelierEngineShowcase } from '@/components/landing/AtelierEngineShowcase';
-import { makeCanvas, type MockCtx } from '../helpers/mockCanvas';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 
-// Cache forwardRef wrapper components so React doesn't destroy/remount elements on every render
-const motionComponentCache: Record<string, React.ComponentType<Record<string, unknown>>> = {};
-
-vi.mock('motion/react', () => {
-  return {
-    useReducedMotion: () => true,
-    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-    motion: new Proxy(
-      {},
-      {
-        get: (_target, prop: string) => {
-          if (!motionComponentCache[prop]) {
-            motionComponentCache[prop] = React.forwardRef((props: Record<string, unknown>, ref: React.Ref<unknown>) => {
-              const {
-                initial: _initial,
-                animate: _animate,
-                exit: _exit,
-                transition: _transition,
-                variants: _variants,
-                whileHover: _whileHover,
-                whileTap: _whileTap,
-                onAnimationComplete: _onAnimationComplete,
-                viewport: _viewport,
-                whileInView: _whileInView,
-                layoutId: _layoutId,
-                ...rest
-              } = props;
-              return React.createElement(prop, { ...rest, ref });
-            });
-          }
-          return motionComponentCache[prop];
-        },
-      }
-    ),
-  };
-});
-
-vi.mock('next/dynamic', async () => {
-  const Photometric = await import('@/components/landing/showcase/PhotometricShowcase');
-  const RotSprite = await import('@/components/landing/showcase/RotSpriteShowcase');
-  const Pixelize = await import('@/components/landing/showcase/PixelizeShowcase');
-  const EngineExport = await import('@/components/landing/showcase/EngineExportShowcase');
-
-  const componentMap: Record<string, React.ComponentType<Record<string, unknown>>> = {
-    PhotometricShowcase: Photometric.PhotometricShowcase as React.ComponentType<Record<string, unknown>>,
-    RotSpriteShowcase: RotSprite.RotSpriteShowcase as React.ComponentType<Record<string, unknown>>,
-    PixelizeShowcase: Pixelize.PixelizeShowcase as React.ComponentType<Record<string, unknown>>,
-    EngineExportShowcase: EngineExport.EngineExportShowcase as React.ComponentType<Record<string, unknown>>,
-  };
-
-  return {
-    default: (loader: () => Promise<unknown>) => {
-      const loaderStr = loader.toString();
-      for (const [name, Comp] of Object.entries(componentMap)) {
-        if (loaderStr.includes(name)) {
-          return (props: Record<string, unknown>) => <Comp {...props} />;
-        }
-      }
-      return () => null;
-    },
-  };
-});
-
-describe('AtelierEngineShowcase Component', () => {
-  let originalGetContext: typeof HTMLCanvasElement.prototype.getContext;
-
-  beforeEach(() => {
-    // Prevent recursive animation loops from blocking React act() in happy-dom
-    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 1);
-    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
-
-    // Cache contexts per canvas so sequential getContext('2d') calls retain drawing operations
-    const contextMap = new WeakMap<HTMLCanvasElement, MockCtx>();
-    originalGetContext = HTMLCanvasElement.prototype.getContext;
-    HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, contextId: string) {
-      if (contextId === '2d') {
-        let ctx = contextMap.get(this);
-        if (!ctx) {
-          const mc = makeCanvas(this.width || 32, this.height || 32);
-          ctx = mc.getContext('2d') as MockCtx;
-          contextMap.set(this, ctx);
-        }
-        return ctx;
-      }
-      return null;
-    } as unknown as typeof HTMLCanvasElement.prototype.getContext;
-  });
-
-  afterEach(() => {
-    HTMLCanvasElement.prototype.getContext = originalGetContext;
-    cleanup();
-    vi.restoreAllMocks();
-  });
-
-  it('renders the section header and all 4 curated feature tabs', () => {
-    render(<AtelierEngineShowcase />);
-
-    // Section title & philosophy
-    expect(
-      screen.getByRole('heading', {
-        name: /Try the real tools/i,
-      })
-    ).toBeDefined();
-
-    // Tab list and 4 tabs
-    const tabList = screen.getByRole('tablist', { name: /What the Desk can do/i });
-    expect(tabList).toBeDefined();
-
-    const tabs = screen.getAllByRole('tab');
-    expect(tabs).toHaveLength(4);
-
-    const expectedTitles = [
-      'Light & shadow',
-      'Smooth rotation',
-      'Photo to pixels',
-      'Into your game',
-    ];
-
-    expectedTitles.forEach((title, idx) => {
-      expect(tabs[idx].textContent).toContain(title);
-      expect(tabs[idx].textContent).toContain(`0${idx + 1}`);
-    });
-  });
-
-  it('defaults to Tab 01 (2.5D Lighting & Shadows) and allows toggling shadow mode, normal map and materials', async () => {
-    render(<AtelierEngineShowcase />);
-
-    const tab01 = screen.getByRole('tab', { name: /Light & shadow/i });
-    expect(tab01.getAttribute('aria-selected')).toBe('true');
-
-    // Tabpanel for photometric
-    const panel = screen.getByRole('tabpanel');
-    expect(panel.id).toBe('panel-photometric');
-
-    // Heading inside PhotometricShowcase
-    expect(screen.getByRole('heading', { name: /Move the lamp, watch it change/i })).toBeDefined();
-    expect(screen.getByRole('button', { name: /Orbit/i })).toBeDefined();
-
-    // Shadow choices (long, soft, none)
-    const dropAoBtn = screen.getByRole('button', { name: /Soft shadow/i });
-    expect(dropAoBtn).toBeDefined();
-    await act(async () => {
-      fireEvent.click(dropAoBtn);
-    });
-
-    const castRayBtn = screen.getByRole('button', { name: /Long shadow/i });
-    expect(castRayBtn).toBeDefined();
-    await act(async () => {
-      fireEvent.click(castRayBtn);
-    });
-
-    // Material presets
-    const goldBtn = screen.getByRole('button', { name: /^gold$/i });
-    expect(goldBtn).toBeDefined();
-    await act(async () => {
-      fireEvent.click(goldBtn);
-    });
-
-    // Toggle normal map button
-    const normalMapBtn = screen.getByRole('button', { name: /Shape map/i });
-    expect(normalMapBtn).toBeDefined();
-    await act(async () => {
-      fireEvent.click(normalMapBtn);
-    });
-  });
-
-  it('preserves orbital speed, manual direction and frame cleanup through pause and resume', async () => {
-    const frames = new Map<number, FrameRequestCallback>();
-    let frameId = 0;
-    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => {
-      frames.set(++frameId, callback);
-      return frameId;
-    });
-    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(id => { frames.delete(id); });
-    const clock = vi.spyOn(performance, 'now').mockReturnValue(1000);
-    const view = render(<AtelierEngineShowcase />);
-    const orbit = screen.getByTitle('Toggle automatic orbital rotation');
-    const light = screen.getByRole('slider', { name: /Lamp direction/ });
-    expect(frames.size).toBe(0); // Reduced-motion preference is respected.
-
-    await act(async () => { fireEvent.click(orbit); });
-    async function advanceFrame(now: number) {
-      clock.mockReturnValue(now);
-      expect(frames.size).toBe(1);
-      const [id, callback] = [...frames][0];
-      frames.delete(id);
-      await act(async () => { callback(now); });
+// The stage engine draws with real canvas engines; here it is a recorder, so
+// these tests cover how the section drives it. benchArt is tested for real below.
+const calls: Array<[string, unknown]> = [];
+vi.mock('@/components/landing/bench/benchStage', () => {
+  class BenchStage {
+    private pixels: Uint8ClampedArray = new Uint8ClampedArray(16 * 16 * 4);
+    constructor(_stage: HTMLCanvasElement, private options: { onStatus?: (text: string) => void }) {
+      options.onStatus?.('16×16');
     }
-    await advanceFrame(2000);
-    expect(light.getAttribute('aria-valuenow')).toBe('180'); // 135 + 45 degrees/second.
+    setArt(px: Uint8ClampedArray) { this.pixels = px; calls.push(['art', px]); }
+    getPixels() { return this.pixels; }
+    setTheme() {}
+    setTool(tool: string) { calls.push(['tool', tool]); }
+    setPaint(color: string | null) { calls.push(['paint', color]); }
+    setMirror(mirror: boolean) { calls.push(['mirror', mirror]); }
+    setMaterial(material: string) { calls.push(['material', material]); }
+    setReduceMotion() {}
+    setThumbs() {}
+    turnTo(angle: number) { calls.push(['turn', angle]); }
+    pointerDown() {}
+    pointerMove() {}
+    pointerUp() {}
+    pointerLeave() {}
+    key() { return false; }
+    hopCanvases() { return []; }
+    dispose() {}
+  }
+  return { BenchStage, STAGE_W: 160, STAGE_H: 120, TURN_LEFT_X: 6, TURN_RIGHT_X: 82 };
+});
 
-    await act(async () => { fireEvent.click(orbit); });
-    expect(frames.size).toBe(0);
-    await act(async () => { fireEvent.keyDown(light, { key: 'ArrowRight' }); });
-    expect(light.getAttribute('aria-valuenow')).toBe('195');
-    await act(async () => { fireEvent.click(orbit); });
-    await advanceFrame(3000);
-    expect(light.getAttribute('aria-valuenow')).toBe('240');
-    view.unmount();
-    expect(frames.size).toBe(0);
+vi.mock('motion/react', () => ({ useReducedMotion: () => true }));
+
+import { AtelierEngineShowcase } from '@/components/landing/AtelierEngineShowcase';
+import { HOP_FRAMES, HOP_LOOP_MS, hopFrameAt, padForTurn, paintLine, samePixels, spriteSwatches, templatePixels, TURN } from '@/components/landing/bench/benchArt';
+import { STARTER_TEMPLATES, TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
+
+const last = (kind: string) => [...calls].reverse().find(([k]) => k === kind)?.[1];
+
+describe('AtelierEngineShowcase (the bench)', () => {
+  beforeEach(() => {
+    calls.length = 0;
+    HTMLCanvasElement.prototype.getContext = (() => null) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+  });
+  afterEach(() => cleanup());
+
+  it('keeps the Engine anchor and offers four tools, Draw first', () => {
+    const { container } = render(<AtelierEngineShowcase />);
+    expect(container.querySelector('#engine-showcase')).not.toBeNull();
+    const tools = screen.getAllByRole('radio').filter((el) => el.closest('[aria-label="Tool"]'));
+    expect(tools.map((t) => t.textContent?.match(/Draw|Light|Turn|Hop/)?.[0])).toEqual(['Draw', 'Light', 'Turn', 'Hop']);
+    expect(tools[0].getAttribute('aria-checked')).toBe('true');
+    expect(last('tool')).toBe('draw');
   });
 
-  it('switches between tabs via direct tab clicks', async () => {
+  it('switches tools from the rack and from number keys on the stage', () => {
     render(<AtelierEngineShowcase />);
+    fireEvent.click(screen.getByRole('radio', { name: /Light/ }));
+    expect(last('tool')).toBe('light');
+    expect(screen.getByRole('button', { name: 'Gold' })).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'Gold' }));
+    expect(last('material')).toBe('gold');
 
-    // Click Tab 02: RotSprite Precision
-    const rotTab = screen.getByRole('tab', { name: /Smooth rotation/i });
-    await act(async () => {
-      fireEvent.click(rotTab);
-    });
-
-    expect(rotTab.getAttribute('aria-selected')).toBe('true');
-    expect(screen.getAllByText(/ROTSPRITE 8X/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/STANDARD NEAREST/i)).toBeDefined();
-
-    // Click snap angle button (e.g. 45°)
-    const snap45 = screen.getByRole('button', { name: '45°' });
-    await act(async () => {
-      fireEvent.click(snap45);
-    });
-    expect(screen.getByText(/Angle: 45°/i)).toBeDefined();
-
-    // Click Tab 04: Game Engine Exports
-    const exportTab = screen.getByRole('tab', { name: /Into your game/i });
-    await act(async () => {
-      fireEvent.click(exportTab);
-    });
-
-    expect(exportTab.getAttribute('aria-selected')).toBe('true');
-    expect(screen.getByRole('button', { name: /Godot 4/i })).toBeDefined();
-    expect(screen.getByRole('button', { name: /Unity/i })).toBeDefined();
-    expect(screen.getByRole('button', { name: /Phaser 3/i })).toBeDefined();
-
-    // Switch export sub-tab to Unity / JSON
-    const unityBtn = screen.getByRole('button', { name: /Unity/i });
-    await act(async () => {
-      fireEvent.click(unityBtn);
-    });
-    expect(screen.getByText(/bun_0/i)).toBeDefined();
-
-    // Switch export sub-tab to Phaser 3
-    const phaserBtn = screen.getByRole('button', { name: /Phaser 3/i });
-    await act(async () => {
-      fireEvent.click(phaserBtn);
-    });
-    expect(screen.getByText(/bun_hop\.png/i)).toBeDefined();
-    expect(screen.getByText(/bun_0/i)).toBeDefined();
+    fireEvent.keyDown(screen.getByRole('img', { name: /on the bench/ }), { key: '3' });
+    expect(last('tool')).toBe('turn');
+    fireEvent.click(screen.getByRole('button', { name: '45°' }));
+    expect(last('turn')).toBe(45);
+    expect(screen.getByText('plain turn')).toBeDefined();
   });
 
-  it('navigates sequentially using the Next and Prev buttons across the 4 curated tabs', async () => {
+  it('paints with the sprite’s own colours, an eraser and a mirror', () => {
     render(<AtelierEngineShowcase />);
-
-    const nextBtn = screen.getByRole('button', { name: /Next feature/i });
-    const prevBtn = screen.getByRole('button', { name: /Previous feature/i });
-
-    // Initial is 01 Photometric & Shadows
-    expect(screen.getByRole('tab', { name: /Light & shadow/i }).getAttribute('aria-selected')).toBe('true');
-
-    // Click Next -> 02 RotSprite Precision
-    await act(async () => {
-      fireEvent.click(nextBtn);
-    });
-    expect(screen.getByRole('tab', { name: /Smooth rotation/i }).getAttribute('aria-selected')).toBe('true');
-
-    // Click Next -> 03 Image Synthesis
-    await act(async () => {
-      fireEvent.click(nextBtn);
-    });
-    expect(screen.getByRole('tab', { name: /Photo to pixels/i }).getAttribute('aria-selected')).toBe('true');
-
-    // Click Next -> 04 Game Engine Exports
-    await act(async () => {
-      fireEvent.click(nextBtn);
-    });
-    expect(screen.getByRole('tab', { name: /Into your game/i }).getAttribute('aria-selected')).toBe('true');
-
-    // Click Next again -> wraps to 01 Lighting & Shadows
-    await act(async () => {
-      fireEvent.click(nextBtn);
-    });
-    expect(screen.getByRole('tab', { name: /Light & shadow/i }).getAttribute('aria-selected')).toBe('true');
-
-    // Click Prev -> wraps backwards to 04 Game Engine Exports
-    await act(async () => {
-      fireEvent.click(prevBtn);
-    });
-    expect(screen.getByRole('tab', { name: /Into your game/i }).getAttribute('aria-selected')).toBe('true');
+    expect(last('paint')).toBe(TEMPLATE_PALETTE.o);
+    fireEvent.click(screen.getByRole('radio', { name: 'Eraser' }));
+    expect(last('paint')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /mirror/ }));
+    expect(last('mirror')).toBe(false);
   });
 
-  it('renders Image Synthesis showcase and allows switching scenes and quantize levels', async () => {
+  it('swaps friends and points the Studio link at the same starter', () => {
     render(<AtelierEngineShowcase />);
-
-    const pixelizeTab = screen.getByRole('tab', { name: /Photo to pixels/i });
-    await act(async () => {
-      fireEvent.click(pixelizeTab);
-    });
-
-    expect(screen.getByRole('button', { name: 'Keep edges' })).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Simple' })).toBeDefined();
-
-    // Scene switcher buttons exist
-    const mountainBtn = screen.getByRole('button', { name: /Mountain Sunset/i });
-    const hearthBtn = screen.getByRole('button', { name: /Lamplit Hearth/i });
-    expect(mountainBtn).toBeDefined();
-    expect(hearthBtn).toBeDefined();
-
-    // Switch to Lamplit Hearth scene
-    await act(async () => {
-      fireEvent.click(hearthBtn);
-    });
-    expect(screen.getByText(/Lamplit Desk/i)).toBeDefined();
-
-    // Quantize buttons
-    const sixteenColorsBtn = screen.getByRole('button', { name: '16 colours' });
-    await act(async () => {
-      fireEvent.click(sixteenColorsBtn);
-    });
+    fireEvent.click(screen.getByRole('radio', { name: 'Mochi' }));
+    expect(screen.getByRole('link', { name: /Open Mochi in the Studio/ }).getAttribute('href')).toBe('/studio?template=mochi');
+    expect(samePixels(last('art') as Uint8ClampedArray, templatePixels(STARTER_TEMPLATES[1].rows))).toBe(true);
   });
 
-  it('handles interactive pointer drag on the photometric light bulb gizmo', async () => {
+  it('offers the GIF only on the Hop tool', () => {
     render(<AtelierEngineShowcase />);
-
-    // Tab 01 is active by default
-    const gizmoOverlay = screen.getByTitle(/Drag the glowing bulb to change the light source direction/i);
-    expect(gizmoOverlay).toBeDefined();
-
-    // Mock getBoundingClientRect for gizmo container
-    vi.spyOn(gizmoOverlay, 'getBoundingClientRect').mockReturnValue({
-      width: 320,
-      height: 320,
-      top: 100,
-      left: 100,
-      bottom: 420,
-      right: 420,
-      x: 100,
-      y: 100,
-      toJSON: () => {},
-    });
-
-    // Simulate pointer down near the East perimeter
-    await act(async () => {
-      fireEvent.pointerDown(gizmoOverlay, {
-        clientX: 380,
-        clientY: 260,
-        pointerId: 1,
-      });
-    });
-
-    // Simulate pointer move to North-West
-    await act(async () => {
-      fireEvent.pointerMove(gizmoOverlay, {
-        clientX: 180,
-        clientY: 180,
-        pointerId: 1,
-      });
-    });
-
-    // Simulate pointer up
-    await act(async () => {
-      fireEvent.pointerUp(gizmoOverlay, { pointerId: 1 });
-    });
-  });
-
-  it('triggers sample download for Phaser 3 engine export', async () => {
-    render(<AtelierEngineShowcase />);
-
-    const exportTab = screen.getByRole('tab', { name: /Into your game/i });
-    await act(async () => {
-      fireEvent.click(exportTab);
-    });
-
-    // Switch to Phaser 3
-    const phaserBtn = screen.getByRole('button', { name: /Phaser 3/i });
-    await act(async () => {
-      fireEvent.click(phaserBtn);
-    });
-
-    // Mock URL.createObjectURL and HTMLAnchorElement.prototype.click
-    const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url');
-    const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
-
-    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(callback => callback(new Blob([new Uint8Array([137, 80, 78, 71])], { type: 'image/png' })));
-    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
-    const downloadBtn = screen.getByRole('button', { name: 'Download game kit' });
-    await act(async () => {
-      fireEvent.click(downloadBtn);
-    });
-
-    expect(createObjectURLSpy).toHaveBeenCalled();
-    expect(click).toHaveBeenCalledTimes(1);
-    expect((createObjectURLSpy.mock.calls[0][0] as Blob).type).toBe('application/zip');
-    expect(revokeObjectURLSpy).not.toHaveBeenCalled();
-    await vi.waitFor(() => expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-url'), { timeout: 1500 });
-  });
-
-  it('copies engine export code to clipboard and shows tactile copied confirmation', async () => {
-    render(<AtelierEngineShowcase />);
-
-    const exportTab = screen.getByRole('tab', { name: /Into your game/i });
-    await act(async () => {
-      fireEvent.click(exportTab);
-    });
-
-    // Mock navigator.clipboard
-    const writeTextSpy = vi.fn().mockResolvedValue(undefined);
-    Object.defineProperty(navigator, 'clipboard', {
-      value: {
-        writeText: writeTextSpy,
-      },
-      configurable: true,
-    });
-
-    const copyBtn = screen.getByRole('button', { name: /Copy metadata/i });
-    await act(async () => {
-      fireEvent.click(copyBtn);
-    });
-
-    expect(writeTextSpy).toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: 'Copied' })).toBeDefined();
+    expect(screen.queryByRole('button', { name: 'Save GIF' })).toBeNull();
+    fireEvent.click(screen.getByRole('radio', { name: /Hop/ }));
+    expect(screen.getByRole('button', { name: 'Save GIF' })).toBeDefined();
   });
 });
 
+describe('bench art', () => {
+  const bun = STARTER_TEMPLATES.find((t) => t.id === 'bun')!;
+
+  it('reads a starter into RGBA with transparent background', () => {
+    const px = templatePixels(bun.rows);
+    expect(px.length).toBe(16 * 16 * 4);
+    expect(px[3]).toBe(0);
+    const ink = (0 * 16 + 3) * 4; // row 0 col 3 is outline ink
+    expect([...px.subarray(ink, ink + 4)]).toEqual([0x3a, 0x2e, 0x4c, 255]);
+  });
+
+  it('paints mirrored, pixel-perfect lines and erases', () => {
+    const px = new Uint8ClampedArray(16 * 16 * 4);
+    expect(paintLine(px, { x: 1, y: 1 }, { x: 4, y: 1 }, [255, 0, 0, 255], true)).toBe(true);
+    for (const x of [1, 2, 3, 4, 11, 12, 13, 14]) expect(px[(16 + x) * 4 + 3]).toBe(255);
+    expect(paintLine(px, null, { x: 2, y: 1 }, null, false)).toBe(true);
+    expect(px[(16 + 2) * 4 + 3]).toBe(0);
+    expect(paintLine(px, null, { x: 2, y: 1 }, null, false)).toBe(false);
+  });
+
+  it('pads for turning without moving the sprite off-centre', () => {
+    const px = templatePixels(bun.rows);
+    const padded = padForTurn(px);
+    expect(padded.width).toBe(TURN);
+    const off = (TURN - 16) / 2;
+    expect(padded.data[((off + 0) * TURN + off + 3) * 4 + 3]).toBe(255);
+  });
+
+  it('leads the swatches with ink and always adds something new', () => {
+    const swatches = spriteSwatches(bun.rows);
+    expect(swatches[0]).toBe(TEMPLATE_PALETTE.o);
+    expect(new Set(swatches).size).toBe(swatches.length);
+    expect(swatches).toContain(TEMPLATE_PALETTE.A);
+  });
+
+  it('times the hop loop from its frame holds', () => {
+    expect(hopFrameAt(0)).toBe(0);
+    expect(hopFrameAt(HOP_FRAMES[0].ms)).toBe(1);
+    expect(hopFrameAt(HOP_LOOP_MS + 1)).toBe(0);
+    expect(hopFrameAt(-1)).toBe(HOP_FRAMES.length - 1);
+  });
+});

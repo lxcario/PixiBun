@@ -40,7 +40,7 @@ Cycle Loop samples the active frame's color animation, not moving silhouettes ac
 
 ## Homepage sample downloads
 
-[showcaseExport](../../src/components/landing/showcase/showcaseExport.ts) constructs a separate four-frame, 20×22 Bun animation with 125/125/250/125 ms holds. APNG and GIF download encoded animations; GIF quantizes centisecond boundaries. Godot, Unity and Phaser download ZIPs containing an 80×22 sheet, metadata and README instructions. Godot uses SpriteFrames resource text; Unity/Phaser use atlas JSON, with importer setup still required. Copy metadata is available for game formats. These sample files do not contain the artist's current Studio artwork or constitute qualification of every engine version. Earlier screenshots showing text-only notes are historical.
+The homepage bench ([benchStage](../../src/components/landing/bench/benchStage.ts)) downloads a transparent four-frame GIF (20×24 frames at 4×, holds 160/100/200/100 ms, quantized to centiseconds) of the visitor's edited and lit starter. It is separate from Studio project export and does not qualify any game engine. Until 15 October 2026 the homepage instead offered a fixed 20×22 Bun sample as APNG, GIF and Godot/Unity/Phaser ZIP kits; that sample code was removed.
 
 ## Resource boundaries and evidence
 

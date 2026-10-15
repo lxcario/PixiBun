@@ -10,7 +10,7 @@ Video availability is checked when you choose a video format. You can open image
 
 When **Export Scope** appears, review **All Frames** versus a named clip. Animated files use the relevant ordered poses and holds. A **PNG** or **Vector SVG** still uses the **active frame**, even when a clip-scope selector is visible; choosing a clip does not turn a still image into a multi-frame file. Timelapse uses retained history, and Project Backup includes the whole admitted project.
 
-Homepage downloads use a separate Bun sample: actual GIF/APNG animation files or image/metadata game ZIPs. Use **Studio → Export** for your own project. [Sample downloads and importer limits](welcome-and-demos.md#game-engine-exports).
+The homepage bench's **Save GIF** downloads only the starter edited on that page. Use **Studio → Export** for your own project. [The bench](welcome-and-demos.md#the-bench).
 
 ## Cart
 

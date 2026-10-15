@@ -1,15 +1,8 @@
-/* Keep the complete workbench visible below the fixed navigation on desktop. */
-@media (min-width: 1024px) {
-  .workbench-section { min-height: calc(100svh - 4.5rem); display: flex; align-items: center; }
-  .workbench-section > div.relative { width: 100%; }
-}
-@media (min-width: 1024px) and (max-height: 800px) {
-  .workbench-section { padding-block: 16px; }
-  .workbench-panel { padding-top: 12px; padding-bottom: 10px; }
-  .workbench-panel pre { max-height: 72px; }
-  .workbench-panel h3 { font-size: 22px; }
-  .workbench-panel button[aria-pressed] { min-height: 28px; padding-block: 4px; }
-  .workbench-panel .grid.gap-3 { gap: 8px; }
+/* The bench: one warm lamp pool behind the stage, painted once (no animation, no blur). */
+.bench-lamp-glow {
+  background:
+    radial-gradient(ellipse 45% 55% at 34% 52%, color-mix(in srgb, var(--accent-gold) 9%, transparent), transparent 70%),
+    radial-gradient(ellipse 30% 40% at 80% 30%, color-mix(in srgb, var(--primary-bg) 6%, transparent), transparent 70%);
 }
 
 /* The veil over the landing's scene keeps section text readable; day needs a little more. */
@@ -32,45 +25,6 @@ html[data-color-scheme="light"] .landing-veil {
 }
 @media (prefers-reduced-motion: reduce) {
   .story-nudge { animation: none; }
-}
-
-/* Workbench: a ring pops out of a picked pill so every click visibly lands. */
-.picker-pop {
-  position: absolute;
-  inset: -2px;
-  z-index: 0;
-  border-radius: 3px;
-  border: 2px solid var(--accent-gold);
-  pointer-events: none;
-  animation: picker-pop 520ms cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
-}
-@keyframes picker-pop {
-  from { transform: scale(0.9); opacity: 1; }
-  to { transform: scale(1.18, 1.5); opacity: 0; }
-}
-/* The Studio button glows once every quest on a demo is tried. */
-.workbench-cta-ready { animation: workbench-cta 1.8s ease-in-out infinite; }
-@keyframes workbench-cta {
-  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary-bg) 0%, transparent); }
-  50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--primary-bg) 30%, transparent); }
-}
-/* The workbench mat: a soft fabric panel with a stitched seam. */
-.workbench-mat {
-  /* Nearly opaque instead of blurred: re-blurring the animated scene behind it every frame cost about 40% of a frame. */
-  background:
-    radial-gradient(ellipse 80% 60% at 30% 0%, color-mix(in srgb, var(--primary-bg) 7%, transparent), transparent 70%),
-    color-mix(in srgb, var(--desk-surface) 97%, transparent);
-}
-.workbench-mat::before {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  border: 2px dashed color-mix(in srgb, var(--desk-border-highlight) 55%, transparent);
-  border-radius: 4px;
-  pointer-events: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .picker-pop, .workbench-cta-ready { animation: none; }
 }
 
 /* Bun hopping along the scroll progress bar. */
