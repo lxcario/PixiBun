@@ -12,7 +12,7 @@ BEFORE GENERATING ANYTHING
 4. For Nibbli testing, drawing or Artist planning, read the [Nibbli skill](.agents/skills/nibbli/SKILL.md) and [agent contract](docs/guides/nibbli-agent.md). Use validated real-UI commands, observed IDs and protected-content expectations; never inject state/pixels or replace independent test expectations with a model opinion.
 
 NEVER DO THIS
-- Never use decorative AI slop emojis or sparkles (such as "" or artificial marketing emojis) in technical documentation, code comments, UI copy, or commit messages. (Functional markdown section markers in user documentation are permitted, but decorative AI embellishments are strictly forbidden).
+- Never use decorative AI slop emojis or sparkles (including artificial marketing emojis) in technical documentation, code comments, UI copy, or commit messages. (Functional markdown section markers in user documentation are permitted, but decorative AI embellishments are strictly forbidden).
 - Never output generic AI slop copy ("Transform your workflow", "The ultimate all-in-one platform", "manage", "Supercharge your productivity") or cold robotic status strings ("Processing payload...", "Canvas dimensions verified").
 - Never write narrative, redundant, or boilerplate AI comments (e.g., "// increments count"). Comment only non-obvious rationale and mathematical invariants.
 - Never allow anti-aliased image smoothing on the pixel canvas (`ctx.imageSmoothingEnabled = false` must always be enforced).

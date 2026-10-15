@@ -137,7 +137,7 @@ $$\text{Memory} = (\text{width} \times \text{scale}) \times (\text{height} \time
 **Dispatcher:** `src/lib/engine/workerDispatcher.ts`  
 **Target Invariant:** Non-blocking asynchronous calculation during worker-offloaded normal baking (offloading heavy EDT calculation from the main thread).
 
-By offloading the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), bilateral Gaussian smoothing, and Sobel gradient convolution to a Web Worker with zero-copy Transferable ArrayBuffers:
+Normal-map Bake can offload the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), bilateral Gaussian smoothing and Sobel gradient convolution. The dispatcher first makes a defensive copy of live input pixels, then transfers that copy without an additional structured-clone copy. The figures below retain their historical measurement scope:
 
 | Canvas Size | Total Pixels | Synchronous Main Thread Compute (Without Worker) | Main Thread Compute (Worker Offloaded) | Worker Execution Time | UI Responsiveness |
 |---|---|---|---|---|---|
@@ -146,13 +146,13 @@ By offloading the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), b
 | **256 × 256** | 65,536 | $\approx 34.2\text{ ms}$ | Dispatch overhead unmeasured | $\approx 31.0\text{ ms}$ | End-to-end interaction unmeasured |
 | **512 × 512** | 262,144 | $\approx 141.5\text{ ms}$ | Dispatch overhead unmeasured | $\approx 128.0\text{ ms}$ | End-to-end interaction unmeasured |
 
-> **Main-Thread Latency Breakdown Note:** The heavy EDT, bilateral Gaussian filtering, and Sobel convolution passes execute asynchronously inside `heavyCompute.worker.ts`, removing heavy compute pauses from the main thread. However, absolute zero main-thread overhead is not claimed: lightweight main-thread message dispatch/transfer overhead still occurs, and the optional content-aware anatomical heightmap pass (connected-component BFS and anatomical prior evaluation in `src/lib/ai/math/edtNormalMap.ts`) runs synchronously on the main thread when invoked.
+> **Main-Thread Latency Breakdown Note:** Worker-available normal-map Bake runs EDT, bilateral filtering and Sobel passes in `heavyCompute.worker.ts`. Input copying, dispatch and publication remain main-thread work, and bounded fallback can run synchronously. The optional anatomical pass remains synchronous when invoked. Live photometric analysis/preview/Apply in `usePhotometricEvents.ts` is a separate main-thread path, so these bake observations do not establish responsive live relighting.
 
 ---
 
 ## 7. Autonomous Local Quality Gate Pipeline Benchmark
 
-**Harness:** `scripts/runQualityGate.mjs`; run `npm run gate` for stages 1–4 and `npm run gate:full` for stages 1–5. Stage times are wall-clock durations printed by that runner.
+**Harness:** `scripts/runQualityGate.mjs`; run `npm run gate` for five stages (docs, types, lint, coverage, performance) and `npm run gate:full` for those plus stage 6 (production build). The dated table below records the earlier five-stage layout; it does not enumerate the current runner. Stage times are wall-clock durations printed by that runner.
 
 > **Reference Testbench:** Windows 11 (NT 10.0.26200) x64 • Intel Core i5-12500H (16 logical CPUs) • 31.7 GiB RAM • Node v26.5.1 • npm 11.17.0 (captured 2026-09-26 on checkout `3c77c31`). The original capture called this Windows 10; build 26200 is [Windows 11](https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information). Node 26 was the actual historical runtime, outside the current supported Node 22 range; it is retained rather than relabeled. These warm-cache observations are not current-runtime qualification or a guarantee for other machines.
 

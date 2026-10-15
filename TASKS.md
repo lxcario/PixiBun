@@ -28,7 +28,7 @@ Source: the Strategy and Audit & Roadmap documents of 13 October 2026, summarize
 - [x] Correct Curve source/history/input ownership and outside-canvas handle routing; document Undo-based re-edit Cancel/Redo semantics.
 - [x] Review and publish all 73 changed files in [8c207b22](https://github.com/lxcario/PixiBun/commit/8c207b22cae6a1a2f4a7f299ee42f64f65a1c665) with an [English file change record](docs/releases/2026-10-13-studio-and-nibbli.md). Its full gate passed 2,370 tests /212 files and production compilation; 63 scoped native cases passed in three engines. The mandatory pre-push gate passed separately. Earlier Nibbli browser results retain their original identities and were not rerun in this publication.
 - [ ] Close M3's intermittent WebKit scheduling/visible-pose stability with evidence; keep timeout/retry/frame-order expectations unchanged.
-- [ ] Fix Curve secondary/recorded-color retention during adjustment; the published safety checks qualify the primary-color workflow.
+- [x] Fix Curve secondary/recorded-color retention during adjustment in `a2260f7e`; its pre-S4 checks have separate scope from the original primary-color qualification. See [current status](docs/current-status.md#local-pre-s4-hardening-candidate).
 - [ ] Extend M4 beyond qualified 32×32 operations and review arbitrary-angle silhouettes separately from exact-turn correctness.
 - [ ] Develop M5 goal-driven pose/timing planning; no independent model service, automatic training or artistic-quality qualification is claimed.
 
@@ -894,7 +894,7 @@ This audit's six phases are separate from the historical product phase numbering
   - `extractSelectionBoundarySegments` traversing 1-bit binary selection masks along orthogonal cell boundaries.
   - `boundarySegmentsToSvgPath` converting boundary edges to dual-tone animated SVG marching ants.
 - [x] Interactive Selection Free-Transform Gizmo (`src/components/studio/SelectionTransformGizmo.tsx`, `src/hooks/viewport/useViewportSelectionTransform.ts`, `src/components/layout/CenterViewport.tsx`, `tests/components/SelectionTransformGizmo.test.tsx`):
-  - 8 transform handles maintaining constant 16x16px screen-space hitboxes across all zoom levels.
+  - 8 transform handles maintained 16×16 px screen-space hitboxes at this phase. The current hit size is 18 px; see [selection architecture](ARCHITECTURE.md#22-selection-free-transform-gizmo-sprite-sheet-slicer--web-worker-offloading-engine).
   - Draggable center pivot reticle ($\oplus$), 4 corner rotation zones with 15° Shift snapping, angle readout badge, and quick-action HUD bar.
   - 60 FPS nearest-neighbor drag preview with background RotSprite commit on release.
 - [x] Timeline TagManagerModal Integration (`src/components/layout/BottomTimeline.tsx`, `tests/components/BottomTimeline.test.tsx`):
@@ -1019,7 +1019,7 @@ This audit's six phases are separate from the historical product phase numbering
 **Evidence & Rationale:**
 - Tab Switching Flash: `AtelierEngineShowcase.tsx` dynamically imported showcase panels via `next/dynamic` with `ShowcaseSkeleton`, resulting in a jarring loading flicker and unmount delay on tab click.
 - Layout Shift on Navigation: `LandingNav.tsx` injected an inline `*` spark element within active navigation links, shifting text horizontally by ~14px on focus. The scroll progress bar was also unanchored without a background track.
-- AI Slop & Emojis: Residual emojis (``, ` *`, ``, ``, ``) and ungrammatical badge text (`WHAT WE HAS: DEEP GRAPHICS ENGINE`) detracted from the artisan aesthetic.
+- AI Slop & Emojis: Residual decorative Unicode characters and ungrammatical badge text (`WHAT WE HAS: DEEP GRAPHICS ENGINE`) detracted from the artisan aesthetic.
 
 **Deliverables:**
 - [x] Zero-Lag Direct Static Imports (`src/components/landing/AtelierEngineShowcase.tsx`): Direct imports for all 4 showcase panels with Framer Motion `layoutId` spring pill selector and cross-fade animations.
@@ -1841,7 +1841,7 @@ The following claims from preliminary inspection were investigated and confirmed
 - [x] Full Payload v1 $\to$ v2 Migration Engine (`migrateProjectPayload`): Backfills `customRamps`, `clips`, `onionSkin`, and layer `blendMode`/`opacity`/`visible`/`locked` for legacy and unversioned (`version: undefined`) files.
 - [x] Forward-Version Guard: Explicit error message rejecting files from newer PixiBun versions (`input.version > PROJECT_FORMAT_VERSION`).
 - [x] "New Drawing" Confirmation Modal: Prevents accidental canvas clearing via `isNewConfirmOpen` modal.
-- [x] Locked Layer Security: `handlePointerDown` rejects drawing on locked layers and renders animated HUD toast (` Active layer is locked`).
+- [x] Locked Layer Security: `handlePointerDown` rejects drawing on locked layers and renders animated HUD toast (`Active layer is locked`).
 - [x] OS Theme Auto-Detection: `themeStore.ts` detects `prefers-color-scheme: light` on cold boot before falling back to dark.
 
 **Acceptance criteria:**

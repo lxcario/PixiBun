@@ -12,7 +12,7 @@ Use the **Workspace** list in the project rail to keep the panels you need nearb
 | --- | --- |
 | Drawing | Right inspector, 292 px wide, Tools selected, timeline visible |
 | Animation | Right inspector, 320 px wide, Layers selected, navigator and timeline visible |
-| Lighting | Right inspector, 340 px wide, PixiTools selected, pinned color picker and navigator visible, timeline hidden |
+| Lighting | Right inspector, 340 px wide, Effects (PixiTools) selected, pinned color picker and navigator visible, timeline hidden |
 
 Open **View → Arrange...** to put the inspector on the left or right, set its width from 260 to 420 px, and show or hide the color picker, navigator and timeline. Enter a name and **Save layout**; keep up to six named layouts. A saved layout includes the selected inspector tab and PixiTools task. Choose it from the Workspace list to restore that task and arrangement. Lighting opens **Add light and depth**; reloading restores the stored task even when session preferences were cleared. Later adjustments affect the current arrangement; save another named layout to keep that variation. **Restore preset** restores the selected built-in preset, or Drawing when a user layout is selected.
 

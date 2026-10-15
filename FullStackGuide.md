@@ -233,7 +233,7 @@ A production spec for an AI agent must contain:
 - **Bento Grid Spreading:** Forcing 3-column card layouts onto data that has no multi-dimensional relationship.
 - **Uniform Radii:** Applying `rounded-xl` to every container, badge, and button without scale hierarchy.
 - **Fake Terminals:** Displaying terminal mockups on non-developer product pages.
-- **Sparkle Tropes:** Using sparkle icons () as an automatic marker for AI features.
+- **Sparkle Tropes:** Using sparkle icons as an automatic marker for AI features.
 
 ### 2.2 Motion & Interaction Tells
 - **Ambient Floating:** Continuous floating or bobbing keyframes without user interaction.
@@ -433,7 +433,7 @@ Check every UI screen against these failure modes:
 - [ ] No uniform `rounded-xl` radii across all hierarchy levels.
 - [ ] No unexamined default icon sets without project-level curation.
 - [ ] No fake terminal windows on non-developer products.
-- [ ] No sparkle icons () used as automatic AI feature markers.
+- [ ] No sparkle icons used as automatic AI feature markers.
 - [ ] No generic AI slop copy (*"Transform your workflow"*, *"manage"*).
 - [ ] No random emoji clutter in UI headers or documentation.
 - [ ] No unprompted ambient floating text or continuous bobbing animations.
