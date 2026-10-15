@@ -29,7 +29,9 @@ import { executeImageImport } from '@/lib/project/imageImportExecution';
 import type { PendingRecoveryContext } from '@/lib/recovery/projectAdmission';
 import { getLocalSaveLabel } from '@/lib/project/localSaveLabel';
 import type { ExportType } from '@/components/modals/export/ExportTabsNav';
-import { openBlankWorkspace, openStarterWorkspace } from '@/lib/project/starterWorkspace';
+import { openBlankWorkspace, openPostcardWorkspace, openStarterWorkspace } from '@/lib/project/starterWorkspace';
+import { PostcardPicker } from '@/components/cart/PostcardPicker';
+import { POSTCARDS } from '@/lib/postcards/scenes';
 import { STARTER_TEMPLATES } from '@/lib/art/starterTemplates';
 
 import { useStudioAutosave } from '@/hooks/studio/useStudioAutosave';
@@ -95,6 +97,7 @@ export const StudioLayout: React.FC = () => {
   const [isResizeOpen, setIsResizeOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isNewConfirmOpen, setIsNewConfirmOpen] = useState(false);
+  const [isPostcardsOpen, setIsPostcardsOpen] = useState(false);
   const [newDrawingSize, setNewDrawingSize] = useState<number>(32);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isCoDrawOpen, setIsCoDrawOpen] = useState(false);
@@ -163,18 +166,22 @@ export const StudioLayout: React.FC = () => {
   useEffect(() => {
     if (lifecycleState.phase !== 'active') return;
     const url = new URL(window.location.href), templateId = url.searchParams.get('template');
+    const postcardId = url.searchParams.get('postcard');
     const blankSize = [16, 24, 32, 48].find(size => url.searchParams.get('width') === String(size) && url.searchParams.get('height') === String(size));
-    if (templateId ? !STARTER_TEMPLATES.some(template => template.id === templateId) : !blankSize) return;
+    const knownPostcard = !!postcardId && POSTCARDS.some(card => card.id === postcardId);
+    if (!knownPostcard && (templateId ? !STARTER_TEMPLATES.some(template => template.id === templateId) : !blankSize)) return;
     if (lifecycleState.pendingRecovery || lifecycleState.startupIssue) {
       studioEvents.emit('pixibun:toast', { type: 'error', message: 'Resolve the current drawing recovery or storage problem before opening a new drawing.' });
       return;
     }
     const controller = new AbortController();
-    const opening = templateId ? openStarterWorkspace(templateId, runAutosave, controller.signal) : openBlankWorkspace(blankSize!, runAutosave, controller.signal);
+    const opening = knownPostcard ? openPostcardWorkspace(postcardId, runAutosave, controller.signal)
+      : templateId ? openStarterWorkspace(templateId, runAutosave, controller.signal) : openBlankWorkspace(blankSize!, runAutosave, controller.signal);
     void opening.then(opened => {
       if (!opened || controller.signal.aborted) return;
       // Reload must restore the edited/saved starter, rather than create another copy.
-      if (templateId) url.searchParams.delete('template');
+      if (knownPostcard) url.searchParams.delete('postcard');
+      else if (templateId) url.searchParams.delete('template');
       else { url.searchParams.delete('width'); url.searchParams.delete('height'); }
       window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
     }).catch((error: unknown) => {
@@ -428,6 +435,7 @@ export const StudioLayout: React.FC = () => {
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
         onOpenResize={() => setIsResizeOpen(true)}
         onNewDrawing={() => setIsNewConfirmOpen(true)}
+        onOpenPostcards={() => setIsPostcardsOpen(true)}
         onOpenGallery={() => setIsGalleryOpen(true)}
         onOpenCoDraw={() => setIsCoDrawOpen(true)}
         onUndo={handleUndo}
@@ -536,6 +544,17 @@ export const StudioLayout: React.FC = () => {
 
       {/* Status Bar */}
       <div hidden={focusMode} className="moon-slot moon-slot-status"><StatusBar /></div>
+
+      <PostcardPicker
+        isOpen={isPostcardsOpen}
+        onClose={() => setIsPostcardsOpen(false)}
+        onChoose={id => {
+          setIsPostcardsOpen(false);
+          void openPostcardWorkspace(id, runAutosave).catch((error: unknown) => {
+            studioEvents.emit('pixibun:toast', { type: 'error', message: error instanceof Error ? error.message : 'The postcard could not be opened. Your current drawing is unchanged.' });
+          });
+        }}
+      />
 
       {/* New Drawing Confirmation Modal */}
       <ModalWrapper
