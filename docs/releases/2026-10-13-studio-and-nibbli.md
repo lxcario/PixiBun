@@ -90,7 +90,7 @@ Source inspection also found an open secondary-color Curve issue: a Shift gestur
 | [scripts/nibbli/run.mjs](../../scripts/nibbli/run.mjs) | Builds a guarded Tester candidate and retains logs/results; refuses unsupported timeout/retry overrides. |
 | [scripts/nibbli/runArtist.mjs](../../scripts/nibbli/runArtist.mjs) | Runs separate Artist/Hands mock or conversation workflows with immutable outcomes and source/build guards. |
 | [scripts/nibbli/vision.ts](../../scripts/nibbli/vision.ts) | Reads native pixels and independently decodes project, PNG, sprite-sheet and animation metadata evidence. |
-| [src/components/landing/showcase/PhotometricShowcase.tsx](../../src/components/landing/showcase/PhotometricShowcase.tsx) | Requests read-oriented 2D contexts for normal/shadow preview readbacks. |
+| `src/components/landing/showcase/PhotometricShowcase.tsx` | Requests read-oriented 2D contexts for normal/shadow preview readbacks. |
 | [src/components/layout/AtelierRail.tsx](../../src/components/layout/AtelierRail.tsx) | Uses a fixed-height header with centered tool options and grouped workspace/export controls. |
 | [src/components/layout/BottomTimeline.tsx](../../src/components/layout/BottomTimeline.tsx) | Disables frame-card transitions and active decorative shadows during playback; clock arithmetic is unchanged. |
 | [src/components/layout/CenterViewport.tsx](../../src/components/layout/CenterViewport.tsx) | Mounts Curve handles/Apply/Cancel/re-edit controls, passes history callbacks and replaces large blurred decorations with bounded outlines/gradient. |
