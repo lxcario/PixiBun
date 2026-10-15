@@ -15,6 +15,9 @@ function translated(source: number[], dx: number) {
 }
 
 async function readyWithMark(page: Page) {
+  // These exact-pixel/history journeys use the flat desk. Animated scene
+  // geometry is covered separately; its repaint work is not this contract.
+  await page.addInitScript(() => localStorage.setItem('pixibun-studio-theme', 'atelier'));
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto('/studio'); await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
   const canvas = page.getByTestId('main-composite-canvas'); const box = (await canvas.boundingBox())!;

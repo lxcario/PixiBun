@@ -57,7 +57,7 @@ For authoring swatches, ramps, roles and animated color ranges, follow [palettes
 
 ## Repeat a selected tile
 
-![Selected mushroom pixels repeated 3 by 3; repeated imagery is a seam inspection aid.](../assets/screenshots/2026-10-15-current-ui/tiles-repeat.png)
+![Selected Sprout pixels repeated 3 by 3; repeated imagery is a seam inspection aid.](../assets/screenshots/2026-10-15-current-ui/tiles-repeat.png)
 
 Choose **Build tiles and patterns → Patterns & Tilesets** and open the section. Select a rectangular tile on the canvas. **Repeat Preview** shows that rectangle from the visible frame repeated three times in each direction. Edit the source tile to check whether its edges meet; the preview updates from the current source.
 

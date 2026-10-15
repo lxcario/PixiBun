@@ -71,6 +71,8 @@ test('merging layered artwork moves every painted layer without leaving an origi
 
 test('motion preview suppresses neighboring ghosts and reports painted pixels cropped outside the canvas', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 1000 }); await page.goto('/studio'); await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible(); await draw(page, 8, 8);
+  const dismissUpdate = page.getByRole('button', { name: 'Dismiss update banner', exact: true });
+  if (await dismissUpdate.isVisible()) await dismissUpdate.click();
   await page.locator('summary').filter({ hasText: 'Frame actions' }).click(); await page.getByRole('button', { name: 'Duplicate frame', exact: true }).click();
   await page.getByRole('button', { name: 'Onion Skin', exact: true }).click(); await expect.poll(async () => (await pixels(page, 'onion-skin-canvas')).some((v, i) => i % 4 === 3 && v > 0)).toBe(true);
   await page.getByTestId('tab-tools').click(); await openMotionCapture(page); await page.getByTestId('create-motion-part-btn').click(); await numeric(page, 'Position X pixels', '50');
