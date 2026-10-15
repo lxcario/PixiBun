@@ -20,6 +20,7 @@ import { reserveMemory } from '@/lib/safety/memoryBudget';
 import { importPreviewSize, IMPORT_PREVIEW_SCAN_PIXELS, isSourceCellEmpty } from '@/lib/project/importRaster';
 
 import type { ImportPayload, ImageImportConfirmPayload } from '@/types/import';
+import { CartArrival } from '@/components/cart/CartArrival';
 export type { ImportPayload, ImageImportConfirmPayload };
 
 interface ImportModalProps {
@@ -358,12 +359,24 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     <ModalWrapper
       isOpen={isOpen}
       onClose={onClose}
-      title={effectivePayload.type === 'project' ? 'Import Project (.pixibun)' : 'Import Image & Sprite Sheet Slicer'}
+      title={effectivePayload.cart ? 'A cart arrived' : effectivePayload.type === 'project' ? 'Import Project (.pixibun)' : 'Import Image & Sprite Sheet Slicer'}
       maxWidth={effectivePayload.type === 'image' ? 'w-[680px]' : 'w-[440px]'}
     >
       {(fileError || previewError) && <p role="alert" className="text-[var(--danger-fg)]">{fileError || previewError}</p>}
+      {/* 0. Cart: a PNG with a drawing inside */}
+      {effectivePayload.type === 'project' && effectivePayload.cart && (
+        <CartArrival
+          cart={effectivePayload.cart}
+          frames={Array.isArray((effectivePayload.projectJson as { frames?: unknown[] })?.frames) ? (effectivePayload.projectJson as { frames: unknown[] }).frames.length : 0}
+          size={`${String((effectivePayload.projectJson as { width?: unknown })?.width ?? '?')}×${String((effectivePayload.projectJson as { height?: unknown })?.height ?? '?')}`}
+          error={error}
+          onCancel={onClose}
+          onOpen={onConfirmProject}
+        />
+      )}
+
       {/* 1. Project Import View */}
-      {effectivePayload.type === 'project' && (
+      {effectivePayload.type === 'project' && !effectivePayload.cart && (
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-2 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] shadow-xs text-xs font-mono">
             <span className="font-bold text-[var(--text-heading)]">File: {effectivePayload.filename}</span>
