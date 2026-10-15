@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, type Transition } from 'motion/react';
+import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useTransform, type Transition } from 'motion/react';
 import { useStudioStore } from '@/stores/studioStore';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { useLab } from '@/experimental/labsStore';
@@ -13,6 +13,10 @@ const SPLIT: Transition = { type: 'spring', bounce: 0.42, visualDuration: 0.55 }
 const MERGE: Transition = { type: 'spring', bounce: 0, visualDuration: 0.26 };
 const ISLAND_H = 38;
 const PAD = 6;
+/* Expanded (tool settings open inside the island): a rounded panel instead of a pill. */
+const EXPAND_PAD_X = 12;
+const EXPAND_PAD_Y = 10;
+const EXPANDED_RADIUS = 22;
 const GAP = 8;
 
 type Activity = { id: number; icon: string; label: string; tone: 'good' | 'info' | 'warm' };
@@ -58,28 +62,36 @@ function DynamicIsland({ contentKey, idleLabel, children }: { contentKey: string
   const reduce = useReducedMotion() ?? false;
   const filterId = `isl-goo-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const width = useMotionValue<number | 'auto'>('auto');
+  const height = useMotionValue(ISLAND_H);
+  // A pill while compact; as it grows taller the corners settle to a rounded panel, like an expanded island.
+  const radius = useTransform(height, h => `${Math.min(h / 2, Math.max(EXPANDED_RADIUS, ISLAND_H / 2 - (h - ISLAND_H) / 3))}px`);
   const [morphing, setMorphing] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const observer = useRef<ResizeObserver | null>(null);
   const activity = useIslandActivity();
 
   // Measure whichever content is current (exiting content keeps its old node and is ignored).
   // The first size snaps; every later size springs, with the stage clipped while it morphs.
+  // Content taller than one row means a menu opened inside, so the island expands around it.
   const measure = useCallback((node: HTMLDivElement | null) => {
     if (!node) return;
     observer.current?.disconnect();
     const update = () => {
-      // offsetWidth ignores the entrance scale transform, so the island targets the settled size.
-      const target = Math.max(ISLAND_H * 2.4, node.offsetWidth + PAD * 2);
-      const current = width.get();
-      if (current === 'auto' || reduce) { width.set(target); return; }
-      if (Math.abs(current - target) < 0.5) return;
+      // offset sizes ignore the entrance scale transform, so the island targets the settled size.
+      const open = node.offsetHeight > ISLAND_H - 4;
+      setExpanded(open);
+      const targetW = Math.max(ISLAND_H * 2.4, node.offsetWidth + (open ? EXPAND_PAD_X : PAD) * 2);
+      const targetH = open ? node.offsetHeight + EXPAND_PAD_Y * 2 : ISLAND_H;
+      const currentW = width.get();
+      if (currentW === 'auto' || reduce) { width.set(targetW); height.set(targetH); return; }
+      if (Math.abs(currentW - targetW) < 0.5 && Math.abs(height.get() - targetH) < 0.5) return;
       setMorphing(true);
-      animate(width, target, { ...MORPH, onComplete: () => setMorphing(false) });
+      Promise.all([animate(width, targetW, MORPH), animate(height, targetH, MORPH)]).then(() => setMorphing(false));
     };
     observer.current = new ResizeObserver(update);
     observer.current.observe(node);
     update();
-  }, [width, reduce]);
+  }, [width, height, reduce]);
   useEffect(() => () => observer.current?.disconnect(), []);
 
   const split = reduce ? { duration: 0.15 } : SPLIT;
@@ -88,10 +100,12 @@ function DynamicIsland({ contentKey, idleLabel, children }: { contentKey: string
   const bubbleMerge = { ...bubbleIn, transition: reduce ? { duration: 0.1 } : MERGE };
 
   return (
+    // The slot keeps the header's layout; the island hangs from its top and grows downward over the canvas.
+    <div className="isl-slot" style={{ height: ISLAND_H }}>
     <motion.div
-      className={`isl ${activity ? 'is-active' : ''} ${activity ? `tone-${activity.tone}` : ''} ${morphing ? 'is-morphing' : ''}`}
+      className={`isl ${activity ? 'is-active' : ''} ${activity ? `tone-${activity.tone}` : ''} ${morphing ? 'is-morphing' : ''} ${expanded ? 'is-expanded' : ''}`}
       data-testid="dynamic-island"
-      style={{ height: ISLAND_H, width }}
+      style={{ height, width, ['--isl-r' as string]: radius }}
       // Like iOS, the pill and its bubble recenter together while the bubble is out
       animate={{ x: activity ? -(ISLAND_H + GAP) / 2 : 0 }}
       transition={reduce ? { duration: 0 } : MORPH}
@@ -177,6 +191,7 @@ function DynamicIsland({ contentKey, idleLabel, children }: { contentKey: string
       </AnimatePresence>
       <span className="sr-only" role="status" aria-live="polite">{activity?.label ?? ''}</span>
     </motion.div>
+    </div>
   );
 }
 

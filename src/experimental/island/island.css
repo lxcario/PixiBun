@@ -1,15 +1,26 @@
 /* Labs: Dynamic island. Delete with src/experimental/island. */
 
+/* Holds the island's place in the header; the island hangs from its top edge */
+.isl-slot {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-self: center;
+}
+
 .isl {
+  --isl-r: 999px;
   --isl-fill: var(--desk-surface-raised);
   --isl-edge: var(--moon-card-edge, var(--desk-border));
   --isl-tone: var(--accent-gold);
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 40;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  max-width: 100%;
   isolation: isolate;
 }
 
@@ -18,7 +29,7 @@
 .isl.tone-warm { --isl-tone: var(--accent-gold); }
 
 /* The moonlit skin boxes every direct child of the drawing controls; the island draws its own shape */
-[data-layout="scene"] .moon-slot-rail > header > [role="group"][aria-label="Drawing controls"] > .isl {
+[data-layout="scene"] .moon-slot-rail > header > [role="group"][aria-label="Drawing controls"] > .isl-slot {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
@@ -50,6 +61,8 @@
   background: var(--isl-fill);
 }
 
+.isl-blob { border-radius: var(--isl-r); }
+
 .isl-blob { inset: 0; }
 .isl-bubble-blob { left: 100%; top: 0; }
 
@@ -60,7 +73,7 @@
   position: absolute;
   inset: -8px -14px;
   z-index: -1;
-  border-radius: 999px;
+  border-radius: calc(var(--isl-r) + 10px);
   pointer-events: none;
   background:
     radial-gradient(38% 110% at 12% 50%, var(--accent-gold), transparent 72%),
@@ -97,7 +110,7 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  border-radius: 999px;
+  border-radius: var(--isl-r);
   padding: 1.5px;
   pointer-events: none;
   background: linear-gradient(90deg, var(--accent-gold), var(--accent-wisteria), var(--accent-plum), var(--accent-sage), var(--accent-gold)) 0 0 / 300% 100%;
@@ -133,7 +146,64 @@
 
 /* While the island changes size its stage clips to the pill, so outgoing controls melt inside it */
 .isl.is-morphing .isl-stage {
-  clip-path: inset(0 round 999px);
+  clip-path: inset(0 round var(--isl-r));
+}
+
+/* ── Expanded: a menu opened, so its controls live inside the island instead of a separate card ── */
+.isl.is-expanded .isl-stage {
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 10px 12px;
+}
+
+.isl-content:has(> [data-testid="tool-options-rail"].absolute.flex) {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.isl [data-testid="tool-options-rail"].absolute {
+  position: static !important;
+  width: 340px !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 8px 2px 0 !important;
+  border: 0 !important;
+  border-top: 1px dashed color-mix(in srgb, var(--desk-border-highlight) 55%, transparent) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* The button above already names the tool */
+.isl [data-testid="tool-options-rail"].absolute > span:first-child { display: none; }
+
+/* Brush size menu: unwrap its anchor so the menu becomes a second row of the bar */
+.isl [data-testid="tool-options-rail"]:not(.absolute) { height: auto !important; min-height: 28px; }
+.isl div:has(> [aria-label="Brush size controls"]) { display: contents; }
+
+.isl [aria-label="Brush size controls"] {
+  position: static !important;
+  flex: 1 0 100%;
+  contain: inline-size; /* takes the bar's width instead of widening it */
+  width: auto !important;
+  margin: 2px 0 2px !important;
+  padding: 8px 2px 0 !important;
+  border: 0 !important;
+  border-top: 1px dashed color-mix(in srgb, var(--desk-border-highlight) 55%, transparent) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.isl [data-testid="tool-options-rail"].absolute.flex,
+.isl [aria-label="Brush size controls"] {
+  animation: isl-reveal 460ms cubic-bezier(.34, 1.56, .64, 1) 60ms both;
+}
+
+.isl.is-expanded [data-testid="tool-options-button"] [aria-hidden="true"] {
+  display: inline-block;
+  transform: rotate(180deg);
 }
 
 /* Inside the island the tool bar sheds its own box */
@@ -145,6 +215,8 @@
 }
 
 .isl [data-testid="tool-options-button"] {
+  max-width: none !important;
+  font-weight: 700;
   background: transparent !important;
   border-color: transparent !important;
   border-radius: 999px !important;
@@ -195,6 +267,11 @@
 
 @keyframes isl-flow { to { background-position: 300% 0; } }
 
+@keyframes isl-reveal {
+  from { opacity: 0; filter: blur(6px); transform: translateY(-6px) scale(0.96); }
+  to { opacity: 1; filter: blur(0); transform: none; }
+}
+
 @keyframes isl-wave {
   0% { opacity: 0; background-position: 120% 0; }
   25% { opacity: 0.9; }
@@ -207,5 +284,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .isl-aurora, .isl-aurora::after, .isl-rim, .isl-idle-dot { animation: none !important; }
+  .isl-aurora, .isl-aurora::after, .isl-rim, .isl-idle-dot, .isl [aria-label="Brush size controls"], .isl [data-testid="tool-options-rail"] { animation: none !important; }
 }
