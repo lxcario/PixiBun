@@ -20,35 +20,37 @@ Anyone can view the card as an ordinary picture. Dropping, pasting or opening it
 
 ## Light Sweep
 
+![Current Light Sweep video export controls.](../assets/screenshots/2026-10-15-current-ui/export-light-sweep.png)
+
 Choose **Light Sweep** for a five-second tall video (540 × 960) made for phones: a lamp drifts over your drawing at night, from the left over the top to the right and back, and lights it as it goes. Animated drawings keep playing underneath, and the title, your name (from the Cart tab) and Bun's "open me" sit above and below. The poster shows the first moment. **Save video** makes an MP4 where your browser can, otherwise WebM; a browser that can make neither says so. Post it with your cart link so people can light it themselves.
 
 ## PNG
 
-![PNG export scale and output size.](../assets/screenshots/2026-10-02-feature-guide/export-png.png)
+![Current png export configuration. UI capture only; this run does not certify the resulting download or engine import.](../assets/screenshots/2026-10-15-current-ui/export-png.png)
 
 Choose **PNG**, pick 1×, 2×, 4×, 8×, 16× or 32× where admitted, and download. It exports the visible composite of the active frame with transparency and crisp nearest-neighbor scaling. Use 1× for native pixels, or a larger integer scale for sharing. It preserves the image, not separate editable layers, animation or the Undo history.
 
 ## GIF
 
-![GIF export options for the sample animation.](../assets/screenshots/2026-10-02-feature-guide/export-gif.png)
+![Current gif export configuration. UI capture only; this run does not certify the resulting download or engine import.](../assets/screenshots/2026-10-15-current-ui/export-gif.png)
 
 Choose **GIF**, review the frame scope and 1×–8× scale, then export. GIF is convenient for sharing a loop, but colors are quantized to its palette and transparency is binary. Holds are rounded to centiseconds, so very short or uneven timings can look different. Use APNG when full RGBA transparency and more precise frame delays matter.
 
 ## APNG
 
-![APNG export options for the sample animation.](../assets/screenshots/2026-10-02-feature-repairs-phase5/export-apng.png)
+![Current apng export configuration. UI capture only; this run does not certify the resulting download or engine import.](../assets/screenshots/2026-10-15-current-ui/export-apng.png)
 
 Choose **APNG**, scope and an admitted 1×–16× scale, then export. The generated animated PNG uses full RGBA frames and rational frame delays. It downloads with a **`.png` extension**; it can still be animated. Native browser compression is used where available, with a stored-block fallback; file size depends on the artwork and browser. Encoding yields between frames. Press **Escape** or close the export dialog to cancel while progress is active; the disabled Cancel button is not available during this operation. Wait for the operation's result before starting another export. Check the destination viewer's animation support rather than mistaking a still preview for a missing animation.
 
 ## WebM Video
 
-![WebM video scale and animation-cycle options.](../assets/screenshots/2026-10-02-feature-guide/export-webm.png)
+![Current webm export configuration. UI capture only; this run does not certify the resulting download or engine import.](../assets/screenshots/2026-10-15-current-ui/export-webm.png)
 
 Choose **WebM Video**, scope, scale and 1 / 2 / 4 animation cycles. Export records via supported canvas/MediaRecorder capabilities. Keep the page running while recording. Codec availability and real-time scheduling matter; arbitrary transparency preservation is not promised. If unavailable, use the panel's GIF/APNG alternatives.
 
 ## MP4 Video
 
-![MP4 video settings and capability-dependent download control.](../assets/screenshots/2026-10-02-feature-repairs-phase5/export-mp4.png)
+![Current mp4 export configuration. UI capture only; this run does not certify the resulting download or engine import.](../assets/screenshots/2026-10-15-current-ui/export-mp4.png)
 
 Choose **MP4 Video**, scope, admitted scale and animation cycles. Supported configurations use H.264 WebCodecs with an MP4 writer, or a supported recording fallback. Odd output dimensions are padded to even values without rescaling the pixels. Alpha is not generally guaranteed. An unsupported browser/configuration disables this path; choose WebM, GIF or APNG instead.
 
@@ -56,7 +58,7 @@ The local pre-S4 checks found Firefox advertising H.264 support but failing duri
 
 ## Sprite Sheet
 
-![Sprite Sheet layout, padding, scale and metadata controls.](../assets/screenshots/2026-10-02-feature-guide/export-spritesheet.png)
+![Current spritesheet export configuration. UI capture only; this run does not certify the resulting download or engine import.](../assets/screenshots/2026-10-15-current-ui/export-spritesheet.png)
 
 1. Choose **Sprite Sheet** and the frame scope.
 2. Select Horizontal, Vertical or Grid packing, 1× / 2× / 4× scale and 0 / 1 / 2 / 4 px padding.
@@ -67,7 +69,7 @@ The PNG alone does not describe animation holds. The JSON download prefers the T
 
 ## Godot Kit
 
-![Godot Kit with anchor, indexed palette, normal atlas and preflight.](../assets/screenshots/2026-10-02-feature-repairs-phase4/godot-manual-normals.png)
+![Current manual-normal Godot export, with its downloaded atlases checked by the existing workflow.](../assets/screenshots/2026-10-15-current-ui/godot-manual-normals.png)
 
 Choose **Godot Kit** for a ZIP targeting **Godot 4.7**. Set the anchor to **Center** or **Feet**, choose optional indexed cycling / normal atlas, then read **Preflight inspection**. It includes a runnable comparison scene, named clips, frame holds and native-size nearest-filtered artwork; atlas admission is up to four million pixels.
 
@@ -79,7 +81,7 @@ Download, unpack and open `project.godot` in the intended Godot version. Compare
 
 ## Timelapse
 
-![Timelapse controls and the history-step count.](../assets/screenshots/2026-10-02-feature-guide/export-replay.png)
+![Current replay export configuration. UI capture only; this run does not certify the resulting download or engine import.](../assets/screenshots/2026-10-15-current-ui/export-replay.png)
 
 Choose **Timelapse** after making edits in this session. Select Animated GIF or supported MP4, scale, 6 / 12 / 18 / 24 playback FPS and a 0.5 / 1 / 2 second final hold. Read the **History Steps** count and any **Earlier Steps Evicted** notice before downloading.
 
@@ -87,7 +89,7 @@ It reconstructs retained drawing history and an eviction baseline. It is not a c
 
 ## Vector SVG
 
-![Vector SVG scale and contour-smoothing controls.](../assets/screenshots/2026-10-02-feature-repairs-phase4/svg-approximation.png)
+![Current SVG export approximation controls; downloaded XML checked by the existing workflow.](../assets/screenshots/2026-10-15-current-ui/svg-approximation.png)
 
 Choose **Vector SVG**, set 4× / 8× / 16× / 32× display scale and choose **Smooth Splines** or **Crisp Polygons**, then export the active frame. Inspect the result in a vector viewer, particularly diagonals, tiny gaps and outlines.
 
@@ -95,13 +97,13 @@ The converter uses PixiBun's contour/diagonal heuristic inspired by Kopf–Lisch
 
 ## Shaders
 
-![Standalone palette-cycling shader targets.](../assets/screenshots/2026-10-02-feature-guide/export-shader.png)
+![Current shader export configuration. UI capture only; this run does not certify the resulting download or engine import.](../assets/screenshots/2026-10-15-current-ui/export-shader.png)
 
 Choose **Shaders**, then **Godot 4 (.gdshader)** or **Unity URP 2D (.shader)**. Check the configured cycle tracks and download the code. This is a shader source file: supply its required normalized index texture and palette lookup yourself. It does not make an ordinary RGBA sprite into an indexed texture automatically. Unity engine execution remains unverified. Choose Godot Kit when you want the accompanying raw-register/alpha assets and a sample scene.
 
 ## Cycle Loop
 
-![Cycle Loop with duration, FPS, format and image-size choices.](../assets/screenshots/2026-10-02-feature-guide/export-palette-cycle.png)
+![Current palette-cycle export configuration. UI capture only; this run does not certify the resulting download or engine import.](../assets/screenshots/2026-10-15-current-ui/export-palette-cycle.png)
 
 First add and enable a cycle spanning at least two colors in **Palette → Cycle Engine**. Choose **Cycle Loop**, 1–5 seconds, one of 3 / 5 / 8 / 10 / 12 / 15 / 24 / 30 FPS, APNG or GIF, and 1× / 2× / 4× / 8× scale. Initially 2 seconds at 8 FPS means 16 samples. A missing-track notice disables download; the sample panel can show that prerequisite.
 
@@ -109,7 +111,7 @@ This samples **color motion in the active frame**, not changing drawn poses acro
 
 ## Project Backup
 
-![Project Backup explaining the whole-project copy.](../assets/screenshots/2026-10-02-feature-guide/export-project.png)
+![Current project export configuration. UI capture only; this run does not certify the resulting download or engine import.](../assets/screenshots/2026-10-15-current-ui/export-project.png)
 
 Choose **Project Backup → Download project backup**. Keep the `.pixibun` file outside the browser, then use **File → Import…** and **Confirm Import** to check that it restores the expected artwork. It contains admitted frames, layers, palettes, timing and supported metadata, including saved effects/recipes. It does not contain a durable complete Undo session or a cloud account.
 

@@ -8,6 +8,8 @@ The benchmark is serial uninstrumented Node 22 work with five warmup and fifteen
 
 Current discovery is in [generated/test-inventory.json](docs/generated/test-inventory.json); actual execution is in [current status](docs/current-status.md). Historical measurements retain their original counts and timings.
 
+The [15 October integrated audit](docs/plans/2026-10-15-audit-follow-up.md#integrated-verification) records RotSprite p90 **0.23272 ms** against the same 10 ms limit and separate synthetic drawing observations in Chromium, Firefox and WebKit at 128²/512². WebKit's next-animation-frame callback was much later than the matching raster readback. These are local measurements with instrumentation, not physical input-to-display latency, a cross-machine speedup comparison or a new frame-time guarantee.
+
 The [7 October editing follow-up (local archive)](docs/archives.md#record-docs-research-2026-10-07-editing-quality-release-hardening-md) records compiled-browser drawing, rotation preview, playback, bake, timeline, save and project-export measurements at 64/128/256 pixels. Wall-clock automation spans and >50 ms browser tasks are separate measures; neither is a population INP or physical-device result.
 
 The [8 October rectangle measurement (local archive)](docs/archives.md#record-docs-research-2026-10-08-motion-bounds-hardening-md) separates a small-part isolated rotation improvement from essentially unchanged five-frame browser bake timing. The 689→5.3 ms result is for a 16×16 part on an interior 512×512 target in Node; it excludes browser scheduling, worker transfer and full bake/history.

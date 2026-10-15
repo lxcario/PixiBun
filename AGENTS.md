@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Project status and documentation contracts: [docs/current-status.md](docs/current-status.md) and [docs/README.md](docs/README.md). Keep dated evidence separate from operating instructions.
 
-Current engineering status: [current status](docs/current-status.md); latest corpus reconciliation: [15 October review](docs/releases/2026-10-15-codebase-and-documentation.md). Retain source/build revision labels and original failure verdicts when maintaining documentation.
+Current engineering status: [current status](docs/current-status.md); corpus reconciliation: [15 October review](docs/releases/2026-10-15-codebase-and-documentation.md); subsequent corrections and current screenshot qualification: [audit follow-up](docs/plans/2026-10-15-audit-follow-up.md). Retain source/build revision labels and original failure verdicts when maintaining documentation.
 
 Keep raw evidence and completed audits local under [the archive policy](docs/archives.md); never add ignored archives to Git.
 

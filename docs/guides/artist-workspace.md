@@ -20,13 +20,13 @@ Layouts, color-picker shape and palette favorites belong to this browser and sit
 
 ## Keep colors and settings close
 
-![Pinned triangle, detailed settings and the whole-canvas navigator.](../assets/screenshots/2026-10-04-artist-workspace/color-tools-navigator.png)
+![Current Lighting workspace with pinned color controls and navigator.](../assets/screenshots/2026-10-15-current-ui/color-tools-navigator.png)
 
 Choose **View → Arrange... → Color picker** to pin the picker. **Foreground / Background** chooses which drawing color you edit. The outer ring sets hue; the triangle mixes that hue with white and black. Choose **Square** if you prefer independent saturation and value axes. The Hue, Saturation and Value sliders also support keyboard input; the hex field accepts `#rrggbb`, or `#rgb` when you leave the field. Changing a drawing color does not recolor existing pixels.
 
 The Palette tab always offers a picker and its **Pin color panel / Unpin color panel** action. Pinning keeps one picker available when you switch inspector tabs; its layout choice survives reload. The active motion editor temporarily occupies the inspector instead. Unpinning hides the shared picker on other tabs while keeping color editing available in Palette.
 
-![The restored compact color dock.](../assets/screenshots/2026-10-08-motion-layout/compact-color-dock.png)
+![Current compact color dock with primary/secondary wells, swatches, swap and reset.](../assets/screenshots/2026-10-15-current-ui/compact-color-dock.png)
 
 The compact color dock at the bottom of the left tool shelf uses overlapping Foreground/Background wells, four quick swatches, corner Swap/Reset actions and a narrow ellipsis button. Click a well for quick colors; double-click for the full picker. Click a quick swatch to set Foreground, or right-click to set Background. **X** swaps colors and **Shift+D** restores black/white when drawing shortcuts own focus. Hover and press feedback keep the dock in place.
 
@@ -38,7 +38,7 @@ Choose the inspector's **Tools** tab for the selected tool's controls: brush siz
 
 Open **Palette → Browse palettes**. Cards display all swatches together; search by palette or artist, filter project/library/favorites, or limit the color count. Clicking a card previews it without changing the active palette. **Favorite** keeps it in this browser's favorites; **Use palette** selects an existing project palette or adds the chosen library palette once.
 
-![Palette library with complete swatch previews and explicit application.](../assets/screenshots/2026-10-04-artist-workspace/palette-library.png)
+![Current built-in palette library and comparison controls.](../assets/screenshots/2026-10-15-current-ui/palette-library.png)
 
 The additional library includes [Sweetie 16 by GrafxKid](https://lospec.com/palette-list/sweetie-16), [DawnBringer 16 by DawnBringer](https://lospec.com/palette-list/dawnbringer-16), [Endesga 16 by ENDESGA](https://lospec.com/palette-list/endesga-16) and [1bit Monitor Glow by Polyducks](https://lospec.com/palette-list/1bit-monitor-glow). Each card links to its source. Choosing a palette does not recolor existing RGBA artwork. Use the separate palette-snap workflow when you intend to change artwork colors.
 
@@ -48,7 +48,7 @@ Choose **View → Navigator** for a small, unsmoothed whole-canvas overview with
 
 ## Draw a pixel gradient
 
-![A two-color gradient constrained by an irregular selection mask.](../assets/screenshots/2026-10-04-artist-workspace/selection-gradient.png)
+![Current selected-area gradient controls; no gradient committed.](../assets/screenshots/2026-10-15-current-ui/selection-gradient.png)
 
 1. Work on an unlocked layer. Make a box, lasso or wand selection when only part of the layer should change.
 2. Choose **Pixel Gradient** or press **Shift+G** with the canvas focused. Open the inspector's **Tools** tab.
@@ -59,7 +59,7 @@ Only supplied ramp RGB colors are painted, at full opacity. No interpolated RGB 
 
 ## Inspect poses with onion skin
 
-![Onion skin controls beside two independently drawn poses.](../assets/screenshots/2026-10-04-artist-workspace/onion-settings.png)
+![Current onion-skin direction, colors, opacity and frame counts.](../assets/screenshots/2026-10-15-current-ui/onion-settings.png)
 
 Open the gear beside **Onion Skin** in the expanded timeline. Set **Previous / Next** counts independently from 0 to 5, choose each tint and adjust opacity. **Previous pose** isolates the last pose; **Either side** compares both neighbors; **Motion trail** shows three on each side. Distant ghosts fade. Trails stop at the project's first and last frame; they do not wrap or stop at a clip tag boundary. Memory admission can reduce available previews.
 
@@ -67,9 +67,13 @@ Ghosts appear while paused, and remain separate from artwork and exports. **F3**
 
 ## Rotate a detail or try rigid-part motion
 
-With a selection active, open **Tools** to choose RotSprite or Paeth for rotation. Move the pivot and inspect thin features, outline and dither at the intended angle. Paeth's three-shear sampling is an alternative look, not a guarantee that every pattern survives. Normal layers use a separate vector-aware rotation path. The older selection screenshots predate these choices; see the [rotation contract](../contracts/rendering.md#pixel-art-rotation-rotsprite-v3).
+With a selection active, open **Tools** to choose RotSprite or Paeth for rotation. Move the pivot and inspect thin features, outline and dither at the intended angle. Paeth's three-shear sampling is an alternative look, not a guarantee that every pattern survives. Normal layers use a separate vector-aware rotation path. The current selection picture illustrates one configuration; see the [rotation contract](../contracts/rendering.md#pixel-art-rotation-rotsprite-v3).
 
 ## Save a motion rig
+
+![Current Animate artwork disclosure and capture actions.](../assets/screenshots/2026-10-15-current-ui/animate-artwork.png)
+
+![Current selected-part motion pose, pivot and session controls.](../assets/screenshots/2026-10-15-current-ui/motion-pose.png)
 
 Commit or cancel any floating selection first. On one unlocked color layer, open **Tools → Animate artwork**, then choose **Create Motion Part**. Select an area first to capture that detail, or leave it unselected to capture the whole layer. Close co-draw before starting; normal-map layers use the separate layer-rotation workflow. Adjust its pivot, Start/End poses, frame count and easing. Give it a **Rig name** and choose **Save motion rig**, then save the project with the workspace Save button. Each saved rig currently contains one rigid part. Pose adjustments remain temporary until Save or Bake, with their own bounded session Undo/Redo.
 

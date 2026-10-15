@@ -21,7 +21,7 @@ The canvas surround uses bounded outlines and a small gradient in place of large
 
 ## Current interface — 15 October 2026
 
-The [source review](docs/releases/2026-10-15-codebase-and-documentation.md) covers the inspector's shared sections/fields, theme-aware canvas previews and the desktop coach/tool-dock/filmstrip layout. Pocket opens on lessons before its separate free pad. The homepage has a scroll-driven creation story, per-demo Try-this tasks, collapsible explanations and real Bun sample downloads. Decorative markers and scene motion exist in the current app; the material rules below are guidance, not an assertion that every existing component follows them. Earlier screenshot/token examples retain their dated scope.
+The [source review](docs/releases/2026-10-15-codebase-and-documentation.md) covers the inspector's shared sections/fields, theme-aware canvas previews and the desktop coach/tool-dock/filmstrip layout. Pocket opens on lessons before its separate free pad. The homepage has a scroll-driven creation story, per-demo Try-this tasks, collapsible explanations and real Bun sample downloads. Decorative markers and scene motion exist in the current app; the material rules below are guidance, not an assertion that every existing component follows them. Theme pictures show the current UI; historical token tables retain their dated scope.
 
 ## 1. Core Visual Metaphor: The Lamplit Drafting Desk
 
@@ -50,15 +50,15 @@ These are design rules and targets for new work, not a declaration that every ex
 
 ## 2. Semantic Color Tokens
 
-### Historical studio references — 2 October 2026
+### Current Studio examples — 15 October 2026
 
-![Historical Atelier dark studio, with amber controls and a restrained modern workspace around the original PixiBun starter artwork.](docs/assets/screenshots/2026-10-02-docs/studio-atelier-dark.png)
+![Graphite Night Studio with the same original three-frame built-in artwork.](docs/assets/screenshots/2026-10-15-current-ui/studio-atelier-dark.png)
 
-*Atelier dark in the 2 October local studio. [Capture details](docs/assets/screenshots/2026-10-02-docs/run.json).*
+*Graphite Night in the current local production build. [Capture details](docs/assets/screenshots/2026-10-15-current-ui/run.json).*
 
-![Cozy Classic light, with warm parchment panels, plum borders and the same PixiBun starter characters.](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/studio-cozy-light.png)
+![Plum Day Studio with the same original three-frame built-in artwork.](docs/assets/screenshots/2026-10-15-current-ui/studio-cozy-classic-light.png)
 
-*Cozy Classic light, captured earlier on the same date. [Original capture details](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/run.json). These are visible theme examples, not color-contrast measurements or conformance evidence.*
+*Plum Day in the same build and with the same artwork. [All 16 appearances](docs/guides/themes.md). These illustrate themes; contrast and conformance checks have separate scope.*
 
 Our color system is authored in **OKLCH** color space to maintain perceptual uniformity, target WCAG AA contrast ratios (4.5:1 for body copy, 3:1 for large controls); actual compliance requires testing rendered states, and natural directional hue-shifting.
 
