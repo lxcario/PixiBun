@@ -113,6 +113,7 @@ The current tracked corpus is reconciled below. Present operating documents were
 | [docs/plans/research_grounded_product_roadmap.md](../plans/research_grounded_product_roadmap.md) | Retained | Reviewed for this UI scope; unrelated operating contract or proposal retained. |
 | [docs/releases/2026-10-13-studio-and-nibbli.md](2026-10-13-studio-and-nibbli.md) | Retained | Historical results/reference retained with original labels; no new verdict inferred. |
 | [docs/releases/2026-10-15-codebase-and-documentation.md](2026-10-15-codebase-and-documentation.md) | Updated | Updated current behavior, ownership, navigation or publication scope. |
+| [docs/releases/2026-10-15-labs-liquid-controls.md](2026-10-15-labs-liquid-controls.md) | Updated | Follow-up record: name-and-▾ triggers, hover droplet bud/pinch-off, liquid controls lab. |
 | [docs/releases/2026-10-15-studio-labs-motion.md](2026-10-15-studio-labs-motion.md) | Updated | Updated current behavior, ownership, navigation or publication scope. |
 | [docs/releases/v1.14.1-signoff.md](v1.14.1-signoff.md) | Retained | Historical results/reference retained with original labels; no new verdict inferred. |
 | [docs/research/PHASE4_ARTIST_UX_STUDY.md](../research/PHASE4_ARTIST_UX_STUDY.md) | Retained | Historical results/reference retained with original labels; no new verdict inferred. |
