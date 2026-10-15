@@ -1,0 +1,211 @@
+/* Labs: Dynamic island. Delete with src/experimental/island. */
+
+.isl {
+  --isl-fill: var(--desk-surface-raised);
+  --isl-edge: var(--moon-card-edge, var(--desk-border));
+  --isl-tone: var(--accent-gold);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  max-width: 100%;
+  isolation: isolate;
+}
+
+.isl.tone-good { --isl-tone: var(--accent-sage, #8fd18f); }
+.isl.tone-info { --isl-tone: var(--accent-wisteria); }
+.isl.tone-warm { --isl-tone: var(--accent-gold); }
+
+/* The moonlit skin boxes every direct child of the drawing controls; the island draws its own shape */
+[data-layout="scene"] .moon-slot-rail > header > [role="group"][aria-label="Drawing controls"] > .isl {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-radius: 999px !important;
+}
+
+.isl-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* ── Liquid layer: island + bubble melt together through the goo filter ── */
+.isl-goo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.isl-blob,
+.isl-bubble-blob {
+  position: absolute;
+  border-radius: 999px;
+  background: var(--isl-fill);
+}
+
+.isl-blob { inset: 0; }
+.isl-bubble-blob { left: 100%; top: 0; }
+
+.isl-edge-flood { flood-color: var(--isl-edge); }
+
+/* ── Aurora: drifting theme light behind the island ── */
+.isl-aurora {
+  position: absolute;
+  inset: -8px -14px;
+  z-index: -1;
+  border-radius: 999px;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 110% at 12% 50%, var(--accent-gold), transparent 72%),
+    radial-gradient(38% 110% at 42% 50%, var(--accent-wisteria), transparent 72%),
+    radial-gradient(38% 110% at 70% 50%, var(--accent-plum), transparent 72%),
+    radial-gradient(38% 110% at 92% 50%, var(--accent-sage), transparent 72%);
+  background-size: 160% 100%;
+  background-repeat: no-repeat;
+  filter: blur(12px) saturate(1.2);
+  opacity: 0.42;
+  animation: isl-aurora 10s ease-in-out infinite alternate;
+  transition: opacity 420ms ease, transform 620ms cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.isl:hover .isl-aurora { opacity: 0.6; }
+.isl.is-active .isl-aurora { opacity: 0.95; transform: scale(1.08, 1.25); }
+
+/* A brighter aurora wave sweeps through when the island has news */
+.isl-aurora::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(100deg, transparent 20%, var(--isl-tone) 45%, var(--accent-wisteria) 55%, transparent 80%);
+  background-size: 250% 100%;
+  background-position: 120% 0;
+  opacity: 0;
+}
+
+.isl.is-active .isl-aurora::after { animation: isl-wave 1.4s ease-out both; }
+
+/* Aurora rim: a thin flowing line just inside the island's edge */
+.isl-rim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 999px;
+  padding: 1.5px;
+  pointer-events: none;
+  background: linear-gradient(90deg, var(--accent-gold), var(--accent-wisteria), var(--accent-plum), var(--accent-sage), var(--accent-gold)) 0 0 / 300% 100%;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.5;
+  animation: isl-flow 7s linear infinite;
+  transition: opacity 300ms ease;
+}
+
+.isl.is-active .isl-rim { opacity: 0.9; }
+
+/* ── Content ── */
+.isl-stage {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+}
+
+.isl-content {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  white-space: nowrap;
+}
+
+/* While the island changes size its stage clips to the pill, so outgoing controls melt inside it */
+.isl.is-morphing .isl-stage {
+  clip-path: inset(0 round 999px);
+}
+
+/* Inside the island the tool bar sheds its own box */
+.isl [data-testid="tool-options-rail"]:not(.absolute) {
+  background: transparent !important;
+  border-color: transparent !important;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+}
+
+.isl [data-testid="tool-options-button"] {
+  background: transparent !important;
+  border-color: transparent !important;
+  border-radius: 999px !important;
+}
+
+.isl-idle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.isl-idle-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent-sage, #8fd18f);
+  box-shadow: 0 0 8px var(--accent-sage, #8fd18f);
+  animation: isl-breathe 2.4s ease-in-out infinite;
+}
+
+/* ── Bubble face ── */
+.isl-bubble {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  pointer-events: none;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--isl-tone);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--isl-tone) 70%, transparent);
+}
+
+@keyframes isl-aurora {
+  0% { background-position: 0% 50%, 30% 50%, 70% 50%, 100% 50%; }
+  50% { background-position: 45% 30%, 0% 70%, 100% 40%, 55% 60%; }
+  100% { background-position: 100% 60%, 70% 40%, 20% 55%, 0% 45%; }
+}
+
+@keyframes isl-flow { to { background-position: 300% 0; } }
+
+@keyframes isl-wave {
+  0% { opacity: 0; background-position: 120% 0; }
+  25% { opacity: 0.9; }
+  100% { opacity: 0; background-position: -60% 0; }
+}
+
+@keyframes isl-breathe {
+  0%, 100% { opacity: 0.55; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .isl-aurora, .isl-aurora::after, .isl-rim, .isl-idle-dot { animation: none !important; }
+}

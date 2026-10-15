@@ -22,6 +22,7 @@ import { DitherMatrixType, WallpaperGroup } from '@/types/tools';
 import { MAX_PROJECT_NAME_LENGTH } from '@/lib/project/metadataAdmission';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
+import { IslandSlot } from '@/experimental/island/DynamicIsland';
 
 const CVD_LENS_BUTTON_LABELS: Record<CvdLensMode, string> = {
   none: 'OFF',
@@ -405,6 +406,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
 
       {/* Center Zone: Active tool options are symmetrically centered */}
       <div ref={toolMenuRef} role="group" aria-label="Drawing controls" className="relative flex-1 min-w-0 flex items-center justify-center">
+        <IslandSlot contentKey={tools.activeTool} idleLabel={hasToolParams || hasExpandedToolParams ? undefined : toolLabel}>
         {hasExpandedToolParams && <button type="button" data-testid="tool-options-button"
           aria-label={`${toolLabel} tool options`} aria-expanded={isToolMenuOpen} aria-controls={toolOptionsId}
           onClick={() => setToolMenuFor(isToolMenuOpen ? null : tools.activeTool)}
@@ -663,6 +665,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             )}
           </div>
         ) : null}
+        </IslandSlot>
       </div>
 
       {/* ── 3. RIGHT ZONE: Canvas view, Workspace presets & Export ── */}
