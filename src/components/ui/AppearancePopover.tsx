@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { useThemeStore, type StudioTheme } from '@/stores/themeStore';
+import { LabsSwitchboard } from '@/experimental/LabsSwitchboard';
 import { STUDIO_THEMES } from '@/lib/theme/registry';
 import { usePreferencesStore } from '@/stores/preferencesStore';
 import { PixelIcon, type PixelIconName } from '@/components/ui/PixelIcon';
@@ -206,6 +207,8 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
                 <PixelIcon name={action.icon} size={12} />{action.label}
               </button>)}
             </div>}
+
+            {actions && <LabsSwitchboard />}
 
             {/* Studio Style Section: a compact grid, each card showing its palette for the current time of day */}
             <div
