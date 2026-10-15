@@ -33,7 +33,8 @@ const PaletteLibraryModal = lazyPanel(
   'Palette library'
 );
 
-export const PalettePanel: React.FC = () => {
+/** `basics={false}` leaves out the picker, palette chooser and swatches (Labs: Paint pot shows its own). */
+export const PalettePanel: React.FC<{ basics?: boolean }> = ({ basics = true }) => {
   const colorPinned = useWorkspaceStore(s => s.layout.color);
   const palettes = useStudioStore((s) => s.palettes);
   const currentPaletteId = useStudioStore((s) => s.currentPaletteId);
@@ -149,6 +150,7 @@ export const PalettePanel: React.FC = () => {
       }}
       className="flex flex-col bg-[var(--desk-surface)]"
     >
+      {basics && <>
       {/* 0. Color Studio: Wheel, HSV Sliders & Hex Controls */}
       <PinnedColorPanel defaultExpanded={true} pinned={colorPinned} />
 
@@ -245,6 +247,7 @@ export const PalettePanel: React.FC = () => {
           </TactileButton>
         </div>
       </InspectorSection>
+      </>}
 
       {/* 3. Grow the palette */}
       <InspectorSection title="Add colors">

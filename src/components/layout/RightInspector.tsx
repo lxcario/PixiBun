@@ -14,6 +14,8 @@ import { PinnedColorPanel } from '@/components/ui/ArtistColorPicker';
 
 import { PixiMotionPanel } from './inspector/PixiMotionPanel';
 import { MotionRigLibrary } from './inspector/MotionRigLibrary';
+import { useLab } from '@/experimental/labsStore';
+import { PaintPotPalette } from '@/experimental/palette/PaintPotPalette';
 
 const AiToolsPanel = lazyPanel(
   () => import('./inspector/AiToolsPanel').then((m) => m.AiToolsPanel),
@@ -36,6 +38,7 @@ export const RightInspector: React.FC = () => {
   const layout = useWorkspaceStore(s => s.layout);
   const primaryColor = useStudioStore((s) => s.primaryColor);
   const layerCount = useStudioStore((s) => s.frames[s.activeFrameIndex]?.layers.length ?? 0);
+  const paintPot = useLab('paletteStudio');
   const activeToolIcon = useStudioStore((s) => CANONICAL_TOOLS.find((tool) => tool.id === s.tools.activeTool)?.icon ?? 'pen');
 
   return (
@@ -86,7 +89,7 @@ export const RightInspector: React.FC = () => {
           <>
             {activeInspectorTab === 'tools' && <><MotionRigLibrary /><ToolSettingsPanel /></>}
             {activeInspectorTab === 'layers' && <LayersPanel />}
-            {activeInspectorTab === 'palette' && <PalettePanel />}
+            {activeInspectorTab === 'palette' && (paintPot ? <PaintPotPalette /> : <PalettePanel />)}
             {activeInspectorTab === 'ai' && <AiToolsPanel />}
           </>
         )}
