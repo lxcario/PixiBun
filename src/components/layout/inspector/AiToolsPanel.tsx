@@ -11,6 +11,8 @@ import { PixiBudAssistanceSection } from './PixiBudAssistanceSection';
 import { AnimationReviewSection } from './AnimationReviewSection';
 import { ResearchWorkbenchSection } from './ResearchWorkbenchSection';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useLab } from '@/experimental/labsStore';
+import { QuickMagic } from '@/experimental/magic/QuickMagic';
 
 type DomainKey = 'start' | 'all' | 'lighting' | 'tileset' | 'polish' | 'animation' | 'research';
 
@@ -48,6 +50,7 @@ function initialDomain(): DomainKey {
 export const AiToolsPanel: React.FC = () => {
   const [activeDomain, setActiveDomain] = useState<DomainKey>(initialDomain);
   const panelRef = useRef<HTMLDivElement>(null);
+  const quickMagic = useLab('quickMagic');
 
   const chooseDomain = (domain: DomainKey) => {
     panelRef.current?.parentElement?.scrollTo(0, 0);
@@ -76,9 +79,10 @@ export const AiToolsPanel: React.FC = () => {
     <div ref={panelRef} className="h-full flex-1 flex flex-col min-h-0 bg-[var(--desk-surface)]">
       {activeDomain === 'start' ? (
         <>
-          <div className="px-3 pt-3 pb-2.5">
-            <p className="insp-eyebrow text-[var(--accent-gold)]">PixiTools</p>
-            <h2 className="mt-1 font-sans text-[15px] leading-5 font-bold text-[var(--text-heading)]">What would you like to do?</h2>
+          {quickMagic && <QuickMagic />}
+          <div className={quickMagic ? 'px-3 pt-3 pb-2 mt-1 border-t border-dashed border-[var(--desk-border-highlight)]/50' : 'px-3 pt-3 pb-2.5'}>
+            <p className="insp-eyebrow text-[var(--accent-gold)]">{quickMagic ? 'Deeper tools' : 'PixiTools'}</p>
+            <h2 className="mt-1 font-sans text-[15px] leading-5 font-bold text-[var(--text-heading)]">{quickMagic ? 'Want more control?' : 'What would you like to do?'}</h2>
             <p className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] leading-4 text-[var(--text-muted)]">
               <PixelIcon name="eye" size={11} className="shrink-0 text-[var(--accent-wisteria)]" />
               Everything previews first. Your artwork changes only when you apply.
