@@ -37,7 +37,7 @@ Use **Preview lighting** when you want to see it first. **Apply lighting** is a 
 
 ## Saved lighting and glint effects
 
-Applying supported photometric or specular previews creates or updates a dedicated tagged effect layer with a saved recipe and source information. Open **Layers**, select that layer, and use **Edit lighting/glint effect** to reopen its bulb. This lets you revise an effect without repeatedly baking the previous result into itself.
+Applying supported photometric or specular previews creates or updates a dedicated tagged effect layer with a saved recipe and source information. Open **Layers**, select that layer, and use **Edit FX** to reopen its bulb (the accessible label names the lighting/glint effect). This lets you revise an effect without repeatedly baking the previous result into itself.
 
 Keep its source artwork intact. Changing source pixels can make a recipe's source information stale; inspect the status rather than assuming it will reproduce the earlier image. Effect recipes travel in the portable project backup. Normal-map previews and generated raster layers remain different things.
 

@@ -8,7 +8,7 @@ Current engineering verification and remaining release checks are recorded in th
 
 **Pixels with a pulse.** A cozy studio for hand-made pixel art and animation.
 
-Make a small character, a flickering flame, or the first tile of a world. PixiBun gives you a place to draw, light it with the Lamp and bring those little things to life, right in your browser. Hand-made, never generated: PixiBun contains no generative AI ([our pledge](src/app/pledge/page.tsx), published at `/pledge`). No account needed.
+Make a small character, a flickering flame, or the first tile of a world. PixiBun gives you a place to draw, light it with the Lamp and bring those little things to life, right in your browser. Hand-made, never generated: PixiBun contains no generative AI ([pledge page source](src/app/pledge/page.tsx), served at `/pledge`). No account needed.
 
 Plum shadows, wisteria accents, amber buttons and a few live pixel glints make Plum (called Cozy Classic when this was captured) feel like a desk with the lamp still on.
 
@@ -49,7 +49,7 @@ The [latest source review](docs/releases/2026-10-15-codebase-and-documentation.m
 ## Your first few pixels
 
 1. Open the studio and choose **File → New drawing**. A canvas 32 pixels wide and 32 pixels tall is a comfortable place to begin.
-2. Choose a color and draw with **Pen**. Press **B** for Pen or **E** for Eraser; **Ctrl/Cmd+Z** undoes a step.
+2. Choose a color and draw with **Pen**. Press **B** for Pen or **E** for Eraser; **Ctrl/Cmd+Z** undoes a step; **Ctrl/Cmd+Shift+Z** or **Ctrl/Cmd+Y** redoes it.
 3. Open **Palette** to make a small set of colors. A few shades are enough for a face, a flower or a tiny house.
 4. Add a frame to try an animation. Turn on **Onion Skin** to see faded guides from the neighboring poses.
 5. Use **Save**, then **Export** when you're ready to keep a project backup or share an image.

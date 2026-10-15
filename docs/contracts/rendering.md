@@ -60,7 +60,7 @@ The combined ledger has a 512 MiB admission limit for estimated registered owner
 
 ### Studio playback under delayed callbacks
 
-The current [Studio timeline clock](../../src/components/layout/BottomTimeline.tsx) accumulates elapsed rAF timestamp differences, limiting each contribution to 250 ms. It preserves the fractional remainder, consumes multiple frame holds when necessary and publishes only the final pose for that callback. A short pose can therefore be consumed without publication after a browser scheduling stall. Hidden-page callbacks reset the timestamp rather than catching up hidden time; preview speed does not rewrite stored/exported holds.
+The current [shared playback clock](../../src/hooks/studio/usePlaybackClock.ts), mounted once by each workspace, accumulates elapsed rAF timestamp differences, limiting each contribution to 250 ms. It preserves the fractional remainder, consumes multiple frame holds when necessary and publishes only the final pose for that callback. A short pose can therefore be consumed without publication after a browser scheduling stall. Hidden-page callbacks reset the timestamp rather than catching up hidden time; preview speed does not rewrite stored/exported holds.
 
 The existing [fractional-time tests](../../tests/components/BottomTimeline.test.tsx) explicitly exercise this catch-up behavior. This describes the implementation, not a guarantee that every pose reaches the screen under load. Nibbli's stricter ordered visible-pose assertion remains unchanged. Local WebKit clock diagnosis found consistent arithmetic and fast composition alongside long rAF gaps; scheduling stability and physical display latency remain unqualified in [current status](../current-status.md).
 
@@ -73,6 +73,8 @@ Iso Line reads isoAngleSnap in both [shape preview and commit](../../src/hooks/v
 Current bulb **Off/Soft/Crisp** glints use a stylized GGX-shaped response quantized into a core and shoulder. It is not a full physically based BRDF. Legacy Blinn–Phong pill code and the small shared-light research renderer are separate modes. Preserve ink, alpha and painted-normal priority; qualify on actual artwork rather than only changed bytes.
 
 The content-aware base combines macro-form and material-scale height; appendage boosts/cache inference can depend on light direction. Do not promise all geometry is invariant with azimuth. Dome profiles have a nonzero apex slope; blend weights and normal rounding follow the implementation. The current cel ramp uses shadow/deep factors 0.86/0.72 with lightness floors/minimum drops. Geometry heuristics, material presets and anatomical labels are estimates, not recovered physical shape/material.
+
+`buildCelRamp()` retains its input OKLCH hue/chroma coordinates while changing lightness; RGB gamut conversion can alter realized coordinates. Optional source-shading normalization and subsequent material/glint operations are separate. Do not generalize this ramp property to every output pixel. Normal-map Bake uses the worker dispatcher; live photometric analysis and Apply remain synchronous main-thread operations in [usePhotometricEvents](../../src/hooks/viewport/events/usePhotometricEvents.ts).
 
 The chisel encodes normalized tangent vectors using `round((N+1)*127.5)`. OpenGL convention is +Y up; light direction math uses screen +Y down where appropriate. See [normalSculptor.ts](../../src/lib/art/normalSculptor.ts) and [photometricLighting.ts](../../src/lib/ai/math/photometricLighting.ts). Minecraft topology rejects void pollution at 25%; this is PixiBun's heuristic, not a Mojang validity rule.
 
@@ -113,7 +115,7 @@ Try a new look supports bounded protected simplification, shared light and small
 | Operation family | Worker and fallback contract |
 | --- | --- |
 | GIF | Transfers owned snapshots; missing-worker/initialization fallback uses still-owned input. Failure after transfer rejects; detached arrays or freshly changed artwork are not used for a silent retry |
-| Heavy math (EDT/normal/rotation/morph/WFC) | Dispatcher deadlines/cancellation; supported synchronous fallbacks can block the UI and are not equivalent to continuous cancellation |
+| Heavy worker math (EDT normal-map Bake, rotation, morph; internal WFC retained) | Dispatcher deadlines/cancellation, at most four pending requests and a 10-second default deadline; fallback is bounded to 1,048,576 estimated work units and can block the UI. Live photometric analysis/Apply remains main-thread work |
 | Animation review | Bounded scan worker, source freshness and intentional exceptions; metrics can flag deliberate changes |
 | Research | Owned bounded worker and deadline; stale/cancelled output refused; recipes retain source fingerprints |
 

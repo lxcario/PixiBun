@@ -1,4 +1,4 @@
-#  Design System & Spatial Architecture — PixiBun Atelier
+# Design System & Spatial Architecture — PixiBun
 
 Current engineering verification and remaining release checks are recorded in the [current status](docs/current-status.md).
 
@@ -42,8 +42,8 @@ These are design rules and targets for new work, not a declaration that every ex
   * `.texture-dither`: 4px static checkerboard pattern at $\le 6\%$ opacity for inset wells and recessed slider tracks.
   * `.texture-wood-grain`: Static linear gradient streaks representing brushed timber grain.
 * **Anti-Slop Discipline:**
-  * **Zero ambient floating or bobbing animations.** Elements stay anchored to their physical surfaces.
-  * **Zero generic AI sparkles () as feature markers.**
+  * **Keep workbench controls anchored.** Procedural scene particles, Bun reactions and the optional Day/Night reveal are deliberate current exceptions; respect reduced-motion handling in their owners.
+  * **Avoid generic AI sparkles as feature markers.**
   * **Zero template purple/cyan gradients.** All tones are derived strictly from our semantic OKLCH palette tokens.
 
 ---
@@ -52,9 +52,9 @@ These are design rules and targets for new work, not a declaration that every ex
 
 ### Historical studio references — 2 October 2026
 
-![Current Atelier dark studio, with amber controls and a restrained modern workspace around the original PixiBun starter artwork.](docs/assets/screenshots/2026-10-02-docs/studio-atelier-dark.png)
+![Historical Atelier dark studio, with amber controls and a restrained modern workspace around the original PixiBun starter artwork.](docs/assets/screenshots/2026-10-02-docs/studio-atelier-dark.png)
 
-*Atelier dark in the current local studio. [Capture details](docs/assets/screenshots/2026-10-02-docs/run.json).*
+*Atelier dark in the 2 October local studio. [Capture details](docs/assets/screenshots/2026-10-02-docs/run.json).*
 
 ![Cozy Classic light, with warm parchment panels, plum borders and the same PixiBun starter characters.](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/studio-cozy-light.png)
 
@@ -68,9 +68,13 @@ graph LR
     Base --- Shadow[" Cool Plum Shadow<br/>(H ≈ 285° - 295° #3A2E4C)"]
 ```
 
-### 1. Atelier Theme Tokens (Modern Workstation Baseline)
+<a id="1-atelier-theme-tokens-modern-workstation-baseline"></a>
 
-#### Atelier Dark (Default Midnight Studio)
+### 1. Historical Atelier Theme Tokens — 2 October 2026
+
+<a id="atelier-dark-default-midnight-studio"></a>
+
+#### Atelier Dark — default at that capture
 | Token Variable | Hex Code | Role & Context |
 |---|---|---|
 | `--desk-bg` | `#16141a` | Neutral dark slate room backdrop |
@@ -190,9 +194,9 @@ stateDiagram-v2
 
 ## 5. 16-Bit Pixel Cursor & Interactive Atmosphere
 
-On fine-pointer devices (mouse / trackpad), the landing hero uses custom pixel cursors and click sparks:
+On fine-pointer devices (mouse / trackpad), the landing hero uses custom pixel cursors. Its current interactions are owned by [NightHero](src/components/landing/night/NightHero.tsx):
 * **Custom SVG Cursors:** Sharp pixel-art quill/arrow for resting state and an illuminated golden wand for clickable elements.
-* **Click Sparks (`ClickSpark.tsx`):** Short amber and wisteria particles on pointer activation.
+* **Hero interactions:** Bun taps trigger companion reactions; drawing in the sky adds temporary constellations. `src/components/reactbits/ClickSpark.tsx` is retained source but is not mounted by the current app.
 
 ---
 
@@ -256,7 +260,7 @@ Keyboard conventions for rapid drafting ergonomics:
 ### Classical Timing vs. Spacing Principles
 Grounded in Richard Williams (*The Animator's Survival Kit*) and Disney's 12 Principles of Animation:
 * **Current Timeline Frame Cards:** [BottomTimeline](src/components/layout/BottomTimeline.tsx) uses fixed 72px-wide cards. Each displays its frame number and duration in milliseconds; an absent explicit hold falls back to `round(1000 / fps)`. Duration-proportional card widths and a special long-hold badge are not implemented controls.
-* **Ghost Frame Spacing Falloff:** Onion skin ghost opacity scales down progressively with frame distance ($1 - 0.25 \times (\text{dist} - 1)$) so distant poses do not overwhelm adjacent in-betweens.
+* **Ghost Frame Spacing Falloff:** [onionSkin](src/lib/render/onionSkin.ts) uses $\max(0.1, 1 - 0.25 \times (\text{dist} - 1))$, multiplied by the configured opacity and clamped to $[0,1]$. Ghosts render only when enabled, with multiple frames and playback paused.
 
 ---
 
@@ -267,7 +271,7 @@ Grounded in Ben Shneiderman's 1983 direct-manipulation paradigm:
 * **Decoupled Focal Reticle Anchor:** An independent central focal reticle handle (`lightCenterX`, `lightCenterY` / `stageCentroid`). Artists can reposition the focal anchor without perturbing the light direction angle, or orbit the bulb token around the anchor with zero drift.
 * **Azimuth Sweep Arc & Distance Line:** A subtle dashed indicator connecting the focal point to the orbiting bulb, visualizing the directional ray in real-time.
 * **Tactile Physics & rAF-Scheduled Updates:** Dragging either handle recalculates azimuth ($\theta = (\text{atan2}(dx, -dy) \times \frac{180}{\pi} + 360) \pmod{360}$) and elevation, rendering in-place preview frames via throttled `requestAnimationFrame` with a low-latency target; complete interaction latency remains unmeasured.
-* **HUD Hotkeys & Micro-Steppers:** Embedded HUD pill with tactile `[-]` / `[+]` brightness steppers, mouse wheel scroll intensity adjustment, quick commit (<kbd>Enter</kbd>), cancel (<kbd>Esc</kbd>), and focal anchor reset (<kbd>R</kbd>).
+* **HUD Hotkeys & Micro-Steppers:** Embedded HUD pill with tactile `[-]` / `[+]` brightness steppers, mouse wheel scroll intensity adjustment, quick commit (<kbd>Enter</kbd>), cancel (<kbd>Esc</kbd>), and focal anchor reset (<kbd>Alt</kbd>+<kbd>R</kbd>).
 
 ---
 
@@ -319,7 +323,7 @@ The shared component library supplies tactile, labeled primitives. Current contr
 | **StudioNumberInput** | Labeled numeric input with min/max bounds, step increments, and unit suffix | Native number/spinbutton semantics; blur/Enter commit |
 | **StudioTooltip** | Delay-activated (400ms default) tooltip with position anchors (top/bottom/left/right) | Keyboard focus trigger, shortcut badge display |
 | **IconButton** | 24–32px square tactile button with ghost/surface/danger variants and translation depression | `focus-visible:ring-2`, `aria-label` required, disabled state |
-| **PanelSection** | Collapsible accordion with chevron indicator and action header slot | `aria-expanded`, persistent `localStorage` open/closed state |
+| **PanelSection** | Collapsible accordion with chevron indicator and action header slot | `aria-expanded`; open/closed state persists in `localStorage` only when a `storageKey` is supplied |
 
 ### Token Integration
 All primitives consume the v2 design token scale defined in `globals.css`:
@@ -333,7 +337,7 @@ The `AppearancePopover` (`src/components/ui/AppearancePopover.tsx`) consolidates
 1. **Studio Theme:** Moonlit, Sakura, Tidepool, Ember, Moss, Arcade, Graphite (`atelier`) or Plum (`cozy-classic`), sourced from `src/lib/theme/themes.json`.
 2. **Color Scheme:** Dark or Light.
 
-Live preview swatches show the target theme's accent/surface colors. Selection triggers `applyThemeToDOM()` in `themeStore.ts` with transition suppression, suppressing simultaneous transition animations.
+Live preview swatches show the target theme's accent/surface colors. The popover uses `applyThemeToDOM()` in `themeStore.ts`, briefly suppressing ordinary CSS transitions. Its Day/Night buttons apply directly. The homepage Daylight switch additionally uses [themeTransition](src/lib/theme/themeTransition.ts), with an immediate reduced-motion/unsupported fallback.
 
 ---
 
@@ -343,7 +347,7 @@ Phase 63 standardizes brand mark geometry into a single responsive component (`s
 
 ### Scale Hierarchy
 
-| Scale | Mascot Tile Size | Mascot Graphic | Title Typography | Subtitle Typography | Container Gap |
+| Scale | Mascot Tile Size | Mascot Graphic | Title Typography | Optional Subtitle Typography | Container Gap |
 |---|---|---|---|---|---|
 | `'sm'` | `w-7 h-7` (28px) | 18px | `text-xs font-display` | `text-[9px] font-mono` | `gap-2` (8px) |
 | `'md'` | `w-8 h-8` (32px) | 22px | `text-sm font-display` | `text-[10px] font-mono` | `gap-2.5` (10px) |
@@ -351,8 +355,8 @@ Phase 63 standardizes brand mark geometry into a single responsive component (`s
 
 ### Design Invariants
 * **Tactile Mascot Tile:** Housed in a raised bezel (`bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] shadow-sm`) with Bun mascot micro-animation.
-* **Dual Typography Lockup:** Crisp uppercase heading (`font-display font-bold tracking-wider text-[var(--text-heading)]`) stacked over a tracked amber sub-brand (`font-mono text-[var(--accent-gold)] tracking-tight ATELIER`).
-* **Subtle Elevation:** Renders with `drop-shadow-sm` on studio bars and `drop-shadow-md` on hero and footer surfaces.
+* **Typography Lockup:** `PIXIBUN` uses display type with `tracking-wider` at sm/md and `tracking-widest` at lg. The optional amber `STUDIO` subtitle uses mono type and `tracking-tight`; `showSubtitle` defaults to true.
+* **Elevation:** The mascot tile supplies `shadow-sm`. Additional wrapper styling comes from the caller's `className`/`style`; the logo does not enforce hero/footer drop-shadow variants.
 
 ---
 
@@ -361,12 +365,12 @@ Phase 63 standardizes brand mark geometry into a single responsive component (`s
 Grounded in non-destructive digital art workflows (such as Blender geometry nodes and Photoshop smart filters):
 
 ### 1. Layers Panel FX Provenance
-Layers generated by PixiBud smart features (photometric lighting, bounded 2.5D cast shadows, volumetric optics, normal maps, autotile contours, WFC synthesis) display a distinct golden `FX` indicator badge in `LayersPanel.tsx` when they carry a saved effect recipe:
-* Visual tag signaling that the layer was generated parametrically rather than painted by hand.
+Any layer with a saved `effect` displays the wisteria `FX` badge in [LayersPanel](src/components/layout/inspector/LayersPanel.tsx). The active-layer card exposes kind, source mode, version, selected parameters and available analysis rationale. Current generated effects and retained legacy recipes share the badge; legacy volumetric-optics/WFC layers are explicitly described as saved pixels, not current synthesis controls:
+* The tag identifies stored effect provenance; it does not prove that the present raster is still an unedited algorithm output.
 * Hover tooltip displays the recipe generation kind (`Generated from a saved photometric recipe`).
 
 ### 2. Live Recipe Reopening (`Edit FX`)
-Photometric lighting layers include a tactile `Edit FX` button:
+Photometric and specular layers offer `Edit FX` with an accessible label naming the lighting/glint effect. Other effect kinds do not all support reopening:
 * Clicking `Edit FX` loads the saved `LayerEffectRecipe.params` into the studio store.
 * Mounts the `PixelLightBulbGizmo` directly in place on the canvas with the exact azimuth, elevation, brightness, and material previously applied.
 * Artists can adjust the light angle or intensity in real-time and commit changes non-destructively, preserving the underlying hand-drawn artwork untouched.
@@ -385,10 +389,13 @@ Photometric lighting layers include a tactile `Edit FX` button:
 In retro arcade and pixel art styles, surfaces are shaded using controlled, discrete tonal ramps rather than continuous 24-bit gradients. Phase 63 formalizes pixel-art cel-shading band modes and specular highlights:
 
 ### 1. Shading Tones Modes
-* **1 Single (2 Total Colors):** Classic 2-tone arcade shading (base color + single directional shadow tone). Ideal for clean game sprites and low-color retro palettes (e.g. Capcom CPS2).
-* **2 Dual (3 Total Colors):** Core shadow + deep boundary shadow. The studio default, providing depth and form definition without visual clutter.
-* **3 Trio (4 Total Colors):** Soft penumbra ($L \approx 0.93 \cdot L_{\text{base}}$) + core mid-shadow + deep umbra crescent. Emulates rich hand-drawn anime and 16-bit RPG boss sprites.
-* **Studio Controls:** Available via the `Shading Tones` button group in the inspector and on the on-canvas `PixelLightBulbGizmo` bottom HUD (`SHADE: 1 | 2 | 3`).
+
+These counts describe directional shadow choices per base color, not the entire output palette. Cavity shading can select the deep tone even in Single mode; multicolor artwork, highlights, glints and other material operations can add output colors.
+
+* **1 Single:** Base color plus one directional shadow choice, with separate cavity handling. Ideal for clean game sprites and low-color retro palettes (e.g. Capcom CPS2).
+* **2 Dual:** Core shadow + deep boundary shadow. The studio default, providing depth and form definition without visual clutter.
+* **3 Trio:** Soft penumbra ($L \approx 0.93 \cdot L_{\text{base}}$) + core mid-shadow + deep umbra crescent. Emulates rich hand-drawn anime and 16-bit RPG boss sprites.
+* **Studio Controls:** The inspector's **Shading style** disclosure contains the **Shading tones count** group (1 tone / 2 tones / 3 tones). The bulb HUD labels its 1/2/3 choices **Shade**.
 
 ### 2. Current live pixel glints
 
