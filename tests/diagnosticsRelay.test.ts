@@ -18,8 +18,10 @@ describe('POST /api/diagnostics/relay (SSRF guard & proxy)', () => {
     }
   });
 
-  it('returns 503 when DIAGNOSTICS_RELAY_URL is unset (reports stay local)', async () => {
+  it('returns 503 without forwarding when DIAGNOSTICS_RELAY_URL is unset', async () => {
     delete process.env.DIAGNOSTICS_RELAY_URL;
+    const forward = vi.fn();
+    globalThis.fetch = forward;
 
     const req = new Request('http://localhost:3000/api/diagnostics/relay', {
       method: 'POST',
@@ -29,7 +31,8 @@ describe('POST /api/diagnostics/relay (SSRF guard & proxy)', () => {
     const res = await POST(req);
     expect(res.status).toBe(503);
     const json = await res.json();
-    expect(json.error).toContain('not configured on this server; reports stay local');
+    expect(json.error).toContain('not configured on this server; no reports were forwarded');
+    expect(forward).not.toHaveBeenCalled();
   });
 
   it('ignores any client-supplied endpoint in request body and only uses env-configured URL', async () => {

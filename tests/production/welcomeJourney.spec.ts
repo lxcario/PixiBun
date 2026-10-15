@@ -32,8 +32,9 @@ test('the welcome journey sets skill, look and a first drawing, and does not ret
   expect(JSON.parse((await page.evaluate(() => localStorage.getItem('pixibun-preferences')))!)).toMatchObject({ experience: 'new', tipsEnabled: true });
 });
 
-test('a newcomer gets a one-time tip beside the canvas after the first stroke, and can turn tips off', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('pixibun-preferences', JSON.stringify({ experience: 'new', onboardedAt: 1, seenTips: [], tipsEnabled: true })));
+for (const [keymap, panKey] of [['standard', 'Space'], ['classic', 'Alt']] as const) {
+test(`a newcomer gets the ${keymap} pan tip beside the canvas and can turn tips off`, async ({ page }) => {
+  await page.addInitScript(keymap => localStorage.setItem('pixibun-preferences', JSON.stringify({ experience: 'new', onboardedAt: 1, seenTips: [], tipsEnabled: true, keymap })), keymap);
   await page.goto('/studio', { waitUntil: 'domcontentloaded' });
   await page.locator('[data-restoration-phase="active"]').waitFor();
   const canvas = page.getByTestId('main-composite-canvas');
@@ -41,6 +42,8 @@ test('a newcomer gets a one-time tip beside the canvas after the first stroke, a
   await page.mouse.click(box.x + box.width * 0.4, box.y + box.height * 0.4);
   const tip = page.getByTestId('coach-tip-first-edit');
   await expect(tip).toBeVisible();
+  await expect(tip).toContainText(`hold ${panKey} and drag`);
+  await expect(page.getByRole('application', { name: /^Pixel art drawing canvas/ })).toHaveAttribute('aria-label', new RegExp(`${panKey}\\+drag to pan`));
   // The tip never covers the canvas it is talking about.
   const tipBox = (await tip.boundingBox())!;
   const overlaps = tipBox.x < box.x + box.width && tipBox.x + tipBox.width > box.x && tipBox.y < box.y + box.height && tipBox.y + tipBox.height > box.y;
@@ -49,6 +52,7 @@ test('a newcomer gets a one-time tip beside the canvas after the first stroke, a
   await expect(tip).toHaveCount(0);
   expect(JSON.parse((await page.evaluate(() => localStorage.getItem('pixibun-preferences')))!)).toMatchObject({ tipsEnabled: false, seenTips: ['first-edit'] });
 });
+}
 
 test('the Studio menu replays the welcome journey', async ({ page }) => {
   await page.goto('/studio', { waitUntil: 'domcontentloaded' });

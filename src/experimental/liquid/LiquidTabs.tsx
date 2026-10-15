@@ -7,8 +7,8 @@ import './liquid.css';
 type TabLike<T extends string> = { id: T; ariaLabel: string; title: string };
 
 /* Springs tuned to feel like iOS tab bars: a lively snap, and a soft lift into glass. */
-const SNAP: Transition = { type: 'spring', stiffness: 520, damping: 30, mass: 0.9 };
-const FOLLOW: Transition = { type: 'spring', stiffness: 1100, damping: 60, mass: 0.6 };
+const SNAP: Transition = { type: 'spring', stiffness: 300, damping: 25, mass: 0.9 };
+const FOLLOW: Transition = { type: 'spring', stiffness: 700, damping: 50, mass: 0.6 };
 const HOLD_MS = 170;
 const DRAG_SLOP = 5;
 
@@ -36,7 +36,7 @@ export function LiquidTabs<T extends string, Item extends TabLike<T>>({ tabs, ac
   const w = useMotionValue(0);
   // Elastic: the faster the lens travels, the more it stretches along the bar and thins across it.
   const vx = useVelocity(x);
-  const speed = useSpring(useTransform(vx, v => Math.min(Math.abs(v) / 2600, 0.32)), { stiffness: 600, damping: 40 });
+  const speed = useSpring(useTransform(vx, v => Math.min(Math.abs(v) / 3400, 0.2)), { stiffness: 420, damping: 40 });
   const lift = useMotionValue(1);
   const scaleX = useTransform([speed, lift], ([s, l]: number[]) => l * (1 + s));
   const scaleY = useTransform([speed, lift], ([s, l]: number[]) => l * (1 - s * 0.45));
@@ -84,7 +84,7 @@ export function LiquidTabs<T extends string, Item extends TabLike<T>>({ tabs, ac
     if (!d || d.live) return;
     d.live = true;
     setGlass(true);
-    if (!reduce) animate(lift, 1.14, { type: 'spring', stiffness: 420, damping: 18 });
+    if (!reduce) animate(lift, 1.1, { type: 'spring', stiffness: 300, damping: 22 });
     try { barRef.current?.setPointerCapture(d.id); } catch { /* The pointer was already released. */ }
   };
 
@@ -111,7 +111,7 @@ export function LiquidTabs<T extends string, Item extends TabLike<T>>({ tabs, ac
     suppressClick.current = true;
     setGlass(false);
     setUnder(null);
-    if (!reduce) animate(lift, 1, { type: 'spring', stiffness: 380, damping: 16 });
+    if (!reduce) animate(lift, 1, { type: 'spring', stiffness: 280, damping: 21 });
     const target = commit ? nearest(x.get() + w.get() / 2) : active;
     if (target !== active) onSelect(target);
     else settleOn(active);

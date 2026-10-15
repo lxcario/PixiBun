@@ -8,7 +8,7 @@ When an update is ready, **Restart to update** saves the active Studio drawing b
 
 ## Co-Draw
 
-![The Co-Draw host/join and routing controls before connecting.](../assets/screenshots/2026-10-02-feature-guide/co-draw.png)
+![Co-Draw initial routing and host/join controls, before any connection or invite is generated.](../assets/screenshots/2026-10-15-current-ui/co-draw.png)
 
 Open **Studio → Co-Draw**. The current workflow connects **one host and one guest** using WebRTC and manually exchanged tokens. There is no account, lobby, multi-person room or cloud-sync service.
 
@@ -41,22 +41,22 @@ Browser install/home-screen options depend on browser support and deployment. An
 
 ## Help and diagnostics
 
-![The in-app shortcut guide and link to Privacy & Diagnostics.](../assets/screenshots/2026-10-02-feature-guide/shortcuts-help.png)
+![The in-app Guide & Shortcuts; shortcuts for text fields are qualified in the handbook.](../assets/screenshots/2026-10-15-current-ui/shortcuts-help.png)
 
 Open **Studio → Help**, or **?** when the canvas owns keyboard input. The guide lists tool/edit/view/animation shortcuts; its **Privacy & Diagnostics** link opens the settings below. **Ctrl/Cmd+K** is an alternative way to find commands by name.
 
-![Local diagnostic logging and opt-in remote crash relay settings.](../assets/screenshots/2026-10-02-feature-guide/privacy-diagnostics.png)
+![Local diagnostics and disabled-by-default remote crash relay settings; no relay was enabled.](../assets/screenshots/2026-10-15-current-ui/privacy-diagnostics.png)
 
 | Control | What it does | A useful habit |
 | --- | --- | --- |
 | Enable local diagnostic ring buffer | Local diagnostic/performance records, enabled by default; bounded to 200 entries | Turn it off if you do not want ongoing local logging |
-| Opt-in remote crash relay | Enables the optional reporting path; off by default; destination is operator-configured | Enable deliberately only when you want that reporting path |
+| Send diagnostic reports (off by default) | Sends error/performance records to the site's reporting endpoint; the operator controls any onward destination | Inspect an exported report before opting in |
 | Export Diagnostics JSON | Downloads local records for inspection/sharing | Read the file before sharing it; free-text errors can include paths or context |
 | Clear Stored Logs | Clears retained diagnostic records | This is separate from deleting your artwork/projects |
 
 Repeated diagnostic events are suppressed for ten seconds, and burst/rate and pending-write limits can drop excess entries. Remote reporting sends small delayed batches and rechecks consent before sending; turning it off clears queued batches. Reports are best-effort and may be lost on page close.
 
-“Zero telemetry” in the in-app paragraph means remote reporting is off by default. Local logging does run by default; an opted-in configured relay can send reports. No upstream configuration means no forwarding to an upstream service. These distinctions are documented in the [security boundaries](../contracts/security-boundaries.md).
+Local logging runs by default; remote reporting is off by default. With reporting enabled, requests leave the browser for the site's server even if that server has no onward destination configured. In that case it returns an unavailable response and does not forward the report upstream. The pledge, footer and dialogs distinguish automatic local saving/logging from chosen sharing/reporting. Internet Co-Draw's Google connection service is disclosed separately from artwork transfer between peers. See the [security boundaries](../contracts/security-boundaries.md).
 
 To report a vulnerability privately, follow [SECURITY.md](../../SECURITY.md) and contact **resquedzn05@gmail.com**. No response deadline or bounty is promised. Do not post sensitive project files, secrets or an exploit publicly just to obtain a troubleshooting record.
 

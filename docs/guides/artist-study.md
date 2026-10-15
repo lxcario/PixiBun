@@ -28,7 +28,7 @@ The compiled `motionArtistJourney.spec.ts` checks the first complete path with i
 
 ## Moderator recovery instructions
 
-The starter card's **Give it a try** opens its artwork. In Studio, **Tools → Create Motion Part** captures the active layer when there is no selection, or captures the selected area. Set **Position X pixels**, **Motion frames** and **Motion easing**. **Save motion rig** stores its definition; use workspace **Save** to persist the project. **Cancel** exits temporary pose editing. Reopen with **Open** in the saved-rig library. **Bake to timeline** creates cels in one document Undo step. Motion Undo/Redo owns pose parameters while its session is open; exit the session to undo library/document changes. See [the artist guide](artist-workspace.md#save-a-motion-rig).
+The starter card's **Give it a try** opens its artwork. In Studio, **Tools → Animate artwork → Create Motion Part** captures the active layer when there is no selection, or captures the selected area. Set **Position X pixels**, **Motion frames** and **Motion easing**. **Save motion rig** stores its definition; use workspace **Save** to persist the project. **Cancel** exits temporary pose editing. Reopen with **Open** in the saved-rig library. **Bake to timeline** creates cels in one document Undo step. Motion Undo/Redo owns pose parameters while its session is open; exit the session to undo library/document changes. See [the artist guide](artist-workspace.md#save-a-motion-rig).
 
 ## Physical device and long-session checks
 

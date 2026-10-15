@@ -1,6 +1,6 @@
 # Documentation map
 
-Start with [current status](current-status.md) for scoped engineering results and remaining release work. Use the [artist handbook](guides/README.md) and [feature index](features.md) for practical workflows.
+Start with [current status](current-status.md) for scoped engineering results and remaining release work. Use the [artist handbook](guides/README.md), [Studio theme gallery](guides/themes.md) and [feature index](features.md) for practical workflows.
 
 ## Maintained documentation
 
@@ -16,7 +16,9 @@ Start with [current status](current-status.md) for scoped engineering results an
 
 ## Latest reconciliation
 
-[15 October source and documentation review](releases/2026-10-15-codebase-and-documentation.md) records recent code changes, per-file Markdown dispositions and current checks. Current guidance follows the integrated source; archived audits, release receipts and original screenshots retain their dated scope.
+[15 October source and documentation review](releases/2026-10-15-codebase-and-documentation.md) records the corpus review and per-file Markdown dispositions. The subsequent [four-phase audit follow-up](plans/2026-10-15-audit-follow-up.md) records the latest corrections, integrated checks and complete handbook-picture refresh. Current guidance follows the integrated source; archived audits, release receipts and original capture manifests retain their dated scope.
+
+The latest [Studio Labs motion update](releases/2026-10-15-studio-labs-motion.md) covers the integrated Labs behavior, the inspector merge, the final text-scale tuning and a disposition for every tracked Markdown file. User-facing instructions are in [Studio Labs](guides/studio-workspace.md#studio-labs), with implementation/removal details in [the Labs source guide](../src/experimental/README.md).
 
 ## Maintenance contract
 

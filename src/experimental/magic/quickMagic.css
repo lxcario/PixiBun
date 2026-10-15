@@ -46,7 +46,7 @@
   border: 2px solid var(--desk-border);
   background: color-mix(in srgb, var(--surface-0) 60%, transparent);
   cursor: pointer;
-  transition: transform 220ms cubic-bezier(.34, 1.56, .64, 1), border-color 120ms ease, box-shadow 160ms ease, background-color 120ms ease;
+  transition: transform 220ms cubic-bezier(.3, 1.25, .6, 1), border-color 120ms ease, box-shadow 160ms ease, background-color 120ms ease;
 }
 
 .qm-cast:hover {
@@ -62,7 +62,7 @@
 
 .qm-card.is-done .qm-cast {
   border-color: var(--accent-sage, #7d9d7f);
-  animation: qm-bounce 520ms cubic-bezier(.34, 1.56, .64, 1);
+  animation: qm-bounce 520ms cubic-bezier(.3, 1.25, .6, 1);
 }
 
 .qm-thumb {
@@ -107,7 +107,7 @@
   font-size: 10px;
   font-weight: 800;
   cursor: pointer;
-  animation: qm-pop 360ms cubic-bezier(.34, 1.56, .64, 1);
+  animation: qm-pop 360ms cubic-bezier(.3, 1.25, .6, 1);
 }
 
 .qm-undo-inline { position: static; }
@@ -145,7 +145,7 @@
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 200ms cubic-bezier(.34, 1.56, .64, 1), border-color 120ms ease;
+  transition: transform 200ms cubic-bezier(.3, 1.25, .6, 1), border-color 120ms ease;
 }
 
 .qm-mood:hover { transform: translateY(-1px); border-color: var(--accent-gold); color: var(--text-heading); }

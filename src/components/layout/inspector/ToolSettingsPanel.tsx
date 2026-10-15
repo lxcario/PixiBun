@@ -298,7 +298,13 @@ export function ToolSettingsPanel() {
       </InspectorSection>
 
       {!state.motionPart && (
-        <InspectorSection title="Animate" icon="rotate" meta="PixiMotion">
+        <details open={Boolean(state.selection)} data-testid="animate-artwork" className="group border-t border-[var(--desk-border)] px-3 py-2">
+          <summary className="min-h-8 flex items-center gap-2 text-xs font-semibold cursor-pointer">
+            <PixelIcon name="rotate" size={12} />
+            Animate artwork
+            <span aria-hidden="true" className="ml-auto group-open:rotate-90">▸</span>
+          </summary>
+          <div className="pt-2 pb-1">
           <p className="text-[11px] leading-4 text-[var(--text-muted)] mb-2">
             {state.selection
               ? 'Turn the selected pixels into one rigid part you can pose and tween.'
@@ -330,7 +336,8 @@ export function ToolSettingsPanel() {
               Merge visible layers &amp; animate
             </TactileButton>
           </div>
-        </InspectorSection>
+          </div>
+        </details>
       )}
     </section>
   );

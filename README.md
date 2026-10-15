@@ -10,13 +10,15 @@ Current engineering verification and remaining release checks are recorded in th
 
 Make a small character, a flickering flame, or the first tile of a world. PixiBun gives you a place to draw, light it with the Lamp and bring those little things to life, right in your browser. Hand-made, never generated: PixiBun contains no generative AI ([pledge page source](src/app/pledge/page.tsx), served at `/pledge`). No account needed.
 
-Plum shadows, wisteria accents, amber buttons and a few live pixel glints make Plum (called Cozy Classic when this was captured) feel like a desk with the lamp still on.
+Plum shadows, wisteria accents, amber buttons and a few live pixel glints make Plum feel like a desk with the lamp still on. [See all eight themes in Night and Day](docs/guides/themes.md).
 
-![PixiBun in Cozy Classic dark, with the Hearth Ghost, Little Shroom and Bun on the canvas, a palette beside them and three animation frames below.](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/studio-cozy-dark.png)
+![Plum Night Studio with the same original three-frame built-in artwork.](docs/assets/screenshots/2026-10-15-current-ui/studio-cozy-classic-dark.png)
 
 *A little company at the drawing desk. PixiBun's own starter characters, arranged in a three-frame project.*
 
 [Illustrated artist handbook](docs/guides/README.md) · [Every feature](docs/features.md) · [Your first few pixels](#your-first-few-pixels) · [Keep your work safe](#keep-your-work-safe) · [Run locally](#run-locally) · [Explore the docs](docs/README.md)
+
+**Make the desk your own.** The six scene themes include optional [Studio Labs](docs/guides/studio-workspace.md#studio-labs): a morphing tool island, liquid inspector tabs, a paint-pot palette and quick effects. Open **Studio → Labs** to switch experiments off individually or choose **Classic studio**. Graphite and Plum always use the classic interface.
 
 ## Small canvas, plenty of room to play
 
@@ -32,7 +34,7 @@ Palette cycling changes colors in the active frame. Draw changing poses in the t
 
 ## A little light for Bun
 
-![Bun in the current PixiBun lighting preview, with the light controls and Apply and Cancel buttons visible.](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/bun-lighting-preview.png)
+![Auto lighting on Bun with live bulb, angle and Apply/Cancel controls.](docs/assets/screenshots/2026-10-15-current-ui/lighting-live.png)
 
 *An afternoon experiment: turn the light, watch the colors, keep the version you like. This screenshot shows the preview before applying it.*
 
@@ -40,7 +42,7 @@ Palette cycling changes colors in the active frame. Draw changing poses in the t
 
 PixiBun has eight looks, each with a Night and a Day. Moonlit, Sakura, Tidepool, Ember, Moss and Arcade float the studio over their own animated pixel scene: a sleepy town, paper lanterns and petals, a glowing reef, rooftop sparks, fireflies, a neon grid. Graphite and Plum (the original PixiBun purple, shown below) stay flat and quiet. Your first visit to the Studio helps you pick one; open **Studio** to change it any time.
 
-![The same three-character project in Cozy Classic light, with warm parchment panels, plum outlines and amber controls.](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/studio-cozy-light.png)
+![Plum Day Studio with the same original three-frame built-in artwork.](docs/assets/screenshots/2026-10-15-current-ui/studio-cozy-classic-light.png)
 
 *The same little friends, with the curtains open.*
 
@@ -101,7 +103,7 @@ For agent developers, **Nibbli** is a repository companion that uses the real St
 | Run agent-driven drawing, editing or verification | [Nibbli](docs/guides/nibbli.md), [agent contract](docs/guides/nibbli-agent.md) and [milestones](docs/plans/nibbli.md) |
 | Explore ideas for the future | [v2 vision](V2_VISION.md), a proposal for future work |
 
-These screenshots show the local studio on **2 October 2026**, using Cozy Classic and PixiBun's own artwork. [About this version](docs/current-status.md) explains which changes are included and how they were checked. [Screenshot details](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/run.json) are available too.
+These screenshots show the local production build on **15 October 2026**, using PixiBun's own artwork. Compare [all eight Studio themes in Day and Night](docs/guides/themes.md). [About this version](docs/current-status.md) explains the scoped checks; [capture details](docs/assets/screenshots/2026-10-15-current-ui/run.json) record the build and images.
 
 PixiBun is licensed under the [MIT License](LICENSE).
 

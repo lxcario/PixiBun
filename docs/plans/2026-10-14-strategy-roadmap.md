@@ -1,6 +1,6 @@
 # Strategy roadmap — 14 October 2026
 
-This plan merges two documents dated 13 October 2026: *PixiBun: Where to Win* (strategy) and *PixiBun v1.14.1 Audit & Roadmap* (engineering audit). Their position: make PixiBun the studio for hand-made pixel art that comes alive (draw it, light it, loop it, pass it on), and fix the editing core before adding breadth. Status below is reconciled with main through `e9b5e682` and the integrated 15 October changes; earlier branch/commit labels retain their evidence scope. It is not release qualification.
+This plan merges two documents dated 13 October 2026: *PixiBun: Where to Win* (strategy) and *PixiBun v1.14.1 Audit & Roadmap* (engineering audit). Their position: make PixiBun the studio for hand-made pixel art that comes alive (draw it, light it, loop it, pass it on), and fix the editing core before adding breadth. Status below is reconciled with main through `fc737c59` and the [15 October audit follow-up](2026-10-15-audit-follow-up.md); earlier branch/commit labels retain their evidence scope. It is not release qualification.
 
 ## Phases
 

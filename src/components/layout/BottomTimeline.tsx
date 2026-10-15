@@ -410,7 +410,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                   <button type="button" onClick={() => setIsPreviewMenuOpen((open) => !open)}
                     aria-label={`Preview ${previewSpeed}× speed`} aria-expanded={isPreviewMenuOpen}
                     className="h-7 min-w-[102px] flex items-center justify-between gap-2 bg-[var(--surface-0)] px-2 rounded-[2px] border border-[var(--desk-border)] text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]">
-                    <span className="text-[var(--text-muted)] text-[10px]">Preview</span>{' '}
+                    <span className="text-[var(--text-muted)] text-[11px]">Preview</span>{' '}
                     <span className="font-mono text-[11px]">{previewSpeed}×</span>
                     <span aria-hidden="true" className="text-[var(--text-muted)]">▾</span>
                   </button>
@@ -430,7 +430,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
 
                 {/* Active Frame Duration Input */}
                 <div className="h-7 shrink-0 whitespace-nowrap flex items-center gap-1 bg-[var(--surface-0)] px-1.5 rounded-[2px] border border-[var(--desk-border)]">
-                  <span className="text-[var(--text-muted)] font-sans text-[10px]">Frame time</span>
+                  <span className="text-[var(--text-muted)] font-sans text-[11px]">Frame time</span>
                   <input
                     type="number"
                     min={ANIMATION_TIMING_LIMITS.durationMinMs}

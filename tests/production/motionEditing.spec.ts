@@ -1,3 +1,4 @@
+import { openMotionCapture } from '../helpers/motion';
 import { expect, test, type Page } from '@playwright/test';
 import { chooseTool } from '../helpers/tools';
 
@@ -14,7 +15,7 @@ async function setup(page: Page) {
   await chooseTool(page, 'select-box');
   await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.2); await page.mouse.down();
   await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.8, { steps: 4 }); await page.mouse.up();
-  await page.getByTestId('tab-tools').click(); await page.getByTestId('create-motion-part-btn').click();
+  await page.getByTestId('tab-tools').click(); await openMotionCapture(page); await page.getByTestId('create-motion-part-btn').click();
   await expect(page.getByTestId('piximotion-panel')).toBeVisible();
   return authored;
 }

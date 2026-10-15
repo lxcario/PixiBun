@@ -6,6 +6,8 @@ For artists: [illustrated handbook](docs/guides/README.md) and [complete feature
 
 PixiBun is a browser studio for small pixel-art drawings, sprites, tiles and animation loops. Its audience includes pixel artists, beginners and people making art for games. The visual direction is a readable drawing desk across eight styles, each with Night and Day palettes. Scene styles add animated pixel backgrounds; Graphite and Plum keep flat backgrounds.
 
+Scene themes also offer [Studio Labs](src/experimental/README.md): optional alternative controls for the tool bar, inspector tabs, palette and quick effects. They are experimental presentation choices; Graphite and Plum keep classic controls. They do not add a second drawing engine or change export contracts.
+
 ## Problem & Audience
 
 Artists need to draw, revise colors, compare animation poses and keep editable work without an account or a mandatory cloud service. Success means a usable drawing workflow, understandable previews, reversible edits and exports that preserve the chosen format's supported pixels and timing. Integrated stroke latency, long-session behavior and artist usefulness still need measurement; no sub-16ms result is established.
@@ -22,7 +24,7 @@ Artists need to draw, revise colors, compare animation poses and keep editable w
 | Try a new look | Image conversion, previewed cleanup, stylized lighting, normal sculpting and bounded research previews | [Rendering](docs/contracts/rendering.md); inferred shape/material is heuristic |
 | Rotate artwork | Direct quarter-turn mappings, contour-aware RotSprite v3 (silhouette, outline-ring, interior and detail layers) and integer-sampled Paeth rotation | [Algorithm scope](docs/contracts/rendering.md#pixel-art-rotation-rotsprite-v3); clipping and arbitrary-angle quality remain operation/fixture specific |
 | Make tiles | Repeat previews, exact unique-tile PNG/map bundles, contour review and bounded small tile-scene studies | [Tile guide](docs/guides/pixitools-cleanup-and-tiles.md); exact size/alpha and stale-result checks apply; a complete 47-tile atlas and general world generation are not shipped |
-| Keep and share work | Local saves, portable backups, recovery, image/animation exports and game-delivery formats | [Artwork safety](docs/guides/artwork-safety.md), [exports](docs/contracts/exports.md); named consumer tests do not qualify every engine/version |
+| Keep and share work | Local saves, portable backups, recovery, image/animation exports, game-delivery formats, project-carrying PNG carts, phone player, Light Sweep and optional making-of receipts | [Artwork safety](docs/guides/artwork-safety.md), [exports](docs/contracts/exports.md), [carts](docs/contracts/carts.md); named consumer tests do not qualify every engine/version or sharing platform |
 | Draw together | One host and one guest share pixels through WebRTC; the host owns structure | [Current status](docs/current-status.md); real two-machine and stress qualification remain pending |
 | Learn and personalize | Twelve coached desktop lessons with save-before-entry, Return and explicit Keep; eight Pocket lessons and a free pad; task-based PixiTools, searchable actions, eight Night/Day studio styles and a first-run welcome with level-based tips | [Learning contract](docs/contracts/learning.md), [design](DESIGN.md) |
 

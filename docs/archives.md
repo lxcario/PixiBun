@@ -14,6 +14,14 @@ This is a local retention receipt, not proof of an off-machine backup. New check
 
 ## Raw evidence
 
+### Replaced handbook pictures — 15 October 2026
+
+The current guides use fresh production-build pictures and a complete Day/Night theme gallery. Their **109 replaced PNGs /12,479,941 bytes** are preserved at `D:\PixiBun\artifacts\ui-screenshot-archive-2026-10-15\`, mirroring the original repository paths. Every original matched its Git blob before copying, and every copy matched its SHA-256. Source revision: `626b45be15bf2875d085148be388461a1b252bec`. They remain recoverable from that Git history too.
+
+The [retirement receipt](assets/screenshots/2026-10-15-current-ui/retired-images.json) records all paths, lengths, Git blobs and hashes; its SHA-256 is `035d7c240cf652eceafa0faafc64467ae15e3cc762388406d0003875e367eb45`. The old dated capture manifests retain their original run labels, while their PNG payloads now live in this local archive. New checkouts carry the current handbook pictures and receipt. This local archive is not an off-machine backup.
+
+### Earlier verification collections
+
 Original traces, images, logs, run manifests, failed diagnostics and final qualifying browser/rollback payloads are preserved byte for byte. No failure is rewritten as a pass. The collection paths below are relative to `docs/research/evidence/` inside the local archive.
 
 | Collection | Files | MB |

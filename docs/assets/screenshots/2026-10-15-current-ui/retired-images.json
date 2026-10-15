@@ -1,0 +1,663 @@
+{
+  "date": "2026-10-15",
+  "sourceRevision": "626b45be15bf2875d085148be388461a1b252bec",
+  "localArchive": "D:/PixiBun/artifacts/ui-screenshot-archive-2026-10-15",
+  "files": 109,
+  "bytes": 12479941,
+  "records": [
+    {
+      "path": "docs/assets/screenshots/2026-10-02-docs/cycle-loop-export.png",
+      "bytes": 203188,
+      "gitBlob": "c5540ea2e2a4269a87b08e1092abc7232283edc7",
+      "sha256": "7089b8b85bf401bfe214a7a92d9835cbf787879de64763836da0a03941e3edd4"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-docs/palette-from-artwork.png",
+      "bytes": 178097,
+      "gitBlob": "cd2c52ee8d28707caaccb249cbce4ece20f57555",
+      "sha256": "f2461582aceab000a0e4300b0146fb9f6a554532c0fbf593c3588d3c7d32623b"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-docs/project-backup.png",
+      "bytes": 186265,
+      "gitBlob": "b1743343fb21b4527ca3642154aa2d1bfa3e7610",
+      "sha256": "d15f8c5c4ffc1aa7f8e363fc6b1e8fdb256cce983ee79382c28889c7eaa7801a"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/animation-protection.png",
+      "bytes": 124897,
+      "gitBlob": "63519e6cca7ca7b09ea3c0154caf7e59eaf0d2ed",
+      "sha256": "e5b51e9f88badf975302778657a24b2c7c1942c4837c7fb28c0de88d12dec4e6"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/animation-review.png",
+      "bytes": 113996,
+      "gitBlob": "f3978ab26f95776e47ed622466473c8b4a8f3ed5",
+      "sha256": "9adf3a3f4e49d5cd03c257b2a47a14b389f9d2429e2059e58bf2c4532b4b78b9"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/animation-tags.png",
+      "bytes": 103138,
+      "gitBlob": "45ca2266de5d5b1543fc57df3af93bab54f36362",
+      "sha256": "5316ed47100ccdf86108fdf3ffd04968899bde43815823e56fa40725bb96b142"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/animation-timeline.png",
+      "bytes": 71462,
+      "gitBlob": "495f47a1aa8bc75ac7d1f4d1d7e833b6c006508a",
+      "sha256": "efb4a04f60bf2c8d8ae1836f4c59963952fb79190267dbdc298e85135863dc34"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/canvas-resize.png",
+      "bytes": 143802,
+      "gitBlob": "0dd6e84ac996429b51d5c56a0780163fb937d92c",
+      "sha256": "cb96a81b438433df91d3ac86e30501bb8db3e0f956ce5ecc4a1622ba5d387571"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/cleanup-color-actions.png",
+      "bytes": 99867,
+      "gitBlob": "8720a3cde4f81a9a94e7658ce0288dc53f5c43fd",
+      "sha256": "327326ff4ec690091ef1fbd97757e48f3ea4de5e4ad8e35693efd91200ddf905"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/cleanup-lines-preview.png",
+      "bytes": 94229,
+      "gitBlob": "8c2fce2943208ddb50ac8737dda1bbc8f4066539",
+      "sha256": "e507a9afaf93b9e2a9d2347f05329c66a08c1db0957478789ee39c9531ff3656"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/cleanup-scan.png",
+      "bytes": 108266,
+      "gitBlob": "960036a025d3f23db13573c6064dca28f892ac45",
+      "sha256": "9488e88eb5948144b32e0124aadae76181e40c863b63c50f5b76b92042dd5f5c"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/co-draw.png",
+      "bytes": 155598,
+      "gitBlob": "866a9f4a073e5943076c570ec7e3568f6a85353a",
+      "sha256": "acfbc07bb559d0617291c8635d80a639c21004c80fda62d888237e231b30550c"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/color-mood-preview.png",
+      "bytes": 99718,
+      "gitBlob": "9aa4608683e2f92be2b34a5ff6f0e2426a0ed149",
+      "sha256": "3021ca5766f3665216cff803943f1e68b6e40226d44ba977afa9f3683bd0fb50"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/color-picker.png",
+      "bytes": 176580,
+      "gitBlob": "3934adfedb7828bdaab189e1c020ce88195e45d6",
+      "sha256": "35a44e24e7a3652d4b5cd14abada5793cae469ef21e7e5e8e41259c81ca0c205"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/command-palette.png",
+      "bytes": 191866,
+      "gitBlob": "a723f4843bcb16b27112b1e955ff9cfdcfa85072",
+      "sha256": "7dfdfcc616e86b73b2747afb9c71cc64ab55c0cd12f2c65b72b94d68efb41efa"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/export-gif.png",
+      "bytes": 151765,
+      "gitBlob": "94063b13d77ee560a4f34c71b723c5a1995a60db",
+      "sha256": "8ee6f489c8884a89fa58920ae6f0a91b530799d4a640fcb73cfee1a46eed2181"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/export-palette-cycle.png",
+      "bytes": 164124,
+      "gitBlob": "18b59bc98203317d1fdd59548e5e663040ca8087",
+      "sha256": "eb1587d58aef458d91abdd09749dc90a0007c93614b55f21223e932ba4df1136"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/export-png.png",
+      "bytes": 148820,
+      "gitBlob": "b1de86c4295c586fbe9c0cbe062533ce05a79a6a",
+      "sha256": "0160733b3c21edb742c1f0361d253c5450d52d45b71ca865ccd8aba3f9807263"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/export-project.png",
+      "bytes": 144565,
+      "gitBlob": "0f5518f1295b5c184d6e1e8b4545951ae757486b",
+      "sha256": "86d89ca738b435d2c11cb07dbb7946fc85dccb13067cd37b0d40a690708d863c"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/export-replay.png",
+      "bytes": 167582,
+      "gitBlob": "035844886381e2952e427fd7b66abea51109e99b",
+      "sha256": "057d3d086359e1c6ce2bda0d5a1adede50df8ddf45884429a6a0550dffb5a6f8"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/export-shader.png",
+      "bytes": 158582,
+      "gitBlob": "e86b69b767f8fc885ef5b2ae5bb968cd72cb6809",
+      "sha256": "341657568862fa9f69b7bdb5f191f7411111994a54e89b6b4b51a9148b8844a1"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/export-spritesheet.png",
+      "bytes": 156353,
+      "gitBlob": "f577864cc2e42fa32117ab887ac682701f2538cb",
+      "sha256": "82259c4b3fbf745f3356d54e2b565049f4b5b00405cb305004ecfaddae3ac8db"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/export-webm.png",
+      "bytes": 159706,
+      "gitBlob": "502fcaf929e69062d513528dd443b91e09d461f2",
+      "sha256": "703f628107c5e4e4d4e4f474e59fa8bc1a22d7c13de6dcdcff3c6962e167df95"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/import-image.png",
+      "bytes": 155635,
+      "gitBlob": "202f4d9174cd26e655a2ff9bdd2e179fff7b70c6",
+      "sha256": "521dce76778be677488f2e340cec3d6a3b4bc0d217d2a56b5daf3fd800d6e433"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/import-spritesheet.png",
+      "bytes": 160943,
+      "gitBlob": "b953b8070cbe6fd4af098a9b7373bb04fc4a8c99",
+      "sha256": "2c0c3bd24b4ff294921738aa1895b2e2a3ce7859c79b20385ec4dc5f81cf55d2"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/lighting-extra-actions.png",
+      "bytes": 107668,
+      "gitBlob": "eed68077b61cb6a391139eb45addd2dd6723bfe9",
+      "sha256": "008370dbc4390222ebd81a25ec09e7e692aeab1f917d4efa2b1ea287178fe0bd"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/lighting-live.png",
+      "bytes": 126445,
+      "gitBlob": "52bf747227244c431c51978f9f2dfc23105f5e96",
+      "sha256": "1fb5f2c0a2c663f9f567d2dd8b8efd061657187be25fabea706ede43c128707c"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/lighting-manual.png",
+      "bytes": 105800,
+      "gitBlob": "6c608b75dcc2bf3edfda2df48cef99ed57d11f79",
+      "sha256": "503c2ac421926b8ec655ea0d780cbf6363a5a98e0236942deec914d4808b24e7"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/mobile-studio-gate.png",
+      "bytes": 23824,
+      "gitBlob": "59ba0a8cd284e32b5f2b9d651b746877e3728f5a",
+      "sha256": "df0be93dd876f517391358d353a36d78bfebb3db6eaaf307d5fa06a5d14d1b54"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/normal-sculpting.png",
+      "bytes": 105516,
+      "gitBlob": "f34725838f7f40427d8dbd0bb59d374321a8c6c2",
+      "sha256": "b0f6abb25255621466b7cd9f9f22830e3a6e6a9073ea849d876761127a826cb1"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/palette-ramps.png",
+      "bytes": 80131,
+      "gitBlob": "00c9c5bf253d3876fc9a429f1bdcc98152d79e47",
+      "sha256": "6783fed14e17167628ed477ee64b29d74a0b3be69f6f7dd6463ee044a4c358d3"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/palette-roles.png",
+      "bytes": 115410,
+      "gitBlob": "7a7e4130b54a597ab4c063a3ac91b12cab466ae0",
+      "sha256": "3d7b97ac269790c1d185db5ffa74b22aee6a6d4a7b84d1a703192aa45c4aa89e"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/pixitools-chooser.png",
+      "bytes": 95073,
+      "gitBlob": "776ad08680f622af7bf7204b3826553a2592b918",
+      "sha256": "1014a63b5da4f044b9a221031c74092cfec0619ea0b67c5f6b3d7937a05859c3"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/pocket-doodle.png",
+      "bytes": 18161,
+      "gitBlob": "a13911fad702e5e3e6b0f0dc2b10e698351a7eb2",
+      "sha256": "1a1bd562d5482cc24b750fab03c0ddd9223f73487d1dad9a0f16520fec2197bd"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/privacy-diagnostics.png",
+      "bytes": 155144,
+      "gitBlob": "8694646eec4b55ee6f9b161db2e03dcdf93d0d3d",
+      "sha256": "d8b4b7af20101764fd0c524a39a35ff152cd6116c4e32c94800099cc1e1a272d"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/projects-gallery.png",
+      "bytes": 121243,
+      "gitBlob": "99a82c6727c8d02e78f526dba38d3b394b67aa7c",
+      "sha256": "5c8dfe151450b522e25b1fd50e124c7ca2bfc04574a257592d30480d86cc7615"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/recovery-plan.png",
+      "bytes": 155438,
+      "gitBlob": "4fb57789f1f2a9e05f31d70ed04c9518998a949d",
+      "sha256": "3adb165fc66839a1293a10a6ed076f5aebafa330b7a61981051bfc8ff146fa02"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/research-light-options.png",
+      "bytes": 88719,
+      "gitBlob": "bb29d9a1e34b6a1364adfe79ee9e8bebd128b68f",
+      "sha256": "ddd52f582256cf44c085b2dac1a914c8a4a10e13e2b76521ee211da1f7a74124"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/research-light.png",
+      "bytes": 81018,
+      "gitBlob": "fa5858148bf355d6e2c646a57ea2bb34375289ac",
+      "sha256": "3020bf5777248e299b62fd0778ea86a340cb577426a1e7c8cd413052f39bee0c"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/research-pixelize-options.png",
+      "bytes": 89729,
+      "gitBlob": "8994da5204c15742c11d587795c7b34d528935c4",
+      "sha256": "d1b2054e831b6abaefb0ef4b3876c4821ce38ea4e7fbd5c9d9b29875ba7c3015"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/research-pixelize.png",
+      "bytes": 91540,
+      "gitBlob": "834684f23764758d9c66420a63e6498bcce18f43",
+      "sha256": "2dd926e1e2ca90f8b7b9e2c9420db5da9a2bd05f2aaf22987865e9d0c597af3f"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/research-scene-options.png",
+      "bytes": 92998,
+      "gitBlob": "21f4ba6940d92a78020f1d03f7845bc36faae262",
+      "sha256": "9908adbf9ea0636d48300101c8ab43cd5568a935af9e66730abee1fb9fe6fa03"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/research-scene.png",
+      "bytes": 90261,
+      "gitBlob": "a06edece03c414a0ffa2a1d477b136c83c2d0ccc",
+      "sha256": "5aada82c1f2353195419906c3d67c7d88ba08c311f5d137360b624bedb3775f0"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/selection-transform.png",
+      "bytes": 76530,
+      "gitBlob": "c146c12ac342c92e76793e233dd27d938dece16a",
+      "sha256": "86129081a39f895198b247fbfe8bd963d7607dd39c6e54736eed81af23dfa2c5"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/shadow-options.png",
+      "bytes": 93694,
+      "gitBlob": "a54de2b1164ba61642da236e6b115f344220ed55",
+      "sha256": "7240206da7f2add00133d90ebde3fdd4455deb8d915b817fadabd97a95d3ad85"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/shortcuts-help.png",
+      "bytes": 179757,
+      "gitBlob": "9c53c46c7ebdf73bca6f597bed0b54abf7ea6c90",
+      "sha256": "0c0456b332fe3e8390c46a9a20430a4e21a00a57ca9bf972e66bf24c217153f3"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/starter-shelf.png",
+      "bytes": 228059,
+      "gitBlob": "e4d8508ae08f447c81f41e5ae43a43d6bc6aa958",
+      "sha256": "c0289e7db0d56f80ea3e5826b7b487df4d9cd19a4b76cb70201bd7d6b047a281"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/studio-options.png",
+      "bytes": 80262,
+      "gitBlob": "15607682ee4208934df9cce7a2cb7d1201bd7ee5",
+      "sha256": "96cdc2c9dce99961c5adb12a3251f68aac4faa2c7db486475ae603b81405d0ea"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tiles-contours.png",
+      "bytes": 106147,
+      "gitBlob": "fc27212044bf8c953704ebf89e8833a76c52dbb7",
+      "sha256": "b5d203099b2ee0878ebe3863714528e74bc5051399cc6ed62b86f8a0ea1bddc7"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tiles-repeat.png",
+      "bytes": 109550,
+      "gitBlob": "11a89de65f6ba696c83d11cb95237e8214ff9bb9",
+      "sha256": "d2387d220f1aa250ceb786d9f30f0f2c13ed59d8c6203e14a16078d0545aab94"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tool-bucket.png",
+      "bytes": 75202,
+      "gitBlob": "40b2d4cea5b989530696b3701217dcbed1986b9a",
+      "sha256": "2f3cb5ea76242da644b1260064d40199aa6f800f3aa75f3ac476112a98fe1664"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tool-color-replace.png",
+      "bytes": 74246,
+      "gitBlob": "6b05dfec6fc50b54b739e785781ba1c828b06f15",
+      "sha256": "a0c477c10f852f1b9f94fc9dd0b3f1efa6f51e827298cea13581bba4f0ef4f6d"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tool-curve.png",
+      "bytes": 72215,
+      "gitBlob": "883fbec1750d60aef154f328db762d45d6eb63b3",
+      "sha256": "8c85d15c4ffb54c9f7b1f7eb51c18a0a2135309f5b804e5e49fd287cb534df87"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tool-dither.png",
+      "bytes": 72792,
+      "gitBlob": "fb96b251cb645b67ec396a0547be472b19279561",
+      "sha256": "a37b42aef07848bb136061cd1c9f8ef1b91732d9e9f5ae423739b15bf30b100e"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tool-ellipse.png",
+      "bytes": 72311,
+      "gitBlob": "c739ffdf4af5122f8cb48c97aadff7da2e3fa0f8",
+      "sha256": "2cb7536a28ee6bd7c7843858aff61369d17438067afc2a9a1de0e44849da6406"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tool-erase-color.png",
+      "bytes": 76879,
+      "gitBlob": "1e69bd510c0f817949bd49edefa0561486b85acb",
+      "sha256": "eadbdfcb3822d9b0fbbd84863d48a46415dbcc89982a2774c95308d786dc1633"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tool-eraser.png",
+      "bytes": 69626,
+      "gitBlob": "066c7723583a26d30c73958adc7099b838d08ea4",
+      "sha256": "9891700b1e4408429526c41b09018a636d1d034fadc7c1072d45e2e759a425a3"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tool-eyedropper.png",
+      "bytes": 68371,
+      "gitBlob": "465b6923d4853129a00bef57a2bfad219a1a267d",
+      "sha256": "e1e8b1401eb8361510b36e28b5defa97e5d1985ae10db6e09a36f8dcf8aa4c0c"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tool-line.png",
+      "bytes": 70612,
+      "gitBlob": "f9487256298b97417aa1744bda86ef1eb30fed1c",
+      "sha256": "40c0d1feadc6a28e6ada98d68bf6bfe2a8afdc3745e56fa9204cb3c3a6207e04"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tool-normal-chisel.png",
+      "bytes": 68613,
+      "gitBlob": "456c6985df6ade6ebf4abb8e163ac8c73831d673",
+      "sha256": "3baff88113cdfffabec86fbd3851166db67ec15a864821b27dbee12294dfffb9"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tool-pen.png",
+      "bytes": 69316,
+      "gitBlob": "867aaf6888e98a1e3f3535f8188e184fa90a683b",
+      "sha256": "62747b5198e18532081f83c61587d94bc02add658cc274b14b231e41c8c835ed"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tool-rectangle.png",
+      "bytes": 73234,
+      "gitBlob": "fe71421549c3bfcaab33ea33def315ff13618ed1",
+      "sha256": "74a4d18d3f5f9cf5fd920f3d86778f072b97a92bc5d4753b8f7fb83b752d0889"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tool-select-box.png",
+      "bytes": 68646,
+      "gitBlob": "ed79a615bc7cfa2b9d1f9fb9299ecef126c7be8f",
+      "sha256": "ad8399a314edf18d8bb2e5ac88152399688c710213166ff05b54bff3d25a48e2"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tool-select-lasso.png",
+      "bytes": 68548,
+      "gitBlob": "d1b1dec5fdf49d1b4ae781880f36ab6a2d80ad4f",
+      "sha256": "ac423e99de6f41271a7fc5f98a9625792c0a9cb9f58c291d08906a674535645b"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/tool-select-wand.png",
+      "bytes": 68620,
+      "gitBlob": "46d33f3ae9b355f8b2e98678787cb870a31999b7",
+      "sha256": "1190c9e0fcfe8ba41f38e0d215498bceb58860d99a52d85f7e7afbd9995970f1"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-guide/view-options.png",
+      "bytes": 94837,
+      "gitBlob": "20779e7f32f610b2d518b4444cbd2fdc0b129670",
+      "sha256": "0b6164f4c008c3f1b8b31911c3582ac1b8b8351410bb3f418c0c466d0fc2434f"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase2/isolated-practice.png",
+      "bytes": 92283,
+      "gitBlob": "a1b436a3f43e82ed249d873722f35afb667fa9ed",
+      "sha256": "57d48f9265c312198272b3cbb5b7db6da81ff5f4c1ab416d6d0ebc01c0fe65e4"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase2/kept-practice-new-project.png",
+      "bytes": 65768,
+      "gitBlob": "99fa30fc02142983d9de23aae398ca22deb76660",
+      "sha256": "1f5110dbed82d682687fdd499707a676105065ef9394065ecab30389bc7c1d44"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-bouncing-mochi.png",
+      "bytes": 95754,
+      "gitBlob": "93e95af48c7d78ea4321db65ce5d9fd2ecad24b0",
+      "sha256": "667fa31e947823ded4318b59919118f188205be6c6a104597a0d9be79d6f42a1"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-bun-hop.png",
+      "bytes": 88713,
+      "gitBlob": "96bc4eb5f6ac985fc113b17e721def610afffbef",
+      "sha256": "3d16774dfcdbd3687399f34103cd391433721f477c91ef794ddaeb75c3c644c5"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-character-hop-shock.png",
+      "bytes": 95114,
+      "gitBlob": "d63acb2068adeff92fc1188173995de45499e8da",
+      "sha256": "3b04ff3db97e671371005d30db241d22d084e732a525f40fa75280d02e0bb596"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-combat-slash-hitstop.png",
+      "bytes": 92424,
+      "gitBlob": "7467edea4c2c02249a699a67e74bb9b3927a0673",
+      "sha256": "fe4c162d68db6dbd62c446aa8fce8806179662137fb3fb3a04823dcd8a3f96a0"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-hearth-flame.png",
+      "bytes": 88219,
+      "gitBlob": "83aa3344880dfc45865c4083b44bb98e6ac66abe",
+      "sha256": "36c8231268c869d86fcc4545d7e20d70ccaa4f0859ee840e8da3ed9022d6a9c4"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-master-bouncing-ball.png",
+      "bytes": 94930,
+      "gitBlob": "faf16fef8d47eb535e015cface7c3f83296ed46d",
+      "sha256": "7d1bb466eaab4cd458dce10b2b31f44e7d779bee6bdf6056e61efb51541cef13"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-potion-bubble.png",
+      "bytes": 90797,
+      "gitBlob": "fafee6350418fbfd2b8dcd10ca0178e30e460523",
+      "sha256": "27b10079dd7788cc449c75c34ce7365576194369deb6b5428527154f5af42eaa"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-slime-glide.png",
+      "bytes": 87593,
+      "gitBlob": "3b8de59afd83aad5ea438960f00130ba172847ab",
+      "sha256": "d76a2be8d1a353b51abdcc3adb68c1366b72bcbd8ce469f2df1a3bbd02d8f615"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-subpixel-idle.png",
+      "bytes": 96143,
+      "gitBlob": "c2aa47dd26078e1cc9f77b3eba8e16c4f9e066e0",
+      "sha256": "433ebfb5a231026502438fc6204176356fee1fb536c487596a5a996e8b5c4393"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-sword-slash.png",
+      "bytes": 89011,
+      "gitBlob": "b97cda37139028a66a65d9fd7cb9e2d9263838f2",
+      "sha256": "76259be6f4346d7c34a701fbe5e617802d9adbfc22123459e789b4a00c3bfb32"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-twinkling-star.png",
+      "bytes": 85612,
+      "gitBlob": "184d660a5da648a8a507f8fb9194f6e60a780b86",
+      "sha256": "410a1c9115fcb742a90d275f52b4c8d15639767bb5b4407b57025b04ae5b2f96"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase2/lesson-water-ripple.png",
+      "bytes": 87687,
+      "gitBlob": "f69ecfaaec9d5586158476e58be866341ce72bc7",
+      "sha256": "23b350241538cee73042e5915b9e09456209cf906eb8861db04cc75be1d8424e"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase2/teaching-board.png",
+      "bytes": 168885,
+      "gitBlob": "98028440e67467d8eafbec6507d6e6153a2ee4d4",
+      "sha256": "4449edf62be89e8f7af8b12ddee216f5de691f4fac3a4b7228f800e8197db49d"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase3/iso-free-thick-mirrored.png",
+      "bytes": 70713,
+      "gitBlob": "958887979498d9b789e5eefe57121f72c244021d",
+      "sha256": "526df9579c6418544ad896b2a073faf7b2ec4198ab40e352052a1af31a4bca7c"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase3/iso-snapped.png",
+      "bytes": 66551,
+      "gitBlob": "4489f1e5a89fa7eb48af10c6a98fd8d37437ebed",
+      "sha256": "a02d88558500c97c47008c815f3691ba5418df941ed994d08c2b985761e21a06"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase3/single-live-preview.png",
+      "bytes": 76090,
+      "gitBlob": "8598abdf933e39f975ff78b8211012814b44311c",
+      "sha256": "b53e82687ee1d4c611d4e6cc980063b2a2429db1c0b29431ccdaeebb0728bc54"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase4/godot-manual-normals.png",
+      "bytes": 182238,
+      "gitBlob": "fed6ca95d75d41143696b35c93921dbb81ff3424",
+      "sha256": "b0f6fcf693682bb6129fb54c3d0d66d2e31524b9cc2b4cc72522b032c92cf4a4"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase4/svg-approximation.png",
+      "bytes": 118776,
+      "gitBlob": "8d627976674b4003417688fd31636016e23016ec",
+      "sha256": "bdc162575d8b1f6012447b8db2c4d8a0d81b115e808d43b19553e227569b75f2"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase4/unique-tile-bundle.png",
+      "bytes": 113467,
+      "gitBlob": "2b6fecac23629aec86750c87a44d55aedd492172",
+      "sha256": "73a508b987190893ca4d27345a1c380cb7818d7e75b0fc136179bda167a26bef"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase4/unique-tile-stale.png",
+      "bytes": 117645,
+      "gitBlob": "3bbb34e3d37e520a3d3f0a9c84de28cdffef23e7",
+      "sha256": "fd9950c2d08061ec3ecfaf4f4d1fdb356f228c96ce729ec6308f82c6983c0efd"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase4/welcome-apng-notes.png",
+      "bytes": 270004,
+      "gitBlob": "30aac482ce40b5a26c04918aef4213a42b057865",
+      "sha256": "36488268d7b105373b9bb2031d4952688a8a3da3f904e69ef1017e2cbb0ae15b"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase5-welcome/welcome-photometric.png",
+      "bytes": 130949,
+      "gitBlob": "2502c41e2ebec7b0d525cd135928263d00239a8f",
+      "sha256": "717731493faab37e91293061eb33e3b8af7d4638e12067b5d7409f3b7cd15567"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase5-welcome/welcome-rotsprite.png",
+      "bytes": 94026,
+      "gitBlob": "37dc5093dab2edd352a7016b4197b2309173ca61",
+      "sha256": "950520e2c769582c9599e6e364ea5092f2df8f3b6c9cf19e1bc53a9ae34d7ff9"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase5/bun-lighting-preview.png",
+      "bytes": 126442,
+      "gitBlob": "2bfe0d0c749c993bd9ca8996fbb3f3023f4c0a15",
+      "sha256": "3efc38a46d5d6089d2dfe84eb690b20369cba925db0791ae845efb0e6cf6fd1c"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase5/export-apng.png",
+      "bytes": 123765,
+      "gitBlob": "1ac1e53f9209fb2eb6a6afca93a0956ffc4109e1",
+      "sha256": "cea4810b2023327f07cdbbceff2d675a520c4e015b6ee827a3c2b5b88c7c7cfa"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase5/export-mp4.png",
+      "bytes": 128223,
+      "gitBlob": "264116f2176de2e8a4dc4c935eabbfca982e1b5c",
+      "sha256": "db3781eb50d894616843b8ea6a0d39f0efb5d931d1f46533f4156d82616677f1"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase5/studio-cozy-dark.png",
+      "bytes": 78641,
+      "gitBlob": "216d0f3b7901df71b3304dc863d4ad88f8a6b041",
+      "sha256": "3eb64ee167eccdf1e7fb9356a3d7a7488c324a7bcbb82aacd7ea56006873a4dc"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase5/studio-cozy-light.png",
+      "bytes": 80265,
+      "gitBlob": "9d696e5a5bf5c5128b1e20a50cbb09b675900a62",
+      "sha256": "9edc2ae4977f7a325aa5678d1db8a0dbfc1b9a18b2a3f7031cb3b5bb94b9b3f2"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase5/welcome-overview.png",
+      "bytes": 693941,
+      "gitBlob": "cb283d5a5482e47445e93d5c23a5d34fc3e7aa59",
+      "sha256": "58979787c4c6803b085f49193a22a0591773d357a4f26831bd1a81c152997ed0"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase5/welcome-pixelize.png",
+      "bytes": 107515,
+      "gitBlob": "8b4c91358191411d6e6efe3a5d7351aa260f6fb4",
+      "sha256": "58664a510857a56dd1e26603c8152df9496da8904573356af8b8f8b5ba54e1c6"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase6/archive-overflow-refused.png",
+      "bytes": 144942,
+      "gitBlob": "c4eb18b2320c02687b87984bc749d8cd068b42ef",
+      "sha256": "057636bfc9b3c03c62b1db05da340454e64d59428f3f83fa0089d7c7dc997b35"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-feature-repairs-phase6/archive-source-preserved.png",
+      "bytes": 136393,
+      "gitBlob": "765910120df8944d0c9b4e7cd14525c7d80a5515",
+      "sha256": "ec862aa87bf7a716b3cd27d5a5902f7ed66486f3b3c86c7acfc257cf2245cd3a"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-04-artist-workspace/color-tools-navigator.png",
+      "bytes": 106938,
+      "gitBlob": "8a98e79a28309ce0da8dcfc53d19ca29b362f5cb",
+      "sha256": "15d434288a23cb7397b18cb4091391824e575da3bcf8266c99a61ce06194acb5"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-04-artist-workspace/onion-settings.png",
+      "bytes": 125287,
+      "gitBlob": "dd9ad52bf4bbbfa6bfaf1d39bf59a446cffe6f76",
+      "sha256": "d832833cc4563fe0b19ab046b545632a4c85913ad34ac56561b3cba43db93744"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-04-artist-workspace/palette-library.png",
+      "bytes": 140214,
+      "gitBlob": "ab8b553b41bfda523294d39e404e6ad95aeadd37",
+      "sha256": "2ed9342222ce88105ea2d247df2fb6405ea4672ba7479db665188cd4a7bfd812"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-04-artist-workspace/selection-gradient.png",
+      "bytes": 103837,
+      "gitBlob": "f39f05dbe7229dd9883a065d03fb6a57f1954416",
+      "sha256": "7d94c46a81f6492b045b78ec80ca9e0d2da14c98af02dfcf61e7d0b71dee9ec1"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-08-motion-layout/canvas-tools.png",
+      "bytes": 22200,
+      "gitBlob": "c060da41ae5c0a98ab9fe3cfdd99dcc55bb460a8",
+      "sha256": "838d68cd2c4779626efd47b621fbcff01f203ab16c06522dbde3246c51df3ad0"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-08-motion-layout/compact-color-dock.png",
+      "bytes": 2189,
+      "gitBlob": "928612c631ce31523b30a27a3d490bf25365c97d",
+      "sha256": "6abed7e721967f1ebb80f61f57a847ab7f0c7d146cd5fba5cf25f70b5d816ee9"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-docs/bun-lighting-preview.png",
+      "bytes": 126444,
+      "gitBlob": "1bacbe5564de52820e29a5c3f3cffd1d4fcd6bc0",
+      "sha256": "6fd871ffa4241f75eb75999bf831a8ba0237d0fadbc1ba75bc786d91b1301500"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-docs/palette-cycle-range.png",
+      "bytes": 94768,
+      "gitBlob": "524298daccacd26c1ad4c4cdfd0898310365ebce",
+      "sha256": "509115ae71609655cda39b764ea3ccac2fa9c96bb02c340222cee149436c8af6"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-02-docs/studio-atelier-dark.png",
+      "bytes": 77316,
+      "gitBlob": "ac9a028eea863fc0eaa873833ea06c7836aed8ca",
+      "sha256": "126543dd06f76eb988fea969a2d875324b5e824784a00f96c02dd7f8a1f6ee8a"
+    }
+  ]
+}

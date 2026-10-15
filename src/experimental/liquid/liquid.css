@@ -101,7 +101,7 @@
 :is(body, body.moon-ui .moon-slot-inspector) .lq-bar.is-glass .lq-tab.is-active[data-testid^="tab-"][aria-pressed] { color: var(--text-heading) !important; }
 
 .lq-tab > * {
-  transition: transform 260ms cubic-bezier(.34, 1.56, .64, 1);
+  transition: transform 280ms cubic-bezier(.22, 1, .36, 1);
 }
 
 :is(body, body.moon-ui .moon-slot-inspector) .lq-bar.is-glass .lq-tab.is-under[data-testid^="tab-"][aria-pressed] {
@@ -109,7 +109,7 @@
   font-weight: 700;
 }
 
-.lq-bar.is-glass .lq-tab.is-under > * { transform: scale(1.14); }
+.lq-bar.is-glass .lq-tab.is-under > * { transform: scale(1.1); }
 
 .lq-tab:focus-visible {
   outline: 2px solid var(--accent-gold);

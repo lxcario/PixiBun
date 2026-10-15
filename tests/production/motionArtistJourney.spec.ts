@@ -1,3 +1,4 @@
+import { openMotionCapture } from '../helpers/motion';
 import { expect, test, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
@@ -52,7 +53,7 @@ test('an artist can draw, save a whole-layer rig, reopen, bake, reload and expor
   await page.mouse.click(box.x + box.width * .05, box.y + box.height * .9);
   await expect.poll(() => pixels(page)).not.toEqual(before); const original = await pixels(page);
   const width = await page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement) => canvas.width);
-  await page.getByTestId('tab-tools').click(); await page.getByTestId('create-motion-part-btn').click();
+  await page.getByTestId('tab-tools').click(); await openMotionCapture(page); await page.getByTestId('create-motion-part-btn').click();
   await expect(page.getByTestId('piximotion-panel')).toBeVisible();
   await numeric(page, 'Position X pixels', '2'); await numeric(page, 'Motion frames', '3');
   await page.getByRole('combobox', { name: 'Motion easing' }).selectOption('linear');

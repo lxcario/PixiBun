@@ -28,9 +28,9 @@ Desktop Playground saves a checkpoint of your original before opening separate p
 
 ## Save and restore outcomes
 
-![The current Project Backup export panel, with the Download project backup button available for a three-frame drawing.](../assets/screenshots/2026-10-02-docs/project-backup.png)
+![Current project export configuration. UI capture only; this run does not certify the resulting download or engine import.](../assets/screenshots/2026-10-15-current-ui/export-project.png)
 
-*Project Backup in the local studio on 2 October 2026. Opening this panel is not a completed backup: download the file, keep it somewhere safe and reopen it to check it. [Capture details](../assets/screenshots/2026-10-02-docs/run.json).*
+*Project Backup in the local production build on 15 October 2026. Download the file, keep it somewhere safe and reopen it to check it. [Capture details](../assets/screenshots/2026-10-15-current-ui/run.json).*
 
 | State/outcome | Meaning and next action |
 | --- | --- |
@@ -52,7 +52,7 @@ When using multiple tabs, reopening a page can restore the most recently opened 
 
 Recovery assessment reads the original records before decoding them. The Repair Wizard builds a separately admitted recovered copy and retains the source. Options and loss summaries depend on the assessed damage; not every corrupt raster can be reconstructed.
 
-![Current recovery assessment listing three damaged sample records and requiring explicit deletion consent.](../assets/screenshots/2026-10-02-feature-repairs-phase6/archive-source-preserved.png)
+![Current admitted untouched-source archive workflow; downloaded archive and original damaged fixture checked.](../assets/screenshots/2026-10-15-current-ui/archive-source-preserved.png)
 
 1. Keep the recovery dialog open and read the damage summary. Use **Export Untouched Backup** first to preserve the original records when that option is available.
 2. If the assessment offers deletion of unreadable records, inspect the proposed loss before **Accept Deletions & Continue**. Acceptance does not reconstruct the missing pixels.
@@ -60,7 +60,7 @@ Recovery assessment reads the original records before decoding them. The Repair 
 4. Tick the plan's consent checkbox only after reviewing it, then **Create Recovered Copy**. Wait for its actual outcome; a plan preview or button click is not a completed recovery.
 5. Inspect the recovered drawing and make a normal Project Backup if useful. The source records are retained; an entirely unreadable project may have no viable recoverable artwork. **Cancel / Keep Editing** leaves the wizard without authorizing a copy.
 
-![The recovery plan, with explicit consent still unchecked.](../assets/screenshots/2026-10-02-feature-guide/recovery-plan.png)
+![Actual recovery plan for a deliberately unreadable fixture in isolated browser storage. No real user project was damaged; no recovered copy was committed.](../assets/screenshots/2026-10-15-current-ui/recovery-plan.png)
 
 *These pictures use deliberately damaged sample records in an isolated browser context. No real artist project was damaged, and the pictured recovered copy has not been created.*
 
@@ -68,9 +68,9 @@ An **untouched recovery ZIP** is a forensic archive of original metadata and raw
 
 If **Export Untouched Backup** reports too many stored records, no archive has been saved. The warning appears inside the recovery dialog. The export checks the current source again and refuses more than 10,000 records before loading their raster payloads. Keep the original browser storage intact and read the warning; retrying the same oversized source does not remove the limit. A successful earlier diagnosis does not guarantee a later export will fit. [Admission details](../contracts/storage.md#untouched-archive-admission).
 
-![Readable backup refusal inside the recovery dialog, with the original records still preserved.](../assets/screenshots/2026-10-02-feature-repairs-phase6/archive-overflow-refused.png)
+![Current untouched-source archive refusal using an isolated 10,001-record fixture; original source preservation asserted.](../assets/screenshots/2026-10-15-current-ui/archive-overflow-refused.png)
 
-*These two current recovery captures use temporary damaged fixtures in the compiled Chromium app. The first has an independently checked untouched ZIP download; neither depicts a completed repair. [Capture details](../assets/screenshots/2026-10-02-feature-repairs-phase6/run.json), [verification and limits (local archive)](../archives.md#record-docs-research-2026-10-02-feature-repairs-phase6-md).*
+*These two current recovery captures use temporary damaged fixtures in the compiled Chromium app. The first has an independently checked untouched ZIP download; neither depicts a completed repair. [Capture details](../assets/screenshots/2026-10-15-current-ui/run.json), [verification and limits (local archive)](../archives.md#record-docs-research-2026-10-02-feature-repairs-phase6-md).*
 
 Undo is session-local, bounded by independent depth caps and a combined 64 MiB payload budget. Each drawing step stores only the rectangle it changed, so a session of small strokes keeps over a thousand Undo steps. An oversized history-backed edit is refused before mutation. Process Replay reconstructs retained history and its eviction baseline; it is not a durable complete recording of every earlier stroke.
 

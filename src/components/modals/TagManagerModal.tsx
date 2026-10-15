@@ -58,7 +58,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
     <ModalWrapper isOpen={isOpen} onClose={onClose} title="Animation Tags & Clips" maxWidth="max-w-2xl">
       <div className="flex flex-col gap-4 text-xs font-mono text-[var(--text-body)]">
         <p className="text-[var(--text-body)]/80 leading-relaxed">
-          Define tagged animation loops (e.g. Idle, Walk, Attack). Tags provide visual bracket ribbons on the timeline, control playback bounds, and export directly into Godot 4, Unity, and Aseprite formats.
+          Name frame ranges such as Idle, Walk or Attack. Clips mark the timeline, set playback bounds and can be included in supported sprite-sheet and game-export metadata. Import setup depends on the format; PixiBun does not export .ase or .aseprite project files.
         </p>
 
         {/* Existing Tags List */}

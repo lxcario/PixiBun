@@ -10,7 +10,7 @@ When you choose **Apply**, the workflow adds editable output layers and retains 
 
 ## Simplify
 
-![Actual four-pixel simplification preview of Bun.](../assets/screenshots/2026-10-02-feature-guide/research-pixelize.png)
+![Actual Simplify preview and controls; originals have not been changed.](../assets/screenshots/2026-10-15-current-ui/research-pixelize.png)
 
 1. Choose **Original**, **2px**, **4px** or **8px** blocks. Larger blocks remove small details. Original is the conservative starting point.
 2. Keep **Keep outlines** checked if edges matter. Choose **Blend**, **Strongest** or **Sample** for the block color candidate. Inspect the eyes and silhouette in the result pane.
@@ -18,13 +18,13 @@ When you choose **Apply**, the workflow adds editable output layers and retains 
 4. To preserve an important detail, make a canvas selection, give it an **Area name**, then **Protect selected rectangle**. These are recipe-specific regions; they are separate from animation review protection.
 5. Update the preview and Apply only after the comparison looks right.
 
-![Advanced simplification options, including palette restriction and protected regions.](../assets/screenshots/2026-10-02-feature-guide/research-pixelize-options.png)
+![Actual advanced Simplify settings and source/recipe controls, before applying.](../assets/screenshots/2026-10-15-current-ui/research-pixelize-options.png)
 
 This is a local block/color study. It is not a trained pixel-art model or a general depixelization/reconstruction system. Keep outlines can make a coarse change less noticeable; a no-change preview is a valid result.
 
 ## Shared light across poses
 
-![Actual shared-light preview with directional and material choices.](../assets/screenshots/2026-10-02-feature-guide/research-light.png)
+![Actual Light preview and controls; originals have not been changed.](../assets/screenshots/2026-10-15-current-ui/research-light.png)
 
 1. Choose **Light**, a compass direction and **Brightness**. Pick **Cloth**, **Metal**, **Skin** or **Glow**.
 2. Choose **This frame** or **Whole clip**. Whole clip uses the selected clip, or all frames when no clip is selected. It creates a coordinated study across poses rather than changing only the previewed frame. Preview admission allows up to 16 frames and 262,144 source pixels.
@@ -32,13 +32,13 @@ This is a local block/color study. It is not a trained pixel-art model or a gene
 4. A selected named rectangle can receive a material assignment. Up to 16 named regions are supported for the recipe's relevant region list.
 5. Preview the poses; **Show** offers Full result, Shine only and Shadow only. Apply the full result when you are ready.
 
-![Advanced shared-light controls and pose/output choices.](../assets/screenshots/2026-10-02-feature-guide/research-light-options.png)
+![Actual advanced Light settings and source/recipe controls, before applying.](../assets/screenshots/2026-10-15-current-ui/research-light-options.png)
 
 This shared-light workflow differs from the movable bulb in **Add light and depth**. Neither is general 3D recovery. Select an original, unlocked color layer at full opacity with Normal blending. Across poses, exactly one original layer with the same name must exist in each target frame. Nested effect/recipe sources are unsupported. The optional surface input here is a baked **Normal Map** layer; the manually sculpted **Normal Facets** layer is a different tag. Check every pose when light, contact or shape changes through the animation.
 
 ## Small tile scenes
 
-![A bounded tile scene preview with layout and walking-route controls.](../assets/screenshots/2026-10-02-feature-guide/research-scene.png)
+![Actual Tiles preview and controls; originals have not been changed.](../assets/screenshots/2026-10-15-current-ui/research-scene.png)
 
 Use an atlas whose width and height divide evenly by the chosen tile size, with **at most 16 tiles**. Tile-size choices are bounded to 1–64 px and only fitting sizes appear. A 32×32 source split into 8 px tiles gives 16 atlas tiles; an arbitrary sprite size may have no fitting choice. Resize or prepare a suitable atlas before asking for a scene.
 
@@ -48,7 +48,7 @@ Use an atlas whose width and height divide evenly by the chosen tile size, with 
 4. Choose a cell and **Pin chosen tile to cell** when an authored location must stay fixed. Conflicting pins/rules can produce a clear failure; there is no promise every constraint set has a solution.
 5. Preview the result. Select a scene cell with its menu or click the preview; direction buttons check movement into walkable cells. Inspect seam markers and **About this result** notes before applying.
 
-![Advanced scene rules, seed, walkability and pinning choices.](../assets/screenshots/2026-10-02-feature-guide/research-scene-options.png)
+![Actual advanced Tiles settings and source/recipe controls, before applying.](../assets/screenshots/2026-10-15-current-ui/research-scene-options.png)
 
 The seed helps reproduce an arrangement with the same inputs. This is a small image/constraint scene study, not an unbounded world builder, a playable game engine, or the retired general WFC action described by some old records.
 

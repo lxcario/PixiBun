@@ -16,6 +16,10 @@ The [source and documentation review](docs/releases/2026-10-15-codebase-and-docu
 | Theme | [useLiveThemeChoice](src/stores/themeStore.ts) supplies saved palette values to canvas consumers during hydration; markup keeps server-compatible values. [themeTransition](src/lib/theme/themeTransition.ts) optionally reveals Day/Night through View Transitions, with an immediate reduced-motion/unsupported fallback. |
 | Updates | [appRestart](src/lib/system/appRestart.ts) delegates to the active Studio's real save coordinator. The initiating page saves before APPLY_UPDATE and rechecks before reload; other pages do not automatically reload. The worker retains old caches when multiple window clients exist and can read their assets through CacheStorage. See [deployment](docs/guides/deployment.md). |
 
+## Studio Labs and UI motion — 15 October 2026
+
+[Studio Labs](src/experimental/README.md) owns four removable experiments behind [labsStore](src/experimental/labsStore.ts). Flags persist per browser and are gated to scene themes; automated runs default off unless their fixture opts in. [DynamicIsland](src/experimental/island/DynamicIsland.tsx) measures only its mounted content, deduplicates target sizes and retargets separate width/height springs. Tool replacement temporarily keeps old controls inert, then swaps at zero opacity and blooms the new controls. The scale handoff uses `MotionValue.jump()` to reset outgoing velocity. The inspector combines Labs liquid tabs with the audited readable classic-tab layout. See the [Studio Labs motion update](docs/releases/2026-10-15-studio-labs-motion.md).
+
 ## Strategy Phase 0 and 0.5 update — 14 October 2026
 
 | Area | Ownership |
@@ -170,9 +174,9 @@ graph TD
 
 ## 2. Canvas & Rendering Pipeline
 
-![The current Atelier dark studio, showing its single-row header, drawing canvas, palette and three-frame timeline.](docs/assets/screenshots/2026-10-02-docs/studio-atelier-dark.png)
+![Current Graphite Night Studio with the same original artwork and three-frame timeline used throughout the theme gallery.](docs/assets/screenshots/2026-10-15-current-ui/studio-atelier-dark.png)
 
-*Local studio on 2 October 2026, with PixiBun's own artwork arranged in an imported project. The screenshot documents visible layout, not a frame-rate or accessibility certification. [Capture details](docs/assets/screenshots/2026-10-02-docs/run.json).*
+*Local production build on 15 October 2026, with PixiBun's own artwork imported through the project dialog. [Capture details](docs/assets/screenshots/2026-10-15-current-ui/run.json); [all themes](docs/guides/themes.md).*
 
 ### Multi-Canvas Layered Viewport Stack
 To avoid browser layout recalculations and keep editor guides out of color picking, viewport rendering uses five logical-size canvas layers, CSS screen-pixel guides, and a CSS brush cursor. Zoom changes the stage's display size without multiplying any canvas backing store; the interactive SVG selection gizmo supplies the screen-space marquee.
@@ -542,9 +546,9 @@ To target responsive drawing and bound admitted operation complexity, PixiBun's 
 * **Layer Tag Convention (`normal` vs `normal-map`):** Dedicated normal sculptor layers carry the canonical machine identifier `tag = 'normal'` (with `'normal-map'` fully supported as a transparent alias across viewport compositing, photometric shaders, and export pipelines).
 * **Pure Tag-Based Compositing & Diffuse Albedo Exclusion:** `compositeSourceSnapshot` explicitly excludes `tag === 'normal'` and `tag === 'normal-map'` (alongside `tag === 'specular'` and `tag === 'photometric'`). Normal maps store $(N_x, N_y, N_z)$ surface normal vectors mapped to RGB colors (e.g. flat perpendicular baseline at `#8080FF`); including them in the diffuse composite would treat vector data as albedo colors and severely corrupt the base sprite texture. Normal maps are composited independently via `compositeNormalMapSnapshot()` and passed into `photometricLighting.ts` as `normalMapData`. All legacy display-name sniffing (`layer.name.toLowerCase().startsWith(...)`) has been completely purged across `useViewportStudioEvents.ts` in favor of strict machine-tag matching (`l.tag === tag`).
 
-![Current PixiTools lighting preview on Bun, with its movable bulb, light controls and Apply/Cancel actions.](docs/assets/screenshots/2026-10-02-docs/bun-lighting-preview.png)
+![Current PixiTools lighting preview on Bun, with its movable bulb, light controls and Apply/Cancel actions.](docs/assets/screenshots/2026-10-15-current-ui/lighting-live.png)
 
-*Current local lighting workflow, 2 October 2026. This is an unapplied preview, not a normal-map visualization or a new RNM/difference test. The previous September normal/diff images remain historical files; their pixel-count caption no longer describes the current illustration. [Rendering contract](docs/contracts/rendering.md#lighting-and-normals), [capture details](docs/assets/screenshots/2026-10-02-docs/run.json).*
+*Current local lighting preview on 15 October 2026. Apply/Cancel remains visible; normal-map and RNM tests have separate scope. [Rendering contract](docs/contracts/rendering.md#lighting-and-normals), [capture details](docs/assets/screenshots/2026-10-15-current-ui/run.json).*
 
 The editor's separate one-click Material Shading and Glow & Translucent Materials panel has been removed. Legacy `volumetric-optics` effect layers remain loadable so older projects retain their pixels and metadata. This removal does not change the photometric lighting or relighting pipeline. In PixiTools, raster cleanup and color effects render temporary before/after previews; the scan/apply path rejects a preview when the source revision, buffer, frame, layer, or relevant settings have changed.
 
@@ -562,9 +566,9 @@ The editor's separate one-click Material Shading and Glow & Translucent Material
 * **Harmonic Rational Retuning (`retuneTracksForSeamlessLoop`):** Adjusts supported track rates toward an integral cycle count over the chosen duration. Sampling, GIF timing/color quantization and the artist's track ranges still affect the delivered loop; inspect the decoded seam rather than inferring perfect playback from rate retuning.
 * **Hardware Shader Generation (`src/lib/export/shaderExporter.ts`):** Produces standalone Godot 4 CanvasItem shaders (`.gdshader`) and Unity URP 2D HLSL shaders with nearest-neighbor point filtering and half-texel LUT sampling.
 
-![Current palette Cycle Engine, with a named six-color palette and First/Last controls selecting indices 2 through 4.](docs/assets/screenshots/2026-10-02-docs/palette-cycle-range.png)
+![Current palette Cycle Engine, with range, rate and direction controls.](docs/assets/screenshots/2026-10-15-current-ui/palette-cycle-range.png)
 
-*Current local controls, paused, 2 October 2026. A screenshot illustrates range selection, not shader/CPU parity or a decoded loop. [Artist walkthrough](docs/guides/palettes-and-cycling.md), [capture details](docs/assets/screenshots/2026-10-02-docs/run.json).*
+*Current local controls on 15 October 2026. Shader/CPU parity and decoded-loop checks have separate scope. [Artist walkthrough](docs/guides/palettes-and-cycling.md), [capture details](docs/assets/screenshots/2026-10-15-current-ui/run.json).*
 
 ---
 

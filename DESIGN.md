@@ -21,7 +21,11 @@ The canvas surround uses bounded outlines and a small gradient in place of large
 
 ## Current interface — 15 October 2026
 
-The [source review](docs/releases/2026-10-15-codebase-and-documentation.md) covers the inspector's shared sections/fields, theme-aware canvas previews and the desktop coach/tool-dock/filmstrip layout. Pocket opens on lessons before its separate free pad. The homepage has a scroll-driven creation story, per-demo Try-this tasks, collapsible explanations and real Bun sample downloads. Decorative markers and scene motion exist in the current app; the material rules below are guidance, not an assertion that every existing component follows them. Earlier screenshot/token examples retain their dated scope.
+The [source review](docs/releases/2026-10-15-codebase-and-documentation.md) covers the inspector's shared sections/fields, theme-aware canvas previews and the desktop coach/tool-dock/filmstrip layout. Pocket opens on lessons before its separate free pad. The homepage has a scroll-driven creation story, per-demo Try-this tasks, collapsible explanations and real Bun sample downloads. Decorative markers and scene motion exist in the current app; the material rules below are guidance, not an assertion that every existing component follows them. Theme pictures show the current UI; historical token tables retain their dated scope.
+
+## Studio Labs motion — 15 October 2026
+
+Scene themes offer the optional island, liquid tabs, paint-pot palette and quick effects described in [Studio Labs](src/experimental/README.md). Graphite and Plum retain classic controls. The island anchors its top control row while settings expand below it. Tool names shrink to 97% during a 110 ms exit, then enter at 95% with 12 px blur; a spring at stiffness 600, damping 26 and mass 0.9 adds one small bounce. Blur/opacity reveal takes 420 ms after a 60 ms handoff delay. Width and height use separate springs (420/31 and 460/25, mass 1); shell motion does not stretch glyphs. Reset the new label’s scale velocity at the invisible swap rather than carrying its predecessor’s decay. The island subscribes to reduced-motion changes and snaps its measured geometry when enabled. Hover/focus uses a shared separation spring to squeeze the shell and pull a glass-like quick-action droplet from its right edge. Keep the glyphs and the circle’s click target fixed; only the body, neck, sheen and visual face morph. Clean corners belongs inside the expanded Pen/Bézier brush controls. These values describe UI motion, not artwork playback or a physical-device frame-rate guarantee. [Studio Labs motion update](docs/releases/2026-10-15-studio-labs-motion.md).
 
 ## 1. Core Visual Metaphor: The Lamplit Drafting Desk
 
@@ -50,15 +54,15 @@ These are design rules and targets for new work, not a declaration that every ex
 
 ## 2. Semantic Color Tokens
 
-### Historical studio references — 2 October 2026
+### Current Studio examples — 15 October 2026
 
-![Historical Atelier dark studio, with amber controls and a restrained modern workspace around the original PixiBun starter artwork.](docs/assets/screenshots/2026-10-02-docs/studio-atelier-dark.png)
+![Graphite Night Studio with the same original three-frame built-in artwork.](docs/assets/screenshots/2026-10-15-current-ui/studio-atelier-dark.png)
 
-*Atelier dark in the 2 October local studio. [Capture details](docs/assets/screenshots/2026-10-02-docs/run.json).*
+*Graphite Night in the current local production build. [Capture details](docs/assets/screenshots/2026-10-15-current-ui/run.json).*
 
-![Cozy Classic light, with warm parchment panels, plum borders and the same PixiBun starter characters.](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/studio-cozy-light.png)
+![Plum Day Studio with the same original three-frame built-in artwork.](docs/assets/screenshots/2026-10-15-current-ui/studio-cozy-classic-light.png)
 
-*Cozy Classic light, captured earlier on the same date. [Original capture details](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/run.json). These are visible theme examples, not color-contrast measurements or conformance evidence.*
+*Plum Day in the same build and with the same artwork. [All 16 appearances](docs/guides/themes.md). These illustrate themes; contrast and conformance checks have separate scope.*
 
 Our color system is authored in **OKLCH** color space to maintain perceptual uniformity, target WCAG AA contrast ratios (4.5:1 for body copy, 3:1 for large controls); actual compliance requires testing rendered states, and natural directional hue-shifting.
 

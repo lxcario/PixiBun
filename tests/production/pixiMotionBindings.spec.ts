@@ -1,3 +1,4 @@
+import { openMotionCapture } from '../helpers/motion';
 import { expect, test, type Page } from '@playwright/test';
 import { chooseTool } from '../helpers/tools';
 
@@ -14,6 +15,9 @@ function translated(source: number[], dx: number) {
 }
 
 async function readyWithMark(page: Page) {
+  // These exact-pixel/history journeys use the flat desk. Animated scene
+  // geometry is covered separately; its repaint work is not this contract.
+  await page.addInitScript(() => localStorage.setItem('pixibun-studio-theme', 'atelier'));
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto('/studio'); await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
   const canvas = page.getByTestId('main-composite-canvas'); const box = (await canvas.boundingBox())!;
@@ -29,7 +33,7 @@ async function capture(page: Page) {
   await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.2); await page.mouse.down();
   await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.8, { steps: 4 }); await page.mouse.up();
   await page.getByTestId('tab-tools').click();
-  await page.getByTestId('create-motion-part-btn').click(); await expect(page.getByTestId('piximotion-panel')).toBeVisible();
+  await openMotionCapture(page); await page.getByTestId('create-motion-part-btn').click(); await expect(page.getByTestId('piximotion-panel')).toBeVisible();
 }
 async function setArc(page: Page) {
   const translation = page.getByRole('slider', { name: 'Pose translation X', exact: true }); await translation.focus();
@@ -89,6 +93,10 @@ test('compiled stale source refuses bake; fresh capture previews, bakes, undoes,
 
 test('compiled frame duplication never retargets a captured part and bake Undo restores the previously active copy', async ({ page }) => {
   const original = await readyWithMark(page); await capture(page); await setArc(page);
+  // A first-install WebKit worker notification can cover this timeline control.
+  // Dismiss it through the UI; keep the full frame and history assertions.
+  const dismissUpdate = page.getByRole('button', { name: 'Dismiss update banner', exact: true });
+  if (await dismissUpdate.isVisible()) await dismissUpdate.click();
   await page.locator('summary').filter({ hasText: 'Frame actions' }).click();
   await page.getByRole('button', { name: 'Duplicate frame', exact: true }).click(); await expect(frame(page, 2)).toBeVisible();
   await page.getByRole('button', { name: 'BAKE TO TIMELINE', exact: true }).click();

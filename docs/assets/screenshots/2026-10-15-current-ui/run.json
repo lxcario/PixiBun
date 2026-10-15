@@ -1,0 +1,1321 @@
+{
+  "scope": "Current local production UI illustrations; not a full-suite, device, participant, deployment or codec qualification",
+  "date": "2026-10-15",
+  "sourceRevision": "735241c978d5c9940d046c1eb3b6d21de41558af",
+  "sourceInputGuard": {
+    "scope": "Tracked and new non-ignored non-Markdown inputs, excluding docs/",
+    "files": 958,
+    "sha256": "5ce0e99cad4729f612219a44372476ddc89903ed0353149523496cd5fcde32e0",
+    "baseline": "735241c978d5c9940d046c1eb3b6d21de41558af",
+    "node": "v22.23.3",
+    "buildId": "dNCXzm63WkhwVGqjhJzVF"
+  },
+  "buildId": "dNCXzm63WkhwVGqjhJzVF",
+  "runtime": "v22.23.3",
+  "browser": "Chromium 151.0.7922.34",
+  "origin": "http://localhost:3240",
+  "deviceScaleFactor": 1,
+  "themeGallery": {
+    "themes": 8,
+    "appearances": 16,
+    "viewport": "1280x900",
+    "artwork": "The same original 56x32 three-frame sample, imported through the project dialog"
+  },
+  "screenshots": 129,
+  "procedure": "Isolated disposable browser contexts and actual current UI controls. Built-in sample artwork was assembled as a project fixture and imported normally. Lesson poses were cleared and traced through the UI. Recovery/archive examples use deliberately damaged local fixtures; no real artist browser data was touched. No diagnostic reporting or Co-Draw session was enabled.",
+  "compression": "PNG containers were losslessly recompressed. Every published image was independently decoded and its complete RGBA hash matched its retained native capture.",
+  "review": "Contact-sheet and selected full-size review recorded in the audit follow-up; screenshots illustrate available states, not user learning or global accessibility.",
+  "limits": "Raw logs, original captures, failed stale capture selectors and workflow setup attempts remain local. Successful isolated archive and game-delivery workflow assertions have their own retained logs. Historical verdicts keep their original labels.",
+  "images": [
+    {
+      "path": "animate-artwork.png",
+      "description": "Current Animate artwork entry with selected-part and merged-artwork capture actions.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 108891,
+      "sha256": "6a5fc72d67ddc2e5a18c76821e40454ec1d02339d68df70565bd64694546e644",
+      "nativeCaptureSha256": "3ed15c25f9752381babe982b652282a8174bcd263b24408d4bf2cc40d16ddc34",
+      "decodedRgbaSha256": "3f36cefb1a912630441f7b3794287f58e20c979cbbacf5b8f3138d74cf818967"
+    },
+    {
+      "path": "animation-protection.png",
+      "description": "A saved protected rectangular region for Bun in the selected clip; cleanup-specific protection, not a universal drawing lock.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 125770,
+      "sha256": "b8acc4ffca209a689ab5f4d3f32e144cea00a31a7f091e764f35f6d27acfba51",
+      "nativeCaptureSha256": "6b55c16ab9744875e3169d501fee89684978c1a9415fe89e2cae6b85074fecc6",
+      "decodedRgbaSha256": "45d2e6be194af9d713a58a628a240af81d8f422d9f14a562faff3be58a1a9ca0"
+    },
+    {
+      "path": "animation-review.png",
+      "description": "Completed local scan of the original three poses; comparison and findings are review cues, not a defect certification.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 114080,
+      "sha256": "86c84e2aeb63397e24eb885b24bc2b380bab495c3de092f663a5170e61273624",
+      "nativeCaptureSha256": "d80f508353d031e6e88990ad982094571eef6402d70040f437a5bafa5edaca17",
+      "decodedRgbaSha256": "d494a3bae28986ed950e12ebf8890446bce1791cb943bb24f73983bc850efe74"
+    },
+    {
+      "path": "animation-tags.png",
+      "description": "Actual Animation Tags & Clips range, loop and color controls.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 108026,
+      "sha256": "0fb7d4fa0342d8599d3e8baa9e1aee84b8c7293a86dbf925f7f54d8c86432cbc",
+      "nativeCaptureSha256": "8ab679f1014e1f6573e35e05cf9e20c9e63a93c3bda3d59c69ad243e1df2ffb9",
+      "decodedRgbaSha256": "2e723a44788561770c6f845661471bce6a6cb895eb449b9cd13f210e5653ce7f"
+    },
+    {
+      "path": "animation-timeline.png",
+      "description": "Three-frame timeline with per-frame timing, clip and onion skin enabled; preview speed choices open.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 73332,
+      "sha256": "a1a9b770f930e7978510c795daf18a20ac670a3368fbc82c6614aa17c8d388e2",
+      "nativeCaptureSha256": "769e564093b4919e3674a5268cc3ce96b00c86fcb8037fe24f7b6828ff576477",
+      "decodedRgbaSha256": "43f481ee1a8a7d6cb85885941687b89c9142a47fe6117fe75fd0fa8404a95c52"
+    },
+    {
+      "path": "archive-overflow-refused.png",
+      "description": "Current untouched-source archive refusal using an isolated 10,001-record fixture; original source preservation asserted.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 169271,
+      "sha256": "0248a00a710e3a3c4458619692a498f846ae4bedc63945ede59419cc0b829293",
+      "nativeCaptureSha256": "07cd987ff4459f99f31e04c5f70d54cc018ee04081aa28579c867a4786ed8c77",
+      "decodedRgbaSha256": "ab62bd292ec0dbecd7b8b19d2956c9a892ae7b9467b9821091784b2eab9cae9f"
+    },
+    {
+      "path": "archive-source-preserved.png",
+      "description": "Current admitted untouched-source archive workflow; downloaded archive and original damaged fixture checked.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 158059,
+      "sha256": "361ffb1e2b0bf485b2821912cce9ad5596ce22efbbfdafe21a994c29931c57bf",
+      "nativeCaptureSha256": "5f09b2b6ab1ef94bc33b2939c87102b4f20cc70dff6cf6f7c8d22ce8ec0783f8",
+      "decodedRgbaSha256": "84df560564a6b7fd0258295a131da4c0d5f11d94bc546dd29c6f66cce6cdb006"
+    },
+    {
+      "path": "canvas-resize.png",
+      "description": "Actual canvas resize dialog, dimensions and anchor choices; no resize committed.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 155177,
+      "sha256": "e8e09639c2df1e22281b6586a0c4939c4bbee6aee3d3896768c5cd340f70d863",
+      "nativeCaptureSha256": "0a99b4b4df3a9dee8f8cce719f358b664513131554426252f162fed09a825901",
+      "decodedRgbaSha256": "5cdd9596c712dc67dc9f7f6baf5ef451428b84192967356e034941f3340fb127"
+    },
+    {
+      "path": "cart-player.png",
+      "description": "Current phone cart player after opening the cart made through Export.",
+      "width": 390,
+      "height": 844,
+      "bytes": 33159,
+      "sha256": "3d564b4c6355c7af4d727e8adbe6597063c73027a839f87e1ba8868ef56b8464",
+      "nativeCaptureSha256": "b108bc2ed800d6904a077941590b9e273f6fd2df8bb49c9c9ceacda6eedac165",
+      "decodedRgbaSha256": "690e3bc6c583a8004236080192af2966bfcd73b0634efe391f9a9b6e23cf63c6"
+    },
+    {
+      "path": "cleanup-color-actions.png",
+      "description": "Current dithering, palette snap, harmonized accents and in-between frame controls.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 98374,
+      "sha256": "dee03e494b3e31a388e8884d2232e47ff270365d6441fac0a3b8c6bd9c29262b",
+      "nativeCaptureSha256": "76be6ac68360c8d686203789791142e155c3e5cc33f00c48afcd44d2e3713c61",
+      "decodedRgbaSha256": "a4bac2b828e10a240d7bd8055a61fb61faeb5baeb4278d5f7dd3870317baeb74"
+    },
+    {
+      "path": "cleanup-lines-preview.png",
+      "description": "Actual Smooth Jaggies before/after preview; Apply to Layer remains uncommitted.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 92937,
+      "sha256": "3652a01dee15eec82cf97f25c6a85de98bf33d621031c7ea82f901c5f739015e",
+      "nativeCaptureSha256": "67cb2fba274240d6a16789ea543f6cef2b076f8e48b628ca8f770dfe202e2e90",
+      "decodedRgbaSha256": "501c072b7a028f2c32fad100676f14ae1e17379526b6abf9b91f34e5886f0042"
+    },
+    {
+      "path": "cleanup-scan.png",
+      "description": "Actual non-destructive cleanup scan of the sample layer with counts and before/preview thumbnails.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 106048,
+      "sha256": "406a3b8d609b88342643e814e63d7bab8e2f6529a1ee5db7b362b16ae520d134",
+      "nativeCaptureSha256": "65ac249fffdfcf55aa89870855b37cba3981ee7a1c1c5d87a12e0ebf17b753c9",
+      "decodedRgbaSha256": "5ee319f2618da66b21eac9a1b1af42c53b4177aa19edb3fa50dee0162bb19d16"
+    },
+    {
+      "path": "co-draw.png",
+      "description": "Co-Draw initial routing and host/join controls, before any connection or invite is generated.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 168903,
+      "sha256": "c17672eff65de5ba8ad9b79c41e7fd8948e0eb70eccd0ee913128ca6f7e739a2",
+      "nativeCaptureSha256": "a82875dcf003fe9ef01bad3d21b02a2a833587d1056306059351fe2fe359a76e",
+      "decodedRgbaSha256": "8973c4ebb94854cfa217dd5e80ff9a7157d595d52ea4cf8a265f8b005a44bcce"
+    },
+    {
+      "path": "color-mood-preview.png",
+      "description": "Actual Sunset color mood preview, before applying.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 96080,
+      "sha256": "55eecd84c2f50a54d5d0159c2c926c6288ebb68dd2f9002839fd6622fed8b344",
+      "nativeCaptureSha256": "41b8fa43e45b95ab881a6c231db44a828cd256a3a876692ad71175a726ecce10",
+      "decodedRgbaSha256": "385081199dd5915db1832105d53fe2956ad57b83ac2e4631e5ef3193a77cb93b"
+    },
+    {
+      "path": "color-picker.png",
+      "description": "Actual primary-color picker with numeric controls; no color change committed.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 182704,
+      "sha256": "7c2da027b7fe335c79e27e2efd01cd65967019598a463d324b24e5b9354373d5",
+      "nativeCaptureSha256": "b68b90a1d76f06e21863a81085eacdbf9ba073a083237c5819644510fae9f4c0",
+      "decodedRgbaSha256": "a17664e48056013e2714189a9d54a2198e8311549715ae10a6de7b20733f2542"
+    },
+    {
+      "path": "color-tools-navigator.png",
+      "description": "Current Lighting workspace with pinned color controls and navigator.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 94895,
+      "sha256": "56b50d94ed1b0cc6949dbbe110cfeaa33b593ca06c04da6776ad57d9a2eef239",
+      "nativeCaptureSha256": "c108276e8b2ff8e2552c44bf3f1a3343cad632ef3084b33c01660fd13961c5a0",
+      "decodedRgbaSha256": "eab0e654a5d64212f58e528007b47bcc8f8632b2f612d5ff1c70aa858669d938"
+    },
+    {
+      "path": "command-palette.png",
+      "description": "Searchable command palette opened with Ctrl+K.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 160804,
+      "sha256": "db31b9f527b65a9bc231488011d17252412651c776d2527afca3199a498b3156",
+      "nativeCaptureSha256": "46d0214eee9287af691d7662eb291816570c38855d5707df53ba9c214fdded00",
+      "decodedRgbaSha256": "aba6e7a6895faa140774e60b130808b5c27b46bf1a93f86bb401465d63060b8b"
+    },
+    {
+      "path": "compact-color-dock.png",
+      "description": "Current compact color dock with primary/secondary wells, swatches, swap and reset.",
+      "width": 55,
+      "height": 121,
+      "bytes": 1468,
+      "sha256": "4a5501f449129d109a4414059bf06e5e27648a89e8bb9d3309b94b65e4a90401",
+      "nativeCaptureSha256": "3572dd4d22e575182ab4bb70270346a2f958e9d84902e8051f0c7ea9af9870d6",
+      "decodedRgbaSha256": "4d700b25741661acde1c14b4121ff88d6f303d646c246ed0dfa3e464626f27ae"
+    },
+    {
+      "path": "curve-adjustment.png",
+      "description": "Current pending Bézier curve with adjustment handles and Apply/Cancel controls.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 94069,
+      "sha256": "dca74a3af916b70c26c1afdecc2ec6fc8906f8abdcea7b2670d50165dafef84c",
+      "nativeCaptureSha256": "ba653070b758397ce7ce86bac682588b763e836c55fc32939b0221d56504c58c",
+      "decodedRgbaSha256": "706905435502a3360a23079346587c5ee8988109c85194fbc9ae3f6b7175da81"
+    },
+    {
+      "path": "export-apng.png",
+      "description": "Current apng export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 173146,
+      "sha256": "1c86b34952d4b0b2f127ac7eb4eb44f2c1d2138a8d8ea4ce2a2848f0ba4d284a",
+      "nativeCaptureSha256": "d551b527b1eb0f32a7d1bbccf46678b891ad2908803e059e367f60d2ba0de231",
+      "decodedRgbaSha256": "48a50400ad62744a15281f7f7031fc3821b914fe78706d491e69c181a92c4acd"
+    },
+    {
+      "path": "export-cart.png",
+      "description": "Current cart export preview, attribution and opt-in making-of controls.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 203122,
+      "sha256": "982920fd5be44626b70523e7005823a9fcd59256aa8c91c3601d312f60b8605e",
+      "nativeCaptureSha256": "b9434aff7e5ef94d86483c6a70280b013e385129342833f5c0f7b08101adfa38",
+      "decodedRgbaSha256": "8339c0d35897023cc31665c861e47537a5e5648df0703e0fc5b3e88f872518f4"
+    },
+    {
+      "path": "export-gif.png",
+      "description": "Current gif export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 166686,
+      "sha256": "215018a23c95bbfe4c433f1bff51209b9b8b471020f8448af0435776a43b417d",
+      "nativeCaptureSha256": "375955a1926000738d7e3933c36bb6c9396da63bd787b4b758ffbf1b2e8f14c4",
+      "decodedRgbaSha256": "b241e203d736a8c450d9c0418d88b7a6b0aae7825b238228aaeda4a1d3691ddb"
+    },
+    {
+      "path": "export-light-sweep.png",
+      "description": "Current Light Sweep video export settings.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 179464,
+      "sha256": "ce4875d54231ee47c541ce56a9fc4c811ecff12a9f4072280cee15e17edeab03",
+      "nativeCaptureSha256": "3344022bc55ba1dde87e5a279cdab8daecafabb5b6e860067b115f9ba44076ff",
+      "decodedRgbaSha256": "15bb7012e542323621c52f646ed0b0f9a08b4c36b47db09de585ea61cecd419e"
+    },
+    {
+      "path": "export-mp4.png",
+      "description": "Current mp4 export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 194876,
+      "sha256": "47b26c52003d6f2282153f90560cb6c84f23592d04b63de6ff5b5fcec4f0bab4",
+      "nativeCaptureSha256": "10e0f51088e4ac71b0e2f843b6899d5955b4194305576b66402ed88d235fae3a",
+      "decodedRgbaSha256": "7eb2a2afb6b45d75b545298118dcc604cee1d8d272e9edd668b36af88fd6b857"
+    },
+    {
+      "path": "export-palette-cycle.png",
+      "description": "Current palette-cycle export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 178921,
+      "sha256": "ca8c9042ff1c180e4c6aa80f9b1430033a57b03c6b4c3d5a93fff1071ead705e",
+      "nativeCaptureSha256": "3f202489261109e03d82db413d5ce2bcff6ed9571f44674c63f8d8dcb50beb51",
+      "decodedRgbaSha256": "9afc6dd44e667732ae7b7577cb70b217c81fb7d7b4d97233785ab9157733176a"
+    },
+    {
+      "path": "export-png.png",
+      "description": "Current png export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 163390,
+      "sha256": "4565bedab8e71bab71294779be9ec785dae2a7cd858483c60665820587c34495",
+      "nativeCaptureSha256": "ac4ee18ef48d5b662569c7cc4f2c5e6dd2d9bd8a26fa939879e103cc2fab05f0",
+      "decodedRgbaSha256": "c9f445da81f8a0dd54bb2a8eefef4da8474a75afe684fb7afe08a3ab8f2fa2f7"
+    },
+    {
+      "path": "export-project.png",
+      "description": "Current project export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 158143,
+      "sha256": "de14dc454a9b9b45a984e2c08841379246f579a36c5f4e68a2968af3ab49f785",
+      "nativeCaptureSha256": "49ef2cf6915a90a322c6c9031ea64b86e473e6084705e1bd0eb3936dd5453866",
+      "decodedRgbaSha256": "c08932403a7d77fd389c5cf748f859b533f71c7288ffe13469bf8fac4ff1f83d"
+    },
+    {
+      "path": "export-replay.png",
+      "description": "Current replay export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 182896,
+      "sha256": "c4768a6f84be1c2d6688e7750bd91262bc063ea7a6a5efd69f37d5251c85bb43",
+      "nativeCaptureSha256": "b123dd87498c4a7e963c5d051b6dadda6a59ed1456d5c49f767d96db95cf6d30",
+      "decodedRgbaSha256": "366efef8b35dc0be186624ddbd544412e59d83ab8b0912a60b2d22cde26a78a0"
+    },
+    {
+      "path": "export-shader.png",
+      "description": "Current shader export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 173166,
+      "sha256": "ac8d43cb4d6c6595520f9002e1a18514fe7af204a9813dc99a07602a22efca20",
+      "nativeCaptureSha256": "4fdbfb89da11a9e36aaf6b23a0adfed079bfe7055fd175b7ed708aaca254e587",
+      "decodedRgbaSha256": "827bae05ed36144d19ba70ddb10199596079491c49f1600f30b4114e57368e12"
+    },
+    {
+      "path": "export-spritesheet.png",
+      "description": "Current spritesheet export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 171022,
+      "sha256": "3ab93407e5a47692add9b8d985de87f8cf1bb3fd5469a6ea7a2e6fda773ca601",
+      "nativeCaptureSha256": "677b0024ea0fc9e9f7b1abb39acfc8befc8709db12df4ef81c8bc0cf1d56f982",
+      "decodedRgbaSha256": "25ef39862d0e301f50d129fb7f1eaaea04b7a1fc9f8f591c07ed8f7e5d888d82"
+    },
+    {
+      "path": "export-webm.png",
+      "description": "Current webm export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 174353,
+      "sha256": "fc8b264a927a18ac96891fa4e3c0d960217ca961dcb4b35e7744c0924d92822e",
+      "nativeCaptureSha256": "91d98b458855db1eaf45ab2defaa533631fd3b0fec2bc84390667a06859b4cc6",
+      "decodedRgbaSha256": "995d182f28208d82608a4cf1edc44df9a50661f2f33354b0072b664ae72a053f"
+    },
+    {
+      "path": "godot-manual-normals.png",
+      "description": "Current manual-normal Godot export, with its downloaded atlases checked by the existing workflow.",
+      "width": 1600,
+      "height": 1000,
+      "bytes": 191349,
+      "sha256": "414a01418108f05911c59d669dd2509d9c181d1e0d269ea9a5185135b301395f",
+      "nativeCaptureSha256": "85f7a2006504ab41331d50b74b9b2702e6c2e95cf78fe3698faea8a7a487a670",
+      "decodedRgbaSha256": "f8c3509da5feb503abe8aab907b788207661cdf44301803f0049df32180c5598"
+    },
+    {
+      "path": "import-image.png",
+      "description": "Actual single-image import choices using original built-in artwork.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 160098,
+      "sha256": "a5648a20eecfaa5052bfd0c05efa6b549e07ab392d404da6e5a09a64b0b81a9a",
+      "nativeCaptureSha256": "2b706a092918268270cd706f90de58c263a7c8f52d40a5b0412ae59d8f6d6f0a",
+      "decodedRgbaSha256": "137a2f013258f402d6e9761fb564e981acee6badb717d970ce1c0172c8ec0a3a"
+    },
+    {
+      "path": "import-spritesheet.png",
+      "description": "Actual sprite-sheet slicer, 8 by 8 cells over sample artwork; no frames imported in this capture.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 165519,
+      "sha256": "93ec30aa6e84102962f173dafd5ad42bc39feb52b9519e014734768a8a869352",
+      "nativeCaptureSha256": "46b5a6b84b66bf6dcd0fb525b11ac1681bbaff423c4c8e89d6d04bb173ab6f75",
+      "decodedRgbaSha256": "c4145c5aa912aaad317638dc1d9eb4fa079743c6613ef6b77741cbbcbd4ada54"
+    },
+    {
+      "path": "iso-free-thick-mirrored.png",
+      "description": "Current unsnapped Iso Line and drawing-mirror settings.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 85406,
+      "sha256": "027609eccdafd58265635109680f505b6bda3e06f4a3298286141697573b99dc",
+      "nativeCaptureSha256": "cdd79722108485827725fe3c5d1e62c06b39c3c854639e35e78446505ed7824b",
+      "decodedRgbaSha256": "928ec2bac5332d7be8b423d8901aa20e504c53e233fb227bf8e1a46fe2fc6146"
+    },
+    {
+      "path": "iso-snapped.png",
+      "description": "Current 2:1 Iso Line with snapping enabled.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 82675,
+      "sha256": "fc73b2bbb0c69a5cfea5820084aacea669c304685706a50bf225650bedd607fe",
+      "nativeCaptureSha256": "355b5ab6c0ced0f873445a4dcc9bdf01150d63d391aaafcf9b417e896a77fd01",
+      "decodedRgbaSha256": "617894ba32f483df13681eb36c94b1d9d047e67111ac10329fdb64c4684da9bb"
+    },
+    {
+      "path": "isolated-practice.png",
+      "description": "Current temporary practice sheet, traced through the real lesson controls.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 62264,
+      "sha256": "958c44bd04fb83ae351f0c47fc9cacdd607889f8cd1fcda86784df514844619c",
+      "nativeCaptureSha256": "02db45801b521faf2f23b0b7e3298d253a8f85496acc0643aef36de4892b26c5",
+      "decodedRgbaSha256": "479dc48b0a61d6f316d6eda17f4c6664b89055ffc285cdbaa40bca9dc56885ba"
+    },
+    {
+      "path": "kept-practice-new-project.png",
+      "description": "Current practice kept as its own Studio project through the UI.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 67200,
+      "sha256": "60318cd8b401f4e64d3b2361d953d25722398a95729e64f7844e0bd5060bbd0f",
+      "nativeCaptureSha256": "20179309965661b8a9806f41f7af983abd832e3d9c9c3c127b978d1b518889ba",
+      "decodedRgbaSha256": "450290b60e90bf2c73e75753c1cc5e087eb186a29d8efdc0a9a72206f3512c37"
+    },
+    {
+      "path": "lesson-bouncing-mochi.png",
+      "description": "Current Bouncy Mochi coach and first pose traced through the UI; demonstration artwork, not participant evidence.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 62264,
+      "sha256": "958c44bd04fb83ae351f0c47fc9cacdd607889f8cd1fcda86784df514844619c",
+      "nativeCaptureSha256": "02db45801b521faf2f23b0b7e3298d253a8f85496acc0643aef36de4892b26c5",
+      "decodedRgbaSha256": "479dc48b0a61d6f316d6eda17f4c6664b89055ffc285cdbaa40bca9dc56885ba"
+    },
+    {
+      "path": "lesson-bun-hop.png",
+      "description": "Current Bun Hops coach and first pose traced through the UI; demonstration artwork, not participant evidence.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 57315,
+      "sha256": "37f13bfff21ab633c8fff66e6f5475afa555e932f0f7176532eec8f1571bdf4f",
+      "nativeCaptureSha256": "3cac96a664d4bd231fd5e668a58ba8b742394d40497e867ef4d6ac22b3c599a0",
+      "decodedRgbaSha256": "f17cef4c426914d8c6bb7cf46b29dc11805d3cb7578dbf3b2e80799764cbfe4b"
+    },
+    {
+      "path": "lesson-character-hop-shock.png",
+      "description": "Current Big Hop coach and first pose traced through the UI; demonstration artwork, not participant evidence.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 60987,
+      "sha256": "a450af3412b82ac856f8cc50a37966cb9a63c679dd5c926f72be2687efd1634e",
+      "nativeCaptureSha256": "e3d53c4ef69b11386b9afe5ede490ca3f4dc1157544ede9704673d51c3caa39f",
+      "decodedRgbaSha256": "65afd04d9e84355a0346f696a3404724344a62ce2d2ac8cf013ea8909c514d8b"
+    },
+    {
+      "path": "lesson-combat-slash-hitstop.png",
+      "description": "Current Power Slash coach and first pose traced through the UI; demonstration artwork, not participant evidence.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 60392,
+      "sha256": "ab3136de37afb28d2a535ac009ce782fcd5e742278153846ec94ce3d2f2f346c",
+      "nativeCaptureSha256": "e31836f3824593618c2881786f36679848ff99be273b86eb790d2a93cd920649",
+      "decodedRgbaSha256": "31dc53c565a92ac1ad5e039155763b784c9bc84a71142041121bc1ca459fa220"
+    },
+    {
+      "path": "lesson-hearth-flame.png",
+      "description": "Current Cozy Flame coach and first pose traced through the UI; demonstration artwork, not participant evidence.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 57323,
+      "sha256": "315229e6a19fbaf4c8a25da6fdea44a081a61f0a5ed7999d0ecf8e86f8af56e1",
+      "nativeCaptureSha256": "727b9675579390aa8240e9d931f331fa10a0a98def5a3d54f3927b05f8641b95",
+      "decodedRgbaSha256": "3c69964998bce8ab71e4cabc6ee2759e9eda9fdd5929b7e7294509f724c530c4"
+    },
+    {
+      "path": "lesson-master-bouncing-ball.png",
+      "description": "Current The Full Bounce coach and first pose traced through the UI; demonstration artwork, not participant evidence.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 60794,
+      "sha256": "a30a34da0d0c8118aade1e361ee198b92a88a304d9a019e8be3ec5eb4e617da5",
+      "nativeCaptureSha256": "440ac349a0ea96421f2a3127f26f9d4d27d4c6d0a342f3746a617f4319ba2926",
+      "decodedRgbaSha256": "0feb633794f10f9e9a9b7f288688dbc26d39c185ac45a0218d87585cdbc7a345"
+    },
+    {
+      "path": "lesson-picker.png",
+      "description": "Current animated lesson picker with all twelve lessons.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 132178,
+      "sha256": "9acad61b0697560f130e19835d4bf0dfac45eed96735093a7b596722395f6c50",
+      "nativeCaptureSha256": "77d74994a0ffb55380eac856ffd36091c924bc234e136eaf60930f1593d7d23d",
+      "decodedRgbaSha256": "9f52ff7218a47f3733ca6233094bea24e719d6a865ecdd12ed977efd5e45f2c3"
+    },
+    {
+      "path": "lesson-potion-bubble.png",
+      "description": "Current Potion Bubbles coach and first pose traced through the UI; demonstration artwork, not participant evidence.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 58054,
+      "sha256": "34e82c901467e13a80d6f94d2c6bb165a3f8bdd8b83d87ccf95aa4ad7ceb2eae",
+      "nativeCaptureSha256": "7e78d4ab2442323d8c868abd0e2ae216217d5508d194517f9ec5f01bb244b642",
+      "decodedRgbaSha256": "9531989e2f5568833a578e5a4d95e1c39a1029d79bacbc143dd8e244df1750da"
+    },
+    {
+      "path": "lesson-slime-glide.png",
+      "description": "Current Slime Slide coach and first pose traced through the UI; demonstration artwork, not participant evidence.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 60407,
+      "sha256": "2340fa5a17b84ded05ab094da2d8ccacf2073c2f6b54575ec25f05e92f0c168a",
+      "nativeCaptureSha256": "5235b3772ea4eb42dab470b868c84a6ff3a510d170d081bb510ade79e4f8de93",
+      "decodedRgbaSha256": "ec3745468a6233ca226a8958f827f09642c93542886f72d8890b9e89d29856e4"
+    },
+    {
+      "path": "lesson-subpixel-idle.png",
+      "description": "Current Breathing Idle coach and first pose traced through the UI; demonstration artwork, not participant evidence.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 61422,
+      "sha256": "ee45f9f76e9593f5ff41c503d9dd0ed817150592ce37270b381fc1226e4a5804",
+      "nativeCaptureSha256": "76cc3ab99f3421981c5837cb63fd942acd02a1ac9595f3dfd5e49e1ef4a1e1e0",
+      "decodedRgbaSha256": "bcf9fa183185b6c6a7e9fe7d41cb6bc227afeffc18aa71f427a1f9aa579c941a"
+    },
+    {
+      "path": "lesson-sword-slash.png",
+      "description": "Current Sword Swing coach and first pose traced through the UI; demonstration artwork, not participant evidence.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 56797,
+      "sha256": "18cdc1f3e5fbba2b26131ccd3ea35229476929add139df37e90f7e51dac61be8",
+      "nativeCaptureSha256": "632404854b78a4fd6bcd83b85d35b9addfbad8a5687966bcd347713b69b98703",
+      "decodedRgbaSha256": "79ed4a1e4fc9d46e56888ae6afd25aaa5446392e9fc9e1f92167b3673d04f8e1"
+    },
+    {
+      "path": "lesson-twinkling-star.png",
+      "description": "Current Twinkling Star coach and first pose traced through the UI; demonstration artwork, not participant evidence.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 57735,
+      "sha256": "fb4d9499b1bf7097472c07a49195f4616c25c95ef8c1d1a94ec5a09afec63077",
+      "nativeCaptureSha256": "135227f2766fb576bd011fe83bdb6075c8f04d0faa261833837bdc1eda85114d",
+      "decodedRgbaSha256": "5e48ed653633dae0af9132839ae86509f4e6187bf3d67eed8ec0c87caa578e2b"
+    },
+    {
+      "path": "lesson-water-ripple.png",
+      "description": "Current Water Ripple coach and first pose traced through the UI; demonstration artwork, not participant evidence.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 57112,
+      "sha256": "caf92ad053f88e9d2a1aa9f25568e96e75a2dc016722b0657d4d1a56876ccef2",
+      "nativeCaptureSha256": "a66e4966d91bd9011c1ab672bbf6aa7a5428754e0ec9c704842dda4f59693274",
+      "decodedRgbaSha256": "897b252a1490ce3ebb1b4ee683e9858ab38c2bb2040fa108ae75f01fe9db66c8"
+    },
+    {
+      "path": "lighting-extra-actions.png",
+      "description": "Normal-map bake/preview, glint and selective-outline lighting actions.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 105506,
+      "sha256": "5e096d1decd0aaf5d1e9402670bb43752c09e13655fb1bdbc09df6e5b8de2000",
+      "nativeCaptureSha256": "6ddc360f838ebda2a1cf42d112a0dc830d91007d7bfe6147c187194c83dc4fd4",
+      "decodedRgbaSha256": "4f888f9a27eb51010ab52f4fb21f4466e12ce40cf6569af589099bdf444a2d75"
+    },
+    {
+      "path": "lighting-live.png",
+      "description": "Auto lighting on Bun with live bulb, angle and Apply/Cancel controls.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 129162,
+      "sha256": "04eb54676175cd3e02afaf00dd0f11d47da461bcf543d8c4c56cccbbefc8633e",
+      "nativeCaptureSha256": "c66f0e1860f7b6cf8a873f6c493eb75c2b70696c2c7bc2c4245eccb03952f537",
+      "decodedRgbaSha256": "d1558c8080b2cb11e912ea27d319c0be42429580a1d159015762674857bb70b4"
+    },
+    {
+      "path": "lighting-manual.png",
+      "description": "Actual manual lighting controls; no light bake committed.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 102484,
+      "sha256": "6cf372063e9519c6a81a1ab20540c97f56cdef812072da34b68dcfa030d5e063",
+      "nativeCaptureSha256": "b734a0f92410fd3589f3ec27ec707fa2861f85854959a3c0e85b6365cdae9f19",
+      "decodedRgbaSha256": "dfd51ca3bce6720fd86655992fd63ca20c70d4f2d1631669a7923b5d9d897653"
+    },
+    {
+      "path": "living-postcards.png",
+      "description": "Current Living Postcards picker with all six animated scenes.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 171344,
+      "sha256": "8ba2664df64a3e9750366510ab53d5e8180a2dabcb45d2a95c174503c108db20",
+      "nativeCaptureSha256": "ba31d25d1b9309980e66dbe8c450e08a4f278ec0c7016419bbbad86eb07eb89f",
+      "decodedRgbaSha256": "1f2483a6edcdcfaa86711da59a6c3c01138e24465c758bf9b70d471ce98abd7a"
+    },
+    {
+      "path": "mobile-studio-gate.png",
+      "description": "Actual narrow-screen studio gate offering Home or Pocket Doodle Pad.",
+      "width": 390,
+      "height": 844,
+      "bytes": 22953,
+      "sha256": "06771c6c4a3d901915728f32202ac1bf19294439d670fac605d2888c7eb834b3",
+      "nativeCaptureSha256": "240b3165c1edc1eec1deccf075a1bac10852741bb1026aff033f8bebab312fa2",
+      "decodedRgbaSha256": "4cff37c3b08921e437f9c6620c9b1a07d2e69613e957506b603131258dc0cf77"
+    },
+    {
+      "path": "motion-pose.png",
+      "description": "Current rigid-part motion pose, pivot and session controls with a selected Bun detail.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 118605,
+      "sha256": "6cbcb832fe0fbd103ba650bcf84770887bc846688b482677d6164ded744e5079",
+      "nativeCaptureSha256": "69e68ff22d546da1506424741da2144b7dfd36df8ae112ea9237bc2a95185a7e",
+      "decodedRgbaSha256": "b817374c4a043e356ce77a7842c92830e945fd5e2424ebe8f0f5438a4a1da32c"
+    },
+    {
+      "path": "normal-sculpting.png",
+      "description": "A newly created Normal Facets layer with the Normal Chisel controls; source color layer remains separate.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 98756,
+      "sha256": "7b04839979bc1b72b0efb33c6246e8e444af38400e6c89d0f7165fee9834e5e1",
+      "nativeCaptureSha256": "ab055bf1f9e0e21f55ef5dfc93bb591725e8282ebb7e8f092bb7ff50fcea0186",
+      "decodedRgbaSha256": "a036a46850467268f0dec75ad3ed0e1ab4a8a4fd57865a2440a1b19edd9580b1"
+    },
+    {
+      "path": "onion-settings.png",
+      "description": "Current onion-skin direction, colors, opacity and frame counts.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 190726,
+      "sha256": "bd13ec391509d2998a2a8fe6a7f568574736b431ca7f4259b767517081594cca",
+      "nativeCaptureSha256": "d204cfe75ee6f094d6bc3a9db4ff230a42ce525ccffb34bfe1b9c4f582e1de53",
+      "decodedRgbaSha256": "e602c852ea4beaf7ddc691c7565fc609f31aa22e2295eea318fc7706e9ce216a"
+    },
+    {
+      "path": "palette-cycle-range.png",
+      "description": "Current palette cycle range, rate and direction controls.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 98474,
+      "sha256": "d0db4e1b5e157ba93a600d20b600b7412dfd689b61169ae8bc92396c3bed9682",
+      "nativeCaptureSha256": "15b22cb3eb0b89a0c638a0fbf11ce55addb919345195f3b502a2aa3fa4dba24e",
+      "decodedRgbaSha256": "ee07a94c479d0e3a3d5f80b170f919411df802bf49865590a847a17635a6e1dd"
+    },
+    {
+      "path": "palette-from-artwork.png",
+      "description": "Current palette creator with main colors extracted from the built-in sample.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 199169,
+      "sha256": "fb9fa5bb9cba31c8522cb094aa5f132e72a80a78fbb930027c77bb3bd7d649aa",
+      "nativeCaptureSha256": "61432532b2f05b6b117d23e9bdef7372f320481816012f5b8d367eaf36706fc1",
+      "decodedRgbaSha256": "cbb68f285fe620ba0e46374ee26fbedf070830391cacf6e90366c5b8121b0976"
+    },
+    {
+      "path": "palette-library.png",
+      "description": "Current built-in palette library and comparison controls.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 185450,
+      "sha256": "2addcacbd59e8d89ad4d787737280171712aafc8e528e139e1cfe3a90f0764b7",
+      "nativeCaptureSha256": "720d19f7a9155d937993e65b989faf8a0e4b8486ff39f1254b8316dd4ea1f3e9",
+      "decodedRgbaSha256": "e9035287a0a2e3c4db5102c14fbd5ab68078a06f6b66430894b1f7e13ad63313"
+    },
+    {
+      "path": "palette-ramps.png",
+      "description": "A generated five-step OKLCH ramp in the actual palette panel; palette change only.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 95315,
+      "sha256": "8e37803e32588e4d0e00edca237eb6bd3925372ad71031e1f2bc39b8a27bbb7d",
+      "nativeCaptureSha256": "bd11049e89bcacbe923e33c88671badf8302b991926467394fbf4c412cd67aa5",
+      "decodedRgbaSha256": "f43808f00e503fb43749d7c73c03882ddee556ca8ab9e33460fb47b3d7445a20"
+    },
+    {
+      "path": "palette-roles.png",
+      "description": "Actual named palette-register role and rectangular index-binding controls.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 120750,
+      "sha256": "b3483a28f7f6d5e0d0ecd4a917b9e6660d790728667f8dcb34ef02746b2f874b",
+      "nativeCaptureSha256": "5725454995cfba2bc61732425bce483740f0146409a5b25c94c64979bb1805ea",
+      "decodedRgbaSha256": "6628c148a41f1dcc73fd582e8ed36a8aea9f77e02db6ee4ccff0ada333ba312d"
+    },
+    {
+      "path": "pixitools-chooser.png",
+      "description": "All five current PixiTools task choices and Show every tool on one page.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 97642,
+      "sha256": "5376bc144a67c763351fde0b2e915019073b795c843dafb362cf74af40258650",
+      "nativeCaptureSha256": "280a39e3d65b70cc9b36456a330f7d7ecbb9e959355a5dd3ef105bdc4fc0f512",
+      "decodedRgbaSha256": "d187b2253903547d1a221b7119f496c38c57e6986e35ae9c143a5c24786c68e1"
+    },
+    {
+      "path": "playground-desktop.png",
+      "description": "Current coached desktop Playground and introductory lesson.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 59308,
+      "sha256": "54132dbd31980d97d941a901b4abaafb4c4edca3a896e2cc3e24e6b40f7f8470",
+      "nativeCaptureSha256": "6473a7303423205caa4e561341ceb60117c2f391d1d72316143524fba95132e8",
+      "decodedRgbaSha256": "001b516020a043d7d5824225242762b94a6607bb45a6597bc4cf4a70c1286f05"
+    },
+    {
+      "path": "pocket-doodle.png",
+      "description": "Current mobile Pocket Doodle Pad with a temporary brush stroke.",
+      "width": 390,
+      "height": 844,
+      "bytes": 18074,
+      "sha256": "ce5e892b64cae332fb6f446c8e7f80dc96439ed39075a61ba5f116ec75ce4a19",
+      "nativeCaptureSha256": "96b0a8aa319893e958e62a3561a57d34b7d7bb9fd567df75fcf763dd5ced89ac",
+      "decodedRgbaSha256": "1582fa5f8c1a887adda442910838250d374392f2f9e08e6459b77179f36b1a7a"
+    },
+    {
+      "path": "pocket-lessons.png",
+      "description": "Current sixteen-pixel coached Pocket lessons and their frame controls.",
+      "width": 390,
+      "height": 844,
+      "bytes": 31199,
+      "sha256": "1d142e50838bb1c06ee1ad130fdf2da5d73d37fc51feab0d9995f9ce4df59a21",
+      "nativeCaptureSha256": "af1057f7027d582d9b943c5e47185381456605e58233754872e97480a61e687e",
+      "decodedRgbaSha256": "3fce6a0612cc5982a33e578ddb3137c2e40f43cb9fc6c45b8ea02f8394c591bd"
+    },
+    {
+      "path": "privacy-diagnostics.png",
+      "description": "Local diagnostics and disabled-by-default remote crash relay settings; no relay was enabled.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 182393,
+      "sha256": "4a8386ecc7638327686943b3c5a7fbc663492015e360e038bc4f30bbc784cb7e",
+      "nativeCaptureSha256": "b955f148692464bc31ae190925d95b3598472fc2ee74b2caede9ccc0edfe51e3",
+      "decodedRgbaSha256": "15321c229ae096b0168ba927dfac35411b168466430a9c5915257e354966e0d7"
+    },
+    {
+      "path": "projects-gallery.png",
+      "description": "Local project gallery showing the saved original sample project.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 122894,
+      "sha256": "4235520163bfc4dc089da6741a5528955ea46c0113139dc4145f33daa10c2c60",
+      "nativeCaptureSha256": "be23834fc8f557540a751cc55d2a1ce1bb87a42e87ba84ec2188c023fc9c33c4",
+      "decodedRgbaSha256": "4df62e6855f90dd42f45050e045a96816d1c3e0412719872b7a5a338023f57d8"
+    },
+    {
+      "path": "radial-menu.png",
+      "description": "Actual right-click quick tools and color swap menu.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 96121,
+      "sha256": "42b31a368bc69b1e2690d57e7839c6d709ff60b8644602c2fed811ef92fbb8e5",
+      "nativeCaptureSha256": "01d07afe8e28840980177841799d461a840f3b61e654aaac900a12eef441a8a9",
+      "decodedRgbaSha256": "373cfa0cc55aaae5663b8c538c41febd8d6ac93c0b8863bcbe22a956de805713"
+    },
+    {
+      "path": "recovery-plan.png",
+      "description": "Actual recovery plan for a deliberately unreadable fixture in isolated browser storage. No real user project was damaged; no recovered copy was committed.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 159983,
+      "sha256": "03b23de90de46376011d1e6eb7c700e0702e490d9be724600dba966e952e5173",
+      "nativeCaptureSha256": "53daa68898af77d329fc58c6aafc0fa58d566d102ce586918d23016b715bfc1b",
+      "decodedRgbaSha256": "ca02f6887e37597cf95d2fec8f33aa47944f383dc5a94a12bacd8c508bfbd904"
+    },
+    {
+      "path": "research-light-options.png",
+      "description": "Actual advanced Light settings and source/recipe controls, before applying.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 87915,
+      "sha256": "ae702501bbbfa76de2f3f8ab7f08f7d629de852ce81211b6208cabc80ccc933b",
+      "nativeCaptureSha256": "14b36d629dda880b3403d8a0c70b090080c6c571876ae3c899b81abf843c9dde",
+      "decodedRgbaSha256": "0ea782192b083af8097a1f2d6f2fa165c04539913d654991ab114a9e2838f879"
+    },
+    {
+      "path": "research-light.png",
+      "description": "Actual Light preview and controls; originals have not been changed.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 79847,
+      "sha256": "219fc1ee6e6e217d136a8342c35d085d9a48e31b7c948914893106ff9d325a11",
+      "nativeCaptureSha256": "0c8c7499e2ace1823a272896f1ab23fd7d332334923b46ebce0cca22c980489f",
+      "decodedRgbaSha256": "bca0a1c9f012ae744b4cbd250a8defd99aef69212e44e1403183819b904d3241"
+    },
+    {
+      "path": "research-pixelize-options.png",
+      "description": "Actual advanced Simplify settings and source/recipe controls, before applying.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 88572,
+      "sha256": "e15a46a3ba0f078b868de4cee88b2d2e9406486c3672902d17e5603310057a04",
+      "nativeCaptureSha256": "e598575feec7a3e91fca3ab35785360607ef88240458d3626cf2d8b9b858ada7",
+      "decodedRgbaSha256": "b79bceb4260e7ecdef0cc3fc4e83d104aee5e9a7b6f9bcb35fd9d0a57478c057"
+    },
+    {
+      "path": "research-pixelize.png",
+      "description": "Actual Simplify preview and controls; originals have not been changed.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 87229,
+      "sha256": "734689495b74d62c8fea8e1dd90419e251b17e8580075d0eaba2c875dae3dd0a",
+      "nativeCaptureSha256": "a9b6d74f8a93309fe132767a17697cb26896484842e4436c9a73b983c8ae1303",
+      "decodedRgbaSha256": "b0919b2ab2a6673b7ab6e9ab049fa74a43b6aeeea2d9e1c3ed46bdc961cc4c88"
+    },
+    {
+      "path": "research-scene-options.png",
+      "description": "Actual advanced Tiles settings and source/recipe controls, before applying.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 90230,
+      "sha256": "b4232afaf40f7baaae64ef06ac0ebc9f570580c67832d178bec6230c10e1e50d",
+      "nativeCaptureSha256": "090c36d533a2126acff8848c4330df338dfcebf77eff4a0f27529943e39eeb90",
+      "decodedRgbaSha256": "52d773ce93ddedc3edfbd39e48be4cc9dd032048f28130b14c98f9c89570c8e3"
+    },
+    {
+      "path": "research-scene.png",
+      "description": "Actual Tiles preview and controls; originals have not been changed.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 87811,
+      "sha256": "d9e6251ba9db07dba2a613c7f69e0a69078ffe26a8a4da5d3b1349dc066e727c",
+      "nativeCaptureSha256": "887d4e6294f49c5e3a520f6fa95ca463d96d288870e64ee0276ba7ea4096a7df",
+      "decodedRgbaSha256": "9bccc82d9f321bec76bb075423aa84cc9d049dc1b0516dc55c9d7b2bad5f7af3"
+    },
+    {
+      "path": "scroll-story.png",
+      "description": "Current scroll-driven sketch, lighting, motion and export story.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 338406,
+      "sha256": "3b3a89c05f5373f20c968e88d45edc52e3b071ff6697bc47f91e180f99c43bbe",
+      "nativeCaptureSha256": "842043fdbbe1596927110f4d7926897fdeb963d7ba7acb321a9df3b2915bc448",
+      "decodedRgbaSha256": "9d1f72d3df769c4642a8c198f735661eba3bb443219b9db3fa13aa193f04bf4b"
+    },
+    {
+      "path": "selection-gradient.png",
+      "description": "Current selected-area gradient controls; no gradient committed.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 108891,
+      "sha256": "cbb8e481c2a459e5406b5abd50ba924b92e797f1add6fb50f755d72244561d5a",
+      "nativeCaptureSha256": "63f7439d389ee235da8ccd87718b08d5559afe9053587cc15bc2d193804aa758",
+      "decodedRgbaSha256": "fc2d46ebc2085452e79d743d41c0643dae6b051bfd4ec8314c3912ea960d8f6c"
+    },
+    {
+      "path": "selection-transform.png",
+      "description": "A native rectangular Bun selection with transform handles and HUD; before applying a transform.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 108570,
+      "sha256": "e1d080fa198f7525cefd3218a2d2ca63bf2585b2fd29956970c7720b582a998f",
+      "nativeCaptureSha256": "40569c0a87519b1569539c0238d13d8959a4a48aae8341143105f57a048eebc9",
+      "decodedRgbaSha256": "f1f29e1cbf410f31ab6b79237b9ffde8d1a0a942a7389cfa22f9dff6a04155c6"
+    },
+    {
+      "path": "shadow-options.png",
+      "description": "Current automatic floor-shadow choices and projection style, before casting.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 90868,
+      "sha256": "2e73bc47d17db9f7893a3792212b1c5aeb22d6d7a5db958c69d5299abef3141d",
+      "nativeCaptureSha256": "1ad0fc256641d5b440fa5cdf036c8c50d5e96c3665d2299f145c10be3ab584ad",
+      "decodedRgbaSha256": "eed07029046d9bdc9c354be2da8f881e4acce659b6c84c3efa6401e32a376ae0"
+    },
+    {
+      "path": "shortcuts-help.png",
+      "description": "The in-app Guide & Shortcuts; shortcuts for text fields are qualified in the handbook.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 200401,
+      "sha256": "2d29b42a1fa54503a01888aa9800e48a6292395a49dedeff36fe503bb7667d7a",
+      "nativeCaptureSha256": "bdf92117b5632529acfa12be1d3c9890348af941e65620c13d242949dca56299",
+      "decodedRgbaSha256": "5c9c41dc5b5ca8bfdf7e98aa6794a28b7d6a437a73ab954a4e2a2054f068735a"
+    },
+    {
+      "path": "single-live-preview.png",
+      "description": "One current floating live-preview window beside the drawing.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 95713,
+      "sha256": "94d8c977d641fa55d18b425faa44bbc5bcbdf74446af7cabcc0069ee77b94b38",
+      "nativeCaptureSha256": "028f562ef5482ab815af357d4f4f790aab6af0cfb2fd4ae056abb96bcc90ad55",
+      "decodedRgbaSha256": "6eb81ae84cda188faf21b0b572f3be6e6dcfd0fd3a01fcdf805d6f52bf31032e"
+    },
+    {
+      "path": "starter-shelf.png",
+      "description": "Current starter shelf with Bun, Mochi, Sprout and Teacup Frog.",
+      "width": 1440,
+      "height": 952,
+      "bytes": 184534,
+      "sha256": "ce33082a30716c12a497a5d95fef0e14ba290a390ca9346a0aa84b23080927e1",
+      "nativeCaptureSha256": "7d2c3d53e1d3a32ffded24824647012a3bab82a63bc7623d99358d950076f774",
+      "decodedRgbaSha256": "226432dd70542d7969b8590d5ccdb07b5c36316b268491c8d77bde96c34e76b5"
+    },
+    {
+      "path": "studio-arcade-dark.png",
+      "description": "Arcade Night Studio with the same original three-frame built-in artwork.",
+      "width": 1280,
+      "height": 900,
+      "bytes": 140017,
+      "sha256": "26597a7af843314bed033de03a37e6e8e7bd836354a0a339ac989c1d7371048f",
+      "nativeCaptureSha256": "f021d19842415a7d3acf07ac59861e0b1d936474fb49a3bc6880405503fbcdde",
+      "decodedRgbaSha256": "27380288691d9cf3455b7b1977aa5447ea9ecb86c31367049d9bc536795c1e0b"
+    },
+    {
+      "path": "studio-arcade-light.png",
+      "description": "Arcade Day Studio with the same original three-frame built-in artwork.",
+      "width": 1280,
+      "height": 900,
+      "bytes": 147216,
+      "sha256": "0b7ba5d16ee92b3f8e06c42bc9593836581a85206285daa2f642ec675e1c3c95",
+      "nativeCaptureSha256": "00bc264efcf213756ac520060f7710eb0df6e3f8ca69d2cd7fee01962aa73a1d",
+      "decodedRgbaSha256": "1f128ea57a6c9b1dc23c213ef9d69b6061e34cc8e37a6b5539388783754357f2"
+    },
+    {
+      "path": "studio-atelier-dark.png",
+      "description": "Graphite Night Studio with the same original three-frame built-in artwork.",
+      "width": 1280,
+      "height": 900,
+      "bytes": 67483,
+      "sha256": "c4eec8f59d38daea63d220e83b6aa5513034f428e2aa460fa77d8d53af873c39",
+      "nativeCaptureSha256": "d333d29d713c36f6403ced99a648b5efcdf7d062d2db09af43b61d05bfd69772",
+      "decodedRgbaSha256": "11b6cbd12d21be36a9e1b6abc5185767f62ef31ead5df5902fc597646d5d19aa"
+    },
+    {
+      "path": "studio-atelier-light.png",
+      "description": "Graphite Day Studio with the same original three-frame built-in artwork.",
+      "width": 1280,
+      "height": 900,
+      "bytes": 67485,
+      "sha256": "26b8af03c376793c4a5bf907ecb2aaf9405dba2f1f4238cfaf21425712a11566",
+      "nativeCaptureSha256": "9c4d6e4e5dad9763f36ca31d5dc149aea2dcb87725f972b212c2796a5650acc3",
+      "decodedRgbaSha256": "47822d1f93b4097a27e9571d94fa7a6ccbd15de0e2a4c1640ade153de8030a06"
+    },
+    {
+      "path": "studio-cozy-classic-dark.png",
+      "description": "Plum Night Studio with the same original three-frame built-in artwork.",
+      "width": 1280,
+      "height": 900,
+      "bytes": 67517,
+      "sha256": "4b5a2ac738d62d289db7b4f3afb7c215dbb1d88514225e732f4c6ee244d7e44d",
+      "nativeCaptureSha256": "ba2e3a3ef68047a9fd9572814fb33a936ca3d1b5f1a0348b669770027fa76db1",
+      "decodedRgbaSha256": "207e97e8042481133c826cdbd5182d79691af6ea293e1cb1b15b26c31f50633b"
+    },
+    {
+      "path": "studio-cozy-classic-light.png",
+      "description": "Plum Day Studio with the same original three-frame built-in artwork.",
+      "width": 1280,
+      "height": 900,
+      "bytes": 67720,
+      "sha256": "94db0e2d8e984c4c12132f7751109cca729685d2929a1aa2b04e31fc87aee47c",
+      "nativeCaptureSha256": "f8ee65fedde597008fdbb42b010e20dd87b732628c17a59bdd73955fe97165dc",
+      "decodedRgbaSha256": "490cc9ee0695844d2629570ba472ae6defe2a143b430a08e3d8e551b25d7f4c3"
+    },
+    {
+      "path": "studio-ember-dark.png",
+      "description": "Ember Night Studio with the same original three-frame built-in artwork.",
+      "width": 1280,
+      "height": 900,
+      "bytes": 138473,
+      "sha256": "af5bdcecf5f869b8e2e891ac5e5eb0f88ed4abe6801dcb02b35472c893c1e0c0",
+      "nativeCaptureSha256": "b7b525c5ffe4cb6e8cf6456a3cc761a13e170419267867484be5db3dcc3b3908",
+      "decodedRgbaSha256": "a93fdb8b3d1c750c0aee91362261b970223368d7f81377040c5f6e73452b51b7"
+    },
+    {
+      "path": "studio-ember-light.png",
+      "description": "Ember Day Studio with the same original three-frame built-in artwork.",
+      "width": 1280,
+      "height": 900,
+      "bytes": 148636,
+      "sha256": "ff834701f9f389b0dd39530e0aa04a23ee078bc8a5377c41b880c14a2d1ab6dd",
+      "nativeCaptureSha256": "b47eae17bbd1a04b9947e32d4561eb60886f2bcc39c8f5a47e71b041d5438a30",
+      "decodedRgbaSha256": "8ef1b0479336f77a2967cf02b7639582f5a268f6ba47d6f32279d2d9af6238cc"
+    },
+    {
+      "path": "studio-moonlit-dark.png",
+      "description": "Moonlit Night Studio with the same original three-frame built-in artwork.",
+      "width": 1280,
+      "height": 900,
+      "bytes": 148456,
+      "sha256": "9d58af4ef4a81c875b25d64f397704974fa7244df2c51b0e92692ffa9b7f09b0",
+      "nativeCaptureSha256": "ca08793c7ab18d95de1e01b09b06ff7393afe054602156aceae79550ebd11b69",
+      "decodedRgbaSha256": "36e8338ac981bcc9c3164e7ff0d4de3a2093ee9861ddb25db73bcf65024c47a2"
+    },
+    {
+      "path": "studio-moonlit-light.png",
+      "description": "Moonlit Day Studio with the same original three-frame built-in artwork.",
+      "width": 1280,
+      "height": 900,
+      "bytes": 149137,
+      "sha256": "126e6cbd308ac59077364078997f5c59efbd48a2764a540115b737443438fb17",
+      "nativeCaptureSha256": "8b8a114efebee96adf3a8090ebdc85fcb3c682f0c23e2f90b9fcc58e0fcfdb03",
+      "decodedRgbaSha256": "5e1114c972051a0cc2605527da9499ee3c2affa02f1ad246f37ffd1e75f74e26"
+    },
+    {
+      "path": "studio-moss-dark.png",
+      "description": "Moss Night Studio with the same original three-frame built-in artwork.",
+      "width": 1280,
+      "height": 900,
+      "bytes": 141192,
+      "sha256": "d0f01dd4fc6e43baf801ce0f5b3cd7297a16894383c66d0b625ace8d1afa5997",
+      "nativeCaptureSha256": "da238a0441726d41d9db4170fd103c9a33a20c6430aaac1ba4ef2b5313018b38",
+      "decodedRgbaSha256": "bc51c9f4d6997760fd92277950bcd475ccf1326de0b7f0f0788fb807cf966945"
+    },
+    {
+      "path": "studio-moss-light.png",
+      "description": "Moss Day Studio with the same original three-frame built-in artwork.",
+      "width": 1280,
+      "height": 900,
+      "bytes": 160874,
+      "sha256": "3519e14336e4ea7cdc8096bcc05bf092416592a3521dae9212e5ba90f54c2180",
+      "nativeCaptureSha256": "36e462c445dc15552d211bbed722b6d669cae00697f747a13a3103a7e333ac50",
+      "decodedRgbaSha256": "51f43c97c1ef5cd3eb2d2f78d5c06fd5987666ff27541fabdd1d5331a4a0c36f"
+    },
+    {
+      "path": "studio-options.png",
+      "description": "Actual studio theme, color scheme and tool preview preferences.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 85402,
+      "sha256": "56d131fb92be0c7ba9d31285e35c9bfdbbaed2b19754f77412d486f89073edb4",
+      "nativeCaptureSha256": "c94529a99dd71409a87c8872089b604215cf6012e03ad03f7510301d0ff15574",
+      "decodedRgbaSha256": "12e291c3111156aec3aefa290d901e8893fdb0e640b622bf23eb4948a72839df"
+    },
+    {
+      "path": "studio-sakura-dark.png",
+      "description": "Sakura Night Studio with the same original three-frame built-in artwork.",
+      "width": 1280,
+      "height": 900,
+      "bytes": 154647,
+      "sha256": "71d82b6afa48a93d49aa9dc9d37b11110ba6b9c95505bbb25838c87c85b52ad4",
+      "nativeCaptureSha256": "e0148a83394babb0079c510e5b942a8bcbde906bcd31cd098e0fd3fc26875350",
+      "decodedRgbaSha256": "cf770937b5d3db7cf3c250b7c44893bd11886ab480c9e76a6b8d6a37d0948f8f"
+    },
+    {
+      "path": "studio-sakura-light.png",
+      "description": "Sakura Day Studio with the same original three-frame built-in artwork.",
+      "width": 1280,
+      "height": 900,
+      "bytes": 150629,
+      "sha256": "9d8f671523d4bcf6b6f01e580511d08edfedc4c35e8c7a33f96d6d3db0359c7c",
+      "nativeCaptureSha256": "5cc3d66d55addd6ed06ee9c37f0bf2e078fed528dcbe66387baa29a8b94f460a",
+      "decodedRgbaSha256": "c381e9debdc032ac74a89173104740b93de6fc11e8611eaba4935339227a81e3"
+    },
+    {
+      "path": "studio-tidepool-dark.png",
+      "description": "Tidepool Night Studio with the same original three-frame built-in artwork.",
+      "width": 1280,
+      "height": 900,
+      "bytes": 149722,
+      "sha256": "cc594185a605fd7de3d5348fa7c25c9b8105e811b5552098523dadc2d3143a10",
+      "nativeCaptureSha256": "8d40d98c928ca27956871bee0c7daac8773e2090cca670d36be0b3eefeecb3ad",
+      "decodedRgbaSha256": "0f3cad2ba8b68d6718b1d4fac198b3f41d93d5a659b07c65d738c27cca4b4b7f"
+    },
+    {
+      "path": "studio-tidepool-light.png",
+      "description": "Tidepool Day Studio with the same original three-frame built-in artwork.",
+      "width": 1280,
+      "height": 900,
+      "bytes": 154835,
+      "sha256": "95511fafebb2d02ccf93a3d36711e4eed35f3b33e9191b5689a134a6e7c74baa",
+      "nativeCaptureSha256": "465dd9891277a57722adcee653c6b9daea61aa3a570ff409319f9b097709f2b0",
+      "decodedRgbaSha256": "b9af70f7a3040541dbb3af2f186b58f84554d397cf3237dde47b1e5f5a5eb9f3"
+    },
+    {
+      "path": "svg-approximation.png",
+      "description": "Current SVG export approximation controls; downloaded XML checked by the existing workflow.",
+      "width": 1600,
+      "height": 1000,
+      "bytes": 149048,
+      "sha256": "cb40dc9ea3bf7de2048b6546310ef3c23d3d85daf1fa0f941c7b97e01d7302a3",
+      "nativeCaptureSha256": "b757e831942307d75ed92ac977ed9d675d888c23019128dad4d87805f94ba515",
+      "decodedRgbaSha256": "d3aa204ddcb241fd0230be8499d5879be1a72447a48e3bb2b979af59dc5e382a"
+    },
+    {
+      "path": "teaching-board.png",
+      "description": "Current ten-frame jump Teaching Board.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 164987,
+      "sha256": "1f0067a6d02ab733e83c142507595f4061c0a63178ae49f299d457c8b835e375",
+      "nativeCaptureSha256": "5aaee331f9a20020607ef813ce1b4af7c95cfe8c894ce1ce4b1d51b994c2f464",
+      "decodedRgbaSha256": "cebea53bdd0f6e9d551824e63a32e5fc6c89b161a540edef762214536b03d11a"
+    },
+    {
+      "path": "tiles-contours.png",
+      "description": "Actual 47-blob contour before/after preview, before applying the separate contour layer.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 115388,
+      "sha256": "6646dca3a4d05937d74fc4cc5ca426c7e1191ac538e328eebe50bdc1b04c502f",
+      "nativeCaptureSha256": "5237e0fd6b759e585a275bcfbc8be44214a15a6291ee82fd64badaf6f3665683",
+      "decodedRgbaSha256": "37c54479d5069d6cac173a1c939f054879c59b5da4ab5f3347c8094a274932be"
+    },
+    {
+      "path": "tiles-repeat.png",
+      "description": "Selected Sprout pixels repeated 3 by 3; repeated imagery is a seam inspection aid.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 115412,
+      "sha256": "71ef5a099cfad3072688d0d73d644a62b77d1e02ea6f8b0cb658e44c3a6e71cc",
+      "nativeCaptureSha256": "4ac8fa8febc04208ffecb5c7e1c3fbe3a2e7395a4ea3c9ebcc6bb5344aae16cf",
+      "decodedRgbaSha256": "4ddff9996090d4ae5f546a462a1d82c4ad91300664fb5551d9066efe7d776963"
+    },
+    {
+      "path": "tool-bucket.png",
+      "description": "Flood Fill selected; actual available tool settings, original three-frame artwork.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 88361,
+      "sha256": "de6d112c651f6e353b45a58ab42827c5ed6742af684f0971a149cde3939d3f0d",
+      "nativeCaptureSha256": "461b85981deb710277328fd698431a8a2e7cd5726852b35d7f7ccde47cd1480e",
+      "decodedRgbaSha256": "9f9facb1869eda22b9baa1b1f27b736f462988aaa55cb6a7fa0998e8452a7923"
+    },
+    {
+      "path": "tool-color-replace.png",
+      "description": "Color Replace selected; actual available tool settings, original three-frame artwork.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 78931,
+      "sha256": "4a1e724832c32457dd6675d0590cc35bc64b3b8fdaaf12657742bf74fdd34dcc",
+      "nativeCaptureSha256": "969c38d5e27f4eddc42e4072d7b595345d4005b10c366c453b5163cd62a7b072",
+      "decodedRgbaSha256": "6d18048b81cf61f3c8efc6ffe9bc0389eca85459e8096cf4a75ce1fe6cc93bf7"
+    },
+    {
+      "path": "tool-curve.png",
+      "description": "Bézier Curve selected; actual available tool settings, original three-frame artwork.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 90913,
+      "sha256": "2b52347428e43a6b53779c1021a83ab7898fd551f39fe0b4660779e1e787a089",
+      "nativeCaptureSha256": "e02df5b50839f29683410533b3f2d0c8b2604d56b5239c3423c91480a0410c12",
+      "decodedRgbaSha256": "1383919541e182e12708619df5894c0a4e1590b780a7052ca3a2a4fe7cb84417"
+    },
+    {
+      "path": "tool-dither.png",
+      "description": "Dither Brush selected; actual available tool settings, original three-frame artwork.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 87004,
+      "sha256": "1eccf6ea8d7438ad1a8e4c231d41a428693e1ad843952d8f5272c3ddd7c31a4f",
+      "nativeCaptureSha256": "c8ff7a4bf287c6d75bfc9c8383fc6322534e84c05ce3f48f3e9b862b5dd29ba7",
+      "decodedRgbaSha256": "de93486c9dbb8a8995e871725bef94a5a5c3a4225d79f2b541e431c8ce717a2d"
+    },
+    {
+      "path": "tool-ellipse.png",
+      "description": "Ellipse selected; actual available tool settings, original three-frame artwork.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 82014,
+      "sha256": "985501e335e341f7ea4fd9e6dbd1ec4489c21c39f458b052b13b8666bf384b49",
+      "nativeCaptureSha256": "5d66f610595ca57b800b356030968b007b27af80c5be2a33f9cab2d6081a1446",
+      "decodedRgbaSha256": "90ab8ec10f171a422f31f2b8d952683166d589002d7abd93f42199f29dadcbb4"
+    },
+    {
+      "path": "tool-erase-color.png",
+      "description": "Erase Sampled Color selected; actual available tool settings, original three-frame artwork.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 95740,
+      "sha256": "f3eb5907340a6577282e14b8031a0e1b075b2c5e5cbdd62e16777a3a079cb5c7",
+      "nativeCaptureSha256": "6d122c739beb5cb532e1e648a8e37eeb51456af5e24eece0371985266bb579af",
+      "decodedRgbaSha256": "41e78bdedbb345cd68b5c34f2bf4a954be436ede5401b392d702049120eba420"
+    },
+    {
+      "path": "tool-eraser.png",
+      "description": "Eraser selected; actual available tool settings, original three-frame artwork.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 74023,
+      "sha256": "011ea132696c50e85b1dfb10d3bd408b20753c54b51fbb019b58192ac1651b73",
+      "nativeCaptureSha256": "33b4895431f726d08a3816819f761ca4b894e3292158bc2fed85585143147bc1",
+      "decodedRgbaSha256": "120db8ef629a4bfe69b844ffbb9c6dccbcafa4602c09d3b7de0551e03361d442"
+    },
+    {
+      "path": "tool-eyedropper.png",
+      "description": "Eyedropper selected; actual available tool settings, original three-frame artwork.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 75187,
+      "sha256": "187d659471a425a5cf0df46e810f97c4b16b9953d555c906e4642e8cdce646e6",
+      "nativeCaptureSha256": "c5172eafd7334b26fa7bc24e9ddc6404158fbea43477276a5ccaced1d520e347",
+      "decodedRgbaSha256": "23f08fba9d25c8a272721ab04370e259a478815df7f3b360f0e311bdc7741f39"
+    },
+    {
+      "path": "tool-line.png",
+      "description": "Line selected; actual available tool settings, original three-frame artwork.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 73354,
+      "sha256": "8cd1a7aec5e26f289e8a5bb99fbd442d2b6aa73e5162b91ea607f015e90bff13",
+      "nativeCaptureSha256": "7817d6827c516c8554b41715c85fcbef4e1a32c488cb9d846b755b901a019adb",
+      "decodedRgbaSha256": "8e703c292d0124e0a273b728b3f41f3253af9643d7398c024b009cdd43e775af"
+    },
+    {
+      "path": "tool-normal-chisel.png",
+      "description": "Normal Chisel selected; actual available tool settings, original three-frame artwork.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 81499,
+      "sha256": "1ee5b2bf5b9064d4f259bb8d9b486382475207554de3733877f237b9bb999570",
+      "nativeCaptureSha256": "8cf28f61d6bc64fac992f7e86f0a8f727517fe8cd9a677f10661d97a1e9375a2",
+      "decodedRgbaSha256": "7b07e1befc4d5f72f5e966842a52ba60570fda847d9a6cc02dbd2484751681c7"
+    },
+    {
+      "path": "tool-pen.png",
+      "description": "Pen selected; actual available tool settings, original three-frame artwork.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 80191,
+      "sha256": "890b4cbc9fc05e7976eb47b838533dabe1b7ea9cfbbafc2dceea93566d16d557",
+      "nativeCaptureSha256": "f694f86f1bb92ffae40fd9e79f697dda0cf94f90b62f74af0999e26ea075c3ce",
+      "decodedRgbaSha256": "2bb0c117403d16a25bef175bc22a190cefefbc2f355f303fcb2001d73b9e7b79"
+    },
+    {
+      "path": "tool-rectangle.png",
+      "description": "Rectangle selected; actual available tool settings, original three-frame artwork.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 82744,
+      "sha256": "6240b6657a8674a3a1d3a90f598d8826c8f5b30377ddbe8bd61c30ab595e5798",
+      "nativeCaptureSha256": "f018d6172db3381985a12f4e929bbe2260c6cd6f5d30516c888368d9dcbf3ea4",
+      "decodedRgbaSha256": "d963588f1d757051e1acd8920420aa3d4751fc38463453e2a8f253394c43925a"
+    },
+    {
+      "path": "tool-select-box.png",
+      "description": "Marquee Box selected; actual available tool settings, original three-frame artwork.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 87998,
+      "sha256": "44ae3d0ec2ef36b25c95ea2cc27ffb42978142f0df0d0d365270cbad3c7624a4",
+      "nativeCaptureSha256": "267ccc6f1c2a5d0c39e5064c7d75a09e6877845a47630bccbe1f4f74f2cbcfc6",
+      "decodedRgbaSha256": "b998f4a56a3a8f7e06f8dc9b4744818bbbf2994c1246f09b8bdb5da642869523"
+    },
+    {
+      "path": "tool-select-lasso.png",
+      "description": "Lasso Select selected; actual available tool settings, original three-frame artwork.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 87747,
+      "sha256": "17523fc25ce2f7e16761f630a8e265285e349c388c718f550625fe74c06e9ffd",
+      "nativeCaptureSha256": "1f677dab2d36c2dcda5ecd3d7a1687c5c86ad10fce017b058c0310f6c58c5a66",
+      "decodedRgbaSha256": "819e51bf43b81b53094c1ccdb51bf685eed9ed1e11e68662879525eacc962540"
+    },
+    {
+      "path": "tool-select-wand.png",
+      "description": "Magic Wand selected; actual available tool settings, original three-frame artwork.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 94675,
+      "sha256": "64f303c0cd34c3cc5a03fe3dfd24a7dce0771e8aa2629e93a1b4d8ed52c3f320",
+      "nativeCaptureSha256": "95a4c21591753957598644cd6b3835effc010c866e36225e5d0cd14478968d96",
+      "decodedRgbaSha256": "441422085044987de3753db0b87aeeefc14221bb22f62233fc298f80d2fcedf9"
+    },
+    {
+      "path": "unique-tile-bundle.png",
+      "description": "Current unique-tile bundle and stale-source controls, exercised through the existing workflow.",
+      "width": 1600,
+      "height": 1000,
+      "bytes": 119748,
+      "sha256": "eb0c4066fecaf9fc4ae7f7cca98695ddafd337bd7612c090401a919d40c5eb33",
+      "nativeCaptureSha256": "d113194d52d7f3155d3d2d5a6d9fdd5947ea3d902d7ac2b74a85e61096039192",
+      "decodedRgbaSha256": "1f38dd09894339e30ab17c843b3e54d24bc006003ba4c412316e8e28307bba99"
+    },
+    {
+      "path": "unique-tile-stale.png",
+      "description": "Current unique-tile bundle and stale-source controls, exercised through the existing workflow.",
+      "width": 1600,
+      "height": 1000,
+      "bytes": 124525,
+      "sha256": "033f6a6745aceacc5dff93f77824d4cccd2654c79c3891d7f5e5dfea45e6a074",
+      "nativeCaptureSha256": "a3445187e24059ba68bb923fb0df56e157f4e1e486163d610bd1aa2a301a9278",
+      "decodedRgbaSha256": "daf38c07d28bb290b57ba3e64834eb8c4b368c47bb4286015e8362791dbbf028"
+    },
+    {
+      "path": "view-options.png",
+      "description": "Actual grids, composition overlays, tile/PiP previews, CVD/silhouette lenses and symmetry choices.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 125553,
+      "sha256": "873bbb2ae7ef1f2c1364e4ddc84e148c1f023a2bff947cd117a5ea0a3eb1e9e3",
+      "nativeCaptureSha256": "c923d8bcf7261124f59114f5dbe7ac17a2c2cc4c1612c85751230bba8b74d6c8",
+      "decodedRgbaSha256": "3fa8a94194c2a968e8e037cbcb6ca31b8a0e49d4ef3e406fac9b266ba7e20107"
+    },
+    {
+      "path": "welcome-export.png",
+      "description": "Actual welcome-page export demonstration, separate from editable studio project state.",
+      "width": 1088,
+      "height": 647,
+      "bytes": 111458,
+      "sha256": "44c95073dbf7bba5057697850bd8070b16b391406267cb35d9e729373b99b899",
+      "nativeCaptureSha256": "c81883a580dc90d6a425a7c00f5408443550735f7de5158eb225036143d0d009",
+      "decodedRgbaSha256": "f2682a63432df20150d84e246393912f60f03fa59dfed074a254d0a339996183"
+    },
+    {
+      "path": "welcome-overview.png",
+      "description": "Current Pixels with a pulse homepage, painted town and Open the Desk entry.",
+      "width": 1440,
+      "height": 960,
+      "bytes": 382935,
+      "sha256": "f0066359c78955d29d2f7485c4f8334ac4e449e3d8d25d1f2f71de21898961c3",
+      "nativeCaptureSha256": "9ee3be981027e58ca6c0e83d2919f4610080c2161d9bbfead729e1683bf8dfe5",
+      "decodedRgbaSha256": "5114b3a377d0912aadc800c4602bead183abdca38fbc479e0fa1683287a53f3b"
+    },
+    {
+      "path": "welcome-photometric.png",
+      "description": "Actual welcome-page photometric demonstration, separate from editable studio project state.",
+      "width": 1088,
+      "height": 519,
+      "bytes": 129222,
+      "sha256": "f25bbb72e771349754005553372c4c1db07ad1f2f4ec9aa2983ed80d8e3ca604",
+      "nativeCaptureSha256": "5f395a569eb336679bde6be01b684aead042d1fa97766291d18168c815a9adce",
+      "decodedRgbaSha256": "1a08bff1564c2e5f60b770b8a849fc4f1b6d41b10a1dec46482660ab7d6f80f0"
+    },
+    {
+      "path": "welcome-pixelize.png",
+      "description": "Actual welcome-page pixelize demonstration, separate from editable studio project state.",
+      "width": 1088,
+      "height": 519,
+      "bytes": 106173,
+      "sha256": "597d5e3ef39f06c1fef0333866efa8cf5f4a1fa23c28a55625d0645aa608f95f",
+      "nativeCaptureSha256": "f4065e62866e22914c7b87abd3666580098badd36bb00577fa43bc3c316d0564",
+      "decodedRgbaSha256": "7eec7f4cd9312a99ae234036c08b909af9d4b47c28834fe42d313911c23ac6e3"
+    },
+    {
+      "path": "welcome-rotsprite.png",
+      "description": "Actual welcome-page rotsprite demonstration, separate from editable studio project state.",
+      "width": 1088,
+      "height": 512,
+      "bytes": 95109,
+      "sha256": "be5a6b2d2c0f13bb9f59383c7458ff3fe6819010243f80979b616a6c32701fcb",
+      "nativeCaptureSha256": "6fab8c13fcd2c3e3ef9df15a10d012f6a0010adfd4ef4f105a9ddb36f294e8be",
+      "decodedRgbaSha256": "228d64015cb810f61564ba94bd2ff768b46bfdce38c7ec33eaa3c730426fd3e4"
+    }
+  ]
+}

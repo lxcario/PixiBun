@@ -2,6 +2,8 @@
 
 This review covers PixiBun 1.14.1 on main through **e9b5e682b9cc0111358f3b91f41d98249001a7a5** and the integrated playground, homepage, inspector, theme and application-update changes. This is source publication and scoped local verification, not a production deployment/release approval.
 
+The subsequent [four-phase audit follow-up](../plans/2026-10-15-audit-follow-up.md) integrates carts through Living Postcards, fixes confirmed instruction/interface/drawing issues and replaces the handbook pictures with the current build. The source and original test verdicts below retain their earlier scope; the follow-up owns current results and the complete Day/Night theme gallery.
+
 ## Changes checked against source
 
 | Area | Current behavior and owner | Documentation corrections |
@@ -90,6 +92,10 @@ Ignored archives, private transcripts, original screenshots/raw browser payloads
 | [docs/verification/README.md](../../docs/verification/README.md) | Reviewed, retained | CI discovery/evidence policy reviewed against workflow ownership; no fabricated CI receipt. |
 | [testsprite-plans/challenge-2026-10-03/README.md](../../testsprite-plans/challenge-2026-10-03/README.md) | Reviewed, retained | Vendor skill or dated plan/terminal-result registry; examples and original verdicts preserved. |
 | [This review](2026-10-15-codebase-and-documentation.md) | Added | Latest source owners, full corpus dispositions, verification and remaining scope. |
+
+## Subsequent Studio Labs integration
+
+The later [Studio Labs motion update](2026-10-15-studio-labs-motion.md) integrates Labs and remote audit/handbook changes and records the approved tool-name transition. This record’s original source labels and verification below are not claims that the later UI revision reran the same production qualification.
 
 ## Verification
 

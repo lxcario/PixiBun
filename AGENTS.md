@@ -10,8 +10,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Project status and documentation contracts: [docs/current-status.md](docs/current-status.md) and [docs/README.md](docs/README.md). Keep dated evidence separate from operating instructions.
 
-Current engineering status: [current status](docs/current-status.md); latest corpus reconciliation: [15 October review](docs/releases/2026-10-15-codebase-and-documentation.md). Retain source/build revision labels and original failure verdicts when maintaining documentation.
+Current engineering status: [current status](docs/current-status.md); corpus reconciliation: [15 October review](docs/releases/2026-10-15-codebase-and-documentation.md); subsequent corrections and current screenshot qualification: [audit follow-up](docs/plans/2026-10-15-audit-follow-up.md). Retain source/build revision labels and original failure verdicts when maintaining documentation.
 
 Keep raw evidence and completed audits local under [the archive policy](docs/archives.md); never add ignored archives to Git.
 
 For Nibbli testing, agent-driven drawing or Artist planning, read the [Nibbli skill](.agents/skills/nibbli/SKILL.md) and its [agent contract](docs/guides/nibbli-agent.md). Keep functional expectations separate from artistic opinions and preserve failed attempts.
+
+Current Studio Labs motion and documentation disposition: [15 October Labs update](docs/releases/2026-10-15-studio-labs-motion.md). Preserve earlier audit/source/build verdicts when updating this record.
