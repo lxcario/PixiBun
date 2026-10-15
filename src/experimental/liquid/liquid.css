@@ -1,0 +1,121 @@
+/* Labs: Liquid glass tabs. Delete with src/experimental/liquid. */
+
+.lq-bar {
+  position: relative;
+  display: flex;
+  gap: 2px;
+  padding: 6px;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  border-bottom: 1px solid var(--desk-border);
+}
+
+/* The recessed track the lens slides along */
+.lq-bar::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-0) 70%, transparent);
+  box-shadow: inset 0 1px 2px color-mix(in srgb, black 30%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--desk-border) 60%, transparent);
+  pointer-events: none;
+}
+
+/* ── Lens ── */
+.lq-lens {
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  z-index: 0;
+  border-radius: 999px;
+  pointer-events: none;
+  transform-origin: center;
+  background: var(--primary-bg, var(--accent-gold));
+  border: 2px solid var(--moon-ink, var(--ink));
+  box-shadow: inset 0 -2px 0 var(--primary-shade, transparent), 0 2px 0 var(--moon-ink, var(--ink));
+  transition: background-color 260ms ease, border-color 260ms ease, box-shadow 260ms ease, backdrop-filter 260ms ease;
+  overflow: hidden;
+}
+
+.lq-lens-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  background:
+    radial-gradient(60% 70% at 30% 18%, rgba(255, 255, 255, 0.55), transparent 60%),
+    radial-gradient(50% 60% at 78% 92%, color-mix(in srgb, var(--accent-wisteria) 45%, transparent), transparent 70%);
+  transition: opacity 260ms ease;
+}
+
+/* Held: the pill lifts into a clear, refracting drop of glass */
+.lq-bar.is-glass .lq-lens {
+  background: color-mix(in srgb, var(--desk-surface-raised) 18%, transparent);
+  border-color: color-mix(in srgb, white 55%, transparent);
+  backdrop-filter: blur(1.5px) saturate(1.9) brightness(1.12) contrast(1.05);
+  -webkit-backdrop-filter: blur(1.5px) saturate(1.9) brightness(1.12) contrast(1.05);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.7),
+    inset 0 -2px 4px color-mix(in srgb, black 20%, transparent),
+    inset 0 0 12px color-mix(in srgb, var(--accent-wisteria) 30%, transparent),
+    0 8px 22px color-mix(in srgb, black 40%, transparent),
+    0 0 18px var(--moon-glow, transparent);
+}
+
+.lq-bar.is-glass .lq-lens-sheen { opacity: 1; }
+
+/* ── Tabs (beat the moonlit tab skin, which paints the pressed tab itself; :is() keeps one specificity for every rule) ── */
+:is(body, body.moon-ui .moon-slot-inspector) .lq-bar .lq-tab[data-testid^="tab-"][aria-pressed] {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 32px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 4px;
+  border-radius: 999px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+  color: var(--text-muted) !important;
+  transition: color 200ms ease;
+}
+
+:is(body, body.moon-ui .moon-slot-inspector) .lq-bar .lq-tab[data-testid^="tab-"][aria-pressed]:hover { color: var(--text-heading) !important; }
+
+:is(body, body.moon-ui .moon-slot-inspector) .lq-bar .lq-tab.is-active[data-testid^="tab-"][aria-pressed] {
+  color: var(--primary-fg, #16141a) !important;
+  font-weight: 700;
+}
+
+/* While the glass is up, labels go back to their own colors and the one under the lens is magnified */
+:is(body, body.moon-ui .moon-slot-inspector) .lq-bar.is-glass .lq-tab.is-active[data-testid^="tab-"][aria-pressed] { color: var(--text-heading) !important; }
+
+.lq-tab > * {
+  transition: transform 260ms cubic-bezier(.34, 1.56, .64, 1);
+}
+
+:is(body, body.moon-ui .moon-slot-inspector) .lq-bar.is-glass .lq-tab.is-under[data-testid^="tab-"][aria-pressed] {
+  color: var(--accent-gold) !important;
+  font-weight: 700;
+}
+
+.lq-bar.is-glass .lq-tab.is-under > * { transform: scale(1.14); }
+
+.lq-tab:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lq-lens, .lq-lens-sheen, .lq-tab, .lq-tab > * { transition: none !important; }
+}
