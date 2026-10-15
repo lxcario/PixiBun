@@ -4,13 +4,19 @@ For the tested revision and remaining accessibility, device and host checks, see
 
 [Handbook](README.md) · [Backup safety](artwork-safety.md) · [Format contract](../contracts/exports.md) · [All features](../features.md)
 
-Choose **Export** at the upper right. The panel has **12 format choices**, grouped into images/animation, game delivery and backup. Choose the kind of file you need, review its settings, then use the download action. Opening this panel does not mean a file has been saved: check your browser's downloads and open the result.
+Choose **Export** at the upper right. The panel has **13 format choices**, grouped into sharing, images/animation, game delivery and backup. Choose the kind of file you need, review its settings, then use the download action. Opening this panel does not mean a file has been saved: check your browser's downloads and open the result.
 
 Video availability is checked when you choose a video format. You can open image, game-delivery and backup options without waiting for a video codec check. For Timelapse MP4, availability follows your chosen replay frame rate.
 
 When **Export Scope** appears, review **All Frames** versus a named clip. Animated files use the relevant ordered poses and holds. A **PNG** or **Vector SVG** still uses the **active frame**, even when a clip-scope selector is visible; choosing a clip does not turn a still image into a multi-frame file. Timelapse uses retained history, and Project Backup includes the whole admitted project.
 
 Homepage downloads use a separate Bun sample: actual GIF/APNG animation files or image/metadata game ZIPs. Use **Studio → Export** for your own project. [Sample downloads and importer limits](welcome-and-demos.md#game-engine-exports).
+
+## Cart
+
+Choose **Cart** to make a trading-card PNG with your whole drawing tucked inside: frames, layers, palettes, their color cycling and your light. Give it a title, and if you like your name, a note for the next person and a license; the card updates as you type. Choose **Cream** or **Night** card stock, then **Save cart**. Nothing about you goes in unless you type it.
+
+Anyone can view the card as an ordinary picture. Dropping, pasting or opening it in PixiBun shows who made it and what it remixes, then **Open on my desk** opens the drawing (your current drawing is saved to Projects first). A cart made from an opened cart credits it. Some sites shrink or convert images and drop the drawing inside; the card still shows. [Cart format](../contracts/carts.md).
 
 ## PNG
 
