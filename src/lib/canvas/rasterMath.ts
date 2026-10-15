@@ -113,8 +113,19 @@ export function getClippedLine(
   return getDDALine(clipped.x0, clipped.y0, clipped.x1, clipped.y1);
 }
 
-// Pixel-perfect line filter: cleans L-shaped double pixels (jaggies)
+/** Straight shape/Shift-click lines use one tie-breaking direction, retaining caller order. */
+export function getUndirectedLine(x0: number, y0: number, x1: number, y1: number, canvasWidth?: number, canvasHeight?: number): Point[] {
+  const forward = x0 < x1 || (x0 === x1 && y0 <= y1);
+  const points = forward
+    ? getClippedLine(x0, y0, x1, y1, canvasWidth, canvasHeight)
+    : getClippedLine(x1, y1, x0, y0, canvasWidth, canvasHeight);
+  return forward ? points : points.reverse();
+}
+
+// Pixel-perfect line filter: cleans L-shaped double pixels (jaggies).
 export function filterPixelPerfect(points: Point[]): Point[] {
+  // Repeated samples are dwell, not another corner. Keep nonconsecutive revisits.
+  points = points.filter((point, i) => i === 0 || point.x !== points[i - 1].x || point.y !== points[i - 1].y);
   if (points.length < 3) return points;
 
   const result: Point[] = [points[0]];

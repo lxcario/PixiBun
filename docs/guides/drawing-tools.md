@@ -20,7 +20,7 @@ There are **17 current toolbar tools**. The original sixteen illustrations retai
 
 Press **B**, choose a color, then click for a dot or drag for a stroke. Open **Size** to choose a brush preset or enter a size; **[** and **]** adjust it from the canvas. **Clean corners** removes redundant L-corner pixels along a pen stroke. Leave it off when you want every corner you drew to remain. Mirror drawing is available in the top rail and [View options](studio-workspace.md#view-and-symmetry).
 
-Clean corners follows the whole stroke across pointer samples. A trailing stamp can be corrected at the next turn; its original pixels are restored, including mirrored brush footprints. Undo/Redo covers the committed stroke.
+Clean corners follows the whole stroke across pointer samples. Repeated dwell samples are ignored; nonconsecutive revisits remain part of the path. A trailing stamp can be corrected at the next turn; its original pixels are restored, including mirrored brush footprints. Undo/Redo covers the committed stroke.
 
 ## Bézier Curve
 
@@ -96,7 +96,7 @@ Press **W** and click a color region to select matching pixels. Its implementati
 
 ![Line selected in the studio.](../assets/screenshots/2026-10-02-feature-guide/tool-line.png)
 
-Press **L**, choose a color and size, then drag from one endpoint to the other. Release to commit the raster line. This is useful for borders and straight stems; choose the isometric line tool for a repeated two-across, one-up slope.
+Press **L**, choose a color and size, then drag from one endpoint to the other. Reversing the same endpoints produces the same pixels, including half-step ties; clipping uses that same consistent endpoint order. The unsnapped Iso Line and Standard keymap's Shift-click straight segment share this rule. Freehand strokes retain their directional sampling. Line, Iso Line, Rectangle and Ellipse previews respect the active selection mask, brush footprint and drawing mirrors just as the committed stamps do. Release to commit the raster line. This is useful for borders and straight stems; choose the isometric line tool for a repeated two-across, one-up slope.
 
 ## 2:1 Iso Line
 

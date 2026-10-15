@@ -2,7 +2,7 @@
 
 import React, { useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
-import { Point, getBresenhamLine, filterPixelPerfect } from '@/lib/canvas/rasterMath';
+import { Point, getBresenhamLine, getUndirectedLine, filterPixelPerfect } from '@/lib/canvas/rasterMath';
 import { shouldDitherPixel } from '@/lib/canvas/ditherMatrix';
 
 interface BrushHandlerProps {
@@ -33,7 +33,7 @@ export function useBrushPointerHandler({
     const isErase = tools.activeTool === 'eraser';
     const drawColor = usesSecondary(e) ? secondaryColor : primaryColor;
     strokeRef.current = { last: coords, previous: coords, pending: null };
-    const points = lineFrom ? getBresenhamLine(lineFrom.x, lineFrom.y, coords.x, coords.y) : [coords];
+    const points = lineFrom ? getUndirectedLine(lineFrom.x, lineFrom.y, coords.x, coords.y) : [coords];
 
     if (tools.activeTool === 'pen' || tools.activeTool === 'eraser') {
       drawPointsOnActiveLayer(points, drawColor, isErase);
