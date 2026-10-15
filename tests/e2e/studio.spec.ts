@@ -29,6 +29,8 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     await page.goto('/studio');
     await expect(page.locator('div[role="application"]')).toBeVisible();
     await expect(page.getByRole('region', { name: 'Studio Synthesizer Radio' })).toHaveCount(0);
+    // Restoring the saved workspace replaces the layer list, so edit only once it is active.
+    await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
 
     await page.getByRole('button', { name: 'Add New Layer' }).click();
     const layerNames = page.getByRole('button', { name: /^Select layer / });

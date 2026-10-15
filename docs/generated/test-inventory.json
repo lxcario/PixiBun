@@ -1,12 +1,12 @@
 {
   "kind": "runner-enumeration-not-execution",
   "unit": {
-    "tests": 2555,
-    "suites": 244
+    "tests": 2574,
+    "suites": 246
   },
   "editor": {
-    "tests": 275,
-    "files": 48
+    "tests": 280,
+    "files": 49
   },
   "production": {
     "tests": 516,

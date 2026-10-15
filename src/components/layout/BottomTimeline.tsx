@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { AnimatePresence, animate, motion, useMotionValue, type AnimationPlaybackControls } from 'motion/react';
+import { SpringSurface } from '@/components/ui/surfaces/SpringSurface';
 import { createPortal } from 'react-dom';
 import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
@@ -13,6 +15,8 @@ import { useCoDrawStatus } from '@/hooks/useCoDrawStatus';
 import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
 import { usePlaybackClock } from '@/hooks/studio/usePlaybackClock';
 import { OnionSkinSettings } from './OnionSkinSettings';
+import { ENTER_BLUR, FADE_IN, MORPH_H, REDUCED_FADE, UNBLUR, spring } from '@/lib/motion/springs';
+import { readReducedMotion, useReducedMotion } from '@/lib/motion/useReducedMotion';
 
 interface FrameThumbnailProps {
   frameIndex: number;
@@ -168,6 +172,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
   }, []);
 
   const toggleCollapsed = () => {
+    toggledRef.current = true;
     setIsCollapsed((prev) => {
       const next = !prev;
       if (typeof window !== 'undefined') {
@@ -176,6 +181,58 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
       return next;
     });
   };
+
+  // ── Collapse / expand: the strip springs between its heights like the Dynamic island ──
+  // The footer keeps its class height (h-9 / h-32); while morphing it carries a pixel height on the
+  // island's bouncy height spring (460/25), never dipping below the compact strip. The incoming
+  // content is laid out at its final size (clipped, not squeezed) and blooms in from blur.
+  const reduceMotion = useReducedMotion();
+  const toggledRef = useRef(false);
+  const shellRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const restHeight = useRef<number | null>(null);
+  const shellHeight = useMotionValue(0);
+  const morph = useRef<AnimationPlaybackControls | null>(null);
+  useLayoutEffect(() => {
+    const shell = shellRef.current;
+    const content = contentRef.current;
+    if (!shell || !content) return;
+    const from = morph.current ? shellHeight.get() : restHeight.current;
+    morph.current?.stop();
+    shell.style.height = '';
+    shell.style.overflow = '';
+    shell.removeAttribute('data-morphing');
+    content.style.height = '';
+    const to = shell.offsetHeight;
+    restHeight.current = to;
+    if (from === null || Math.abs(from - to) < 0.5 || readReducedMotion()) { morph.current = null; return; }
+    const style = getComputedStyle(shell);
+    const box = to - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom) - parseFloat(style.borderTopWidth) - parseFloat(style.borderBottomWidth);
+    const floor = Math.min(from, to);
+    content.style.height = `${box}px`;
+    shell.style.overflow = 'clip';
+    shell.setAttribute('data-morphing', '');
+    shellHeight.jump(from);
+    shell.style.height = `${from}px`;
+    const write = shellHeight.on('change', value => { shell.style.height = `${Math.max(floor, value)}px`; });
+    const run = animate(shellHeight, to, spring(MORPH_H));
+    morph.current = run;
+    void run.then(() => {
+      if (morph.current !== run) return;
+      morph.current = null;
+      shell.style.height = '';
+      shell.style.overflow = '';
+      shell.removeAttribute('data-morphing');
+      content.style.height = '';
+    });
+    return () => write();
+  }, [isCollapsed, shellHeight]);
+  useEffect(() => () => morph.current?.stop(), []);
+  const bloomFrom = !toggledRef.current ? false
+    : reduceMotion ? { opacity: 0 } : { opacity: 0, filter: `blur(${ENTER_BLUR}px)` };
+  const bloomTo = reduceMotion
+    ? { opacity: 1, transition: REDUCED_FADE }
+    : { opacity: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' }, transition: { opacity: FADE_IN, filter: UNBLUR } };
 
   const activeClip = clips.find(c => c.id === activeClipId);
 
@@ -246,12 +303,8 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
     setLoopMode(modes[nextIdx]);
   };
 
-  if (isCollapsed) {
-    return (
-      <footer
-        data-testid="bottom-timeline-collapsed"
-        className="h-9 bg-[var(--desk-surface)] border-t border-[var(--desk-border)] px-3 flex items-center justify-between select-none z-20 text-[var(--text-heading)] shadow-sm transition-colors duration-150 shrink-0"
-      >
+  const compactContent = (
+    <>
         {/* Left: Expand Timeline Button & Frame Status */}
         <div className="flex items-center gap-2">
           <button
@@ -319,6 +372,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
             disabled={isGuest}
             onClick={() => {
               addFrame();
+              toggledRef.current = true;
               setIsCollapsed(false);
             }}
             title={isGuest ? guestFrameLockTitle : 'Add blank frame to start animating'}
@@ -338,12 +392,11 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
             <span>▲ Expand</span>
           </button>
         </div>
-      </footer>
-    );
-  }
+    </>
+  );
 
-  return (
-    <footer data-testid="bottom-timeline" className="h-32 bg-[var(--desk-surface)] border-t border-[var(--desk-border)] px-4 py-1.5 flex flex-col justify-between select-none z-20 text-[var(--text-heading)] shadow-sm transition-colors duration-150">
+  const fullContent = (
+    <>
       {/* Top Controls Bar: Play, FPS, Loop Mode, Onion Skin, Frame Actions */}
       <div className="h-9 min-h-9 shrink-0 flex items-center justify-between border-b border-[var(--desk-border)] pb-1.5">
         {/* Left: Unified Playback & Timing Instrument */}
@@ -414,18 +467,20 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                     <span className="font-mono text-[11px]">{previewSpeed}×</span>
                     <span aria-hidden="true" className="text-[var(--text-muted)]">▾</span>
                   </button>
-                  {isPreviewMenuOpen && (
-                    <div role="group" aria-label="Preview speeds"
-                      className="absolute bottom-full left-0 mb-1 z-[100] w-full bg-[var(--surface-2)] border border-[var(--desk-border-highlight)] rounded-[2px] p-1 shadow-lg">
-                      {[0.5, 1, 2].map((speed) => (
-                        <button key={speed} type="button" onClick={() => { setPreviewSpeed(speed); setIsPreviewMenuOpen(false); }}
-                          aria-label={`${speed}× preview speed`} aria-pressed={previewSpeed === speed}
-                          className={`block w-full px-2 py-1.5 text-left font-mono text-xs rounded-[2px] hover:bg-[var(--surface-3)] ${previewSpeed === speed ? 'text-[var(--accent-gold)] bg-[var(--surface-3)]' : 'text-[var(--text-heading)]'}`}>
-                          {speed}×
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  <AnimatePresence>
+                    {isPreviewMenuOpen && (
+                      <SpringSurface key="speeds" origin="bottom left" role="group" aria-label="Preview speeds"
+                        className="pb-panel absolute bottom-full left-0 mb-1.5 z-[100] w-full min-w-[120px] !p-1.5">
+                        {[0.5, 1, 2].map((speed) => (
+                          <button key={speed} type="button" onClick={() => { setPreviewSpeed(speed); setIsPreviewMenuOpen(false); }}
+                            aria-label={`${speed}× preview speed`} aria-pressed={previewSpeed === speed}
+                            className="pb-menu-item !min-h-9 !px-2.5 font-mono tabular-nums">
+                            {speed}×
+                          </button>
+                        ))}
+                      </SpringSurface>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Active Frame Duration Input */}
@@ -665,11 +720,33 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
       </div>
 
       {/* Tag Manager Modal */}
-      {isOnionSettingsOpen && <OnionSkinSettings onClose={() => setIsOnionSettingsOpen(false)} />}
+      <AnimatePresence>{isOnionSettingsOpen && <OnionSkinSettings key="OnionSkinSettings" onClose={() => setIsOnionSettingsOpen(false)} />}</AnimatePresence>
       <TagManagerModal
         isOpen={isTagManagerOpen}
         onClose={() => setIsTagManagerOpen(false)}
       />
+    </>
+  );
+
+  return (
+    <footer
+      ref={shellRef}
+      data-testid={isCollapsed ? 'bottom-timeline-collapsed' : 'bottom-timeline'}
+      data-timeline={isCollapsed ? 'compact' : 'full'}
+      className={isCollapsed
+        ? 'h-9 bg-[var(--desk-surface)] border-t border-[var(--desk-border)] px-3 select-none z-20 text-[var(--text-heading)] shadow-sm transition-colors duration-150 shrink-0'
+        : 'h-32 bg-[var(--desk-surface)] border-t border-[var(--desk-border)] px-4 py-1.5 select-none z-20 text-[var(--text-heading)] shadow-sm transition-colors duration-150'}
+    >
+      <div ref={contentRef} className="h-full">
+        <motion.div
+          key={isCollapsed ? 'compact' : 'full'}
+          initial={bloomFrom}
+          animate={bloomTo}
+          className={isCollapsed ? 'h-full flex items-center justify-between' : 'h-full flex flex-col justify-between'}
+        >
+          {isCollapsed ? compactContent : fullContent}
+        </motion.div>
+      </div>
     </footer>
   );
 };

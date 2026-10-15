@@ -5,7 +5,8 @@ import { createPortal } from 'react-dom';
 import { lazyPanel } from '@/components/system/lazyPanel';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon, PixelIconName } from '@/components/ui/PixelIcon';
-import { motion } from 'motion/react';
+import { AnimatePresence } from 'motion/react';
+import { SpringSurface } from '@/components/ui/surfaces/SpringSurface';
 import { ToolType } from '@/types/tools';
 import {
   DrawingToolPreview,
@@ -346,24 +347,23 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
       </div>
 
       {/* 3. Discreet Floating Color Flyout (Hoisted via Portal at z-9999) */}
-      {isFlyoutOpen && isMounted && flyoutBottom !== null && createPortal(
-        <motion.div
+      {isMounted && createPortal(
+        <AnimatePresence>
+        {isFlyoutOpen && flyoutBottom !== null && (
+        <SpringSurface
+          key="color-flyout"
           ref={flyoutRef}
           role="region"
           aria-label="Color quick access flyout"
-          initial={{ opacity: 0, x: -8 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -8 }}
-          transition={{ duration: 0.1, ease: 'easeOut' }}
+          origin="left bottom"
           style={{
             position: 'fixed',
             left: '58px',
             bottom: `${flyoutBottom}px`,
             zIndex: 9999,
-            transformOrigin: 'left bottom',
             maxHeight: 'calc(100vh - 120px)',
           }}
-          className="w-56 bg-[var(--surface-2)] border border-[var(--desk-border-highlight)] rounded-[3px] shadow-[0_8px_28px_rgba(0,0,0,0.65)] p-2.5 flex flex-col gap-2 text-xs font-sans select-none overflow-y-auto [&_button]:min-w-11 [&_button]:min-h-11"
+          className="pb-panel w-60 !p-3 flex flex-col gap-2 text-xs font-sans select-none overflow-y-auto [&_button]:min-w-11 [&_button]:min-h-11"
         >
           {/* Header */}
           <div className="flex items-center justify-between pb-1.5 border-b border-[var(--desk-border)]">
@@ -527,18 +527,22 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
               <span className="text-[10px]">▸</span>
             </button>
           </div>
-        </motion.div>,
+        </SpringSurface>
+        )}
+        </AnimatePresence>,
         document.body
       )}
 
       {/* Full Color Picker Modal */}
+      <AnimatePresence>
       {colorPickerTarget && (
-        <ColorPickerModal
+        <ColorPickerModal key="ColorPickerModal"
           isOpen={Boolean(colorPickerTarget)}
           onClose={() => setColorPickerTarget(null)}
           target={colorPickerTarget}
         />
       )}
+      </AnimatePresence>
     </aside>
   );
 };
