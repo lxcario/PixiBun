@@ -1,8 +1,8 @@
-export type TemplateId = 'hearth-ghost' | 'mushroom' | 'bun' | 'lantern';
+export type TemplateId = 'bun' | 'mochi' | 'sprout' | 'teacup-frog';
 
 export interface StarterTemplate {
   id: TemplateId;
-  /** Human name shown in the gallery, e.g. 'Hearth Ghost'. */
+  /** Human name shown in the gallery, e.g. 'Mochi'. */
   name: string;
   /** One warm sentence under the gallery piece. */
   blurb: string;

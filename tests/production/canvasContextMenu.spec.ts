@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
   // standard keymap paints there instead (see keymaps.spec.ts).
   await page.addInitScript(() => localStorage.setItem('pixibun-preferences', JSON.stringify({ keymap: 'classic' })));
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto('/studio?template=hearth-ghost');
+  await page.goto('/studio?template=mochi');
   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
   // Workspace restoration can finish before the routed starter's native raster.
   await expect.poll(() => page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement) => {

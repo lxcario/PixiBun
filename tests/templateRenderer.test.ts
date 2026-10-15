@@ -37,7 +37,7 @@ function makeFakeCanvas(width: number, height: number) {
 }
 
 const TINY: StarterTemplate = {
-  id: 'mushroom',
+  id: 'sprout',
   name: 'Tiny',
   blurb: '',
   width: 2,

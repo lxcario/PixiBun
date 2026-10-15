@@ -31,19 +31,19 @@ test('the landing starter creates a separate saved drawing and Gallery retains t
   await page.mouse.click(box.x + box.width * .4, box.y + box.height * .4);
   await expect.poll(async () => (await pixels(page)).some((v, i) => i % 4 === 3 && v > 0)).toBe(true);
   const original = await pixels(page); await saveReload(page);
-  await page.goto('/'); await page.getByTitle('Open Hearth Ghost in studio', { exact: true }).click();
+  await page.goto('/'); await page.getByTitle('Open Mochi in studio', { exact: true }).click();
   await expect.poll(() => page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement) => canvas.width)).toBe(16);
   await expect.poll(async () => (await pixels(page)).some((v, i) => i % 4 === 3 && v > 0)).toBe(true);
   await saveReload(page); const starter = await pixels(page); expect(starter).not.toEqual(original);
   await page.getByTestId('file-menu-button').click(); await page.getByRole('menuitem', { name: 'Projects', exact: true }).click();
   const gallery = page.getByRole('dialog', { name: 'Projects & Gallery' });
-  await expect(gallery.getByRole('button', { name: 'Open project Hearth Ghost', exact: true })).toBeVisible();
+  await expect(gallery.getByRole('button', { name: 'Open project Mochi', exact: true })).toBeVisible();
   await gallery.getByRole('button', { name: 'Open project Starter original', exact: true }).click();
   await expect(gallery).toBeHidden(); await expect.poll(() => pixels(page)).toEqual(original);
 });
 
 test('an artist can draw, save a whole-layer rig, reopen, bake, reload and export exact PNG pixels', async ({ page }, info) => {
-  await page.setViewportSize({ width: 1600, height: 1100 }); await page.goto('/studio?template=hearth-ghost');
+  await page.setViewportSize({ width: 1600, height: 1100 }); await page.goto('/studio?template=mochi');
   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
   await expect.poll(() => page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement) => canvas.width)).toBe(16);
   await expect.poll(async () => (await pixels(page)).some((v, i) => i % 4 === 3 && v > 0)).toBe(true);

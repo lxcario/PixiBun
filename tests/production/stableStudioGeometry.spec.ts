@@ -97,7 +97,7 @@ test('motion preview advances when worker results take longer than a cel duratio
     } });
   });
   await page.setViewportSize({ width: 1600, height: 1000 });
-  await page.goto('/studio?template=hearth-ghost');
+  await page.goto('/studio?template=mochi');
   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
   await page.getByTestId('tab-tools').click(); await page.getByTestId('create-motion-part-btn').click();
   const end = page.getByRole('spinbutton', { name: 'Position X pixels', exact: true }); await end.fill('4'); await end.press('Enter');

@@ -1,6 +1,6 @@
 /**
  * The story's lamp chapter, lit by the Studio's real engines instead of a
- * stand-in: the ghost is shaded by the same 2.5D lighting the Studio and the
+ * stand-in: Bun is shaded by the same 2.5D lighting the Studio and the
  * cart player use (`relight`), and its floor shadow is ray-marched from the
  * sprite's distance field (`renderBoundedSpriteCastShadow`), as in the
  * lighting demo. Both are cached per 15° of lamp angle. The engines load only
@@ -9,7 +9,7 @@
 import { LAMP_STEP_DEGREES, relight, snapLamp } from '@/lib/cart/relight';
 
 const SIZE = 16;
-/** The shadow stage: the ghost sits at (8, 6) in a 32×32 field, as in the lighting demo. */
+/** The shadow stage: Bun sits at (8, 6) in a 32×32 field, as in the lighting demo. */
 const STAGE = 32;
 export const SHADOW_OFFSET = { x: 8, y: 6, size: STAGE };
 const ELEVATION = 40;
@@ -71,7 +71,7 @@ export function litColor(azimuth: number, x: number, y: number): string | null {
   return `rgb(${data[i]},${data[i + 1]},${data[i + 2]})`;
 }
 
-/** The ray-marched cast shadow for this lamp angle (32×32, ghost at (8, 6)), or null while loading. */
+/** The ray-marched cast shadow for this lamp angle (32×32, Bun at (8, 6)), or null while loading. */
 export function storyShadow(azimuth: number, ink: string): HTMLCanvasElement | null {
   if (!engines || !edt) return null;
   const key = `${bucket(azimuth)}:${ink}`;

@@ -10,7 +10,7 @@ import { rotateWithRotSprite } from '@/lib/ai/smartMathEngine';
 import { ambientTicker, tickWhileVisible } from '../ambientClock';
 
 export const RotSpriteShowcase: React.FC = () => {
-  const [spriteType, setSpriteType] = useState<'sword' | 'ghost' | 'bun'>('sword');
+  const [spriteType, setSpriteType] = useState<'sword' | 'mochi' | 'bun'>('sword');
   // Starts off the 45° snap, so pressing it shows the biggest change.
   const [angle, setAngle] = useState<number>(30);
   const { complete } = useQuests();
@@ -68,8 +68,8 @@ export const RotSpriteShowcase: React.FC = () => {
   useEffect(() => {
     if (spriteType === 'sword') {
       baseCanvasRef.current = templateToCanvas(SWORD_TEMPLATE);
-    } else if (spriteType === 'ghost') {
-      const tmpl = STARTER_TEMPLATES.find((t) => t.id === 'hearth-ghost')!;
+    } else if (spriteType === 'mochi') {
+      const tmpl = STARTER_TEMPLATES.find((t) => t.id === 'mochi')!;
       baseCanvasRef.current = templateToCanvas(tmpl);
     } else {
       const tmpl = STARTER_TEMPLATES.find((t) => t.id === 'bun')!;
@@ -183,7 +183,7 @@ export const RotSpriteShowcase: React.FC = () => {
             onChange={setSpriteType}
             options={[
               { value: 'sword', label: 'Little blade', icon: <Dot color="var(--accent-wisteria)" /> },
-              { value: 'ghost', label: 'Hearth Ghost', icon: <Dot color="var(--text-heading)" /> },
+              { value: 'mochi', label: 'Mochi', icon: <Dot color="var(--accent-gold)" /> },
               { value: 'bun', label: 'Bun', icon: <Dot color="var(--accent-plum)" /> },
             ]}
           />

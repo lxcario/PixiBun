@@ -80,21 +80,21 @@ export const AtelierFooter: React.FC = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/studio?template=hearth-ghost" className="hover:text-[var(--accent-gold)] transition-colors flex items-center gap-1.5">
+                  <Link href="/studio?template=mochi" className="hover:text-[var(--accent-gold)] transition-colors flex items-center gap-1.5">
                     <span className="text-[var(--accent-gold)]">✦</span>
-                    <span>Hearth Ghost (16×16)</span>
+                    <span>Mochi (16×16)</span>
                   </Link>
                 </li>
                 <li>
-                  <Link href="/studio?template=mushroom" className="hover:text-[var(--accent-gold)] transition-colors flex items-center gap-1.5">
+                  <Link href="/studio?template=sprout" className="hover:text-[var(--accent-gold)] transition-colors flex items-center gap-1.5">
                     <span className="text-[var(--accent-gold)]">✦</span>
-                    <span>Little Shroom (16×16)</span>
+                    <span>Sprout (16×16)</span>
                   </Link>
                 </li>
                 <li>
-                  <Link href="/studio?template=lantern" className="hover:text-[var(--accent-gold)] transition-colors flex items-center gap-1.5">
+                  <Link href="/studio?template=teacup-frog" className="hover:text-[var(--accent-gold)] transition-colors flex items-center gap-1.5">
                     <span className="text-[var(--accent-gold)]">✦</span>
-                    <span>Little Lantern (16×16)</span>
+                    <span>Teacup Frog (16×16)</span>
                   </Link>
                 </li>
               </ul>

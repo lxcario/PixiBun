@@ -6,7 +6,7 @@ import { expect, test } from '@playwright/test';
 test('Light Sweep saves a tall video of the lamp drifting over the drawing', async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1600, height: 1000 });
-  await page.goto('/studio?template=hearth-ghost');
+  await page.goto('/studio?template=mochi');
   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
   await page.getByTestId('export-button').click();
   await page.getByTestId('export-tab-light-sweep').click();
@@ -25,7 +25,7 @@ test('Light Sweep saves a tall video of the lamp drifting over the drawing', asy
   expect(outcome).not.toBeNull();
   const { file } = outcome!;
   const name = file.suggestedFilename();
-  expect(name).toMatch(/^hearth-ghost-light-sweep\.(mp4|webm)$/);
+  expect(name).toMatch(/^mochi-light-sweep\.(mp4|webm)$/);
   const bytes = readFileSync((await file.path())!);
   expect(bytes.length).toBeGreaterThan(10_000);
   if (name.endsWith('.mp4')) expect(bytes.subarray(4, 8).toString('latin1')).toBe('ftyp');
