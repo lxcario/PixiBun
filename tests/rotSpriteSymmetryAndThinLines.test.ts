@@ -1,6 +1,25 @@
 import { describe, it, expect } from 'vitest';
 import { rotateWithRotSprite } from '@/lib/ai/math/rotSprite';
-import { SWORD_ROWS } from '@/components/landing/showcase/showcaseSprites';
+
+/** The 16×16 blade the homepage rotation demo used: thin diagonal lines that plain rotation breaks. */
+const SWORD_ROWS = [
+  '..............oo',
+  '.............oFFo',
+  '............oFFfo',
+  '...........oFFfo.',
+  '..........oFFfo..',
+  '.........oFFfo...',
+  '........oFFfo....',
+  '.......oFFfo.....',
+  '..oo..oFFfo......',
+  '.oAAooFFfo.......',
+  '..oAAAfpo........',
+  '...oAAoo.........',
+  '..oAaoAAo........',
+  '.oaao..oo........',
+  '.oao.............',
+  '..o..............',
+];
 
 interface ImageDataShim {
   data: Uint8ClampedArray;

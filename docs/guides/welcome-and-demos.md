@@ -24,52 +24,23 @@ The final drawing invitation has 16, 24, 32 and 48 px blank-canvas choices. Stud
 
 Choose **Give it a try** beneath **Bun**, **Mochi**, **Sprout** or **Teacup Frog**. Bun is the PixiBun mascot herself (`src/lib/art/bunSprite.ts`), one ear row and one body row shorter to fit 16×16; she is also the model in the homepage tour, the hero's easel and the lighting demo. Each opens its 16×16 raster in a separate drawing after restore/checkpoint. Failed saving or unfinished recovery, motion, floating artwork or Co-Draw prevents replacement. The starter parameter is removed after opening. Old links still work: `?template=hearth-ghost` opens Mochi, `mushroom` opens Sprout and `lantern` opens Teacup Frog. Your prior projects remain in Projects; keep a portable backup of important artwork.
 
-## Four demonstrations to explore
+## The bench
 
-The workbench tabs are **Light & shadow**, **Smooth rotation**, **Photo to pixels** and **Into your game**. Previous/next controls switch them. Each offers three **Try this** tasks whose ticks track controls tried during this page session, plus an expandable **How it works** explanation. Ticks are navigation feedback, not saved learning progress or participant evidence.
+The **Engine** section is one 16×16 sprite and four tools that all work on the same pixels. Pick **Bun**, **Mochi**, **Sprout** or **Teacup Frog** above the stage; edits are kept per friend until the page is closed, and the undo button restores the starter.
 
-### 2.5D Lighting & Shadows
-
-The current tab is named **Light & shadow**.
-
-![Actual welcome-page photometric demonstration, separate from editable studio project state.](../assets/screenshots/2026-10-15-current-ui/welcome-photometric.png)
-
-Choose a sample/material, drag the lamp or try auto-orbit. Compare color shading with the RGB normal field, smooth/stepped tones and Cast Ray/Drop AO/None shadows. Reduced motion starts auto-orbit stopped. The surface is estimated from bounded sprite data; it is a stylized 2.5D demonstration rather than imported 3D geometry or physically measured depth. Use [lighting and surface sculpting](lighting-and-surfaces.md) on your own art.
-
-### RotSprite Precision
-
-The current tab is named **Smooth rotation**.
-
-![Actual welcome-page rotsprite demonstration, separate from editable studio project state.](../assets/screenshots/2026-10-15-current-ui/welcome-rotsprite.png)
-
-Choose the sword, ghost or Bun, adjust the angle, try presets or Spin, and compare RotSprite with nearest-neighbor. Current free-angle rotation uses the contour-aware v3 engine. These examples expose edge differences rather than proving that all shapes improve. [Studio rotation and cleanup](pixitools-cleanup-and-tiles.md#clean-rotation-and-lines) works on your selected layer.
-
-### Photo to pixels
-
-<a id="image-synthesis"></a>
-
-![Actual welcome-page pixelize demonstration, separate from editable studio project state.](../assets/screenshots/2026-10-15-current-ui/welcome-pixelize.png)
-
-Choose the mountain or hearth scene and a 16, 24 or 32 px target. Compare Preserve edges sampling with Nearest neighbor, eight/sixteen colors with true color, and None/Atkinson/Bayer dithering. The extracted palette comes from that generated sample scene. Linear-light averaging and bounded OKLab grouping run on-device; no photo upload or generative model is involved. Edge weighting cannot guarantee retention of every detail. Use [image import](studio-workspace.md#bring-in-an-image) for your file or [Simplify](variations-and-scenes.md#simplify) for a Studio layer.
-
-### Game Engine Exports
-
-![Current Into your game demonstration and sample download choices.](../assets/screenshots/2026-10-15-current-ui/welcome-export.png)
-
-The current tab is named **Into your game**. It shows an independent four-frame **20×22** Bun loop, with holds **125, 125, 250 and 125 ms** and an **80×22** sprite sheet.
-
-| Choice | Current download | Import boundary |
+| Tool | What you do | Studio code it runs |
 | --- | --- | --- |
-| Godot 4 | ZIP with bun_hop.png, bun_spriteframes.tres and README.txt | Place the files together and assign SpriteFrames to AnimatedSprite2D; actual consumer/version qualification is separate |
-| Unity | ZIP with bun_hop.png, bun_atlas.json and README.txt | Configure Point filtering/no compression and slice 20×22 cells; the JSON is atlas metadata, not a Unity project or controller |
-| Phaser 3 | ZIP with the same sheet, multiatlas metadata/animation description and instructions | Load the atlas and create the hop animation from its metadata |
-| APNG | bun_hop.apng | Actual encoded looping RGBA animation |
-| GIF | bun_hop.gif | Actual palette animation, with centisecond-quantized holds |
+| **Draw** | Paint with the sprite's own colours (plus blush and amber) or erase; **mirror** copies strokes across the middle | Pixel-perfect Bresenham lines and mirror symmetry (`rasterMath`) |
+| **Light** | Drag anywhere to move the lamp; choose Matte, Gold, Glass or Fabric | Photometric pipeline and bounded raymarched cast shadow, at 7.5°/5° lamp steps |
+| **Turn** | Drag sideways (or 22°/45°/90°) to compare RotSprite with a plain nearest-neighbour turn of the same pixels | `rotSprite` and `rotateNearest` on a 24×24 padded copy |
+| **Hop** | Watch a four-frame 20×24 loop (holds 160, 100, 200, 100 ms) of the lit sprite; **Save GIF** downloads it transparent at 4× | Animated GIF encoder |
 
-**Copy metadata** appears for game formats; **Download game kit**, **Download APNG** or **Download GIF** creates the listed file. The older APNG/GIF text-note screenshots describe an earlier interface and are superseded. Downloading a sample is separate from exporting your drawing and does not qualify every engine importer. Open **Studio → Export** for your project; the [export guide](exporting.md) covers its outputs.
+The rack beside the stage previews each tool's result for the current edit. Keyboard: focus the stage, use **1–4** for tools, arrows to move the cursor, lamp or angle, and Space/Delete to paint or erase. Reduced motion shows the hop as its sprite sheet and skips the tool dissolve and the lamp's opening sweep. **Open … in the Studio** opens the unedited starter; bench edits do not transfer.
+
+The stage redraws only after input; the hop loop is the only timed animation and runs only while the stage is on screen. Earlier screenshots of the four-tab workbench (Light & shadow, Smooth rotation, Photo to pixels, Into your game) describe the interface before 15 October 2026.
 
 ## Ready to draw
 
 Open Studio, select Pen, choose a color and place a few pixels. For coached practice, visit [Playground](learning-and-playground.md). Keep an [editable project backup](artwork-safety.md) when the drawing matters to you.
 
-Sources: [homepage](../../src/app/page.tsx), [opening scene](../../src/components/landing/night/NightHero.tsx), [creation story](../../src/components/landing/night/NightStory.tsx), [navigation](../../src/components/landing/LandingNav.tsx), [starters](../../src/lib/art/starterTemplates.ts), [workbench](../../src/components/landing/AtelierEngineShowcase.tsx), [lighting](../../src/components/landing/showcase/PhotometricShowcase.tsx), [rotation](../../src/components/landing/showcase/RotSpriteShowcase.tsx), [image conversion](../../src/components/landing/showcase/PixelizeShowcase.tsx), [download creation](../../src/components/landing/showcase/showcaseExport.ts).
+Sources: [homepage](../../src/app/page.tsx), [opening scene](../../src/components/landing/night/NightHero.tsx), [creation story](../../src/components/landing/night/NightStory.tsx), [navigation](../../src/components/landing/LandingNav.tsx), [starters](../../src/lib/art/starterTemplates.ts), [bench](../../src/components/landing/AtelierEngineShowcase.tsx), [bench stage](../../src/components/landing/bench/benchStage.ts), [bench art](../../src/components/landing/bench/benchArt.ts).

@@ -11,7 +11,7 @@ try {
   if (!phases.length || new Set(phases).size !== phases.length) fail('TASKS.md phase headers missing or duplicated');
   const sections = [...read('ARCHITECTURE.md').matchAll(/^## (\d+)\.\s+/gm)].map(m => Number(m[1]));
   if (!sections.length || sections.some((n,i) => n !== i+1)) fail('ARCHITECTURE.md numbered sections are not monotonic');
-  const historical = new Set(['src/lib/audio/lofiRadio.ts', 'src/lib/audio/tracks.ts', 'src/lib/audio/spectralFlux.ts', 'tests/audioOnsetDetection.test.ts', 'src/components/layout/inspector/VolumetricOpticsSection.tsx', 'tests/e2e/volumetricVisualProof.spec.ts', 'src/components/landing/PixelDitherCurtain.tsx', 'src/components/landing/AtelierDeskScene.tsx', 'src/components/onboarding/ArtisanHandbookPanel.tsx', 'tests/components/ArtisanHandbookPanel.test.tsx']);
+  const historical = new Set(['src/lib/audio/lofiRadio.ts', 'src/lib/audio/tracks.ts', 'src/lib/audio/spectralFlux.ts', 'tests/audioOnsetDetection.test.ts', 'src/components/layout/inspector/VolumetricOpticsSection.tsx', 'tests/e2e/volumetricVisualProof.spec.ts', 'src/components/landing/PixelDitherCurtain.tsx', 'src/components/landing/AtelierDeskScene.tsx', 'src/components/onboarding/ArtisanHandbookPanel.tsx', 'tests/components/ArtisanHandbookPanel.test.tsx', 'src/components/landing/showcase/RotSpriteShowcase.tsx', 'src/components/landing/showcase/PhotometricShowcase.tsx', 'src/components/landing/showcase/EngineExportShowcase.tsx']);
   const paths = new Set([...read('CHANGELOG.md').matchAll(/`((?:src|tests)\/[^`]+)`/g)].map(m => m[1].trim()).filter(p => !p.endsWith('/')));
   let existing = 0, approvedHistory = 0;
   for (const file of paths) {
