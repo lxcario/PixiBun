@@ -18,7 +18,7 @@ Start with [current status](current-status.md) for scoped engineering results an
 
 [15 October source and documentation review](releases/2026-10-15-codebase-and-documentation.md) records the corpus review and per-file Markdown dispositions. The subsequent [four-phase audit follow-up](plans/2026-10-15-audit-follow-up.md) records the latest corrections, integrated checks and complete handbook-picture refresh. Current guidance follows the integrated source; archived audits, release receipts and original capture manifests retain their dated scope.
 
-The latest [Studio Labs motion update](releases/2026-10-15-studio-labs-motion.md) covers the integrated Labs behavior, the inspector merge, the final text-scale tuning and a disposition for every tracked Markdown file. User-facing instructions are in [Studio Labs](guides/studio-workspace.md#studio-labs), with implementation/removal details in [the Labs source guide](../src/experimental/README.md).
+The latest [Studio Labs motion update](releases/2026-10-15-studio-labs-motion.md) covers the integrated Labs behavior, the inspector merge, the final text-scale tuning and a disposition for every tracked Markdown file. The follow-up [island refinement and Liquid controls record](releases/2026-10-15-labs-liquid-controls.md) covers name-and-▾ tool triggers, the reworked hover droplet and the new slider/tool-rail lab. User-facing instructions are in [Studio Labs](guides/studio-workspace.md#studio-labs), with implementation/removal details in [the Labs source guide](../src/experimental/README.md).
 
 ## Maintenance contract
 

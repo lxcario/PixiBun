@@ -18,7 +18,7 @@ Plum shadows, wisteria accents, amber buttons and a few live pixel glints make P
 
 [Illustrated artist handbook](docs/guides/README.md) · [Every feature](docs/features.md) · [Your first few pixels](#your-first-few-pixels) · [Keep your work safe](#keep-your-work-safe) · [Run locally](#run-locally) · [Explore the docs](docs/README.md)
 
-**Make the desk your own.** The six scene themes include optional [Studio Labs](docs/guides/studio-workspace.md#studio-labs): a morphing tool island, liquid inspector tabs, a paint-pot palette and quick effects. Open **Studio → Labs** to switch experiments off individually or choose **Classic studio**. Graphite and Plum always use the classic interface.
+**Make the desk your own.** The six scene themes include optional [Studio Labs](docs/guides/studio-workspace.md#studio-labs): a morphing tool island, liquid inspector tabs, liquid sliders and tool rail, a paint-pot palette and quick effects. Open **Studio → Labs** to switch experiments off individually or choose **Classic studio**. Graphite and Plum always use the classic interface.
 
 ## Small canvas, plenty of room to play
 

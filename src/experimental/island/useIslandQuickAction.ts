@@ -11,10 +11,11 @@ export function useIslandQuickAction() {
   const tools = useStudioStore(s => s.tools);
   const gradientShape = useWorkspaceStore(s => s.gradient.shape);
   const state = useStudioStore.getState();
-  const fine = tools.brushSize === 1;
+  // Steps through the quick presets 1 → 2 → 3 → 4 and back to 1 (any other size restarts at 1).
+  const nextSize = tools.brushSize >= 1 && tools.brushSize < 4 ? Math.floor(tools.brushSize) + 1 : 1;
   const brush: QuickAction = {
-    label: `Brush size: ${tools.brushSize} px. Switch to ${fine ? 4 : 1} px`,
-    badge: `${tools.brushSize}px`, run: () => state.setBrushSize(fine ? 4 : 1),
+    label: `Brush size: ${tools.brushSize} px. Switch to ${nextSize} px`,
+    badge: `${tools.brushSize}px`, run: () => state.setBrushSize(nextSize),
   };
   const rotation: QuickAction = {
     label: `Selection rotation: ${tools.rotationAlgorithm === 'paeth' ? 'Paeth' : 'RotSprite'}. Switch engine`,

@@ -46,6 +46,18 @@ const GAP = 12;
 
 type Activity = { id: number; icon: string; label: string; tone: 'good' | 'info' | 'warm' };
 
+/** Piecewise-linear map; holds the end values outside the input range. */
+function lerp(value: number, input: number[], output: number[]) {
+  if (value <= input[0]) return output[0];
+  for (let i = 1; i < input.length; i++) {
+    if (value <= input[i]) {
+      const t = (value - input[i - 1]) / (input[i] - input[i - 1]);
+      return output[i - 1] + t * (output[i] - output[i - 1]);
+    }
+  }
+  return output[output.length - 1];
+}
+
 // Motion 12's hook captures the preference only on mount. Subscribe directly
 // so switching the OS preference also stops an animation already in progress.
 const reducedMotionQuery = '(prefers-reduced-motion: reduce)';
@@ -139,38 +151,105 @@ function DynamicIsland({ contentKey, idleLabel, children }: { contentKey: string
       document.removeEventListener('pointermove', leaveOnMove);
     };
   }, [hovered]);
-  // One physical driver couples the neck, the droplet and the pill's squeeze.
+  // ── Hover droplet ──
+  // One physical driver (`separation`) carries the droplet out of the pill's right cap; the goo
+  // filter draws the neck. The pill reacts in PIXELS at its right edge only (reach, recoil, settle),
+  // so a wide pill and a narrow one move alike and the resting size never changes while hovered.
+  // `jelly` is an impulse that rings when the neck pinches off or the circle is clicked.
   // Retargeting preserves velocity, so reversing hover rejoins the current shape.
   const separation = useMotionValue(0);
-  const shellX = useTransform(separation, [0, 0.28, 0.65, 1], [1, 0.97, 0.90, 0.94]);
-  const shellY = useTransform(separation, [0, 0.28, 0.65, 1], [1, 1.025, 1.08, 1.01]);
-  const dropX = useTransform(separation, p => -32 + p * (32 + GAP));
+  const merging = useRef(false);
+  const poke = useMotionValue(0); // pointer resting on the circle
+  const press = useMotionValue(0); // circle held down
+  const jelly = useMotionValue(0);
+  const pillWidth = () => {
+    const w = width.get();
+    return typeof w === 'number' && w > 0 ? w : islandNode.current?.offsetWidth || 160;
+  };
+  const edge = useTransform([separation, jelly, poke], ([p, j, k]: number[]) => {
+    const recoil = Math.min(12, Math.max(8, pillWidth() * 0.045));
+    const shape = merging.current
+      ? lerp(p, [0, 0.22, 0.55, 1], [0, recoil * 0.8, 3, 0]) // gulps the droplet back in, then settles
+      : lerp(p, [0, 0.4, 0.7, 0.85, 1], [0, 5, -recoil, -recoil * 0.5, 0]); // reaches toward the bud, snaps back when the neck breaks
+    return shape + j * 1.5 + k * 1.5;
+  });
+  const swell = useTransform([separation, jelly], ([p, j]: number[]) => (merging.current
+    ? lerp(p, [0, 0.22, 0.55, 1], [0, 2, 0.5, 0])
+    : lerp(p, [0, 0.4, 0.7, 1], [0, -1, 2.5, 0])) - j * 0.8);
+  const shellX = useTransform(edge, dx => 1 + dx / pillWidth());
+  const shellY = useTransform(swell, dy => 1 + dy / Math.max(ISLAND_H, shownHeight.get()));
+  const dropX = useTransform(separation, p => -ISLAND_H + p * (ISLAND_H + GAP));
   const faceX = useTransform(dropX, x => x - GAP);
-  const dropScaleX = useTransform(separation, [0, 0.4, 0.75, 1], [0.15, 0.85, 1.16, 1]);
-  const dropScaleY = useTransform(separation, [0, 0.4, 0.75, 1], [0.15, 0.65, 0.87, 1]);
-  const dropOpacity = useTransform(separation, [0, 0.12, 1], [0, 1, 1]);
-  const faceOpacity = useTransform(separation, [0, 0.48, 0.9, 1], [0, 0, 1, 1]);
+  const squash = (p: number, axis: 'x' | 'y') => merging.current
+    ? lerp(p, [0, 0.3, 0.6, 1], axis === 'x' ? [0.35, 0.85, 1.12, 1] : [0.35, 0.9, 0.9, 1])
+    : lerp(p, [0, 0.4, 0.7, 1], axis === 'x' ? [0.35, 0.8, 1.14, 1] : [0.35, 0.86, 0.86, 1]);
+  const dropScaleX = useTransform([separation, poke, press, jelly], ([p, k, d, j]: number[]) =>
+    squash(p, 'x') * (1 + k * 0.07) * (1 + d * 0.1) * (1 + j * 0.14));
+  const dropScaleY = useTransform([separation, poke, press, jelly], ([p, k, d, j]: number[]) =>
+    squash(p, 'y') * (1 + k * 0.07) * (1 - d * 0.12) * (1 - j * 0.14));
+  // The face follows the body at half strength so its label stays readable while the drop rings.
+  const faceScaleX = useTransform(dropScaleX, sx => 1 + (sx - 1) * 0.5);
+  const faceScaleY = useTransform(dropScaleY, sy => 1 + (sy - 1) * 0.5);
+  const dropOpacity = useTransform(separation, [0, 0.1, 1], [0, 1, 1]);
+  // Glass and rim are drawn outside the goo, so while the bud is still joined they would show
+  // as rings inside one liquid shape. The droplet's glass arrives once it is mostly out and the
+  // pill's rim thins through the neck.
+  const dropGlassOpacity = useTransform(separation, [0, 0.45, 0.72], [0, 0, 1]);
+  const rimFade = useTransform(separation, [0, 0.12, 0.78, 1], [1, 0.2, 0.2, 1]);
+  const faceOpacity = useTransform(separation, [0, 0.5, 0.85, 1], [0, 0, 1, 1]);
   const faceFilter = useTransform(separation, p => p > 0.995 || reduce ? 'none' : 'blur(' + Math.max(0, (1 - p) * 6) + 'px)');
+  const kick = useCallback((velocity: number) => {
+    if (readReducedMotion()) return;
+    animate(jelly, 0, { type: 'spring', velocity, stiffness: 520, damping: 11, mass: 1, restDelta: 0.001, restSpeed: 0.01 });
+  }, [jelly]);
+  // The neck breaking is the moment the droplet becomes its own body: let it ring once.
   useEffect(() => {
+    let previous = separation.get();
+    return separation.on('change', p => {
+      if (!merging.current && previous < 0.72 && p >= 0.72) kick(-8);
+      previous = p;
+    });
+  }, [separation, kick]);
+  useEffect(() => {
+    merging.current = !satellite;
     if (reduce) {
       separation.jump(satellite ? 1 : 0);
       setGoo(false);
       return;
     }
     let cancelled = false;
-    if (satellite) setGoo(true);
-    const movement = animate(separation, satellite ? 1 : 0, {
-      type: 'spring', stiffness: satellite ? 420 : 520, damping: satellite ? 26 : 34,
-      mass: 0.9, restDelta: 0.001, restSpeed: 0.01,
-    });
-    void movement.then(() => { if (!cancelled && !satellite) setGoo(false); });
-    return () => { cancelled = true; movement.stop(); };
+    let movement: { stop: () => void } | null = null;
+    const start = () => {
+      if (cancelled) return;
+      // Out: underdamped (ζ≈0.63) so the droplet pops a touch past its seat. In: firmer, a quick gulp.
+      const run = animate(separation, satellite ? 1 : 0, satellite
+        ? { type: 'spring', stiffness: 360, damping: 24, mass: 1, restDelta: 0.001, restSpeed: 0.01 }
+        : { type: 'spring', stiffness: 480, damping: 34, mass: 0.9, restDelta: 0.001, restSpeed: 0.01 });
+      movement = run;
+      void run.then(() => { if (!cancelled && !satellite) setGoo(false); });
+    };
+    // Switching the goo filter on stalls the first painted frame. From rest, let it paint before
+    // the spring starts, or the time-based spring skips the bud and reach entirely.
+    let frame = 0;
+    if (satellite && separation.get() < 0.02) {
+      setGoo(true);
+      frame = requestAnimationFrame(() => { frame = requestAnimationFrame(start); });
+    } else {
+      if (satellite) setGoo(true);
+      start();
+    }
+    return () => { cancelled = true; cancelAnimationFrame(frame); movement?.stop(); };
   }, [satellite, reduce, separation]);
+  const springTo = (value: typeof poke, target: number, stiffness: number, damping: number) => {
+    if (reduce) value.jump(0);
+    else animate(value, target, { type: 'spring', stiffness, damping, mass: 0.8, restDelta: 0.001 });
+  };
 
   // Content has its own intrinsic layout, independent of the animated shell.
   // Deduplicate TARGETS, not the in-flight value: observer deliveries must not
   // restart a spring that is already travelling to this exact destination.
   // offsetWidth/offsetHeight ignore transforms, so the content's blur/scale never feeds back into the measurement.
+  const remeasure = useRef<() => void>(() => {});
   const measure = useCallback((node: HTMLDivElement | null) => {
     observer.current?.disconnect();
     if (!node) return;
@@ -203,11 +282,20 @@ function DynamicIsland({ contentKey, idleLabel, children }: { contentKey: string
         if (sizeRun.current === run) setMorphing(false);
       });
     };
+    remeasure.current = update;
     observer.current = new ResizeObserver(update);
     observer.current.observe(node);
-    if (slotNode.current) observer.current.observe(slotNode.current);
     update();
   }, [width, height, reduce]);
+  // Child refs attach before the slot's, so the content's first measure can't see the slot.
+  // Observe it once the whole tree is committed; a narrowing header then re-fits the island.
+  useLayoutEffect(() => {
+    const slot = slotNode.current;
+    if (!slot) return;
+    const slotObserver = new ResizeObserver(() => remeasure.current());
+    slotObserver.observe(slot);
+    return () => slotObserver.disconnect();
+  }, []);
   useEffect(() => () => {
     observer.current?.disconnect();
     sizeRun.current += 1;
@@ -221,7 +309,7 @@ function DynamicIsland({ contentKey, idleLabel, children }: { contentKey: string
   //   3. bloom the new controls in: blur 12 → 0, scale .95 → 1 (one small, quickly damped bounce), opacity 0 → 1.
   // Rapid tool switching just retargets: each change cancels the running phase and continues from the current values.
   const liveContent = idleLabel
-    ? <span className="isl-idle"><span className="isl-idle-dot" />{idleLabel}</span>
+    ? <span className="isl-idle">{idleLabel}</span>
     : children;
   const [shownKey, setShownKey] = useState(contentKey);
   const settled = reduce || shownKey === contentKey;
@@ -274,6 +362,8 @@ function DynamicIsland({ contentKey, idleLabel, children }: { contentKey: string
     measure(node);
   }, [measure]);
 
+  // The pill is pinned at its left edge, so only the side facing the droplet reaches and recoils.
+  const shellStyle = { originX: 0, scaleX: reduce ? 1 : shellX, scaleY: reduce ? 1 : shellY };
   const split = reduce ? { duration: 0 } : SPLIT;
   const bubbleOut = { x: GAP, scale: 1, opacity: 1 };
   const bubbleIn = { x: -ISLAND_H * 0.9, scale: 0.55, opacity: 1 };
@@ -284,7 +374,7 @@ function DynamicIsland({ contentKey, idleLabel, children }: { contentKey: string
     <div ref={slotNode} className="isl-slot" style={{ height: ISLAND_H }}>
     <motion.div
       ref={islandNode}
-      className={`isl ${activity ? 'is-active' : ''} ${activity ? `tone-${activity.tone}` : ''} ${morphing ? 'is-morphing' : ''} ${expanded ? 'is-expanded' : ''}`}
+      className={`isl ${activity ? 'is-active' : ''} ${activity ? `tone-${activity.tone}` : ''} ${morphing ? 'is-morphing' : ''} ${expanded ? 'is-expanded' : ''} ${quickVisible && quickAction.pressed ? 'is-quick-on' : ''}`}
       data-testid="dynamic-island"
       onPointerEnter={event => { if (event.pointerType !== 'touch') { setHovered(true); setDismissed(false); } }}
       onPointerLeave={event => {
@@ -293,7 +383,9 @@ function DynamicIsland({ contentKey, idleLabel, children }: { contentKey: string
         if (!(event.relatedTarget instanceof Node) && event.currentTarget.contains(document.elementFromPoint(event.clientX, event.clientY))) return;
         setHovered(false);
       }}
-      onFocusCapture={() => { setFocused(true); setDismissed(false); }}
+      // Only keyboard focus holds the circle out; a click also focuses its button, and the
+      // droplet must still melt back in once the pointer leaves.
+      onFocusCapture={event => { if (event.target.matches(':focus-visible')) { setFocused(true); setDismissed(false); } }}
       onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}
       onKeyDownCapture={event => { if (event.key === 'Escape') setDismissed(true); }}
       style={{ height: shownHeight, width, ['--isl-r' as string]: radius, ['--isl-row-top' as string]: `${ROW_TOP}px` }}
@@ -327,7 +419,7 @@ function DynamicIsland({ contentKey, idleLabel, children }: { contentKey: string
         style={goo && !reduce ? { filter: `url(#${filterId}) drop-shadow(0 4px 0 var(--moon-ink, var(--ink)))` } : undefined}
         aria-hidden="true"
       >
-        <motion.div className="isl-blob" style={{ scaleX: reduce ? 1 : shellX, scaleY: reduce ? 1 : shellY }} />
+        <motion.div className="isl-blob" style={shellStyle} />
         <motion.div className="isl-bubble-blob" style={{ width: ISLAND_H, height: ISLAND_H,
           x: dropX, scaleX: dropScaleX, scaleY: dropScaleY, opacity: dropOpacity }} />
       </div>
@@ -335,10 +427,10 @@ function DynamicIsland({ contentKey, idleLabel, children }: { contentKey: string
       {/* Expanded: a soft aurora wash of the theme's colors inside the island, like a charging glow */}
       <div className="isl-wash" aria-hidden="true"><span /></div>
 
-      <motion.div className="isl-rim" aria-hidden="true" style={{ scaleX: reduce ? 1 : shellX, scaleY: reduce ? 1 : shellY }} />
-      <motion.div className="isl-glass" aria-hidden="true" style={{ scaleX: reduce ? 1 : shellX, scaleY: reduce ? 1 : shellY }} />
+      <motion.div className="isl-rim" aria-hidden="true" style={{ ...shellStyle, ['--isl-rim-fade' as string]: reduce ? 1 : rimFade }} />
+      <motion.div className="isl-glass" aria-hidden="true" style={shellStyle} />
       <motion.div className="isl-drop-glass" aria-hidden="true" style={{ width: ISLAND_H, height: ISLAND_H,
-        x: dropX, scaleX: dropScaleX, scaleY: dropScaleY, opacity: dropOpacity }} />
+        x: dropX, scaleX: dropScaleX, scaleY: dropScaleY, opacity: dropGlassOpacity }} />
 
       {/* What the island is showing: the active tool's controls, blooming in and melting out when the tool changes.
           While the old controls are exiting they are inert so a stale click can't fire. */}
@@ -363,13 +455,31 @@ function DynamicIsland({ contentKey, idleLabel, children }: { contentKey: string
         aria-pressed={quickAction.pressed}
         title={quickAction.label}
         inert={!quickVisible || !settled || undefined}
-        onClick={() => { if (settled) quickAction.run(); }}
+        onPointerEnter={() => springTo(poke, 1, 520, 20)}
+        onPointerLeave={() => { springTo(poke, 0, 420, 24); springTo(press, 0, 520, 14); }}
+        onPointerDown={event => { if (event.button === 0) springTo(press, 1, 900, 34); }}
+        onPointerUp={() => springTo(press, 0, 520, 12)}
+        onPointerCancel={() => springTo(press, 0, 520, 24)}
+        onClick={() => { if (!settled) return; quickAction.run(); kick(9); }}
         style={{ width: ISLAND_H, height: ISLAND_H, pointerEvents: quickVisible ? 'auto' : 'none' }}
       >
-        <motion.span className="isl-quick-face" style={{ x: faceX, scaleX: dropScaleX, scaleY: dropScaleY,
+        <motion.span className="isl-quick-face" style={{ x: faceX, scaleX: faceScaleX, scaleY: faceScaleY,
           opacity: quickVisible ? faceOpacity : 0, filter: faceFilter }}>
-          <PixelIcon name={toolIcon} size={13} />
-          <span>{quickAction.badge}</span>
+          <PixelIcon name={toolIcon} size={14} />
+          {/* The value flips like a counter, so a click visibly lands even when the circle barely moves. */}
+          <span className="isl-quick-badge">
+            <AnimatePresence initial={false}>
+              <motion.span
+                key={quickAction.badge}
+                initial={reduce ? false : { y: 7, opacity: 0, filter: 'blur(3px)' }}
+                animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
+                exit={reduce ? { opacity: 0, transition: { duration: 0 } } : { y: -7, opacity: 0, filter: 'blur(3px)' }}
+                transition={{ type: 'spring', stiffness: 520, damping: 30, mass: 0.7 }}
+              >
+                {quickAction.badge}
+              </motion.span>
+            </AnimatePresence>
+          </span>
         </motion.span>
       </button>
 

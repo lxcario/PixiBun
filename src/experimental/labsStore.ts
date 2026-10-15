@@ -10,11 +10,12 @@ import { isSceneTheme } from '@/lib/theme/registry';
  * or deleted outright (see src/experimental/README.md). Nothing outside
  * src/experimental depends on these flags except the small gates listed there.
  */
-export type LabId = 'island' | 'liquidTabs' | 'paletteStudio' | 'quickMagic';
+export type LabId = 'island' | 'liquidTabs' | 'liquidControls' | 'paletteStudio' | 'quickMagic';
 
 export const LABS: { id: LabId; name: string; blurb: string }[] = [
   { id: 'island', name: 'Dynamic island', blurb: 'The tool bar morphs, glows and pops out little status bubbles.' },
   { id: 'liquidTabs', name: 'Liquid tabs', blurb: 'Press and slide across the panel tabs to pick one.' },
+  { id: 'liquidControls', name: 'Liquid controls', blurb: 'Slider handles turn to glass as you drag, and a glass lens sweeps between tools.' },
   { id: 'paletteStudio', name: 'Paint pot palette', blurb: 'Big swatches, shades and recent colors first; the mixer on demand.' },
   { id: 'quickMagic', name: 'Quick magic', blurb: 'One-tap effects for beginners at the top of Effects.' },
 ];
@@ -22,8 +23,8 @@ export const LABS: { id: LabId; name: string; blurb: string }[] = [
 type LabFlags = Record<LabId, boolean>;
 
 const STORAGE_KEY = 'pixibun:labs:v1';
-const DEFAULTS: LabFlags = { island: true, liquidTabs: true, paletteStudio: true, quickMagic: true };
-const ALL_OFF: LabFlags = { island: false, liquidTabs: false, paletteStudio: false, quickMagic: false };
+const DEFAULTS: LabFlags = { island: true, liquidTabs: true, liquidControls: true, paletteStudio: true, quickMagic: true };
+const ALL_OFF: LabFlags = { island: false, liquidTabs: false, liquidControls: false, paletteStudio: false, quickMagic: false };
 
 /** Automated runs (Vitest, Playwright) keep covering the classic studio unless a test opts in via storage. */
 function automated(): boolean {

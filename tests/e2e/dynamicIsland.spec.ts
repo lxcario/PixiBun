@@ -36,11 +36,21 @@ async function sampleToggle(page: Page, selector: string) {
   }, selector);
 }
 
+test('Pen shows only its name until its settings open, like every other tool', async ({ page }) => {
+  const trigger = page.getByTestId('tool-options-button');
+  await expect(trigger).toHaveText(/Pen/);
+  await expect(page.locator('.isl-content').getByRole('button', { name: /^Brush size/ })).toBeHidden();
+  await expect.poll(() => page.getByTestId('dynamic-island').evaluate(el => el.getBoundingClientRect().height)).toBeCloseTo(38, 0);
+  await page.getByTestId('select-box-tool').click();
+  await expect(page.locator('.isl-idle')).toHaveText('Marquee Box');
+  await expect(page.locator('.isl-idle > *')).toHaveCount(0);
+});
+
 test('brush expand/collapse keeps the existing text row stationary and focus usable', async ({ page }, info) => {
-  const selector = '[data-island-brush-row] > button:first-child';
+  const selector = '[data-testid="tool-options-button"]';
   await page.locator(selector).focus();
   const opening = await sampleToggle(page, selector);
-  await expect(page.getByRole('group', { name: 'Brush size controls', exact: true })).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Pen settings', exact: true })).toBeVisible();
   const closing = await sampleToggle(page, selector);
   await info.attach('rendered-row-samples', { body: JSON.stringify({ opening, closing }), contentType: 'application/json' });
   for (const samples of [opening, closing]) {
@@ -51,7 +61,7 @@ test('brush expand/collapse keeps the existing text row stationary and focus usa
   expect(Math.max(...opening.map(sample => sample.height))).toBeGreaterThan(80);
   expect(closing.at(-1)!.height).toBeCloseTo(38, 0);
   await expect(page.locator(selector)).toBeFocused();
-  await expect(page.getByRole('group', { name: 'Brush size controls', exact: true })).toBeHidden();
+  await expect(page.getByRole('group', { name: 'Pen settings', exact: true })).toBeHidden();
 });
 
 test('tool panel grows below a fixed trigger and settles after rapid reversals', async ({ page }, info) => {
@@ -185,6 +195,7 @@ test('compact and wide layouts fit their slot and reduced motion removes blur an
       const slot = el.parentElement!.getBoundingClientRect();
       return box.left >= slot.left - 1 && box.right <= slot.right + 1;
     })).toBe(true);
+    await page.getByTestId('tool-options-button').click();
     await page.getByRole('button', { name: /^Brush size \d+ pixels/ }).click();
     await expect(page.getByRole('group', { name: 'Brush size controls', exact: true })).toBeVisible();
     await page.screenshot({ path: info.outputPath(`island-${width}.png`) });
@@ -226,8 +237,10 @@ test('hover shortcut splits to the right without moving text and stays reachable
     trigger.hover(),
   ]);
   const rootWidth = await page.getByTestId('dynamic-island').evaluate(el => el.getBoundingClientRect().width);
-  expect(Math.min(...shapeSamples.map(sample => sample.width))).toBeLessThan(rootWidth * 0.97);
-  expect(Math.max(...shapeSamples.map(sample => sample.height))).toBeGreaterThan(38.2);
+  // The pill reaches toward the bud and recoils as the neck breaks, then rests at full size:
+  // hovering must never leave it squeezed narrower than its controls' box.
+  expect(shapeSamples.some(sample => Math.abs(sample.width - rootWidth) > 1 || Math.abs(sample.height - 38) > 0.2)).toBe(true);
+  await expect.poll(() => page.locator('.isl-blob').evaluate(el => el.getBoundingClientRect().width)).toBeCloseTo(rootWidth, 0);
   const quick = page.getByTestId('island-quick-tool');
   await expect(quick).not.toHaveAttribute('inert');
   await expect.poll(() => quick.evaluate(el => getComputedStyle(el.querySelector('.isl-quick-face')!).opacity)).toBe('1');
@@ -298,7 +311,7 @@ test('Clean corners appears only inside expanded Pen and Bézier controls', asyn
     await page.getByTestId(tool + '-tool').click();
     await expect.poll(() => page.locator('.isl-content').evaluate(el => getComputedStyle(el).filter)).toBe('none');
     await expect(page.locator('.isl-content').getByText('Clean corners', { exact: true })).toBeHidden();
-    if (tool === 'curve') await page.getByTestId('tool-options-button').click();
+    await page.getByTestId('tool-options-button').click();
     await page.locator('.isl-content').getByRole('button', { name: /^Brush size/ }).click();
     const panel = page.getByRole('group', { name: 'Brush size controls', exact: true });
     const clean = panel.getByRole('checkbox', { name: 'Clean corners', exact: true });
@@ -308,5 +321,17 @@ test('Clean corners appears only inside expanded Pen and Bézier controls', asyn
     await expect(clean).toBeChecked({ checked: !checked });
     await page.keyboard.press('Escape');
     await expect(page.locator('.isl-content').getByText('Clean corners', { exact: true })).toBeHidden();
+  }
+});
+
+test('the Pen circle steps through the brush presets 1, 2, 3, 4 and back to 1', async ({ page }) => {
+  await page.getByTestId('dynamic-island').hover();
+  const quick = page.getByTestId('island-quick-tool');
+  await expect(quick).not.toHaveAttribute('inert');
+  await expect(quick).toHaveAttribute('aria-label', /^Brush size: 1 px\. Switch to 2 px$/);
+  for (const size of [2, 3, 4, 1]) {
+    await quick.click();
+    await expect(quick).toHaveAttribute('aria-label', new RegExp(`^Brush size: ${size} px\\.`));
+    await expect(quick).toContainText(`${size}px`);
   }
 });

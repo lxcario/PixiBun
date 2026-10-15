@@ -21,6 +21,7 @@ const ColorPickerModal = lazyPanel(
 
 import { EXTRAS_SLOT, TOOL_GROUPS, TOOL_SLOTS } from '@/config/shortcuts';
 import { ToolSlotButton } from './ToolSlotButton';
+import { ToolRailLens } from '@/experimental/liquidControls/ToolRailLens';
 import { planShelf, visibleGroups, type FoldStage } from '@/lib/layout/toolShelf';
 
 // Client layout effects only; the server render keeps the full shelf.
@@ -177,7 +178,9 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
         className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden flex flex-col items-center py-2 px-1 custom-scrollbar"
       >
         <DrawingToolsPreviewLayer>
-          <div className="flex flex-col gap-1 w-full px-0.5 items-center">
+          <div className="lq-rail-host flex flex-col gap-1 w-full px-0.5 items-center">
+            {/* Labs: a glass lens sweeps between tools (renders nothing when off) */}
+            <ToolRailLens activeTool={tools.activeTool} />
             {activeToolGroups.filter(group => isPlaygroundMode || visibleGroups(folded).some(name => name === group.groupName)).map((group, gIdx) => (
               <div
                 key={group.groupName}

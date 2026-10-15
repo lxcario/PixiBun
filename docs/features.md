@@ -12,7 +12,8 @@ The six scene themes support four experiments under **Studio → Labs**. They de
 
 | Experiment | Current behavior | Guide |
 | --- | --- | --- |
-| Dynamic island | Tool controls morph with separate shell springs; outgoing blur and a small incoming text bounce; settings expand below the trigger row; a squeezing glass-like hover droplet provides direct shortcuts for all 17 tools; status bubbles report events | [Studio Labs](guides/studio-workspace.md#studio-labs) |
+| Dynamic island | Tool controls morph with separate shell springs; outgoing blur and a small incoming text bounce; settings expand below the trigger row; every tool shows its name and ▾; a glass-like hover droplet buds from the right edge and provides direct shortcuts for all 17 tools; status bubbles report events | [Studio Labs](guides/studio-workspace.md#studio-labs) |
+| Liquid controls | Slider handles turn to glass while held and glide to new values; the tool rail’s highlight is the liquid tab lens: it springs between tools, and can be held and slid along the rail to pick one | [Studio Labs](guides/studio-workspace.md#studio-labs) |
 | Liquid tabs | Tap a tab, or hold/slide the lens and release to select; tabs remain keyboard-operable buttons | [Studio Labs](guides/studio-workspace.md#studio-labs) |
 | Paint pot palette | Large primary/secondary colors, swatches, shades and recent colors, with mixer/workshop disclosures | [Palettes](guides/palettes-and-cycling.md#paint-pot-palette) |
 | Quick magic | Outline, Drop shadow, Light it, Shine, Tidy pixels, Smooth lines and color moods through existing artwork actions | [Quick magic](guides/pixitools-cleanup-and-tiles.md#quick-magic) |

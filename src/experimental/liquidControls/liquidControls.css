@@ -1,0 +1,125 @@
+/* Labs: Liquid controls. Delete with src/experimental/liquidControls. */
+
+/* ── Slider handles: a pill lens driven by --lq-* from LiquidSliders ──
+   --lq-x  lag behind the native thumb (px), so jumps are drawn as travel
+   --lq-s  hover/press swell, --lq-sx/--lq-sy speed stretch */
+body.moon-ui.lq-sliders input[type="range"]::-webkit-slider-thumb {
+  width: 24px !important;
+  height: 16px !important;
+  margin-top: 4px;
+  border-radius: 999px !important;
+  transform: translateX(var(--lq-x, 0px))
+    scale(calc(var(--lq-s, 1) * var(--lq-sx, 1)), calc(var(--lq-s, 1) * var(--lq-sy, 1))) !important;
+  transition: background-color 240ms ease, border-color 240ms ease, box-shadow 240ms ease !important;
+}
+
+body.moon-ui.lq-sliders input[type="range"]::-moz-range-thumb {
+  width: 22px !important;
+  height: 14px !important;
+  border-radius: 999px !important;
+  transform: translateX(var(--lq-x, 0px))
+    scale(calc(var(--lq-s, 1) * var(--lq-sx, 1)), calc(var(--lq-s, 1) * var(--lq-sy, 1))) !important;
+  transition: background-color 240ms ease, border-color 240ms ease, box-shadow 240ms ease !important;
+}
+
+/* Held or gliding: the handle lifts into a clear drop of glass over the track, like the held tab lens */
+body.moon-ui.lq-sliders input[type="range"][data-lq-glass]::-webkit-slider-thumb {
+  background:
+    radial-gradient(60% 70% at 30% 18%, rgba(255, 255, 255, 0.6), transparent 60%),
+    radial-gradient(50% 60% at 78% 92%, color-mix(in srgb, var(--accent-wisteria) 45%, transparent), transparent 70%),
+    color-mix(in srgb, var(--desk-surface-raised) 18%, transparent) !important;
+  border-color: color-mix(in srgb, white 60%, transparent) !important;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.7),
+    inset 0 -2px 3px color-mix(in srgb, black 20%, transparent),
+    0 4px 10px color-mix(in srgb, black 35%, transparent),
+    0 0 10px var(--moon-glow, transparent) !important;
+}
+
+body.moon-ui.lq-sliders input[type="range"][data-lq-glass]::-moz-range-thumb {
+  background:
+    radial-gradient(60% 70% at 30% 18%, rgba(255, 255, 255, 0.6), transparent 60%),
+    color-mix(in srgb, var(--desk-surface-raised) 18%, transparent) !important;
+  border-color: color-mix(in srgb, white 60%, transparent) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.7), 0 4px 10px color-mix(in srgb, black 35%, transparent) !important;
+}
+
+/* ── Tool rail lens: the liquid tab lens on its side (see liquid/liquid.css) ── */
+.lq-rail-host { position: relative; }
+
+/* At rest it IS the active tool's highlight: the scene skin's chosen-tool paint. */
+.lq-rail-lens {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 5; /* over the other tools as it slides, under the active button's icon */
+  pointer-events: none;
+  overflow: hidden;
+  transform-origin: center;
+  border-radius: 8px;
+  background: var(--primary-bg, var(--accent-gold));
+  border: 2px solid var(--moon-ink, var(--ink));
+  box-shadow: inset 0 -3px 0 var(--primary-shade, transparent), inset 2px 2px 0 var(--primary-shine, transparent), 0 3px 0 var(--moon-ink, var(--ink)), 0 0 16px var(--moon-glow, transparent);
+  transition: background-color 260ms ease, border-color 260ms ease, box-shadow 260ms ease, backdrop-filter 260ms ease;
+}
+
+.lq-rail-lens.is-unplaced { opacity: 0; }
+
+.lq-rail-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  background:
+    radial-gradient(60% 70% at 30% 18%, rgba(255, 255, 255, 0.55), transparent 60%),
+    radial-gradient(50% 60% at 78% 92%, color-mix(in srgb, var(--accent-wisteria) 45%, transparent), transparent 70%);
+  transition: opacity 260ms ease;
+}
+
+/* Held: the lens lifts into a clear, refracting drop of glass above every tool */
+.lq-rail-lens.is-glass {
+  z-index: 20;
+  background: color-mix(in srgb, var(--desk-surface-raised) 18%, transparent);
+  border-color: color-mix(in srgb, white 55%, transparent);
+  backdrop-filter: blur(1.5px) saturate(1.9) brightness(1.12) contrast(1.05);
+  -webkit-backdrop-filter: blur(1.5px) saturate(1.9) brightness(1.12) contrast(1.05);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.7),
+    inset 0 -2px 4px color-mix(in srgb, black 20%, transparent),
+    inset 0 0 12px color-mix(in srgb, var(--accent-wisteria) 30%, transparent),
+    0 8px 22px color-mix(in srgb, black 40%, transparent),
+    0 0 18px var(--moon-glow, transparent);
+}
+
+.lq-rail-lens.is-glass .lq-rail-sheen { opacity: 1; }
+
+/* The active button gives its paint to the lens and keeps only its icon and sparkle. */
+body.moon-ui .moon-slot-tools .lq-rail-on button[aria-pressed="true"] {
+  z-index: 10;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  transform: none;
+}
+
+/* While the glass is up, or the lens has not reached the chosen tool yet, it keeps its own colors. */
+body.moon-ui .moon-slot-tools .lq-rail-on.lq-rail-moving button[aria-pressed="true"],
+body.moon-ui .moon-slot-tools .lq-rail-on:has(.lq-rail-lens.is-glass) button[aria-pressed="true"] {
+  color: var(--text-heading) !important;
+  transition: color 160ms ease;
+}
+
+/* The tool under the glass is magnified and lit, like the tab under the tab lens */
+.lq-rail-on button[data-testid$="-tool"] > :first-child {
+  transition: transform 280ms cubic-bezier(.22, 1, .36, 1);
+}
+
+body.moon-ui .moon-slot-tools .lq-rail-on button[data-lq-under] {
+  color: var(--accent-gold) !important;
+}
+
+.lq-rail-on button[data-lq-under] > :first-child { transform: scale(1.18); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lq-rail-lens, .lq-rail-sheen, .lq-rail-on button[data-testid$="-tool"] > :first-child { transition: none !important; }
+}

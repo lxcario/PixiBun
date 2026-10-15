@@ -23,6 +23,7 @@ import { MAX_PROJECT_NAME_LENGTH } from '@/lib/project/metadataAdmission';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { IslandSlot } from '@/experimental/island/DynamicIsland';
+import { useLab } from '@/experimental/labsStore';
 
 const CVD_LENS_BUTTON_LABELS: Record<CvdLensMode, string> = {
   none: 'OFF',
@@ -264,7 +265,10 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
     tools.activeTool === 'dither' ||
     isShapeTool;
 
-  const hasExpandedToolParams = hasToolParams && tools.activeTool !== 'pen' && tools.activeTool !== 'eraser';
+  // The island shows every tool the same way: its name and a ▾ that opens its settings.
+  // The classic bar keeps Pen and Eraser sizes inline.
+  const islandOn = useLab('island');
+  const hasExpandedToolParams = hasToolParams && (islandOn || (tools.activeTool !== 'pen' && tools.activeTool !== 'eraser'));
   const toolLabel = CANONICAL_TOOLS.find((tool) => tool.id === tools.activeTool)?.label ?? tools.activeTool;
 
   return (

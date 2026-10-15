@@ -15,11 +15,11 @@ The right inspector tabs are **Tools**, **Layers**, **Palette** and **Effects**.
 
 ## Studio Labs
 
-On Moonlit, Sakura, Tidepool, Ember, Moss and Arcade, open **Studio → Labs** to try **Dynamic island**, **Liquid tabs**, **Paint pot palette** and **Quick magic**. Each has its own switch; **Classic studio** turns all four off, and **Turn all on** restores them. Your choices stay in this browser. Graphite and Plum always keep classic controls regardless of saved switches.
+On Moonlit, Sakura, Tidepool, Ember, Moss and Arcade, open **Studio → Labs** to try **Dynamic island**, **Liquid tabs**, **Liquid controls**, **Paint pot palette** and **Quick magic**. Each has its own switch; **Classic studio** turns them all off, and **Turn all on** restores them. Your choices stay in this browser. Graphite and Plum always keep classic controls regardless of saved switches.
 
-The island shows the active tool’s controls. Open its tool-options or brush-size button to grow a settings panel; Escape closes it. Changing tools briefly blurs out the previous controls, then reveals the new ones with a small bounce. The top row keeps its position during menu expansion. Status bubbles report saves, history, frames, layers and mirror changes. Reduced motion removes the island’s spring/blur travel.
+The island shows the active tool’s name. When the tool has settings, a ▾ beside the name grows a settings panel, with Pen and Eraser sizes inside it. Escape closes it. Changing tools briefly blurs out the previous controls, then reveals the new ones with a small bounce. The top row keeps its position during menu expansion. Status bubbles report saves, history, frames, layers and mirror changes. Reduced motion removes the island’s spring/blur travel.
 
-Liquid tabs keep the same Tools, Layers, Palette and Effects destinations. Tap normally, or press and hold/slide the lens and release over the desired tab. Keyboard activation still uses the tab buttons. The [paint-pot palette](palettes-and-cycling.md#paint-pot-palette) and [Quick magic](pixitools-cleanup-and-tiles.md#quick-magic) change how existing actions are presented. The theme screenshots were captured with Labs off and do not illustrate these motion states.
+Liquid tabs keep the same Tools, Layers, Palette and Effects destinations. Tap normally, or press and hold/slide the lens and release over the desired tab. Keyboard activation still uses the tab buttons. **Liquid controls** turns slider handles into glass while you drag them, and they glide to a clicked spot. On the tool rail, the highlight works like the tab lens: it springs to each new tool. Press and hold a tool, or press and slide, to lift it into glass, run it along the rail and release over the tool you want. On slots with a corner triangle, a still hold still opens their tool list. The [paint-pot palette](palettes-and-cycling.md#paint-pot-palette) and [Quick magic](pixitools-cleanup-and-tiles.md#quick-magic) change how existing actions are presented. The theme screenshots were captured with Labs off and do not illustrate these motion states.
 
 ## Projects and names
 
@@ -144,7 +144,7 @@ Choose **View → Live PiP** to open one floating **Live Preview** window. You c
 The [new capture record](../assets/screenshots/2026-10-15-current-ui/run.json) shows the corrected single-window controls. The earlier duplicate-window screenshot remains historical evidence.
 
 
-Hover or focus the Dynamic island to pull a glass-like quick-action droplet from its right edge. The pill squeezes as the neck stretches, then both settle using one spring; leaving merges the droplet back. The name stays fixed and pressing the shortcut does not move its hit target. Each of the 17 tools has a direct setting shortcut. Clean corners is available only inside expanded Pen/Bézier brush controls in the top rail.
+Hover the Dynamic island, or reach it with the keyboard, to pull a glass-like quick-action droplet from its right edge. The droplet pinches off and wobbles into place; when you leave, it is pulled back in. The name stays fixed and pressing the shortcut does not move its hit target. Each of the 17 tools has a direct setting shortcut. For Pen, Eraser and Line it steps the size 1 → 2 → 3 → 4 px. Clean corners is available only inside expanded Pen/Bézier brush controls in the top rail.
 
 ## Right-click quick tools
 

@@ -42,6 +42,7 @@ import { applyOpenedCart } from '@/lib/cart/applyCart';
 import { PENDING_CART_QUERY, takePendingCart } from '@/lib/cart/pendingCart';
 import { startReceiptRecorder } from '@/lib/cart/receiptRecorder';
 import { reportImportError } from '@/lib/project/importFile';
+import { LiquidSliders } from '@/experimental/liquidControls/LiquidSliders';
 
 // Heavy dialogs are code-split client-side (Phase 33): none of these bundles
 // are part of the /studio first-load JS. They render only while open, so the
@@ -426,6 +427,8 @@ export const StudioLayout: React.FC = () => {
     >
       {/* Scene themes: their animated scene fills the whole studio, behind every floating panel */}
       {scene && <StudioSkyBackdrop />}
+      {/* Labs: liquid slider handles (renders nothing; off restores the classic handle) */}
+      {scene && <LiquidSliders />}
 
       {/* Unified Atelier Rail (~40px instrument panel) */}
       <div hidden={focusMode} className="moon-slot moon-slot-rail">
