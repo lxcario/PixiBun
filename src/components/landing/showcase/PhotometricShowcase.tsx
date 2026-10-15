@@ -20,12 +20,13 @@ import { MaterialType, PhotometricLightingParams } from '@/types/tools';
 import { coordsToLightAngles, lightAnglesToCoords } from '@/lib/canvas/lightGizmoMath';
 import { renderBoundedSpriteCastShadow, RaymarchedShadowParams } from '@/lib/ai/shadowRayMarcher';
 import { createOffscreenCanvas } from './showcaseSprites';
+import { ambientTicker, tickWhileVisible } from '../ambientClock';
 
 export const PhotometricShowcase: React.FC = () => {
   const palette = useThemePalette();
   const { complete } = useQuests();
   const shouldReduceMotion = useReducedMotion();
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('hearth-ghost');
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('bun');
   const [material, setMaterial] = useState<MaterialType>('matte');
   const [displayMode, setDisplayMode] = useState<'cel' | 'normals' | 'base'>('cel');
   const [shadowMode, setShadowMode] = useState<'cast' | 'drop' | 'none'>('cast');
@@ -42,11 +43,11 @@ export const PhotometricShowcase: React.FC = () => {
   }, [shouldReduceMotion]);
 
   const displayCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const litViewCache = useRef(new Map<string, HTMLCanvasElement>());
   const gizmoContainerRef = useRef<HTMLDivElement | null>(null);
   const baseCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const cachedNormalCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const cachedSceneEDTRef = useRef<Float32Array | null>(null);
-  const animFrameRef = useRef<number | null>(null);
 
   // Render unified lighting and 2.5D cast shadow to display canvas
   const renderLighting = useCallback(() => {
@@ -88,6 +89,14 @@ export const PhotometricShowcase: React.FC = () => {
       return;
     }
 
+    // Each lit view comes from the real lighting and shadow engines; the lamp moves in
+    // 7.5° steps, so every view is computed once and the orbit replays it from memory.
+    const qAz = (Math.round(azimuth / 7.5) * 7.5) % 360;
+    const qEl = Math.round(elevation / 5) * 5;
+    const key = [displayMode, shadowMode, material, celTones, qAz, qEl, baseVersion, palette.surface, palette.sunken, palette.ink, palette.borderSubtle].join('|');
+    const cached = litViewCache.current.get(key);
+    if (cached) { ctx.drawImage(cached, 0, 0); return; }
+
     // 1. Draw cozy atelier checkered drafting desk floor
     for (let y = 0; y < stageH; y += 4) {
       for (let x = 0; x < stageW; x += 4) {
@@ -104,8 +113,8 @@ export const PhotometricShowcase: React.FC = () => {
     // 2. Compute 2.5D Bounded Cast or Drop Shadow synchronized to light bulb
     if (shadowMode !== 'none' && cachedSceneEDTRef.current) {
       const shadowParams: RaymarchedShadowParams = {
-        lightAzimuth: azimuth,
-        lightElevation: elevation,
+        lightAzimuth: qAz,
+        lightElevation: qEl,
         shadowOpacity: 0.68,
         shadowColor: palette.ink,
         ditherMode: '4x4',
@@ -132,8 +141,8 @@ export const PhotometricShowcase: React.FC = () => {
 
     // 3. 2.5D Photometric Cel-Shading
     const params: PhotometricLightingParams = {
-      lightAzimuth: azimuth,
-      lightElevation: elevation,
+      lightAzimuth: qAz,
+      lightElevation: qEl,
       lightRadius: 32,
       lightColor: material === 'gold' ? '#FFE8B0' : '#FFFFFF',
       ambientIntensity: 0.48,
@@ -148,6 +157,10 @@ export const PhotometricShowcase: React.FC = () => {
 
     const shadedCanvas = executePhotometricPipeline(baseCtx, width, height, params);
     ctx.drawImage(shadedCanvas, 8, 6);
+    const view = createOffscreenCanvas(stageW, stageH);
+    view.getContext('2d')?.drawImage(displayCanvas, 0, 0);
+    if (litViewCache.current.size >= 512) litViewCache.current.delete(litViewCache.current.keys().next().value!);
+    litViewCache.current.set(key, view);
   }, [displayMode, shadowMode, material, celTones, azimuth, elevation, baseVersion, palette]);
 
   // Precompute base canvas, tangent normal map, and scene EDT once when template changes
@@ -200,22 +213,22 @@ export const PhotometricShowcase: React.FC = () => {
   useEffect(() => {
     if (!autoOrbit || isDragging) return;
 
+    const element = displayCanvasRef.current;
+    if (!element) return;
     let lastTime = performance.now();
-    const loop = (now: number) => {
-      const dt = (now - lastTime) / 1000;
+    // The lamp orbits at a pixel-art pace, and only while the demo is on screen:
+    // each step reruns the real lighting pipeline.
+    const step = (now: number) => {
+      // A long gap means the demo was off screen; carry on from where it paused.
+      const gap = (now - lastTime) / 1000;
+      const dt = gap > 2 ? 0 : gap;
       lastTime = now;
-
       // Decorative frames must not repeatedly interrupt a pending route transition.
       startTransition(() => {
         setAzimuth((prev) => (prev + dt * 45) % 360);
       });
-      animFrameRef.current = requestAnimationFrame(loop);
     };
-
-    animFrameRef.current = requestAnimationFrame(loop);
-    return () => {
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-    };
+    return tickWhileVisible(element, ambientTicker(step, 12));
   }, [autoOrbit, isDragging]);
 
   // Normalized gizmo coordinates helper (280x280 reference space)

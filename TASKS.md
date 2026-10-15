@@ -20,6 +20,9 @@ Source: the Strategy and Audit & Roadmap documents of 13 October 2026, summarize
 - [x] Implement carts, phone cart player, Light Sweep, Handmade Receipt and Living Postcards. Launch and per-platform sharing survival remain separate qualification.
 - [x] Clarify the color dock's edge-alignment fixture to select the flat Graphite desk; retain its original geometry and color-interaction assertions. Scene desks intentionally use margins.
 - [ ] Qualify the previously recorded navigator square-pixel alignment failure; the scoped audit browser selection does not close that separate case.
+- [ ] Check cart survival on Discord, Bluesky, Cara, itch.io, Reddit and email ([Where carts survive](docs/guides/cart-survival.md)).
+- [ ] Five artist sessions with the top three frictions each, before launch.
+
 
 ## Nibbli and Studio source publication — 2026-10-13
 

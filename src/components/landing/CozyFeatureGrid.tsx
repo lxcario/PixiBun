@@ -8,6 +8,7 @@ import { SceneBackdrop } from './night/SceneBackdrop';
 import { paintPromise, SCENE_H, SCENE_W, type PromiseKind } from './night/promiseScenes';
 import { recolorCanvas } from '@/lib/theme/sceneRecolor';
 import { useSceneRecolor } from './night/useSceneRecolor';
+import { ambientTicker, tickWhileVisible, type AmbientTicker } from './ambientClock';
 
 type Kind = PromiseKind;
 
@@ -18,34 +19,32 @@ const Vignette: React.FC<{ kind: Kind; active: boolean }> = ({ kind, active }) =
   const recolor = useSceneRecolor();
   activeRef.current = active;
 
+  const tickerRef = useRef<AmbientTicker | null>(null);
   useEffect(() => {
     const g = ref.current?.getContext('2d', { willReadFrequently: true });
     const el = ref.current;
     if (!g || !el) return;
-    let raf = 0;
     let k = 0;
-    let visible = typeof IntersectionObserver === 'undefined';
-    const start = performance.now();
-    const loop = () => {
-      k += ((activeRef.current ? 1 : 0) - k) * 0.12;
-      paintPromise(g, kind, reduceMotion ? 0 : performance.now() - start, reduceMotion ? (activeRef.current ? 1 : 0) : k);
+    let last = performance.now();
+    const start = last;
+    const paint = (now: number) => {
+      // Frame-rate independent easing toward the hovered state.
+      const dt = Math.min(200, now - last);
+      last = now;
+      k += ((activeRef.current ? 1 : 0) - k) * (1 - Math.pow(0.88, dt / 16.7));
+      paintPromise(g, kind, now - start, k);
       recolorCanvas(g, recolor);
-      if (visible && !reduceMotion) raf = requestAnimationFrame(loop);
     };
     paintPromise(g, kind, 0, 0);
     recolorCanvas(g, recolor);
-    if (typeof IntersectionObserver === 'undefined') return;
-    const io = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-      cancelAnimationFrame(raf);
-      if (visible) raf = requestAnimationFrame(loop);
-    });
-    io.observe(el);
-    return () => {
-      cancelAnimationFrame(raf);
-      io.disconnect();
-    };
+    const ticker = ambientTicker(paint, 12);
+    tickerRef.current = ticker;
+    const stop = tickWhileVisible(el, ticker, !reduceMotion);
+    return () => { stop(); tickerRef.current = null; };
   }, [kind, reduceMotion, recolor]);
+
+  // Hovering eases the scene at full rate for a moment.
+  useEffect(() => { tickerRef.current?.boost(700); }, [active]);
 
   useEffect(() => {
     // Reduced motion still shows the hovered state, just without easing.
@@ -132,7 +131,7 @@ export const CozyFeatureGrid: React.FC = () => {
                 onHoverEnd={() => setHovered((h) => (h === i ? null : h))}
                 whileHover={{ y: -8 }}
                 transition={{ type: 'spring', stiffness: 320, damping: 22 }}
-                className="relative h-full flex flex-col rounded-[2px] border-2 border-[var(--desk-border)] bg-[var(--desk-surface)]/90 backdrop-blur-sm px-6 pt-6 pb-7 shadow-[0_8px_0_var(--ink)]"
+                className="relative h-full flex flex-col rounded-[2px] border-2 border-[var(--desk-border)] bg-[var(--desk-surface)]/95 px-6 pt-6 pb-7 shadow-[0_8px_0_var(--ink)]"
               >
                 <PixelCorners />
                 <CardGoldenChains />

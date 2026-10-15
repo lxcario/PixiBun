@@ -189,7 +189,7 @@ export const AtelierEngineShowcase: React.FC = () => {
             role="tabpanel"
             id={`panel-${activeTab.id}`}
             aria-labelledby={`tab-${activeTab.id}`}
-            className="workbench-mat workbench-panel relative rounded-[6px] border-2 border-[var(--ink)] backdrop-blur-sm px-4 sm:px-7 pt-5 pb-4 shadow-[0_10px_0_var(--ink),0_30px_60px_var(--shadow-far)]"
+            className="workbench-mat workbench-panel relative rounded-[6px] border-2 border-[var(--ink)] px-4 sm:px-7 pt-5 pb-4 shadow-[0_10px_0_var(--ink),0_30px_60px_var(--shadow-far)]"
           >
             <p className="relative mb-3 inline-flex items-center gap-2 px-2 py-1 rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
               <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full bg-[var(--accent-sage)] animate-pulse" />

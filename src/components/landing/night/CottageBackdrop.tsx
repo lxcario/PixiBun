@@ -5,6 +5,7 @@ import { recolorCanvas } from '@/lib/theme/sceneRecolor';
 import { useSceneRecolorRef } from './useSceneRecolor';
 import { BAYER_4X4 } from '@/lib/canvas/ditherMatrix';
 import { drawBun, type BunPose } from '@/lib/art/bunSprite';
+import { ambientTicker, tickWhileVisible, type AmbientTicker } from '../ambientClock';
 
 /**
  * Inside Bun's cottage: wallpaper, a bookshelf, a window onto the same night
@@ -379,12 +380,15 @@ export const CottageBackdrop: React.FC<{ chapter: number; reduceMotion: boolean 
   const hopAt = useRef(-1e9);
   const start = useRef(0);
   const repaint = useRef<() => void>(() => {});
+  const tickerRef = useRef<AmbientTicker | null>(null);
   const recolor = useSceneRecolorRef(() => repaint.current());
 
   useEffect(() => {
     if (chapterRef.current !== chapter) {
       chapterRef.current = chapter;
       hopAt.current = performance.now() - start.current;
+      // Bun's hop plays at full rate; the room settles back to a calm pace after.
+      tickerRef.current?.boost(1200);
     }
   }, [chapter]);
 
@@ -395,8 +399,6 @@ export const CottageBackdrop: React.FC<{ chapter: number; reduceMotion: boolean 
     if (!canvas || !ctx || !host) return;
     start.current = performance.now();
     let room: Room | null = null;
-    let raf = 0;
-    let visible = false;
 
     const build = () => {
       const rect = host.getBoundingClientRect();
@@ -418,10 +420,6 @@ export const CottageBackdrop: React.FC<{ chapter: number; reduceMotion: boolean 
       recolorCanvas(ctx, recolor.current);
     };
     repaint.current = draw;
-    const loop = () => {
-      draw();
-      if (visible && !reduceMotion) raf = requestAnimationFrame(loop);
-    };
     build();
     draw();
     const ro = new ResizeObserver(() => {
@@ -429,16 +427,13 @@ export const CottageBackdrop: React.FC<{ chapter: number; reduceMotion: boolean 
       draw();
     });
     ro.observe(host);
-    const io = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-      cancelAnimationFrame(raf);
-      if (visible) raf = requestAnimationFrame(loop);
-    });
-    io.observe(host);
+    const ticker = ambientTicker(draw, 12);
+    tickerRef.current = ticker;
+    const stop = tickWhileVisible(host, ticker, !reduceMotion);
     return () => {
-      cancelAnimationFrame(raf);
+      stop();
+      tickerRef.current = null;
       ro.disconnect();
-      io.disconnect();
     };
   }, [reduceMotion, recolor]);
 

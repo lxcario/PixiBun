@@ -16,7 +16,7 @@ Explain that the product is being tested. Start with the goal below without read
 
 | Task | Completion evidence | Record |
 | --- | --- | --- |
-| Open the Hearth Ghost starter and add a visible mark | Starter and authored mark are visible | How the starter was found; accidental blank drawings |
+| Open the Mochi starter and add a visible mark | Starter and authored mark are visible | How the starter was found; accidental blank drawings |
 | Create a motion part and move the End pose two pixels | End pose and preview show the offset | Selection versus whole-layer discovery; field/range/gizmo choice |
 | Undo, Redo and reset a pose | Artwork remains intact; parameter values change as intended | Which Undo control was expected; surprise or accidental document actions |
 | Name and save the rig, Cancel, save the project and reload | Original artwork and the named rig return | Confusion between rig Save, project Save and Bake |
