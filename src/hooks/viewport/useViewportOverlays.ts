@@ -131,28 +131,23 @@ export function useViewportOverlays({
     if (!ctx) return;
 
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    if (!showStencilGuide || !isPlaygroundActive) return;
+    // Playback shows only the learner's own frames.
+    if (!showStencilGuide || !isPlaygroundActive || isPlaying) return;
 
     const currentStep = useOnboardingStore.getState().getCurrentStep();
     const currentLesson = useOnboardingStore.getState().getCurrentLesson();
 
-    // Synchronize studio active frame if out of sync (only when paused in drawing steps)
-    if (!isPlaying && currentStep.type === 'DRAW_FRAME') {
+    // Synchronize studio active frame if out of sync (paused drawing steps only)
+    if (currentStep.type === 'DRAW_FRAME') {
       if (currentStep.frameIndex !== undefined && activeFrameIndex !== currentStep.frameIndex) {
         useStudioStore.getState().setActiveFrame(currentStep.frameIndex);
       }
     }
 
-    // Determine which template to render:
-    // During active playback, render the template corresponding to activeFrameIndex so the animation animates on the canvas!
-    // When paused, render current step's template or activeFrame's template.
-    const template = isPlaying
-      ? (currentLesson.frames[activeFrameIndex] || currentStep.template)
-      : (currentStep.template ||
-         useOnboardingStore.getState().getCurrentFrameTemplate() ||
-         (currentStep.frameIndex !== undefined
-           ? currentLesson.frames[currentStep.frameIndex]
-           : null));
+    // Render the current step's template (or the active frame's).
+    const template = currentStep.template ||
+      useOnboardingStore.getState().getCurrentFrameTemplate() ||
+      (currentStep.frameIndex !== undefined ? currentLesson.frames[currentStep.frameIndex] : null);
     if (!template) return;
 
     ctx.imageSmoothingEnabled = false;

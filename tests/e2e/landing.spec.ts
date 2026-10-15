@@ -18,7 +18,7 @@ test.describe('Landing Page & Accessibility', () => {
     const studioCta = page.getByRole('link', { name: /OPEN THE DESK/i }).first();
     await expect(studioCta).toBeVisible();
 
-    await expect(page.getByText(/take a Godot kit into your game/)).toBeVisible();
+    await expect(page.getByText(/APNG and a Godot kit, ready to drop into a project/)).toBeVisible();
     await expect(page.getByText(/native Godot 4 & Unity exports/)).toHaveCount(0);
 
     // Navigation must remain responsive while the default lighting demo animates.

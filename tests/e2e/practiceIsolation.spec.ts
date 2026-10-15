@@ -52,8 +52,10 @@ async function enterPractice(page: Page) {
   await expect(page.getByRole('button', { name: 'Return to drawing', exact: true })).toBeVisible();
 }
 async function trace(page: Page) {
-  // Each lesson opens on its intro card.
+  // Each lesson opens on its intro card; wait for it or the drawing step to settle in.
   const start = page.getByRole('button', { name: "Let's start", exact: true });
+  const traceButton = page.getByRole('button', { name: 'Trace it for me', exact: true });
+  await expect(start.or(traceButton)).toBeVisible();
   if (await start.isVisible()) await start.click();
   await page.getByRole('button', { name: 'Trace it for me', exact: true }).click();
   await expect.poll(async () => (await pixels(page)).some((value, index) => index % 4 === 3 && value > 0)).toBe(true);
@@ -66,6 +68,7 @@ test('lesson changes and Teaching Board edits preserve the original pixels, timi
   await trace(page);
   await page.getByRole('button', { name: /^Lesson /, exact: false }).click();
   await page.getByRole('dialog', { name: /Choose a lesson/ }).getByRole('button', { name: /^Potion Bubbles/ }).click();
+  await expect(page.getByRole('heading', { name: /Potion Bubbles/ })).toBeVisible();
   await trace(page);
   await page.getByTitle('Open 10-Frame Jump Anatomy Teaching Board', { exact: true }).first().click();
   await page.getByRole('button', { name: 'Load into Playground Timeline', exact: true }).click();
@@ -160,7 +163,7 @@ test('failed Keep stays in practice and Return restores the original', async ({ 
     (window as unknown as StudioWindow).__pixibunDb.transaction = async () => { throw new Error('Simulated practice save failure'); };
   });
   await page.getByRole('button', { name: 'Keep practice in Studio', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText(/practice save failure|could not be saved/i);
+  await expect(page.getByRole('status').filter({ hasText: /practice save failure|could not be saved/i })).toBeVisible();
   await expect(page).toHaveURL(/\/playground$/);
   await page.getByRole('button', { name: 'Return to drawing', exact: true }).click();
   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
