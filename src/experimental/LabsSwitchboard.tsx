@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { LABS, useLabsStore } from './labsStore';
+import { LABS, useLabsAvailable, useLabsStore } from './labsStore';
 
 /** Studio ▸ Labs: one switch per experiment, plus a quick way back to the classic studio. */
 export function LabsSwitchboard() {
@@ -10,6 +10,7 @@ export function LabsSwitchboard() {
   const setAll = useLabsStore(s => s.setAll);
   useEffect(() => useLabsStore.getState().hydrate(), []);
   const anyOn = LABS.some(lab => flags[lab.id]);
+  const available = useLabsAvailable();
 
   return (
     <section aria-label="Labs" data-testid="labs-switchboard" className="pb-3 mb-3 border-b border-[var(--desk-border)]">
@@ -25,7 +26,12 @@ export function LabsSwitchboard() {
           {anyOn ? 'Classic studio' : 'Turn all on'}
         </button>
       </div>
-      <div className="flex flex-col">
+      {!available && (
+        <p className="m-0 mb-1.5 text-[10px] leading-[14px] text-[var(--text-muted)]">
+          Graphite and Plum always keep the classic studio. Pick another style below to see Labs.
+        </p>
+      )}
+      <div className={`flex flex-col ${available ? '' : 'opacity-60'}`}>
         {LABS.map(lab => (
           <label key={lab.id} className="insp-toggle flex items-start gap-2.5 py-1.5 cursor-pointer select-none">
             <span className="flex-1 min-w-0">

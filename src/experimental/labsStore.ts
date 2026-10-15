@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 import { create } from 'zustand';
+import { useThemeStore } from '@/stores/themeStore';
+import { isSceneTheme } from '@/lib/theme/registry';
 
 /**
  * Studio Labs: experimental UI that can be switched off from Studio ▸ Labs,
@@ -64,8 +66,15 @@ export const useLabsStore = create<LabsStore>((set, get) => ({
   },
 }));
 
+/** Labs are for the cozy scene themes; the professional flat themes (Graphite, Plum) always stay classic. */
+export function useLabsAvailable(): boolean {
+  return useThemeStore(s => isSceneTheme(s.studioTheme));
+}
+
 /** True when a lab is on. Reads stored flags on first use so every gate agrees after hydration. */
 export function useLab(id: LabId): boolean {
   useEffect(() => useLabsStore.getState().hydrate(), []);
-  return useLabsStore(s => s.flags[id]);
+  const available = useLabsAvailable();
+  const on = useLabsStore(s => s.flags[id]);
+  return available && on;
 }
