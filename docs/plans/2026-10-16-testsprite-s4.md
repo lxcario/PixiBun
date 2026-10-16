@@ -1,6 +1,6 @@
 # TestSprite Hackathon Season 4 — plan
 
-Build window: **16 October 00:00 PT (10:00 Türkiye) → 22 October 23:59 PT (23 October 09:59 Türkiye)**. CLI bonus runs to 29 October 23:59 PT. Sources: [hackathon page](https://www.testsprite.com/hackathon-s4), [GitHub integration docs](https://docs.testsprite.com/web-portal/integrations/github-integration) and the official rules posted in the TestSprite Discord.
+Build window: **16 October, about 19:00 Türkiye per the site countdown (confirm in Discord) → 22 October 23:59 PT (23 October 09:59 Türkiye)**. CLI bonus runs to 29 October 23:59 PT. Sources: [hackathon page](https://www.testsprite.com/hackathon-s4), [GitHub integration docs](https://docs.testsprite.com/web-portal/integrations/github-integration) and the official rules posted in the TestSprite Discord.
 
 ## How we are scored, and our answer
 
@@ -24,7 +24,7 @@ Build window: **16 October 00:00 PT (10:00 Türkiye) → 22 October 23:59 PT (23
    - Either way, **turn off Vercel Deployment Protection for previews** (Project → Settings → Deployment Protection), or TestSprite's cloud browser hits a Vercel login page and every test fails.
 3. **Accounts.** Follow @TestSprite on X; join the Discord and get the badge; sign up at TestSprite with the **same email used to submit**. The same account must generate the suite and install the GitHub App.
 
-## Hour 0 (10:00 Türkiye) checklist
+## Hour 0 checklist (window opens about 19:00 Türkiye)
 
 - [ ] Clear blockers 1–3.
 - [ ] Portal → New Project → Frontend UI → URL `https://pixibun.vercel.app`, no sign-in, upload [`docs/testsprite/PRD.md`](../testsprite/PRD.md) as the PRD source.
