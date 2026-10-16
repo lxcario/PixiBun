@@ -30,17 +30,17 @@
     {
       "id": "sakura",
       "name": "Sakura",
-      "blurb": "Indigo night, paper lanterns",
+      "blurb": "Yozakura: torii, chōchin, Mt. Fuji",
       "dayBlurb": "Blossom morning, petal pink",
       "layout": "scene",
       "night": {
         "bg": "#0f1226", "surface": "#181c3a", "raised": "#22274d", "sunken": "#0a0d1d", "elevated": "#2c3260",
         "border": "#3b4378", "borderHi": "#5560a3", "borderSubtle": "#252b55",
         "heading": "#fff1f6", "body": "#e4ddf0", "muted": "#b2abd0",
-        "accent": "#ffa3c4", "accent2": "#a7bcff", "accent3": "#ffc8da", "positive": "#a6e3b8", "danger": "#ff8a9b",
+        "accent": "#ffa3c4", "accent2": "#f2c879", "accent3": "#ffc8da", "positive": "#a6e3b8", "danger": "#ff8a7a",
         "ink": "#060818", "hover": "#2a3062", "active": "#323a72",
         "primary": "#ffa3c4", "primaryFg": "#2a0d1d", "primaryShade": "#d9709a", "primaryShine": "#ffe0ec",
-        "frame": "#6e2f43", "frameLight": "#9a4a62", "frameDark": "#45192a"
+        "frame": "#a3301f", "frameLight": "#d2412e", "frameDark": "#5e1810"
       },
       "day": {
         "bg": "#fdf3f5", "surface": "#f8e6eb", "raised": "#fffbfc", "sunken": "#f1d9e0", "elevated": "#fcedf1",
@@ -134,11 +134,11 @@
       "dayBlurb": "Console plastic, 8-bit sky",
       "layout": "scene",
       "night": {
-        "bg": "#0a0a1a", "surface": "#12122b", "raised": "#1a1a3b", "sunken": "#05050f", "elevated": "#232350",
-        "border": "#2f2f68", "borderHi": "#4848a3", "borderSubtle": "#1d1d44",
+        "bg": "#07070d", "surface": "#0e0e18", "raised": "#161626", "sunken": "#030307", "elevated": "#1f1f36",
+        "border": "#2a2a52", "borderHi": "#4848a3", "borderSubtle": "#18182f",
         "heading": "#f5f5ff", "body": "#d6d6f5", "muted": "#a2a2d2",
         "accent": "#3ef5e0", "accent2": "#ff5ad8", "accent3": "#ffe14d", "positive": "#6dff9e", "danger": "#ff5a7a",
-        "ink": "#000006", "hover": "#222252", "active": "#2b2b62",
+        "ink": "#000006", "hover": "#1b1b30", "active": "#23233e",
         "primary": "#3ef5e0", "primaryFg": "#001519", "primaryShade": "#1fb8a8", "primaryShine": "#c8fff8",
         "frame": "#2a2a44", "frameLight": "#4a4a70", "frameDark": "#14142a"
       },
@@ -150,6 +150,106 @@
         "ink": "#2a2a3b", "hover": "#e3e2ea", "active": "#d4d3de",
         "primary": "#ffd23f", "primaryFg": "#14141f", "primaryShade": "#d9a500", "primaryShine": "#fff2b3",
         "frame": "#b9b8c6", "frameLight": "#d9d8e2", "frameDark": "#858497"
+      }
+    },
+    {
+      "id": "cocoa",
+      "name": "Cocoa",
+      "blurb": "Hot cocoa by the window, snow outside",
+      "dayBlurb": "Icy blue morning, fresh snow",
+      "layout": "scene",
+      "night": {
+        "bg": "#1d0c13", "surface": "#2b121c", "raised": "#391826", "sunken": "#14080d", "elevated": "#471f2f",
+        "border": "#5e2c40", "borderHi": "#7d3b55", "borderSubtle": "#441d2d",
+        "heading": "#f9f0f4", "body": "#e7d0d9", "muted": "#caa5b4",
+        "accent": "#ffc49a", "accent2": "#a8d4ff", "accent3": "#f2b8c8", "positive": "#a6e3c4", "danger": "#ff9a8f",
+        "ink": "#0b0507", "hover": "#461e2e", "active": "#522336",
+        "primary": "#ffb48f", "primaryFg": "#2a0f08", "primaryShade": "#d9805a", "primaryShine": "#ffe0cc",
+        "frame": "#5c3428", "frameLight": "#7f4c3a", "frameDark": "#3a1f18"
+      },
+      "day": {
+        "bg": "#f1f5fc", "surface": "#dae5f6", "raised": "#fbfcfe", "sunken": "#c7d7ef", "elevated": "#e6eef9",
+        "border": "#1c2e4a", "borderHi": "#314b72", "borderSubtle": "#bdcde5",
+        "heading": "#0d1726", "body": "#2b3a50", "muted": "#425067",
+        "accent": "#9a4416", "accent2": "#2a5aa8", "accent3": "#9a3f5c", "positive": "#246b3a", "danger": "#a82c2c",
+        "ink": "#1c2e4a", "hover": "#cfdef4", "active": "#bdd1ef",
+        "primary": "#ffc0a0", "primaryFg": "#2a0f08", "primaryShade": "#e0906a", "primaryShine": "#ffe6d8",
+        "frame": "#9a6a48", "frameLight": "#c08c66", "frameDark": "#6a452c"
+      }
+    },
+    {
+      "id": "drizzle",
+      "name": "Drizzle",
+      "blurb": "Rain-gray street, neon pink glow",
+      "dayBlurb": "Rain-washed aqua morning",
+      "layout": "scene",
+      "night": {
+        "bg": "#22272b", "surface": "#2b3136", "raised": "#343c42", "sunken": "#1c2124", "elevated": "#3d464d",
+        "border": "#4d5860", "borderHi": "#627079", "borderSubtle": "#3a444a",
+        "heading": "#f1f5f8", "body": "#d3dde3", "muted": "#b9c4cc",
+        "accent": "#ffc36b", "accent2": "#ff8cc0", "accent3": "#9fe6f4", "positive": "#a6e8b8", "danger": "#ffa0a0",
+        "ink": "#070809", "hover": "#3b454c", "active": "#434e56",
+        "primary": "#ff7eb6", "primaryFg": "#2a0718", "primaryShade": "#d94e8c", "primaryShine": "#ffd6ea",
+        "frame": "#4a4038", "frameLight": "#6a5c50", "frameDark": "#2a241f"
+      },
+      "day": {
+        "bg": "#f1fafb", "surface": "#dbf1f5", "raised": "#fbfefe", "sunken": "#cae8ed", "elevated": "#e7f6f8",
+        "border": "#1c444a", "borderHi": "#316a72", "borderSubtle": "#bfdee3",
+        "heading": "#0d2326", "body": "#2b4b50", "muted": "#426267",
+        "accent": "#8a4c00", "accent2": "#a3245e", "accent3": "#0f6a7a", "positive": "#226b3b", "danger": "#a82b2b",
+        "ink": "#1c444a", "hover": "#d2eef2", "active": "#c0e7ed",
+        "primary": "#ff9ec8", "primaryFg": "#2a0718", "primaryShade": "#e06a9e", "primaryShine": "#ffe0ee",
+        "frame": "#6a7a80", "frameLight": "#8fa0a6", "frameDark": "#46545a"
+      }
+    },
+    {
+      "id": "harvest",
+      "name": "Harvest",
+      "blurb": "Olive dusk, pumpkin lanterns",
+      "dayBlurb": "Butter-yellow fields, maple leaves",
+      "layout": "scene",
+      "night": {
+        "bg": "#1e1d0b", "surface": "#2d2b10", "raised": "#3c3a15", "sunken": "#151407", "elevated": "#4b481b",
+        "border": "#635f27", "borderHi": "#837e34", "borderSubtle": "#484519",
+        "heading": "#faf9f0", "body": "#e8e6cf", "muted": "#ccc9a3",
+        "accent": "#ffa04d", "accent2": "#f08f7a", "accent3": "#e8c26a", "positive": "#b8d47c", "danger": "#ff8a80",
+        "ink": "#0b0b04", "hover": "#4a461a", "active": "#57531e",
+        "primary": "#ff9a3c", "primaryFg": "#2a1003", "primaryShade": "#cc6a1c", "primaryShine": "#ffd6aa",
+        "frame": "#5a3a1e", "frameLight": "#80562e", "frameDark": "#382210"
+      },
+      "day": {
+        "bg": "#fdfaef", "surface": "#faf3d6", "raised": "#fffefa", "sunken": "#f4eac2", "elevated": "#fcf7e4",
+        "border": "#4a411c", "borderHi": "#726531", "borderSubtle": "#eae0b8",
+        "heading": "#26210d", "body": "#50482b", "muted": "#675f42",
+        "accent": "#9a3c0c", "accent2": "#a3301e", "accent3": "#5c5200", "positive": "#3f6610", "danger": "#a8262a",
+        "ink": "#4a411c", "hover": "#f9efcb", "active": "#f6e9b6",
+        "primary": "#ff9a4a", "primaryFg": "#2a1003", "primaryShade": "#d87a30", "primaryShine": "#ffdcb4",
+        "frame": "#a8683a", "frameLight": "#cc8a58", "frameDark": "#764420"
+      }
+    },
+    {
+      "id": "harbor",
+      "name": "Harbor",
+      "blurb": "Deep sea blue, lighthouse beam",
+      "dayBlurb": "Coral sand, navy sails",
+      "layout": "scene",
+      "night": {
+        "bg": "#091320", "surface": "#0e1d2f", "raised": "#12273f", "sunken": "#060d16", "elevated": "#17304f",
+        "border": "#234167", "borderHi": "#2e5789", "borderSubtle": "#162e4b",
+        "heading": "#f0f4fa", "body": "#cedae9", "muted": "#a1b5ce",
+        "accent": "#ffd27a", "accent2": "#ff8f7a", "accent3": "#8fd0e8", "positive": "#9fe0b8", "danger": "#ff8a8a",
+        "ink": "#03070c", "hover": "#162f4d", "active": "#1a375b",
+        "primary": "#ff8f7a", "primaryFg": "#2a0b05", "primaryShade": "#d9604a", "primaryShine": "#ffd9cf",
+        "frame": "#6a4a30", "frameLight": "#8f6a48", "frameDark": "#42301e"
+      },
+      "day": {
+        "bg": "#fdf2ef", "surface": "#faddd6", "raised": "#fffbfa", "sunken": "#f5ccc2", "elevated": "#fce8e3",
+        "border": "#1d3150", "borderHi": "#34507a", "borderSubtle": "#ebc2b7",
+        "heading": "#13203a", "body": "#2f3d55", "muted": "#45526a",
+        "accent": "#8a4a10", "accent2": "#1f5a96", "accent3": "#1f6a86", "positive": "#256b3c", "danger": "#a82a2a",
+        "ink": "#1d3150", "hover": "#f9d4ca", "active": "#f7c3b6",
+        "primary": "#2f6fb0", "primaryFg": "#ffffff", "primaryShade": "#1f4f86", "primaryShine": "#a8cdf0",
+        "frame": "#6a8aa6", "frameLight": "#8fadc6", "frameDark": "#46617a"
       }
     },
     {

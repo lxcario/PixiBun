@@ -710,6 +710,30 @@ body.studio-ui details > summary::marker { color: var(--accent-gold); }
   background-color: color-mix(in srgb, var(--bar-fill) 70%, var(--accent-gold)) !important;
 }
 :root body .bar-control.bar-control:focus-visible { outline: 2px solid var(--accent-gold) !important; outline-offset: 2px; }
+/* A select in the bar (the workspace picker) ends in the same small ▼ as the Studio button,
+   not the themes' accent chevron. */
+:root body select.bar-control.bar-control { background-image: none !important; padding-right: 22px !important; gap: 6px; }
+@supports (appearance: base-select) {
+  :root body select.bar-control.bar-control { padding-right: 10px !important; }
+  :root body select.bar-control.bar-control::picker-icon {
+    content: '▼';
+    width: auto;
+    height: auto;
+    background: none;
+    border: 0;
+    font-size: 8px;
+    line-height: 1;
+    color: currentColor;
+  }
+}
+@supports not (appearance: base-select) {
+  :root body select.bar-control.bar-control {
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%) !important;
+    background-position: right 11px center, right 7px center !important;
+    background-size: 4px 4px, 4px 4px !important;
+    background-repeat: no-repeat !important;
+  }
+}
 
 :root body .bar-control.bar-control-primary {
   background-color: var(--primary-bg, var(--accent-gold)) !important;

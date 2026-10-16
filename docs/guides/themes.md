@@ -2,11 +2,21 @@
 
 [Handbook](README.md) · [Studio workspace](studio-workspace.md) · [Current capture details](../assets/screenshots/2026-10-15-current-ui/run.json)
 
-All eight Studio themes have a **Night** and a **Day** appearance. Open the **Studio** menu to choose one; the setting is saved in this browser. Graphite and Plum use a flat desk, while the other six place panels over their own pixel scenes. The Daylight switch changes Day/Night without changing the selected theme.
+All twelve Studio themes have a **Night** and a **Day** appearance. Open the **Studio** menu to choose one; the setting is saved in this browser. Graphite and Plum use a flat desk, while the other ten place panels over their own pixel scenes:
 
-The six scene styles also offer [Studio Labs](studio-workspace.md#studio-labs). The Dynamic island, Liquid tabs, Liquid controls, Paint pot palette and Quick magic are separately switchable. Graphite and Plum stay classic. The automated captures below used Labs off; they do not show the latest experimental controls or establish animation smoothness.
+- **Moonlit**: a sleepy town under the stars.
+- **Sakura**: by night, a *yozakura* festival, with a full moon and blossom branch over Mt. Fuji, a vermilion torii between stone lanterns, a pagoda, lit cherry trees and red-and-white chōchin; by day, a blossom morning.
+- **Tidepool**, **Ember**, **Moss** and **Arcade**: a reef, a hearth town, a forest and a synth grid.
+- **Cocoa**: snowed-in cabins with smoking chimneys under the northern lights, on raspberry-cocoa panels; by day, fresh snow on icy blue.
+- **Drizzle**: a rainy street of café windows and flickering neon, on lighter rain-gray panels with a neon pink accent; by day, a gray shower on rain-washed aqua.
+- **Harvest**: a harvest moon over haystacks, a barn and glowing pumpkins, with falling leaves, on olive-gold panels; by day, golden fields on butter yellow.
+- **Harbor**: a striped lighthouse sweeping its beam over a moonlit bay, boats bobbing at anchor and a shore town, on sea-blue panels; by day, a sunny bay with gulls and sails, on coral sand with navy buttons.
 
-These are actual local production-build screenshots from **15 October 2026**, at 1280 × 900 and device scale 1. Every picture uses the same original 56 × 32 three-frame PixiBun sample, assembled from the current Mochi, Sprout and Bun artwork and imported through the normal project dialog. Reduced motion keeps the scenes still for the pictures. These illustrate appearance; browser/device qualification and contrast checks have their own scope in [current status](../current-status.md).
+Arcade's Night panels are near-black so they no longer read like Sakura's indigo. The Daylight switch changes Day/Night without changing the selected theme.
+
+The ten scene styles also offer [Studio Labs](studio-workspace.md#studio-labs). The Dynamic island, Liquid tabs, Liquid controls, Paint pot palette and Quick magic are separately switchable. Graphite and Plum stay classic. The automated captures below used Labs off; they do not show the latest experimental controls or establish animation smoothness.
+
+The pictures below predate the 16 October theme update: they show the earlier Sakura Night scene and Moonlit's former string of colored lights, and do not include Cocoa, Drizzle, Harvest or Harbor. They are actual local production-build screenshots from **15 October 2026**, at 1280 × 900 and device scale 1. Every picture uses the same original 56 × 32 three-frame PixiBun sample, assembled from the current Mochi, Sprout and Bun artwork and imported through the normal project dialog. Reduced motion keeps the scenes still for the pictures. These illustrate appearance; browser/device qualification and contrast checks have their own scope in [current status](../current-status.md).
 
 | Theme | Night | Day |
 | --- | --- | --- |

@@ -158,13 +158,13 @@ export const LeftToolbar = React.memo(function LeftToolbar({ isPlaygroundMode = 
                         aria-keyshortcuts={tool.shortcut ? tool.shortcut.replace(/ \+ /g, '+') : undefined}
                         data-testid={`${tool.id}-tool`}
                         data-tutorial={`${tool.id}-tool`}
-                        className={`w-9 h-9 rounded-[2px] flex items-center justify-center cursor-pointer transition-all ${
+                        className={`w-10 h-10 rounded-[2px] flex items-center justify-center cursor-pointer transition-all ${
                           isActive
                             ? 'pixel-primary-btn font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_1px_0_var(--btn-shadow)] ring-2 ring-[var(--accent-gold)] ring-offset-1 ring-offset-[var(--desk-surface)] z-10'
                             : 'pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)]'
                         }`}
                       >
-                        <PixelIcon name={tool.icon} size={16} />
+                        <PixelIcon name={tool.icon} size={32} />
                       </button>
                     </DrawingToolPreview>
                   );

@@ -16,12 +16,22 @@ import { useReducedMotion } from '@/lib/motion/useReducedMotion';
 /** Which way a surface unfolds: away from its trigger, or out from its middle for a modal. */
 export type UnfoldFrom = 'top' | 'bottom' | 'center';
 
+// Only the edge facing away from the trigger moves. The other edges sit far outside the
+// surface, so its drop shadow is never clipped: the shadow fades and grows with the surface
+// instead of popping in when the clip is lifted. The moving edge ends at -60% (past the
+// shadow's reach on any panel taller than ~140 px) so the reveal keeps most of its old pace.
+// All values stay in % so the spring interpolates them.
+const OUT = '-100%';
 const UNFOLD_CLIP: Record<UnfoldFrom, string> = {
-  top: 'inset(0% 0% 40% 0% round 16px)',
-  bottom: 'inset(40% 0% 0% 0% round 16px)',
-  center: 'inset(18% 0% 18% 0% round 16px)',
+  top: `inset(${OUT} ${OUT} 40% ${OUT})`,
+  bottom: `inset(40% ${OUT} ${OUT} ${OUT})`,
+  center: `inset(18% ${OUT} 18% ${OUT})`,
 };
-const UNFOLDED = 'inset(0% 0% 0% 0% round 16px)';
+const UNFOLDED: Record<UnfoldFrom, string> = {
+  top: `inset(${OUT} ${OUT} -60% ${OUT})`,
+  bottom: `inset(-60% ${OUT} ${OUT} ${OUT})`,
+  center: `inset(-60% ${OUT} -60% ${OUT})`,
+};
 
 /** How long the staggered content reveal runs before [data-unfold] is lifted again. */
 export const UNFOLD_MS = 1100;
@@ -59,7 +69,7 @@ export function surfaceVariants(reduce: boolean, from: UnfoldFrom = 'top'): Vari
     // The surface unfolds as it blooms: a clip opens away from the trigger on the same spring.
     closed: { opacity: 0, scale: ENTER_SCALE, filter: `blur(${ENTER_BLUR}px)`, clipPath: UNFOLD_CLIP[from] },
     open: {
-      opacity: 1, scale: 1, filter: 'blur(0px)', clipPath: UNFOLDED,
+      opacity: 1, scale: 1, filter: 'blur(0px)', clipPath: UNFOLDED[from],
       // A lingering filter would make the surface a containing block for fixed children,
       // and a lingering clip would cut off its shadow and any menu that overhangs it.
       transitionEnd: { filter: 'none', clipPath: 'none' },

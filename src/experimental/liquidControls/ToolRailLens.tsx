@@ -49,8 +49,8 @@ function Lens({ activeTool }: { activeTool: string }) {
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const w = useMotionValue(36);
-  const h = useMotionValue(36);
+  const w = useMotionValue(40);
+  const h = useMotionValue(40);
   // Elastic: the faster the lens travels, the more it stretches along the rail and thins across it.
   const vy = useVelocity(y);
   const speed = useSpring(useTransform(vy, v => Math.min(Math.abs(v) / 3400, 0.2)), { stiffness: 420, damping: 40 });

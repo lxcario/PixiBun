@@ -185,6 +185,9 @@
   min-width: 0;
 }
 
+/* body.studio-ui.moon-ui keeps the right padding clear for the color count (surfaces.css
+   resets select padding for base-select), and long names end in an ellipsis on one line. */
+body.studio-ui.moon-ui .pp-palette-name select,
 body.moon-ui .pp-palette-name select,
 .pp-palette-name select {
   width: 100%;
@@ -194,6 +197,8 @@ body.moon-ui .pp-palette-name select,
   border-radius: 999px !important;
   font-size: 12px;
   font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
   text-overflow: ellipsis;
 }
 

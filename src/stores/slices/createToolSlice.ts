@@ -13,6 +13,7 @@ import {
 import { studioEvents } from '@/lib/events/studioEvents';
 import { estimatePaletteBytes, parsePaletteSemantics } from '@/lib/color/paletteSemantics';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
+import { COZY_PALETTES } from '@/config/cozyPalettes';
 
 // A picker drag sets the color on every pointer move. Remember only the color
 // the artist settles on, so one drag adds one recent color, not eight shades of it.
@@ -104,7 +105,8 @@ export const PRESET_PALETTES: ColorPalette[] = [
       '#193c3e', '#124e89', '#0099db', '#2ce8f5', '#ffffff', '#c0cbdc', '#8b9bb4', '#5a6988',
       '#3a4466', '#262b44', '#181425', '#ff0044', '#68386c', '#b55088', '#f6757a', '#e8b796'
     ]
-  }
+  },
+  ...COZY_PALETTES,
 ];
 
 export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
