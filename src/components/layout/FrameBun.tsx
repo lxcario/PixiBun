@@ -11,7 +11,7 @@ import { useStudioStore } from '@/stores/studioStore';
  * keeping you company while you draw. Bun perks up for a moment whenever the
  * artwork changes, then settles back to a sleepy blink. Purely decorative.
  */
-export const FrameBun: React.FC = () => {
+export const FrameBun = React.memo(function FrameBun() {
   const moonlit = isSceneTheme(useThemeStore((s) => s.studioTheme));
   const frames = useStudioStore((s) => s.frames);
   const [cheer, setCheer] = useState(0);
@@ -36,4 +36,4 @@ export const FrameBun: React.FC = () => {
       <span className="absolute left-[27px] top-[44px] w-[6px] h-[8px] bg-[#f2ecf7] border-x-2 border-b-2 border-[#3a2e4c]" />
     </div>
   );
-};
+});

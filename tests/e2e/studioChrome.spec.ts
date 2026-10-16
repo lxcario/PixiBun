@@ -38,7 +38,7 @@ test('project controls, pen size, zoom, and timeline work at desktop widths', as
   await page.getByRole('button', { name: 'Collapse Timeline' }).click();
   const compact = page.getByTestId('bottom-timeline-collapsed');
   await expect(compact).toBeVisible();
-  for (const title of ['Previous Frame (,)', 'Play / Pause Animation (Space)', 'Next Frame (.)']) {
+  for (const title of ['Previous Frame (,)', 'Play / Pause Animation (Enter)', 'Next Frame (.)']) {
     expect((await compact.getByTitle(title).boundingBox())!.height).toBe(28);
   }
   await page.getByRole('button', { name: 'Expand Timeline' }).click();

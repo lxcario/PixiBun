@@ -2,7 +2,8 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence } from 'motion/react';
+import { SpringSurface } from '@/components/ui/surfaces/SpringSurface';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { DrawingToolPreview } from '@/components/ui/ToolMotionPreview';
 import { TOOL_METADATA_MAP, type ToolSlot } from '@/config/shortcuts';
@@ -29,12 +30,14 @@ const HOLD_MS = 350;
 export function ToolSlotButton({ slot, shown, active, onChoose }: ToolSlotButtonProps) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<{ left: number; top: number } | null>(null);
+  // Where the flyout was, so it can melt away in place after closing.
+  const shownAt = useRef<{ left: number; top: number } | null>(null);
+  if (position) shownAt.current = position;
   const slotRef = useRef<HTMLDivElement>(null);
   const openerRef = useRef<HTMLButtonElement>(null);
   const holdTimerRef = useRef<number | null>(null);
   const heldOpenRef = useRef(false);
   const flyoutRef = useRef<HTMLDivElement>(null);
-  const reduceMotion = useReducedMotion();
   const meta = TOOL_METADATA_MAP[shown];
   const grouped = slot.tools.length > 1;
 
@@ -93,7 +96,7 @@ export function ToolSlotButton({ slot, shown, active, onChoose }: ToolSlotButton
 
   return (
     <div ref={slotRef} className="relative inline-flex" data-tool-slot={slot.id} data-tools={slot.tools.join(' ')}>
-      <DrawingToolPreview toolId={shown}>
+      <DrawingToolPreview toolId={shown} more={grouped ? `Hold, right-click or press → for ${slot.tools.filter(tool => tool !== shown).map(tool => TOOL_METADATA_MAP[tool].label).join(', ')}.` : undefined}>
         <button
           ref={openerRef}
           type="button"
@@ -118,17 +121,16 @@ export function ToolSlotButton({ slot, shown, active, onChoose }: ToolSlotButton
           aria-pressed={active}
           aria-haspopup={grouped ? 'menu' : undefined}
           aria-expanded={grouped ? open : undefined}
-          aria-keyshortcuts={grouped ? 'ArrowRight' : undefined}
-          title={`${meta.label} (${meta.shortcut})${grouped ? ` · hold or right-click for more ${slot.label.toLowerCase()}` : ''}`}
+          aria-keyshortcuts={grouped ? `${meta.shortcut.replace(/ \+ /g, '+')} ArrowRight` : meta.shortcut.replace(/ \+ /g, '+')}
           data-testid={`${shown}-tool`}
           data-tutorial={`${shown}-tool`}
-          className={`relative w-9 h-9 rounded-[2px] flex items-center justify-center cursor-pointer transition-all ${
+          className={`relative w-10 h-10 rounded-[2px] flex items-center justify-center cursor-pointer transition-all ${
             active
               ? 'pixel-primary-btn font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_1px_0_var(--btn-shadow)] ring-2 ring-[var(--accent-gold)] ring-offset-1 ring-offset-[var(--desk-surface)] z-10'
               : 'pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)]'
           }`}
         >
-          <PixelIcon name={meta.icon} size={16} />
+          <PixelIcon name={meta.icon} size={32} />
           {grouped && (
             // A small pixel corner triangle, like a folded page: more tools here.
             <svg viewBox="0 0 4 4" width="6" height="6" aria-hidden="true" shapeRendering="crispEdges"
@@ -138,18 +140,19 @@ export function ToolSlotButton({ slot, shown, active, onChoose }: ToolSlotButton
           )}
         </button>
       </DrawingToolPreview>
-      {open && position && typeof document !== 'undefined' && createPortal(
-        <motion.div
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+        {open && shownAt.current && (
+        <SpringSurface
+          key="flyout"
           ref={flyoutRef}
+          origin="left center"
           role="menu"
           aria-label={slot.label}
           data-testid={`tool-flyout-${slot.id}`}
           onKeyDown={onFlyoutKeyDown}
-          initial={reduceMotion ? false : { x: -6, scaleX: 0.92 }}
-          animate={{ x: 0, scaleX: 1 }}
-          transition={{ type: 'spring', stiffness: 700, damping: 38 }}
-          style={{ left: position.left, top: position.top, transformOrigin: 'left center' }}
-          className="fixed z-[9500] min-w-[188px] p-1 rounded-[4px] border border-[var(--desk-border)] bg-[var(--desk-surface-raised,var(--desk-surface))] shadow-[0_8px_24px_var(--shadow-far,rgba(0,0,0,0.35))]"
+          style={{ left: shownAt.current.left, top: shownAt.current.top }}
+          className="pb-panel fixed z-[9500] min-w-[200px] !p-1.5"
         >
           <div className="px-2 pt-1 pb-1.5 text-[10px] font-medium uppercase tracking-wide text-[var(--text-muted)]">{slot.label}</div>
           {slot.tools.map(tool => {
@@ -164,19 +167,22 @@ export function ToolSlotButton({ slot, shown, active, onChoose }: ToolSlotButton
                 onClick={() => { onChoose(tool); close(false); }}
                 // The shown tool already owns this test id on the slot button.
                 data-testid={current ? undefined : `${tool}-tool`}
+                data-tool-icon-ink={current ? '' : undefined}
                 className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded-[3px] text-left text-xs cursor-pointer outline-none ${
                   current
                     ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)]'
                     : 'text-[var(--text-body)] hover:bg-[var(--menu-hover,var(--surface-2))] focus-visible:bg-[var(--menu-hover,var(--surface-2))] hover:text-[var(--text-heading)]'
                 }`}
               >
-                <PixelIcon name={item.icon} size={14} />
+                <PixelIcon name={item.icon} size={16} />
                 <span className="flex-1">{item.label}</span>
                 <kbd className={`font-mono text-[10px] ${current ? 'opacity-80' : 'text-[var(--text-muted)]'}`}>{item.shortcut}</kbd>
               </button>
             );
           })}
-        </motion.div>,
+        </SpringSurface>
+        )}
+        </AnimatePresence>,
         document.body,
       )}
     </div>

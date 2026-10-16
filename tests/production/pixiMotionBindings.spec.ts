@@ -97,7 +97,6 @@ test('compiled frame duplication never retargets a captured part and bake Undo r
   // Dismiss it through the UI; keep the full frame and history assertions.
   const dismissUpdate = page.getByRole('button', { name: 'Dismiss update banner', exact: true });
   if (await dismissUpdate.isVisible()) await dismissUpdate.click();
-  await page.locator('summary').filter({ hasText: 'Frame actions' }).click();
   await page.getByRole('button', { name: 'Duplicate frame', exact: true }).click(); await expect(frame(page, 2)).toBeVisible();
   await page.getByRole('button', { name: 'BAKE TO TIMELINE', exact: true }).click();
   await expect(frame(page, 4)).toBeVisible(); await expect(frame(page, 5)).toHaveCount(0);

@@ -17,7 +17,7 @@ interface RadialContextMenuProps {
 const quickToolIds: ToolType[] = ['pen', 'eraser', 'bucket', 'eyedropper', 'select-box', 'select-lasso', 'select-wand', 'line', 'rectangle', 'ellipse'];
 const quickTools = quickToolIds.map(id => CANONICAL_TOOLS.find(tool => tool.id === id)!);
 
-export const RadialContextMenu: React.FC<RadialContextMenuProps> = ({ isOpen, position, onClose, viewportRef }) => {
+export const RadialContextMenu = React.memo(function RadialContextMenu({ isOpen, position, onClose, viewportRef }: RadialContextMenuProps) {
   const activeTool = useStudioStore(s => s.tools.activeTool);
   const setActiveTool = useStudioStore(s => s.setActiveTool);
   const primaryColor = useStudioStore(s => s.primaryColor);
@@ -99,4 +99,4 @@ export const RadialContextMenu: React.FC<RadialContextMenuProps> = ({ isOpen, po
       </div>
     </div>, document.body
   );
-};
+});

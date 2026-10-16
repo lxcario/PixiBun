@@ -4,6 +4,7 @@ import React, { useState, useId } from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { PixelIcon, type PixelIconName } from '@/components/ui/PixelIcon';
+import { Collapse } from '@/components/ui/surfaces/Collapse';
 
 interface PanelSectionProps {
   title: string;
@@ -80,7 +81,7 @@ export default function PanelSection({
             <span className="text-xs font-semibold text-[var(--text-heading)] tracking-normal">{title}</span>
             {description && <span id={descriptionId} className="text-[10px] font-normal leading-4 text-[var(--text-muted)]">{description}</span>}
           </span>
-          <span aria-hidden="true" className="text-[var(--text-muted)] text-[10px] w-[10px] inline-block shrink-0">{isOpen ? '▾' : '▸'}</span>
+          <span aria-hidden="true" data-open={isOpen || undefined} className="pb-disclosure-chevron text-[var(--text-muted)] text-[10px] w-[10px] inline-block shrink-0">▸</span>
         </button>
         </h3>
         
@@ -91,14 +92,9 @@ export default function PanelSection({
         )}
       </div>
       
-      <div 
-        id={contentId}
-        className={clsx(
-          !isOpen ? 'hidden' : 'p-2.5 animate-in fade-in duration-150'
-        )}
-      >
+      <Collapse open={isOpen} id={contentId} innerClassName="p-2.5">
         {children}
-      </div>
+      </Collapse>
     </section>
   );
 }

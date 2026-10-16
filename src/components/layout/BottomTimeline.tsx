@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { AnimatePresence, animate, motion, useMotionValue, type AnimationPlaybackControls } from 'motion/react';
+import { SpringSurface } from '@/components/ui/surfaces/SpringSurface';
 import { createPortal } from 'react-dom';
 import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
@@ -13,6 +15,19 @@ import { useCoDrawStatus } from '@/hooks/useCoDrawStatus';
 import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
 import { usePlaybackClock } from '@/hooks/studio/usePlaybackClock';
 import { OnionSkinSettings } from './OnionSkinSettings';
+import { useThrottledValue } from '@/hooks/useThrottledValue';
+import { usePreferencesStore } from '@/stores/preferencesStore';
+import { playbackKey } from '@/lib/input/keymap';
+import { ENTER_BLUR, FADE_IN, MORPH_H, REDUCED_FADE, UNBLUR, spring } from '@/lib/motion/springs';
+import { readReducedMotion, useReducedMotion } from '@/lib/motion/useReducedMotion';
+import { studioEvents } from '@/lib/events/studioEvents';
+
+const cardActionClass = 'absolute bottom-1 w-5 h-5 flex items-center justify-center rounded-[3px] border border-[var(--desk-border)] bg-[var(--desk-surface)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)] opacity-0 group-hover/frame:opacity-100 group-focus-within/frame:opacity-100 focus-visible:opacity-100 transition-opacity cursor-pointer';
+
+/** Total running time as animators read it: 0.6 s, 1.25 s, 12.5 s. */
+function formatSeconds(ms: number): string {
+  return `${Number((ms / 1000).toFixed(ms < 10000 ? 2 : 1))} s`;
+}
 
 interface FrameThumbnailProps {
   frameIndex: number;
@@ -39,7 +54,8 @@ export const FramePreviewCanvas: React.FC<{ frameIndex: number; maxSize: number;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasWidth = useStudioStore((state) => state.canvasWidth);
   const canvasHeight = useStudioStore((state) => state.canvasHeight);
-  const visualKey = useStudioStore((state) => frameVisualKey(state.frames[frameIndex]));
+  // Thumbnails catch up a few times a second during a stroke instead of re-compositing every frame.
+  const visualKey = useThrottledValue(useStudioStore((state) => frameVisualKey(state.frames[frameIndex])), 150);
   const currentProjectId = useStudioStore((state) => state.currentProjectId);
   const size = previewSize(canvasWidth, canvasHeight, maxSize);
   useEffect(() => {
@@ -90,7 +106,9 @@ export interface BottomTimelineProps {
   isPlaygroundMode?: boolean;
 }
 
-export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode = false }) => {
+export const BottomTimeline = React.memo(function BottomTimeline({ isPlaygroundMode = false }: BottomTimelineProps) {
+  // Standard keymap plays with Enter (Space pans); classic plays with Space.
+  const playKeyLabel = usePreferencesStore((s) => (playbackKey(s.keymap) === 'Enter' ? 'Enter' : 'Space'));
   const frames = useStudioStore((s) => s.frames);
   const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
   const currentProjectId = useStudioStore((s) => s.currentProjectId);
@@ -168,6 +186,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
   }, []);
 
   const toggleCollapsed = () => {
+    toggledRef.current = true;
     setIsCollapsed((prev) => {
       const next = !prev;
       if (typeof window !== 'undefined') {
@@ -177,7 +196,163 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
     });
   };
 
+  // ── Collapse / expand: the strip springs between its heights like the Dynamic island ──
+  // The footer keeps its class height (h-9 / h-32); while morphing it carries a pixel height on the
+  // island's bouncy height spring (460/25), never dipping below the compact strip. The incoming
+  // content is laid out at its final size (clipped, not squeezed) and blooms in from blur.
+  const reduceMotion = useReducedMotion();
+  const toggledRef = useRef(false);
+  const shellRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const restHeight = useRef<number | null>(null);
+  const shellHeight = useMotionValue(0);
+  const morph = useRef<AnimationPlaybackControls | null>(null);
+  useLayoutEffect(() => {
+    const shell = shellRef.current;
+    const content = contentRef.current;
+    if (!shell || !content) return;
+    const from = morph.current ? shellHeight.get() : restHeight.current;
+    morph.current?.stop();
+    shell.style.height = '';
+    shell.style.overflow = '';
+    shell.removeAttribute('data-morphing');
+    content.style.height = '';
+    const to = shell.offsetHeight;
+    restHeight.current = to;
+    if (from === null || Math.abs(from - to) < 0.5 || readReducedMotion()) { morph.current = null; return; }
+    const style = getComputedStyle(shell);
+    const box = to - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom) - parseFloat(style.borderTopWidth) - parseFloat(style.borderBottomWidth);
+    const floor = Math.min(from, to);
+    content.style.height = `${box}px`;
+    shell.style.overflow = 'clip';
+    shell.setAttribute('data-morphing', '');
+    shellHeight.jump(from);
+    shell.style.height = `${from}px`;
+    const write = shellHeight.on('change', value => { shell.style.height = `${Math.max(floor, value)}px`; });
+    const run = animate(shellHeight, to, spring(MORPH_H));
+    morph.current = run;
+    void run.then(() => {
+      if (morph.current !== run) return;
+      morph.current = null;
+      shell.style.height = '';
+      shell.style.overflow = '';
+      shell.removeAttribute('data-morphing');
+      content.style.height = '';
+    });
+    return () => write();
+  }, [isCollapsed, shellHeight]);
+  useEffect(() => () => morph.current?.stop(), []);
+  const bloomFrom = !toggledRef.current ? false
+    : reduceMotion ? { opacity: 0 } : { opacity: 0, filter: `blur(${ENTER_BLUR}px)` };
+  const bloomTo = reduceMotion
+    ? { opacity: 1, transition: REDUCED_FADE }
+    : { opacity: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' }, transition: { opacity: FADE_IN, filter: UNBLUR } };
+
   const activeClip = clips.find(c => c.id === activeClipId);
+  const totalMs = frames.reduce((sum, frame) => sum + (frame.durationMs ?? Math.round(1000 / fps)), 0);
+
+  // ── Frame actions: one set of helpers behind the toolbar, the cards, the menu and the keys ──
+  const reelRef = useRef<HTMLDivElement>(null);
+  const frameMenuRef = useRef<HTMLDivElement>(null);
+  const [frameMenu, setFrameMenu] = useState<{ index: number; x: number; y: number } | null>(null);
+  // Portals exist only on the client; the server and first client render match without it.
+  const [portalReady, setPortalReady] = useState(false);
+  useEffect(() => setPortalReady(true), []);
+
+  const focusFrame = (index: number) => {
+    // After React has re-rendered the reel (a move or delete changes which card is where).
+    setTimeout(() => {
+      reelRef.current?.querySelector<HTMLButtonElement>(`[data-frame-card="${index}"] > button`)?.focus();
+    }, 0);
+  };
+  const duplicateFrameAt = (index: number) => {
+    if (isGuest) return;
+    duplicateFrame(index);
+  };
+  const deleteFrameAt = (index: number) => {
+    if (isGuest || useStudioStore.getState().frames.length <= 1) return;
+    const before = useStudioStore.getState().frames.length;
+    deleteFrame(index);
+    if (useStudioStore.getState().frames.length < before) {
+      studioEvents.emit('pixibun:toast', {
+        message: `Frame ${index + 1} deleted.`,
+        action: { label: 'Undo', onClick: () => studioEvents.emit('pixibun:undo') },
+      });
+    }
+  };
+  const moveFrameBy = (index: number, delta: number) => {
+    const target = index + delta;
+    if (isGuest || isPlaying || target < 0 || target >= useStudioStore.getState().frames.length) return;
+    reorderFrames(index, target);
+  };
+
+  // Keys on a focused frame: arrows select, Alt+arrows move, Ctrl+D duplicates, Delete removes.
+  const handleFrameKeys = (e: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const count = frames.length;
+    let handled = true;
+    if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+      const target = index + (e.key === 'ArrowLeft' ? -1 : 1);
+      moveFrameBy(index, e.key === 'ArrowLeft' ? -1 : 1);
+      if (target >= 0 && target < count) focusFrame(target);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Home' || e.key === 'End') {
+      const target = e.key === 'Home' ? 0 : e.key === 'End' ? count - 1
+        : Math.max(0, Math.min(count - 1, index + (e.key === 'ArrowLeft' ? -1 : 1)));
+      setActiveFrame(target);
+      focusFrame(target);
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+      duplicateFrameAt(index);
+      focusFrame(index + 1);
+    } else if ((e.key === 'Delete' || e.key === 'Backspace') && !isPlaygroundMode) {
+      deleteFrameAt(index);
+      focusFrame(Math.max(0, index - 1));
+    } else if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      setActiveFrame(index);
+      setFrameMenu({ index, x: rect.left, y: rect.top });
+    } else {
+      handled = false;
+    }
+    if (handled) { e.preventDefault(); e.stopPropagation(); }
+  };
+
+  const handleMenuKeys = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const items = Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'));
+    const at = items.indexOf(document.activeElement as HTMLButtonElement);
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      items[(at + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length]?.focus();
+    } else if (e.key === 'Escape' || e.key === 'Tab') {
+      e.preventDefault();
+      e.stopPropagation();
+      const index = frameMenu?.index;
+      setFrameMenu(null);
+      if (index !== undefined) focusFrame(index);
+    }
+  };
+
+  useEffect(() => {
+    if (!frameMenu) return;
+    // The surface mounts through a portal and presence animation; focus it once it is in the page.
+    const focusTimer = setTimeout(() => frameMenuRef.current?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus(), 0);
+    const close = (event: PointerEvent) => {
+      if (!frameMenuRef.current?.contains(event.target as Node)) setFrameMenu(null);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      setFrameMenu(null);
+    };
+    const closeOnResize = () => setFrameMenu(null);
+    document.addEventListener('pointerdown', close, true);
+    document.addEventListener('keydown', closeOnEscape);
+    window.addEventListener('resize', closeOnResize);
+    return () => {
+      clearTimeout(focusTimer);
+      document.removeEventListener('pointerdown', close, true);
+      document.removeEventListener('keydown', closeOnEscape);
+      window.removeEventListener('resize', closeOnResize);
+    };
+  }, [frameMenu]);
 
   // Frame Drag-and-Drop Reordering Handlers
   const handleDragStart = (e: React.DragEvent, index: number) => {
@@ -246,12 +421,8 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
     setLoopMode(modes[nextIdx]);
   };
 
-  if (isCollapsed) {
-    return (
-      <footer
-        data-testid="bottom-timeline-collapsed"
-        className="h-9 bg-[var(--desk-surface)] border-t border-[var(--desk-border)] px-3 flex items-center justify-between select-none z-20 text-[var(--text-heading)] shadow-sm transition-colors duration-150 shrink-0"
-      >
+  const compactContent = (
+    <>
         {/* Left: Expand Timeline Button & Frame Status */}
         <div className="flex items-center gap-2">
           <button
@@ -276,6 +447,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
           <div className="flex items-center gap-1.5">
             <button
               onClick={handleStepBack}
+              aria-label="Previous frame"
               title="Previous Frame (,)"
               className="w-7 h-7 flex items-center justify-center rounded-[2px] border border-[var(--desk-border)] pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--accent-gold)] cursor-pointer"
             >
@@ -284,7 +456,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
 
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              title="Play / Pause Animation (Space)"
+              title={`Play / Pause Animation (${playKeyLabel})`}
               className={`h-7 min-w-[68px] px-2 text-[10px] font-bold rounded-[2px] border cursor-pointer flex items-center justify-center gap-1 ${
                 isPlaying
                   ? 'pixel-primary-btn shadow-[0_2px_0_#8c5120]'
@@ -297,6 +469,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
 
             <button
               onClick={handleStepForward}
+              aria-label="Next frame"
               title="Next Frame (.)"
               className="w-7 h-7 flex items-center justify-center rounded-[2px] border border-[var(--desk-border)] pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--accent-gold)] cursor-pointer"
             >
@@ -319,6 +492,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
             disabled={isGuest}
             onClick={() => {
               addFrame();
+              toggledRef.current = true;
               setIsCollapsed(false);
             }}
             title={isGuest ? guestFrameLockTitle : 'Add blank frame to start animating'}
@@ -338,12 +512,11 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
             <span>▲ Expand</span>
           </button>
         </div>
-      </footer>
-    );
-  }
+    </>
+  );
 
-  return (
-    <footer data-testid="bottom-timeline" className="h-32 bg-[var(--desk-surface)] border-t border-[var(--desk-border)] px-4 py-1.5 flex flex-col justify-between select-none z-20 text-[var(--text-heading)] shadow-sm transition-colors duration-150">
+  const fullContent = (
+    <>
       {/* Top Controls Bar: Play, FPS, Loop Mode, Onion Skin, Frame Actions */}
       <div className="h-9 min-h-9 shrink-0 flex items-center justify-between border-b border-[var(--desk-border)] pb-1.5">
         {/* Left: Unified Playback & Timing Instrument */}
@@ -354,7 +527,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
               size="sm"
               variant={isPlaying ? 'primary' : 'default'}
               onClick={() => setIsPlaying(!isPlaying)}
-              title="Play / Pause Animation (Space)"
+              title={`Play / Pause Animation (${playKeyLabel})`}
               data-tutorial="play-button"
               className={`h-7 min-w-[78px] px-2 text-xs flex items-center justify-center gap-1.5 font-medium ${
                 isPlaying
@@ -370,6 +543,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
               size="icon-sm"
               variant="default"
               onClick={handleStepBack}
+              aria-label="Previous frame"
               title="Previous Frame (,)"
               className="w-7 h-7 flex items-center justify-center pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--accent-gold)]"
             >
@@ -380,6 +554,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
               size="icon-sm"
               variant="default"
               onClick={handleStepForward}
+              aria-label="Next frame"
               title="Next Frame (.)"
               className="w-7 h-7 flex items-center justify-center pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--accent-gold)]"
             >
@@ -391,11 +566,12 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                 size="sm"
                 variant="default"
                 onClick={cycleLoopMode}
-                title={`Loop Mode: ${loopMode}`}
+                title={`Loop mode: ${loopMode === 'ping-pong' ? 'ping-pong' : loopMode}. Click to change.`}
+                aria-label={`Loop mode: ${loopMode === 'ping-pong' ? 'Ping-Pong' : loopMode === 'repeat' ? 'Repeat' : 'Once'}`}
                 className="h-7 px-2 text-xs font-sans font-medium pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] flex items-center justify-center gap-1"
               >
                 <PixelIcon name={loopMode === 'ping-pong' ? 'ping-pong' : 'loop'} size={11} />
-                <span>{loopMode === 'ping-pong' ? 'Ping-Pong' : loopMode === 'repeat' ? 'Repeat' : 'Once'}</span>
+                <span className="hidden xl:inline">{loopMode === 'ping-pong' ? 'Ping-Pong' : loopMode === 'repeat' ? 'Repeat' : 'Once'}</span>
               </TactileButton>
             )}
           </div>
@@ -414,18 +590,20 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                     <span className="font-mono text-[11px]">{previewSpeed}×</span>
                     <span aria-hidden="true" className="text-[var(--text-muted)]">▾</span>
                   </button>
-                  {isPreviewMenuOpen && (
-                    <div role="group" aria-label="Preview speeds"
-                      className="absolute bottom-full left-0 mb-1 z-[100] w-full bg-[var(--surface-2)] border border-[var(--desk-border-highlight)] rounded-[2px] p-1 shadow-lg">
-                      {[0.5, 1, 2].map((speed) => (
-                        <button key={speed} type="button" onClick={() => { setPreviewSpeed(speed); setIsPreviewMenuOpen(false); }}
-                          aria-label={`${speed}× preview speed`} aria-pressed={previewSpeed === speed}
-                          className={`block w-full px-2 py-1.5 text-left font-mono text-xs rounded-[2px] hover:bg-[var(--surface-3)] ${previewSpeed === speed ? 'text-[var(--accent-gold)] bg-[var(--surface-3)]' : 'text-[var(--text-heading)]'}`}>
-                          {speed}×
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  <AnimatePresence>
+                    {isPreviewMenuOpen && (
+                      <SpringSurface key="speeds" origin="bottom left" role="group" aria-label="Preview speeds"
+                        className="pb-panel absolute bottom-full left-0 mb-1.5 z-[100] w-full min-w-[120px] !p-1.5">
+                        {[0.5, 1, 2].map((speed) => (
+                          <button key={speed} type="button" onClick={() => { setPreviewSpeed(speed); setIsPreviewMenuOpen(false); }}
+                            aria-label={`${speed}× preview speed`} aria-pressed={previewSpeed === speed}
+                            className="pb-menu-item !min-h-9 !px-2.5 font-mono tabular-nums">
+                            {speed}×
+                          </button>
+                        ))}
+                      </SpringSurface>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Active Frame Duration Input */}
@@ -482,14 +660,20 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
           )}
         </div>
 
-        {/* Right: Frame Actions (Add, Duplicate, Delete, Collapse) */}
+        {/* Right: the selected frame's actions, always in view, then layout */}
         <div className="flex shrink-0 items-center gap-1.5">
+          <span className="hidden 2xl:inline text-[11px] text-[var(--text-muted)] whitespace-nowrap mr-0.5">
+            Frame <b className="font-mono text-[var(--text-heading)]">{activeFrameIndex + 1}</b>
+            <span className="font-mono"> / {frames.length}</span>
+            <span className="font-mono"> · {formatSeconds(totalMs)}</span>
+          </span>
+
           <TactileButton
             size="sm"
             variant="default"
             disabled={isGuest}
             onClick={addFrame}
-            title={isGuest ? guestFrameLockTitle : 'Add blank frame with the current layer names and settings (no artwork)'}
+            title={isGuest ? guestFrameLockTitle : 'Add a blank frame at the end, with the same layers but no artwork'}
             aria-label="+ Frame"
             data-testid="add-frame-button"
             data-tutorial="add-frame"
@@ -502,26 +686,54 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
           </TactileButton>
 
           {!isPlaygroundMode && (
-            <details className="relative group">
-              <summary className="h-7 shrink-0 whitespace-nowrap px-2 flex items-center gap-1 text-xs pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] cursor-pointer list-none rounded-[2px]">
-                Frame actions <span aria-hidden="true">▾</span>
-              </summary>
-              <div className="absolute right-0 bottom-full mb-1 z-40 min-w-40 p-1 bg-[var(--surface-2)] border border-[var(--desk-border-highlight)] rounded-[2px] shadow-lg">
-                {([
-                  ['Duplicate frame', () => duplicateFrame(activeFrameIndex), isGuest],
-                  ['Move frame earlier', () => reorderFrames(activeFrameIndex, activeFrameIndex - 1), isGuest || isPlaying || activeFrameIndex === 0],
-                  ['Move frame later', () => reorderFrames(activeFrameIndex, activeFrameIndex + 1), isGuest || isPlaying || activeFrameIndex >= frames.length - 1],
-                  ['Delete frame', () => deleteFrame(activeFrameIndex), isGuest || frames.length <= 1],
-                ] as const).map(([label, action, disabled]) => (
-                  <button key={label} type="button" disabled={disabled} onClick={(event) => {
-                    action();
-                    event.currentTarget.closest('details')?.removeAttribute('open');
-                  }} className="block w-full text-left px-2 py-1.5 text-xs text-[var(--text-body)] hover:bg-[var(--surface-3)] disabled:opacity-40 rounded-[2px]">
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </details>
+            <div role="group" aria-label={`Selected frame ${activeFrameIndex + 1}`} className="flex items-center gap-1">
+              <TactileButton
+                size="sm"
+                variant="default"
+                disabled={isGuest}
+                onClick={() => duplicateFrameAt(activeFrameIndex)}
+                aria-label="Duplicate frame"
+                title={isGuest ? guestFrameLockTitle : 'Duplicate the selected frame, artwork included (Ctrl+D on a frame)'}
+                className="h-7 px-2 text-xs pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] flex items-center gap-1 font-medium"
+              >
+                <PixelIcon name="copy" size={12} />
+                <span className="hidden 2xl:inline">Duplicate</span>
+              </TactileButton>
+              <TactileButton
+                size="sm"
+                variant="default"
+                disabled={isGuest || frames.length <= 1}
+                onClick={() => deleteFrameAt(activeFrameIndex)}
+                aria-label="Delete frame"
+                title={isGuest ? guestFrameLockTitle : frames.length <= 1 ? 'An animation keeps at least one frame' : 'Delete the selected frame (Delete on a frame). Undo brings it back.'}
+                className="h-7 px-2 text-xs pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--state-danger,#f08a9a)] flex items-center gap-1 font-medium"
+              >
+                <PixelIcon name="trash" size={12} />
+                <span className="hidden 2xl:inline">Delete</span>
+              </TactileButton>
+              <TactileButton
+                size="icon-sm"
+                variant="default"
+                disabled={isGuest || isPlaying || activeFrameIndex === 0}
+                onClick={() => moveFrameBy(activeFrameIndex, -1)}
+                aria-label="Move frame earlier"
+                title="Move the selected frame one step earlier (Alt+←)"
+                className="w-7 h-7 flex items-center justify-center pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--accent-gold)]"
+              >
+                <span aria-hidden="true" className="text-[14px] leading-none">‹</span>
+              </TactileButton>
+              <TactileButton
+                size="icon-sm"
+                variant="default"
+                disabled={isGuest || isPlaying || activeFrameIndex >= frames.length - 1}
+                onClick={() => moveFrameBy(activeFrameIndex, 1)}
+                aria-label="Move frame later"
+                title="Move the selected frame one step later (Alt+→)"
+                className="w-7 h-7 flex items-center justify-center pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--accent-gold)]"
+              >
+                <span aria-hidden="true" className="text-[14px] leading-none">›</span>
+              </TactileButton>
+            </div>
           )}
 
           <div className="h-4 w-px bg-[var(--desk-border)] mx-0.5" />
@@ -580,8 +792,8 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
           </div>
         )}
 
-        {/* Frame Thumbnail Reel (with Click & Drag Reordering) */}
-        <div className="flex items-center gap-2 min-w-0 flex-1 overflow-x-auto py-0.5">
+        {/* Frame reel: click to select, drag to reorder, hover for quick actions, right-click for more */}
+        <div ref={reelRef} role="list" aria-label="Frames" className="flex items-center gap-2 min-w-0 flex-1 overflow-x-auto py-0.5">
           {frames.map((frame, index) => {
             const isActive = index === activeFrameIndex;
             const isInsideClip = activeClip ? (index >= activeClip.startFrame && index <= activeClip.endFrame) : true;
@@ -590,46 +802,102 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
 
             const baseTime = Math.round(1000 / fps);
             const duration = frame.durationMs ?? baseTime;
+            const showActions = !isPlaygroundMode && !isGuest && !isPlaying;
 
             return (
-              <button
-                type="button"
+              <div
                 key={frame.id}
-                draggable={!isPlaying && !isGuest}
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={(e) => handleDragOver(e, index)}
-                onDragLeave={(e) => handleDragLeave(e, index)}
-                onDrop={(e) => handleDrop(e, index)}
-                onDragEnd={handleDragEnd}
+                role="listitem"
+                data-frame-card={index}
+                className="group/frame relative shrink-0"
                 onMouseEnter={(event) => {
                   const rect = event.currentTarget.getBoundingClientRect();
                   setHoverPreviewAnchor({ x: rect.left + rect.width / 2, y: rect.top });
                   setHoveredFrameIndex(index);
                 }}
                 onMouseLeave={() => setHoveredFrameIndex((cur) => (cur === index ? null : cur))}
-                onClick={() => setActiveFrame(index)}
-                aria-label={`Select frame ${index + 1}. #${index + 1} ${duration}ms. Drag to reorder.`}
-                title={
-                  isGuest
-                    ? `Frame #${index + 1} (${duration}ms) - ${guestFrameLockTitle}`
-                    : `Frame #${index + 1} (${duration}ms) - Drag to reorder`
-                }
-                className={`relative w-[72px] h-16 shrink-0 rounded-[2px] border-2 ${
-                  isGuest ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'
-                } ${isPlaying ? 'transition-none' : 'transition-all'} flex flex-col items-center justify-between px-1.5 py-1 select-none text-left ${
-                  isBeingDragged
-                    ? 'opacity-30 scale-95 border-dashed border-[var(--accent-gold)] bg-[#1a0f2e]'
-                    : isDropTarget
-                    ? 'border-[var(--accent-gold)] bg-[#3d2757] ring-2 ring-[var(--accent-gold)] shadow-[0_0_12px_rgba(240,190,124,0.6)] scale-105'
-                    : isActive
-                    ? `bg-[var(--timeline-frame-active-bg)] border-[var(--timeline-frame-active-border)] ${isPlaying ? 'shadow-none' : 'shadow-[var(--timeline-frame-active-shadow,none)]'}`
-                    : isInsideClip
-                    ? 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] hover:bg-[var(--timeline-frame-hover-bg)] hover:border-[var(--timeline-frame-hover-border)]'
-                    : 'bg-[var(--desk-surface-raised)] border-[#2c1e3a] opacity-50 hover:opacity-80'
-                }`}
+                onContextMenu={isPlaygroundMode ? undefined : (event) => {
+                  event.preventDefault();
+                  setActiveFrame(index);
+                  setHoveredFrameIndex(null);
+                  setFrameMenu({ index, x: event.clientX, y: event.clientY });
+                }}
               >
+                <button
+                  type="button"
+                  draggable={!isPlaying && !isGuest}
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragLeave={(e) => handleDragLeave(e, index)}
+                  onDrop={(e) => handleDrop(e, index)}
+                  onDragEnd={handleDragEnd}
+                  onClick={() => setActiveFrame(index)}
+                  onKeyDown={(e) => handleFrameKeys(e, index)}
+                  aria-label={`Select frame ${index + 1}. #${index + 1} ${duration}ms. Drag to reorder.`}
+                  aria-current={isActive ? 'true' : undefined}
+                  aria-keyshortcuts="Delete Control+D Alt+ArrowLeft Alt+ArrowRight"
+                  title={
+                    isGuest
+                      ? `Frame #${index + 1} (${duration}ms) - ${guestFrameLockTitle}`
+                      : `Frame #${index + 1} (${duration}ms) · drag to reorder · right-click for frame actions`
+                  }
+                  className={`relative w-[76px] h-16 shrink-0 rounded-[2px] border-2 ${
+                    isGuest ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'
+                  } ${isPlaying ? 'transition-none' : 'transition-all'} flex flex-col items-center justify-between px-1.5 py-1 select-none text-left ${
+                    isBeingDragged
+                      ? 'opacity-30 scale-95 border-dashed border-[var(--accent-gold)] bg-[var(--surface-0)]'
+                      : isDropTarget
+                      ? 'border-[var(--accent-gold)] bg-[var(--surface-3)] ring-2 ring-[var(--accent-gold)] scale-105'
+                      : isActive
+                      ? `bg-[var(--timeline-frame-active-bg)] border-[var(--timeline-frame-active-border)] ${isPlaying ? 'shadow-none' : 'shadow-[var(--timeline-frame-active-shadow,none)]'}`
+                      : isInsideClip
+                      ? 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] hover:bg-[var(--timeline-frame-hover-bg)] hover:border-[var(--timeline-frame-hover-border)]'
+                      : 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] opacity-50 hover:opacity-80'
+                  }`}
+                >
+                  <div className="w-full flex justify-between items-center text-[10px] font-mono leading-none pointer-events-none">
+                    <span className={isActive ? 'text-[var(--accent-gold)] font-bold' : 'text-[var(--text-heading)] font-bold'}>
+                      #{index + 1}
+                    </span>{' '}
+                    <span className={isActive ? 'text-[var(--accent-gold)] font-medium' : 'text-[var(--text-body)] font-medium'}>
+                      {duration}ms
+                    </span>
+                  </div>
+
+                  {/* Frame Canvas Pixel Thumbnail */}
+                  <div className="pointer-events-none">
+                    <FrameThumbnail frameIndex={index} isActive={isActive} />
+                  </div>
+                </button>
+
+                {/* Quick actions flank the thumbnail: always on the selected frame, on hover or focus elsewhere */}
+                {showActions && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => duplicateFrameAt(index)}
+                      aria-label={`Duplicate frame ${index + 1}`}
+                      title="Duplicate this frame (Ctrl+D)"
+                      className={`${cardActionClass} left-1.5 ${isActive ? 'opacity-100' : ''}`}
+                    >
+                      <PixelIcon name="copy" size={11} />
+                    </button>
+                    {frames.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => deleteFrameAt(index)}
+                        aria-label={`Delete frame ${index + 1}`}
+                        title="Delete this frame (Delete). Undo brings it back."
+                        className={`${cardActionClass} right-1.5 hover:!text-[var(--state-danger,#f08a9a)] hover:!border-[var(--state-danger,#f08a9a)] ${isActive ? 'opacity-100' : ''}`}
+                      >
+                        <PixelIcon name="trash" size={11} />
+                      </button>
+                    )}
+                  </>
+                )}
+
                 {/* Scrubbing Enlarged Popup Preview */}
-                {hoveredFrameIndex === index && hoverPreviewAnchor && !isBeingDragged && createPortal(
+                {hoveredFrameIndex === index && hoverPreviewAnchor && !isBeingDragged && frameMenu === null && createPortal(
                   <FrameScrubPreview
                     frameIndex={index}
                     duration={duration}
@@ -637,23 +905,25 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                     anchor={hoverPreviewAnchor}
                   />, document.body
                 )}
-
-                <div className="w-full flex justify-between items-center text-[9px] font-mono leading-none pointer-events-none">
-                  <span className={isActive ? 'text-[var(--accent-gold)] font-bold' : 'text-[var(--text-heading)] font-bold'}>
-                    #{index + 1}
-                  </span>{' '}
-                  <span className={isActive ? 'text-[var(--accent-gold)] font-medium' : 'text-[var(--text-body)] font-medium'}>
-                    {duration}ms
-                  </span>
-                </div>
-
-                {/* Frame Canvas Pixel Thumbnail */}
-                <div className="pointer-events-none">
-                  <FrameThumbnail frameIndex={index} isActive={isActive} />
-                </div>
-              </button>
+              </div>
             );
           })}
+
+          {/* The reel ends in a slot for the next frame, so adding one is where the eye already is */}
+          {!isPlaygroundMode && (
+            <button
+              type="button"
+              disabled={isGuest}
+              onClick={addFrame}
+              // The visible word leads the name, so voice control users can say what they see.
+              aria-label={`${frames.length === 1 ? 'Animate' : 'New frame'}: add a blank frame at the end`}
+              title={isGuest ? guestFrameLockTitle : 'Add a blank frame at the end'}
+              className="w-[76px] h-16 shrink-0 rounded-[2px] border-2 border-dashed border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--accent-gold)] hover:border-[var(--accent-gold)] flex flex-col items-center justify-center gap-1 text-[10px] font-medium cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <PixelIcon name="plus" size={12} />
+              <span>{frames.length === 1 ? 'Animate' : 'New frame'}</span>
+            </button>
+          )}
         </div>
         {!isPlaygroundMode && (
           <button type="button" data-testid="manage-tags-button" onClick={() => setIsTagManagerOpen(true)}
@@ -664,12 +934,68 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
         )}
       </div>
 
+      {/* Right-click menu on a frame */}
+      {portalReady && createPortal(
+        <AnimatePresence>
+          {frameMenu && (
+            <SpringSurface
+              key="frame-menu"
+              ref={frameMenuRef}
+              role="menu"
+              aria-label={`Frame ${frameMenu.index + 1} actions`}
+              origin="bottom left"
+              onKeyDown={handleMenuKeys}
+              className="pb-panel fixed z-[200] min-w-[208px] !p-1.5"
+              style={{ left: Math.min(frameMenu.x, window.innerWidth - 220), bottom: Math.max(8, window.innerHeight - frameMenu.y + 4) }}
+            >
+              <div className="px-2 pt-1 pb-1.5 text-[11px] font-semibold text-[var(--text-muted)]">Frame {frameMenu.index + 1}</div>
+              {([
+                ['Duplicate', 'Ctrl+D', () => duplicateFrameAt(frameMenu.index), isGuest],
+                ['Move earlier', 'Alt+←', () => moveFrameBy(frameMenu.index, -1), isGuest || isPlaying || frameMenu.index === 0],
+                ['Move later', 'Alt+→', () => moveFrameBy(frameMenu.index, 1), isGuest || isPlaying || frameMenu.index >= frames.length - 1],
+                ['Delete', 'Del', () => deleteFrameAt(frameMenu.index), isGuest || frames.length <= 1],
+              ] as const).map(([label, keys, action, disabled]) => (
+                <button key={label} type="button" role="menuitem" disabled={disabled}
+                  onClick={() => { setFrameMenu(null); action(); }}
+                  className={`pb-menu-item !min-h-9 disabled:opacity-40 disabled:cursor-not-allowed ${label === 'Delete' ? 'hover:!text-[var(--state-danger,#f08a9a)]' : ''}`}>
+                  <span className="flex-1">{label}</span>
+                  <kbd className="font-mono text-[10px] text-[var(--text-muted)]">{keys}</kbd>
+                </button>
+              ))}
+            </SpringSurface>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
       {/* Tag Manager Modal */}
-      {isOnionSettingsOpen && <OnionSkinSettings onClose={() => setIsOnionSettingsOpen(false)} />}
+      <AnimatePresence>{isOnionSettingsOpen && <OnionSkinSettings key="OnionSkinSettings" onClose={() => setIsOnionSettingsOpen(false)} />}</AnimatePresence>
       <TagManagerModal
         isOpen={isTagManagerOpen}
         onClose={() => setIsTagManagerOpen(false)}
       />
+    </>
+  );
+
+  return (
+    <footer
+      ref={shellRef}
+      data-testid={isCollapsed ? 'bottom-timeline-collapsed' : 'bottom-timeline'}
+      data-timeline={isCollapsed ? 'compact' : 'full'}
+      className={isCollapsed
+        ? 'h-9 bg-[var(--desk-surface)] border-t border-[var(--desk-border)] px-3 select-none z-20 text-[var(--text-heading)] shadow-sm transition-colors duration-150 shrink-0'
+        : 'h-32 bg-[var(--desk-surface)] border-t border-[var(--desk-border)] px-4 py-1.5 select-none z-20 text-[var(--text-heading)] shadow-sm transition-colors duration-150'}
+    >
+      <div ref={contentRef} className="h-full">
+        <motion.div
+          key={isCollapsed ? 'compact' : 'full'}
+          initial={bloomFrom}
+          animate={bloomTo}
+          className={isCollapsed ? 'h-full flex items-center justify-between' : 'h-full flex flex-col justify-between'}
+        >
+          {isCollapsed ? compactContent : fullContent}
+        </motion.div>
+      </div>
     </footer>
   );
-};
+});

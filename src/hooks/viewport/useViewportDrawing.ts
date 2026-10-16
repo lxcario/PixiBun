@@ -98,7 +98,10 @@ export function useViewportDrawing({
       if (retainHistory) rememberViewportHistory(useStudioStore.getState().currentProjectId, engine);
       if (getGlobalHistoryEngine() === engine) setGlobalHistoryEngine(null);
       if (rafBufferBumpRef.current !== null) {
+        // Publish the last painted frame rather than dropping its dirty mark.
         cancelAnimationFrame(rafBufferBumpRef.current);
+        rafBufferBumpRef.current = null;
+        useStudioStore.getState().commitBufferEdit();
       }
     };
   }, [retainHistory, setCanUndo, setCanRedo]);
@@ -652,14 +655,15 @@ export function useViewportDrawing({
       }
 
       touchBuffer(targetLayerId);
-      useStudioStore.getState().setDirty(true);
+      // The first stamp shows "Unsaved" at once; after that the stroke publishes
+      // one store update per frame instead of one per pointer move.
+      if (!useStudioStore.getState().isDirty) useStudioStore.getState().setDirty(true);
       if (refresh) renderComposite();
 
-      // Throttle bumpBufferVersion via requestAnimationFrame
       if (rafBufferBumpRef.current === null) {
         rafBufferBumpRef.current = requestAnimationFrame(() => {
           rafBufferBumpRef.current = null;
-          useStudioStore.getState().bumpBufferVersion();
+          useStudioStore.getState().commitBufferEdit();
         });
       }
     },

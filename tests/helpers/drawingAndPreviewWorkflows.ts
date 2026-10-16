@@ -88,7 +88,7 @@ export async function verifyFloatingPreview(page: Page, capture?: (name: string)
   const previewPixels = () => preview.evaluate((c: HTMLCanvasElement) => Array.from(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data));
   await expect.poll(previewPixels).toEqual(original);
   // Move the preview over the artwork: its controls must not start a drawing.
-  const title = window.getByText('Live Preview (2x)', { exact: true });
+  const title = window.getByText('Live Preview', { exact: true });
   const titleBox = (await title.boundingBox())!;
   await page.mouse.move(titleBox.x + 20, titleBox.y + 5); await page.mouse.down();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 5 }); await page.mouse.up();

@@ -41,6 +41,14 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = (set, get) =
     });
   },
 
+  commitBufferEdit: () => {
+    set(state => {
+      state.bufferVersion += 1;
+      state.isDirty = true;
+      state.editRevision += 1;
+    });
+  },
+
   saveStatus: 'idle',
   setSaveStatus: status => {
     set(state => {

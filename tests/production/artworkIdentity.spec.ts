@@ -29,7 +29,6 @@ async function importFixture(page: Page) {
   return project;
 }
 async function frameAction(page: Page, name: string) {
-  await page.locator('summary').filter({ hasText: 'Frame actions' }).click();
   await page.getByRole('button', { name, exact: true }).click();
 }
 async function backup(page: Page): Promise<ProjectFile> {

@@ -209,6 +209,8 @@ export interface HistorySlice {
 
   bufferVersion: number;
   bumpBufferVersion: () => void;
+  /** One store update for a frame of painting: buffer version, dirty flag and edit revision together. */
+  commitBufferEdit: () => void;
 
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
   setSaveStatus: (status: 'idle' | 'saving' | 'saved' | 'error') => void;

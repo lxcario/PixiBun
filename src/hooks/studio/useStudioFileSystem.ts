@@ -16,7 +16,7 @@ export function useStudioFileSystem() {
     if (saveToastTimerRef.current !== null) {
       window.clearTimeout(saveToastTimerRef.current);
     }
-    setSaveToast(`✦ Saved "${projectName || 'project'}" to browser storage`);
+    setSaveToast(`Saved "${projectName || 'project'}" to browser storage`);
     saveToastTimerRef.current = window.setTimeout(() => {
       setSaveToast(null);
       saveToastTimerRef.current = null;
