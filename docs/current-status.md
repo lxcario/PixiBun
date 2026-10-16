@@ -1,5 +1,9 @@
 # Current project status
 
+## Studio follow-up and pan/stroke performance — 16 October 2026
+
+The [Studio follow-up record](releases/2026-10-16-studio-follow-up.md) covers the work on branch `testsprite-s4` after the surfaces merge: hand-pixeled tool icons, the Colors flyout, timeline frame actions, the rebuilt Live Preview, one elastic press for every control, and the merged imperative pan, cached canvas bounds and stroke layer cache. A first production-build check in Chromium found four failures in the adjusted specs: the timeline toolbar overflowed at 1280 px, the New frame slot's accessible name omitted its visible text, and a touch-target test measured the flyout mid-bloom. The first two were product fixes, the third a test timing fix; After the fixes, an isolated worktree passed types, lint, 2,615 unit tests, a production build and all 18 cases of those specs in Chromium; Firefox, WebKit and the Node 22 performance stage were not run. The record keeps the original verdicts. Production (`main`) was still at `1a4b96b7` when the record was written.
+
 ## Studio surfaces — 16 October 2026
 
 The [studio surfaces record](releases/2026-10-16-studio-surfaces.md) gives every modal, popover, menu, select, disclosure and toast the Dynamic island's spring motion and one rounded, grouped look, as the default for all themes. It explains why this is not a Lab and lists the tests added or adjusted. Checks ran in the development server on Windows with Chromium: types and lint passed; 2,573 Vitest tests passed; the selected Playwright specs passed apart from one spec whose expectations predate the branch. Firefox, WebKit, a production build and the Node 22 performance stage were not run.

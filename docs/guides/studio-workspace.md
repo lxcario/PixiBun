@@ -101,7 +101,7 @@ Merge Down accepts visible Normal-blend contributions with their opacity and ref
 
 ![Actual primary-color picker with numeric controls; no color change committed.](../assets/screenshots/2026-10-15-current-ui/color-picker.png)
 
-Click a color well at the lower left for quick swatches; double-click for the picker. Set a color with the hue ring and triangle (or square), HSV sliders or hex field, then confirm. **View → Arrange... → Color picker** pins the picker in the inspector for immediate drawing-color changes. The Palette tab also offers **Pin color panel** and **Unpin color panel**. The quick flyout includes palette and recent colors. **X** swaps primary and secondary; the reset control restores black and white. [Browse palette previews](artist-workspace.md#compare-palettes-before-choosing), or follow the [palette authoring guide](palettes-and-cycling.md) for ramps, roles and cycling.
+Click a color well at the lower left for quick swatches; double-click for the picker. Set a color with the hue ring and triangle (or square), HSV sliders or hex field, then confirm. **View → Arrange... → Color picker** pins the picker in the inspector for immediate drawing-color changes. The Palette tab also offers **Pin color panel** and **Unpin color panel**. The **Colors** flyout includes an editable hex field, an eyedropper, hue-shifted shades, the palette and recent colors; Shift+click or right-click a swatch to set the other color ([details](artist-workspace.md#keep-colors-and-settings-close)). **X** swaps primary and secondary; the reset control restores black and white. [Browse palette previews](artist-workspace.md#compare-palettes-before-choosing), or follow the [palette authoring guide](palettes-and-cycling.md) for ramps, roles and cycling.
 
 ## Selections and transforms
 
@@ -142,9 +142,9 @@ For an exact selected tile's repeating preview and download, use [Patterns & Til
 
 Choose **View → Live preview** to open one floating **Live Preview** window. You can also search for Picture-in-Picture in **Ctrl/Cmd+K**.
 
-1. Drag the title bar to place it where it helps you. Drag the small bottom-right handle to resize its viewing area.
-2. Choose **1x / 2x / 4x** and a backdrop to check the artwork at another size or against another surface. These controls leave your drawing unchanged.
-3. Use **Minimize**, then **Expand** when you need it again; the current artwork is redrawn after expansion. Play/Pause shares the Studio timeline.
+1. It opens in the top-right corner of the canvas area. Drag the title bar to place it where it helps you; it stays inside the canvas area, and settles against an edge when you let go within 20 px of it. Drag the small bottom-right handle to resize its viewing area.
+2. Choose **1x / 2x / 4x** and a backdrop to check the artwork at another size or against another surface. A scale larger than the window is shown fitted until you enlarge the window. These controls leave your drawing unchanged.
+3. Use **Minimize** to fold it to its title bar, then **Expand** when you need it again; the current artwork is redrawn after expansion. Play/Pause shares the Studio timeline, and the readout shows the frame and frames per second. While you paint, the preview refreshes at most about eight times a second.
 4. Close it with **×**, or toggle Live PiP off in View. Reopening gives you the same single preview. It follows artwork changes and Undo/Redo; it does not create a second project.
 
 The [new capture record](../assets/screenshots/2026-10-15-current-ui/run.json) shows the corrected single-window controls. The earlier duplicate-window screenshot remains historical evidence.
