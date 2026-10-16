@@ -1,0 +1,97 @@
+name: Preview Deploy
+
+# Fallback per-PR preview for the TestSprite PR trigger, used only when the
+# Vercel Git integration is not posting preview deployments. Enable it with the
+# repository variable PREVIEW_DEPLOY=vercel-cli. The stable alias
+# https://pixibun-pr-<number>.vercel.app is the TestSprite target URL pattern
+# https://pixibun-pr-{pr}.vercel.app, and this workflow's completion is the
+# "deployment finished" event the trigger listens for.
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    name: Deploy preview
+    # Fork PRs never receive secrets; keep previews to branches in this repository.
+    if: >-
+      ${{ vars.PREVIEW_DEPLOY == 'vercel-cli' &&
+          github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      PREVIEW_ALIAS: pixibun-pr-${{ github.event.pull_request.number }}.vercel.app
+    steps:
+      - name: Checkout pull request head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@50.34.0
+
+      - name: Pull Vercel preview settings
+        run: vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
+
+      - name: Build preview
+        run: vercel build --token="$VERCEL_TOKEN"
+        env:
+          VERCEL_GIT_COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+
+      - name: Deploy and alias preview
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt --token="$VERCEL_TOKEN")
+          vercel alias set "$url" "$PREVIEW_ALIAS" --token="$VERCEL_TOKEN"
+          echo "url=https://$PREVIEW_ALIAS" >> "$GITHUB_OUTPUT"
+
+      - name: Wait until the preview answers
+        run: |
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "${{ steps.deploy.outputs.url }}/studio")
+            [ "$code" = "200" ] && exit 0
+            sleep 5
+          done
+          echo "::error::Preview ${{ steps.deploy.outputs.url }} did not return 200 (last: $code). Is Vercel Deployment Protection on for previews?"
+          exit 1
+
+      - name: Record GitHub deployment
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const { data: deployment } = await github.rest.repos.createDeployment({
+              ...context.repo,
+              ref: pr.head.sha,
+              environment: `preview-pr-${pr.number}`,
+              transient_environment: true,
+              auto_merge: false,
+              required_contexts: [],
+            });
+            await github.rest.repos.createDeploymentStatus({
+              ...context.repo,
+              deployment_id: deployment.id,
+              state: 'success',
+              environment_url: process.env.PREVIEW_URL,
+            });
