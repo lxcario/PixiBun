@@ -8,7 +8,7 @@ This is the current web app's feature index, reconciled with main through `e9b5e
 
 ## Optional Studio Labs
 
-The six scene themes support five experiments under **Studio → Labs**. They default on for ordinary browser sessions; **Classic studio** switches them all off. Graphite and Plum always retain classic controls. Automated runs default off unless explicitly opted in.
+The ten scene themes support five experiments under **Studio → Labs**. They default on for ordinary browser sessions; **Classic studio** switches them all off. Graphite and Plum always retain classic controls. Automated runs default off unless explicitly opted in.
 
 | Experiment | Current behavior | Guide |
 | --- | --- | --- |

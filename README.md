@@ -10,7 +10,7 @@ Current engineering verification and remaining release checks are recorded in th
 
 Make a small character, a flickering flame, or the first tile of a world. PixiBun gives you a place to draw, light it with the Lamp and bring those little things to life, right in your browser. Hand-made, never generated: PixiBun contains no generative AI ([pledge page source](src/app/pledge/page.tsx), served at `/pledge`). No account needed.
 
-Plum shadows, wisteria accents, amber buttons and a few live pixel glints make Plum feel like a desk with the lamp still on. [See all eight themes in Night and Day](docs/guides/themes.md).
+Plum shadows, wisteria accents, amber buttons and a few live pixel glints make Plum feel like a desk with the lamp still on. [See every theme in Night and Day](docs/guides/themes.md).
 
 ![Plum Night Studio with the same original three-frame built-in artwork.](docs/assets/screenshots/2026-10-15-current-ui/studio-cozy-classic-dark.png)
 
@@ -18,7 +18,7 @@ Plum shadows, wisteria accents, amber buttons and a few live pixel glints make P
 
 [Illustrated artist handbook](docs/guides/README.md) · [Every feature](docs/features.md) · [Your first few pixels](#your-first-few-pixels) · [Keep your work safe](#keep-your-work-safe) · [Run locally](#run-locally) · [Explore the docs](docs/README.md)
 
-**Make the desk your own.** The six scene themes include optional [Studio Labs](docs/guides/studio-workspace.md#studio-labs): a morphing tool island, liquid inspector tabs, liquid sliders and tool rail, a paint-pot palette and quick effects. Open **Studio → Labs** to switch experiments off individually or choose **Classic studio**. Graphite and Plum always use the classic interface.
+**Make the desk your own.** The ten scene themes include optional [Studio Labs](docs/guides/studio-workspace.md#studio-labs): a morphing tool island, liquid inspector tabs, liquid sliders and tool rail, a paint-pot palette and quick effects. Open **Studio → Labs** to switch experiments off individually or choose **Classic studio**. Graphite and Plum always use the classic interface.
 
 ## Small canvas, plenty of room to play
 
@@ -40,7 +40,7 @@ Palette cycling changes colors in the active frame. Draw changing poses in the t
 
 ## Pick the desk that feels right
 
-PixiBun has eight looks, each with a Night and a Day. Moonlit, Sakura, Tidepool, Ember, Moss and Arcade float the studio over their own animated pixel scene: a sleepy town, paper lanterns and petals, a glowing reef, rooftop sparks, fireflies, a neon grid. Graphite and Plum (the original PixiBun purple, shown below) stay flat and quiet. Your first visit to the Studio helps you pick one; open **Studio** to change it any time.
+PixiBun has twelve looks, each with a Night and a Day. Moonlit, Sakura, Tidepool, Ember, Moss, Arcade, Cocoa, Drizzle, Harvest and Harbor float the studio over their own animated pixel scene: a sleepy town, a night blossom festival under Mt. Fuji, a glowing reef, rooftop sparks, fireflies, a neon grid, snowed-in cabins under the northern lights, a rainy café street, harvest fields and a lighthouse bay. Graphite and Plum (the original PixiBun purple, shown below) stay flat and quiet. Your first visit to the Studio helps you pick one; open **Studio** to change it any time.
 
 ![Plum Day Studio with the same original three-frame built-in artwork.](docs/assets/screenshots/2026-10-15-current-ui/studio-cozy-classic-light.png)
 
@@ -103,7 +103,7 @@ For agent developers, **Nibbli** is a repository companion that uses the real St
 | Run agent-driven drawing, editing or verification | [Nibbli](docs/guides/nibbli.md), [agent contract](docs/guides/nibbli-agent.md) and [milestones](docs/plans/nibbli.md) |
 | Explore ideas for the future | [v2 vision](V2_VISION.md), a proposal for future work |
 
-These screenshots show the local production build on **15 October 2026**, using PixiBun's own artwork. Compare [all eight Studio themes in Day and Night](docs/guides/themes.md). [About this version](docs/current-status.md) explains the scoped checks; [capture details](docs/assets/screenshots/2026-10-15-current-ui/run.json) record the build and images.
+These screenshots show the local production build on **15 October 2026**, using PixiBun's own artwork. Compare [the Studio themes in Day and Night](docs/guides/themes.md); those pictures predate the four themes added on 16 October. [About this version](docs/current-status.md) explains the scoped checks; [capture details](docs/assets/screenshots/2026-10-15-current-ui/run.json) record the build and images.
 
 PixiBun is licensed under the [MIT License](LICENSE).
 
