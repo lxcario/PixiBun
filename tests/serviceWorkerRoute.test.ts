@@ -142,7 +142,8 @@ describe('Service Worker Route Handler (sw.js/route.ts)', () => {
     const response = await GET();
     const script = await response.text();
 
-    expect(script).toContain("!PRECACHE_ASSETS.includes(pathname)");
+    expect(script).toContain("new Set([PRECACHE_MANIFEST, ...PRECACHE_ASSETS])");
+    expect(script).toContain("!protectedPaths.has(new URL(req.url).pathname)");
     expect(script).toContain("'/studio'");
     expect(script).toContain("'/manifest.webmanifest'");
     expect(script).toContain("'/offline.html'");

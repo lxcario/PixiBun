@@ -504,7 +504,9 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
     try {
       const parsed: unknown = JSON.parse(window.localStorage.getItem('pixibun_recent_colors') || '[]');
       if (!Array.isArray(parsed)) return;
-      const valid = parsed.filter((c): c is string => typeof c === 'string');
+      // Stored values are untrusted: keep at most eight distinct #RRGGBB colors.
+      const valid = [...new Set(parsed.filter((c): c is string => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c))
+        .map(c => c.toUpperCase()))].slice(0, 8);
       set(state => {
         state.recentColors = valid;
       });

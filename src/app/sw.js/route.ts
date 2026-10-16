@@ -40,6 +40,9 @@ const BUILD_ASSET_LIST = '/precache-manifest.json';
 const MAX_SHELL_DEPENDENCIES = 512;
 let warmQueue = Promise.resolve();
 const CACHE_ACCESS_TIMEOUT_MS = 250;
+// A connection that is up but not answering must not hold the page forever when
+// this exact page is cached. Without a cached copy the network is awaited.
+const NAVIGATION_TIMEOUT_MS = 4000;
 
 // Optional storage cannot hold an online response or an event lifetime forever.
 // Call the operation immediately: never reopen a retired bucket after a timeout.
@@ -66,6 +69,28 @@ function readOwnedCache(cache, request) {
   return optionalCacheAccess(async () => (cache && await cache.match(request)) || await caches.match(request));
 }
 
+// Buckets of older builds stay while several windows are open at activation, so
+// an old page keeps its chunks. Remove them once at most one window remains.
+// Only the active worker with no newer worker waiting or installing may sweep:
+// an older worker would otherwise delete the newer build's bucket.
+function sweepRetiredBuckets() {
+  const registration = self.registration;
+  if (!registration || !registration.active || registration.waiting || registration.installing
+    || !self.serviceWorker || registration.active !== self.serviceWorker) return Promise.resolve();
+  if (!self.clients || typeof self.clients.matchAll !== 'function') return Promise.resolve();
+  return Promise.all([caches.keys(), self.clients.matchAll({ type: 'window', includeUncontrolled: true })])
+    .then(([keys, clients]) => clients.length > 1 ? undefined : Promise.all(
+      keys.filter((key) => key.startsWith('pixibun-') && key !== CACHE_NAME).map((key) => caches.delete(key))))
+    .catch(() => {});
+}
+
+// Next.js flight data for client navigation. It belongs to one build and one
+// router state, so it is never cached: offline, the router falls back to a full
+// navigation, which the cached shell answers.
+function isFlightRequest(request, url) {
+  return url.searchParams.has('_rsc') || (request.headers && typeof request.headers.get === 'function' && request.headers.get('RSC') === '1');
+}
+
 function storeResponse(cache, request, response) {
   if (!cache) return Promise.resolve();
   return optionalCacheAccess(async () => {
@@ -80,10 +105,13 @@ async function trimCache(cache, maxEntries) {
     const manifest = await cache.match(PRECACHE_MANIFEST);
     const shellDependencies = manifest ? await manifest.json() : [];
     // Exclude core precached assets so essential offline shell is never evicted
+    const protectedPaths = new Set([PRECACHE_MANIFEST, ...PRECACHE_ASSETS]);
+    for (const path of shellDependencies) {
+      try { protectedPaths.add(new URL(path, self.location.origin).pathname); } catch { /* not a path */ }
+    }
     const evictable = requests.filter((req) => {
       try {
-        const pathname = new URL(req.url).pathname;
-        return pathname !== PRECACHE_MANIFEST && !PRECACHE_ASSETS.includes(pathname) && !shellDependencies.some(path => new URL(path, self.location.origin).pathname === pathname);
+        return !protectedPaths.has(new URL(req.url).pathname);
       } catch {
         return true;
       }
@@ -204,41 +232,61 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Flight data is never cached (see isFlightRequest).
+  if (isFlightRequest(request, url)) {
+    return;
+  }
+
   // 2. Navigation requests: Network-first with cache fallback, then offline.html
   if (request.mode === 'navigate') {
     // Capture this cache's ownership now, but storage is optional for navigation.
     // Never reopen its name after a newer worker may have retired the bucket.
     const ownedCache = openOwnedCache();
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.status === 200) {
-            const copy = response.clone();
-            event.waitUntil(
-              (async () => {
-                const cache = await ownedCache;
-                await storeResponse(cache, request, copy);
-              })().catch(() => {})
-            );
-          }
-          return response;
-        })
-        .catch(async () => {
-          for (const fallback of [request, '/studio', '/offline.html']) {
-            try {
-              const cached = await optionalCacheAccess(() => caches.match(fallback));
-              if (cached) return cached;
-            } catch {
-              // Unavailable storage must still yield a controlled offline response.
-            }
-          }
-          return new Response('Offline and no cached shell available.', {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: { 'Content-Type': 'text/plain' },
-          });
-        })
-    );
+    const store = (response) => {
+      if (response.status !== 200) return;
+      const copy = response.clone();
+      event.waitUntil(ownedCache.then(cache => storeResponse(cache, request, copy)).catch(() => {}));
+    };
+    const cachedFallback = async (candidates) => {
+      for (const fallback of candidates) {
+        try {
+          const cached = await optionalCacheAccess(() => caches.match(fallback));
+          if (cached) return cached;
+        } catch {
+          // Unavailable storage must still yield a controlled offline response.
+        }
+      }
+      return null;
+    };
+    event.waitUntil(sweepRetiredBuckets());
+    const network = fetch(request);
+    event.respondWith((async () => {
+      try {
+        let timer;
+        const slow = new Promise(resolve => { timer = setTimeout(() => resolve(null), NAVIGATION_TIMEOUT_MS); });
+        const first = await Promise.race([network, slow]);
+        clearTimeout(timer);
+        if (first) { store(first); return first; }
+        // Slow network: answer with this exact page if it is cached, and still
+        // let the network refresh it. Otherwise keep waiting for the network.
+        const cached = await cachedFallback([request]);
+        if (cached) {
+          event.waitUntil(network.then(store).catch(() => {}));
+          return cached;
+        }
+        const response = await network;
+        store(response);
+        return response;
+      } catch {
+        const cached = await cachedFallback([request, '/studio', '/offline.html']);
+        if (cached) return cached;
+        return new Response('Offline and no cached shell available.', {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: { 'Content-Type': 'text/plain' },
+        });
+      }
+    })());
     return;
   }
 

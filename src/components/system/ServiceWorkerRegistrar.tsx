@@ -5,6 +5,9 @@ import { prepareAppRestart, reloadAppPage } from '@/lib/system/appRestart';
 import { PwaUpdateToast } from './PwaUpdateToast';
 import { captureDiagnostic } from '@/lib/diagnostics/capture';
 
+export const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000;
+export const UPDATE_RECHECK_ON_RETURN_MS = 10 * 60 * 1000;
+
 export function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (
     typeof window === 'undefined' ||
@@ -73,6 +76,22 @@ export function ServiceWorkerRegistrar() {
     registerServiceWorker().then((reg) => {
       if (!reg || signal.aborted) return;
 
+      // Browsers check for a new worker on navigation, which a Studio left open
+      // for days may never do. Ask hourly, and on return after a while away.
+      if (typeof reg.update === 'function') {
+        let lastCheck = Date.now();
+        const checkForUpdate = () => {
+          if (signal.aborted || navigator.onLine === false) return;
+          lastCheck = Date.now();
+          reg.update().catch(() => { /* The next check retries. */ });
+        };
+        const hourly = window.setInterval(checkForUpdate, UPDATE_CHECK_INTERVAL_MS);
+        signal.addEventListener('abort', () => window.clearInterval(hourly), { once: true });
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible' && Date.now() - lastCheck >= UPDATE_RECHECK_ON_RETURN_MS) checkForUpdate();
+        }, { signal });
+      }
+
       // Check if a worker is already waiting
       if (reg.waiting && navigator.serviceWorker.controller) {
         setWaitingWorker(reg.waiting);
@@ -83,9 +102,13 @@ export function ServiceWorkerRegistrar() {
         worker.addEventListener(
           'statechange',
           () => {
+            // An update means another worker controls the page. WebKit can deliver
+            // a first install's "installed" event after that worker has already
+            // taken control, which must not read as a new build being ready.
+            const controller = navigator.serviceWorker.controller;
             if (
               worker.state === 'installed' &&
-              navigator.serviceWorker.controller
+              controller && controller !== worker
             ) {
               if (!signal.aborted) {
                 setWaitingWorker(worker);

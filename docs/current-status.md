@@ -1,5 +1,9 @@
 # Current project status
 
+## P1 hardening — 17 October 2026
+
+The [P1 hardening record](releases/2026-10-17-p1-hardening.md) bounds slow page loads in the service worker, stops caching Next.js flight data, sweeps older builds' caches, checks for updates in long-lived pages, fixes a WebKit first-visit update banner, requires Origin and JSON at the diagnostics relay, adds `form-action` and cross-origin isolation headers, validates stored recent colors and makes inspector toggles reachable by automated clicks. It also retains a failed attempt to limit cross-build cache reads, which delayed worker activation. Results and what was not run are in the record.
+
 ## P0 hardening — 16 October 2026
 
 The [P0 hardening record](releases/2026-10-16-p0-hardening.md) repairs WebM/MP4 recording: a single held frame never reached the recorder, so short animations could download as an empty 110-byte WebM, and header-only recordings are now refused. It also raises seven top-bar controls from 22 px to the 24 px minimum target size, pins Node 22.23.3 with an early gate check, hardens CI permissions, cancellation, timeouts and action pinning, adds Dependabot, and brings the stale `backupTrust` and navigator browser checks up to date. Checks ran on Node 26 with production builds of the working tree; the Node 22 gate, its performance stage and the complete browser suites were not run.
