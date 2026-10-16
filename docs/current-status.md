@@ -1,5 +1,9 @@
 # Current project status
 
+## P0 hardening — 16 October 2026
+
+The [P0 hardening record](releases/2026-10-16-p0-hardening.md) repairs WebM/MP4 recording: a single held frame never reached the recorder, so short animations could download as an empty 110-byte WebM, and header-only recordings are now refused. It also raises seven top-bar controls from 22 px to the 24 px minimum target size, pins Node 22.23.3 with an early gate check, hardens CI permissions, cancellation, timeouts and action pinning, adds Dependabot, and brings the stale `backupTrust` and navigator browser checks up to date. Checks ran on Node 26 with production builds of the working tree; the Node 22 gate, its performance stage and the complete browser suites were not run.
+
 ## Studio follow-up and pan/stroke performance — 16 October 2026
 
 The [Studio follow-up record](releases/2026-10-16-studio-follow-up.md) covers the work on branch `testsprite-s4` after the surfaces merge: hand-pixeled tool icons, the Colors flyout, timeline frame actions, the rebuilt Live Preview, one elastic press for every control, and the merged imperative pan, cached canvas bounds and stroke layer cache. A first production-build check in Chromium found four failures in the adjusted specs: the timeline toolbar overflowed at 1280 px, the New frame slot's accessible name omitted its visible text, and a touch-target test measured the flyout mid-bloom. The first two were product fixes, the third a test timing fix; After the fixes, an isolated worktree passed types, lint, 2,615 unit tests, a production build and all 18 cases of those specs in Chromium; Firefox, WebKit and the Node 22 performance stage were not run. The record keeps the original verdicts. Production (`main`) was still at `1a4b96b7` when the record was written.

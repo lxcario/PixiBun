@@ -73,7 +73,7 @@ Want to run PixiBun on your own computer or help improve it? The setup is below;
 <details>
 <summary>Set up a local studio</summary>
 
-You'll need **Git**, **Node.js 22** and **npm 10 or newer**, plus access to the GitHub repository. If GitHub asks you to sign in or request access, use an account with permission. In a terminal, run:
+You'll need **Git**, **Node.js 22** (the exact version is in `.nvmrc`) and **npm 10 or newer**, plus access to the GitHub repository. If GitHub asks you to sign in or request access, use an account with permission. In a terminal, run:
 
 ```sh
 git clone --depth 1 https://github.com/lxcario/PixiBun.git

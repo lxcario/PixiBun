@@ -1,6 +1,6 @@
 # Testing and evidence
 
-Use Node 22. Runner enumeration is in [generated inventory](../generated/test-inventory.json); actual verdicts belong in dated run records. The [current status](../current-status.md) links the latest scoped correction work.
+Use Node 22, pinned to 22.23.3 in `.nvmrc` (CI reads the same file). `npm run gate` stops before its first stage on another major version, since the performance stage and Nibbli refuse it. Runner enumeration is in [generated inventory](../generated/test-inventory.json); actual verdicts belong in dated run records. The [current status](../current-status.md) links the latest scoped correction work.
 
 Production and development Chromium qualification use the full browser through `channel: 'chromium'`, following [Playwright's documented headless modes](https://playwright.dev/docs/browsers#chromium-new-headless-mode). This is a declared browser-mode choice, not a demonstrated repair to retained shell crashes. Complete production still includes Firefox and WebKit, one worker and zero retries.
 

@@ -110,18 +110,40 @@ test('compiled navigator keeps square pixels and aligns clicks, drag, keyboard a
   await page.getByLabel('Workspace layout').selectOption('animation');
   const slider = page.getByLabel('Navigator zoom slider'); await slider.fill('6400'); await expect(slider).toHaveValue('6400');
   const overview = page.getByTestId('navigator-canvas'), bounds = page.getByTestId('navigator-view-bounds');
-  const box = (await overview.boundingBox())!; expect(box.width / box.height).toBeCloseTo(2, 5);
+  // Layout size, not the bounding box: an inspector spring can still be scaling it.
+  const aspect = () => overview.evaluate((c: HTMLCanvasElement) => c.offsetWidth / c.offsetHeight);
+  expect(await aspect()).toBeCloseTo(2, 5);
+  const box = (await overview.boundingBox())!;
   // CSS serializes fractional dimensions with limited precision; allow 0.01px.
   const center = () => bounds.evaluate(el => ({ x: Math.round((parseFloat(el.style.left) + parseFloat(el.style.width) / 2) * 100) / 100, y: Math.round((parseFloat(el.style.top) + parseFloat(el.style.height) / 2) * 100) / 100 }));
-  await page.mouse.click(box.x + 140, box.y + 56); await expect.poll(center).toEqual({ x: 140, y: 56 });
+  // Where the browser actually delivered the pointer, in overview pixels. Engines
+  // round requested coordinates differently (Firefox to whole CSS pixels).
+  await overview.evaluate((c: HTMLCanvasElement) => {
+    const record = (e: PointerEvent) => { const r = c.getBoundingClientRect(); c.dataset.pointer = JSON.stringify({ x: (e.clientX - r.left) * 224 / r.width, y: (e.clientY - r.top) * 112 / r.height }); };
+    c.addEventListener('pointerdown', record); c.addEventListener('pointermove', record);
+  });
+  const delivered = async () => JSON.parse((await overview.getAttribute('data-pointer'))!) as { x: number; y: number };
+  // Pan is stored in whole screen pixels, so at 6400% the view stops on a grid of
+  // 1/64 art pixel: allow half of that step in overview pixels, plus CSS rounding.
+  const [artW, artH] = await page.getByTestId('main-composite-canvas').evaluate((c: HTMLCanvasElement) => [c.width, c.height]);
+  const step = 0.5 * Math.min(224 / artW, 112 / artH) / 64 + 0.01;
+  const near = (target: { x: number; y: number }) => expect.poll(async () => {
+    const at = await center(); return Math.max(Math.abs(at.x - target.x), Math.abs(at.y - target.y));
+  }, { message: `view centre within ${step.toFixed(3)} of ${target.x},${target.y}` }).toBeLessThanOrEqual(step);
+  await page.mouse.click(box.x + 140, box.y + 56);
+  const clicked = await delivered(); expect(Math.abs(clicked.x - 140)).toBeLessThanOrEqual(1); expect(Math.abs(clicked.y - 56)).toBeLessThanOrEqual(1);
+  await near(clicked);
   await page.mouse.move(box.x + 140, box.y + 56); await page.mouse.down(); await page.mouse.move(box.x + 84, box.y + 42); await page.mouse.up();
-  await expect.poll(center).toEqual({ x: 84, y: 42 });
+  const dragged = await delivered(); expect(Math.abs(dragged.x - 84)).toBeLessThanOrEqual(1); expect(Math.abs(dragged.y - 42)).toBeLessThanOrEqual(1);
+  await near(dragged);
   const navButton = page.getByRole('button', { name: /^Canvas overview/ }); await expect(navButton).toBeFocused();
-  await navButton.press('ArrowRight'); await expect.poll(center).toEqual({ x: 87.5, y: 42 });
-  await navButton.press('Shift+ArrowDown'); await expect.poll(center).toEqual({ x: 87.5, y: 70 });
+  // Keyboard steps move the stored pan by whole pixels, so they are exact.
+  const settled = await center();
+  await navButton.press('ArrowRight'); await expect.poll(center).toEqual({ x: Math.round((settled.x + 3.5) * 100) / 100, y: settled.y });
+  await navButton.press('Shift+ArrowDown'); await expect.poll(center).toEqual({ x: Math.round((settled.x + 3.5) * 100) / 100, y: Math.round((settled.y + 28) * 100) / 100 });
   await navButton.press('Enter'); await expect.poll(center).toEqual({ x: 112, y: 56 });
   if (testInfo.project.name === 'chromium') await page.getByRole('region', { name: 'Canvas navigator' }).screenshot({ path: testInfo.outputPath('navigator.png') });
-  for (const width of [1024, 1600]) { await page.setViewportSize({ width, height: 900 }); expect((await overview.boundingBox())!.width / (await overview.boundingBox())!.height).toBeCloseTo(2, 5); }
+  for (const width of [1024, 1600]) { await page.setViewportSize({ width, height: 900 }); expect(await aspect()).toBeCloseTo(2, 5); }
   expect(await pixels(page)).toEqual(artwork);
 });
 
