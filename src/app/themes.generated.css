@@ -68,7 +68,7 @@ html[data-studio-theme="moonlit"][data-color-scheme="light"] {
   --moon-check: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2710%27%20height%3D%278%27%20viewBox%3D%270%200%2010%208%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M8%200h2v2H8v2H6v2H4v2H2V6H0V4h2v2h2V4h2V2h2z%27%20fill%3D%27%231f1238%27%2F%3E%3C%2Fsvg%3E");
 }
 
-/* Sakura: Indigo night, paper lanterns / Blossom morning, petal pink */
+/* Sakura: Yozakura: torii, chōchin, Mt. Fuji / Blossom morning, petal pink */
 
 html[data-studio-theme="sakura"] {
   color-scheme: dark;
@@ -84,10 +84,10 @@ html[data-studio-theme="sakura"] {
   --text-body: #e4ddf0;
   --text-muted: #b2abd0;
   --accent-gold: #ffa3c4;
-  --accent-wisteria: #a7bcff;
+  --accent-wisteria: #f2c879;
   --accent-plum: #ffc8da;
   --accent-sage: #a6e3b8;
-  --state-danger: #ff8a9b;
+  --state-danger: #ff8a7a;
   --ink: #060818;
   --btn-hover: #2a3062;
   --state-active: #323a72;
@@ -95,9 +95,9 @@ html[data-studio-theme="sakura"] {
   --primary-fg: #2a0d1d;
   --primary-shade: #d9709a;
   --primary-shine: #ffe0ec;
-  --frame-wood: #6e2f43;
-  --frame-light: #9a4a62;
-  --frame-dark: #45192a;
+  --frame-wood: #a3301f;
+  --frame-light: #d2412e;
+  --frame-dark: #5e1810;
   --control-border-w: 2px;
   --moon-chevron: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%278%27%20height%3D%276%27%20viewBox%3D%270%200%208%206%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M0%200h8v2H6v2H4v2H4V4H2V2H0z%27%20fill%3D%27%23ffa3c4%27%2F%3E%3C%2Fsvg%3E");
   --moon-check: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2710%27%20height%3D%278%27%20viewBox%3D%270%200%2010%208%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M8%200h2v2H8v2H6v2H4v2H2V6H0V4h2v2h2V4h2V2h2z%27%20fill%3D%27%232a0d1d%27%2F%3E%3C%2Fsvg%3E");
@@ -344,14 +344,14 @@ html[data-studio-theme="moss"][data-color-scheme="light"] {
 
 html[data-studio-theme="arcade"] {
   color-scheme: dark;
-  --desk-bg: #0a0a1a;
-  --desk-surface: #12122b;
-  --desk-surface-raised: #1a1a3b;
-  --surface-0: #05050f;
-  --surface-3: #232350;
-  --desk-border: #2f2f68;
+  --desk-bg: #07070d;
+  --desk-surface: #0e0e18;
+  --desk-surface-raised: #161626;
+  --surface-0: #030307;
+  --surface-3: #1f1f36;
+  --desk-border: #2a2a52;
   --desk-border-highlight: #4848a3;
-  --border-subtle: #1d1d44;
+  --border-subtle: #18182f;
   --text-heading: #f5f5ff;
   --text-body: #d6d6f5;
   --text-muted: #a2a2d2;
@@ -361,8 +361,8 @@ html[data-studio-theme="arcade"] {
   --accent-sage: #6dff9e;
   --state-danger: #ff5a7a;
   --ink: #000006;
-  --btn-hover: #222252;
-  --state-active: #2b2b62;
+  --btn-hover: #1b1b30;
+  --state-active: #23233e;
   --primary-bg: #3ef5e0;
   --primary-fg: #001519;
   --primary-shade: #1fb8a8;
@@ -406,6 +406,278 @@ html[data-studio-theme="arcade"][data-color-scheme="light"] {
   --control-border-w: 2px;
   --moon-chevron: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%278%27%20height%3D%276%27%20viewBox%3D%270%200%208%206%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M0%200h8v2H6v2H4v2H4V4H2V2H0z%27%20fill%3D%27%23ab144c%27%2F%3E%3C%2Fsvg%3E");
   --moon-check: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2710%27%20height%3D%278%27%20viewBox%3D%270%200%2010%208%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M8%200h2v2H8v2H6v2H4v2H2V6H0V4h2v2h2V4h2V2h2z%27%20fill%3D%27%2314141f%27%2F%3E%3C%2Fsvg%3E");
+}
+
+/* Cocoa: Hot cocoa by the window, snow outside / Icy blue morning, fresh snow */
+
+html[data-studio-theme="cocoa"] {
+  color-scheme: dark;
+  --desk-bg: #1d0c13;
+  --desk-surface: #2b121c;
+  --desk-surface-raised: #391826;
+  --surface-0: #14080d;
+  --surface-3: #471f2f;
+  --desk-border: #5e2c40;
+  --desk-border-highlight: #7d3b55;
+  --border-subtle: #441d2d;
+  --text-heading: #f9f0f4;
+  --text-body: #e7d0d9;
+  --text-muted: #caa5b4;
+  --accent-gold: #ffc49a;
+  --accent-wisteria: #a8d4ff;
+  --accent-plum: #f2b8c8;
+  --accent-sage: #a6e3c4;
+  --state-danger: #ff9a8f;
+  --ink: #0b0507;
+  --btn-hover: #461e2e;
+  --state-active: #522336;
+  --primary-bg: #ffb48f;
+  --primary-fg: #2a0f08;
+  --primary-shade: #d9805a;
+  --primary-shine: #ffe0cc;
+  --frame-wood: #5c3428;
+  --frame-light: #7f4c3a;
+  --frame-dark: #3a1f18;
+  --control-border-w: 2px;
+  --moon-chevron: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%278%27%20height%3D%276%27%20viewBox%3D%270%200%208%206%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M0%200h8v2H6v2H4v2H4V4H2V2H0z%27%20fill%3D%27%23ffc49a%27%2F%3E%3C%2Fsvg%3E");
+  --moon-check: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2710%27%20height%3D%278%27%20viewBox%3D%270%200%2010%208%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M8%200h2v2H8v2H6v2H4v2H2V6H0V4h2v2h2V4h2V2h2z%27%20fill%3D%27%232a0f08%27%2F%3E%3C%2Fsvg%3E");
+}
+
+html[data-studio-theme="cocoa"][data-color-scheme="light"] {
+  color-scheme: light;
+  --desk-bg: #f1f5fc;
+  --desk-surface: #dae5f6;
+  --desk-surface-raised: #fbfcfe;
+  --surface-0: #c7d7ef;
+  --surface-3: #e6eef9;
+  --desk-border: #1c2e4a;
+  --desk-border-highlight: #314b72;
+  --border-subtle: #bdcde5;
+  --text-heading: #0d1726;
+  --text-body: #2b3a50;
+  --text-muted: #425067;
+  --accent-gold: #9a4416;
+  --accent-wisteria: #2a5aa8;
+  --accent-plum: #9a3f5c;
+  --accent-sage: #246b3a;
+  --state-danger: #a82c2c;
+  --ink: #1c2e4a;
+  --btn-hover: #cfdef4;
+  --state-active: #bdd1ef;
+  --primary-bg: #ffc0a0;
+  --primary-fg: #2a0f08;
+  --primary-shade: #e0906a;
+  --primary-shine: #ffe6d8;
+  --frame-wood: #9a6a48;
+  --frame-light: #c08c66;
+  --frame-dark: #6a452c;
+  --control-border-w: 2px;
+  --moon-chevron: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%278%27%20height%3D%276%27%20viewBox%3D%270%200%208%206%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M0%200h8v2H6v2H4v2H4V4H2V2H0z%27%20fill%3D%27%239a4416%27%2F%3E%3C%2Fsvg%3E");
+  --moon-check: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2710%27%20height%3D%278%27%20viewBox%3D%270%200%2010%208%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M8%200h2v2H8v2H6v2H4v2H2V6H0V4h2v2h2V4h2V2h2z%27%20fill%3D%27%232a0f08%27%2F%3E%3C%2Fsvg%3E");
+}
+
+/* Drizzle: Rain-gray street, neon pink glow / Rain-washed aqua morning */
+
+html[data-studio-theme="drizzle"] {
+  color-scheme: dark;
+  --desk-bg: #22272b;
+  --desk-surface: #2b3136;
+  --desk-surface-raised: #343c42;
+  --surface-0: #1c2124;
+  --surface-3: #3d464d;
+  --desk-border: #4d5860;
+  --desk-border-highlight: #627079;
+  --border-subtle: #3a444a;
+  --text-heading: #f1f5f8;
+  --text-body: #d3dde3;
+  --text-muted: #b9c4cc;
+  --accent-gold: #ffc36b;
+  --accent-wisteria: #ff8cc0;
+  --accent-plum: #9fe6f4;
+  --accent-sage: #a6e8b8;
+  --state-danger: #ffa0a0;
+  --ink: #070809;
+  --btn-hover: #3b454c;
+  --state-active: #434e56;
+  --primary-bg: #ff7eb6;
+  --primary-fg: #2a0718;
+  --primary-shade: #d94e8c;
+  --primary-shine: #ffd6ea;
+  --frame-wood: #4a4038;
+  --frame-light: #6a5c50;
+  --frame-dark: #2a241f;
+  --control-border-w: 2px;
+  --moon-chevron: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%278%27%20height%3D%276%27%20viewBox%3D%270%200%208%206%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M0%200h8v2H6v2H4v2H4V4H2V2H0z%27%20fill%3D%27%23ffc36b%27%2F%3E%3C%2Fsvg%3E");
+  --moon-check: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2710%27%20height%3D%278%27%20viewBox%3D%270%200%2010%208%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M8%200h2v2H8v2H6v2H4v2H2V6H0V4h2v2h2V4h2V2h2z%27%20fill%3D%27%232a0718%27%2F%3E%3C%2Fsvg%3E");
+}
+
+html[data-studio-theme="drizzle"][data-color-scheme="light"] {
+  color-scheme: light;
+  --desk-bg: #f1fafb;
+  --desk-surface: #dbf1f5;
+  --desk-surface-raised: #fbfefe;
+  --surface-0: #cae8ed;
+  --surface-3: #e7f6f8;
+  --desk-border: #1c444a;
+  --desk-border-highlight: #316a72;
+  --border-subtle: #bfdee3;
+  --text-heading: #0d2326;
+  --text-body: #2b4b50;
+  --text-muted: #426267;
+  --accent-gold: #8a4c00;
+  --accent-wisteria: #a3245e;
+  --accent-plum: #0f6a7a;
+  --accent-sage: #226b3b;
+  --state-danger: #a82b2b;
+  --ink: #1c444a;
+  --btn-hover: #d2eef2;
+  --state-active: #c0e7ed;
+  --primary-bg: #ff9ec8;
+  --primary-fg: #2a0718;
+  --primary-shade: #e06a9e;
+  --primary-shine: #ffe0ee;
+  --frame-wood: #6a7a80;
+  --frame-light: #8fa0a6;
+  --frame-dark: #46545a;
+  --control-border-w: 2px;
+  --moon-chevron: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%278%27%20height%3D%276%27%20viewBox%3D%270%200%208%206%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M0%200h8v2H6v2H4v2H4V4H2V2H0z%27%20fill%3D%27%238a4c00%27%2F%3E%3C%2Fsvg%3E");
+  --moon-check: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2710%27%20height%3D%278%27%20viewBox%3D%270%200%2010%208%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M8%200h2v2H8v2H6v2H4v2H2V6H0V4h2v2h2V4h2V2h2z%27%20fill%3D%27%232a0718%27%2F%3E%3C%2Fsvg%3E");
+}
+
+/* Harvest: Olive dusk, pumpkin lanterns / Butter-yellow fields, maple leaves */
+
+html[data-studio-theme="harvest"] {
+  color-scheme: dark;
+  --desk-bg: #1e1d0b;
+  --desk-surface: #2d2b10;
+  --desk-surface-raised: #3c3a15;
+  --surface-0: #151407;
+  --surface-3: #4b481b;
+  --desk-border: #635f27;
+  --desk-border-highlight: #837e34;
+  --border-subtle: #484519;
+  --text-heading: #faf9f0;
+  --text-body: #e8e6cf;
+  --text-muted: #ccc9a3;
+  --accent-gold: #ffa04d;
+  --accent-wisteria: #f08f7a;
+  --accent-plum: #e8c26a;
+  --accent-sage: #b8d47c;
+  --state-danger: #ff8a80;
+  --ink: #0b0b04;
+  --btn-hover: #4a461a;
+  --state-active: #57531e;
+  --primary-bg: #ff9a3c;
+  --primary-fg: #2a1003;
+  --primary-shade: #cc6a1c;
+  --primary-shine: #ffd6aa;
+  --frame-wood: #5a3a1e;
+  --frame-light: #80562e;
+  --frame-dark: #382210;
+  --control-border-w: 2px;
+  --moon-chevron: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%278%27%20height%3D%276%27%20viewBox%3D%270%200%208%206%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M0%200h8v2H6v2H4v2H4V4H2V2H0z%27%20fill%3D%27%23ffa04d%27%2F%3E%3C%2Fsvg%3E");
+  --moon-check: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2710%27%20height%3D%278%27%20viewBox%3D%270%200%2010%208%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M8%200h2v2H8v2H6v2H4v2H2V6H0V4h2v2h2V4h2V2h2z%27%20fill%3D%27%232a1003%27%2F%3E%3C%2Fsvg%3E");
+}
+
+html[data-studio-theme="harvest"][data-color-scheme="light"] {
+  color-scheme: light;
+  --desk-bg: #fdfaef;
+  --desk-surface: #faf3d6;
+  --desk-surface-raised: #fffefa;
+  --surface-0: #f4eac2;
+  --surface-3: #fcf7e4;
+  --desk-border: #4a411c;
+  --desk-border-highlight: #726531;
+  --border-subtle: #eae0b8;
+  --text-heading: #26210d;
+  --text-body: #50482b;
+  --text-muted: #675f42;
+  --accent-gold: #9a3c0c;
+  --accent-wisteria: #a3301e;
+  --accent-plum: #5c5200;
+  --accent-sage: #3f6610;
+  --state-danger: #a8262a;
+  --ink: #4a411c;
+  --btn-hover: #f9efcb;
+  --state-active: #f6e9b6;
+  --primary-bg: #ff9a4a;
+  --primary-fg: #2a1003;
+  --primary-shade: #d87a30;
+  --primary-shine: #ffdcb4;
+  --frame-wood: #a8683a;
+  --frame-light: #cc8a58;
+  --frame-dark: #764420;
+  --control-border-w: 2px;
+  --moon-chevron: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%278%27%20height%3D%276%27%20viewBox%3D%270%200%208%206%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M0%200h8v2H6v2H4v2H4V4H2V2H0z%27%20fill%3D%27%239a3c0c%27%2F%3E%3C%2Fsvg%3E");
+  --moon-check: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2710%27%20height%3D%278%27%20viewBox%3D%270%200%2010%208%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M8%200h2v2H8v2H6v2H4v2H2V6H0V4h2v2h2V4h2V2h2z%27%20fill%3D%27%232a1003%27%2F%3E%3C%2Fsvg%3E");
+}
+
+/* Harbor: Deep sea blue, lighthouse beam / Coral sand, navy sails */
+
+html[data-studio-theme="harbor"] {
+  color-scheme: dark;
+  --desk-bg: #091320;
+  --desk-surface: #0e1d2f;
+  --desk-surface-raised: #12273f;
+  --surface-0: #060d16;
+  --surface-3: #17304f;
+  --desk-border: #234167;
+  --desk-border-highlight: #2e5789;
+  --border-subtle: #162e4b;
+  --text-heading: #f0f4fa;
+  --text-body: #cedae9;
+  --text-muted: #a1b5ce;
+  --accent-gold: #ffd27a;
+  --accent-wisteria: #ff8f7a;
+  --accent-plum: #8fd0e8;
+  --accent-sage: #9fe0b8;
+  --state-danger: #ff8a8a;
+  --ink: #03070c;
+  --btn-hover: #162f4d;
+  --state-active: #1a375b;
+  --primary-bg: #ff8f7a;
+  --primary-fg: #2a0b05;
+  --primary-shade: #d9604a;
+  --primary-shine: #ffd9cf;
+  --frame-wood: #6a4a30;
+  --frame-light: #8f6a48;
+  --frame-dark: #42301e;
+  --control-border-w: 2px;
+  --moon-chevron: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%278%27%20height%3D%276%27%20viewBox%3D%270%200%208%206%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M0%200h8v2H6v2H4v2H4V4H2V2H0z%27%20fill%3D%27%23ffd27a%27%2F%3E%3C%2Fsvg%3E");
+  --moon-check: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2710%27%20height%3D%278%27%20viewBox%3D%270%200%2010%208%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M8%200h2v2H8v2H6v2H4v2H2V6H0V4h2v2h2V4h2V2h2z%27%20fill%3D%27%232a0b05%27%2F%3E%3C%2Fsvg%3E");
+}
+
+html[data-studio-theme="harbor"][data-color-scheme="light"] {
+  color-scheme: light;
+  --desk-bg: #fdf2ef;
+  --desk-surface: #faddd6;
+  --desk-surface-raised: #fffbfa;
+  --surface-0: #f5ccc2;
+  --surface-3: #fce8e3;
+  --desk-border: #1d3150;
+  --desk-border-highlight: #34507a;
+  --border-subtle: #ebc2b7;
+  --text-heading: #13203a;
+  --text-body: #2f3d55;
+  --text-muted: #45526a;
+  --accent-gold: #8a4a10;
+  --accent-wisteria: #1f5a96;
+  --accent-plum: #1f6a86;
+  --accent-sage: #256b3c;
+  --state-danger: #a82a2a;
+  --ink: #1d3150;
+  --btn-hover: #f9d4ca;
+  --state-active: #f7c3b6;
+  --primary-bg: #2f6fb0;
+  --primary-fg: #ffffff;
+  --primary-shade: #1f4f86;
+  --primary-shine: #a8cdf0;
+  --frame-wood: #6a8aa6;
+  --frame-light: #8fadc6;
+  --frame-dark: #46617a;
+  --control-border-w: 2px;
+  --moon-chevron: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%278%27%20height%3D%276%27%20viewBox%3D%270%200%208%206%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M0%200h8v2H6v2H4v2H4V4H2V2H0z%27%20fill%3D%27%238a4a10%27%2F%3E%3C%2Fsvg%3E");
+  --moon-check: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2710%27%20height%3D%278%27%20viewBox%3D%270%200%2010%208%27%20shape-rendering%3D%27crispEdges%27%3E%3Cpath%20d%3D%27M8%200h2v2H8v2H6v2H4v2H2V6H0V4h2v2h2V4h2V2h2z%27%20fill%3D%27%23ffffff%27%2F%3E%3C%2Fsvg%3E");
 }
 
 /* Graphite: Quiet gray, nothing but the art / Clean paper, nothing but the art */

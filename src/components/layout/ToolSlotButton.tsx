@@ -124,13 +124,13 @@ export function ToolSlotButton({ slot, shown, active, onChoose }: ToolSlotButton
           aria-keyshortcuts={grouped ? `${meta.shortcut.replace(/ \+ /g, '+')} ArrowRight` : meta.shortcut.replace(/ \+ /g, '+')}
           data-testid={`${shown}-tool`}
           data-tutorial={`${shown}-tool`}
-          className={`relative w-9 h-9 rounded-[2px] flex items-center justify-center cursor-pointer transition-all ${
+          className={`relative w-10 h-10 rounded-[2px] flex items-center justify-center cursor-pointer transition-all ${
             active
               ? 'pixel-primary-btn font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_1px_0_var(--btn-shadow)] ring-2 ring-[var(--accent-gold)] ring-offset-1 ring-offset-[var(--desk-surface)] z-10'
               : 'pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)]'
           }`}
         >
-          <PixelIcon name={meta.icon} size={16} />
+          <PixelIcon name={meta.icon} size={32} />
           {grouped && (
             // A small pixel corner triangle, like a folded page: more tools here.
             <svg viewBox="0 0 4 4" width="6" height="6" aria-hidden="true" shapeRendering="crispEdges"

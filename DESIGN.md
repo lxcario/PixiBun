@@ -157,7 +157,7 @@ graph LR
 ## 3. Dual-Axis Theme Switching & Theme Transition Engine
 
 The studio supports two independent theme dimensions:
-1. **Studio Theme:** eight styles defined in `src/lib/theme/themes.json` and generated into `src/app/themes.generated.css` (`npm run themes:css`). Scene styles (Moonlit, Sakura, Tidepool, Ember, Moss, Arcade) float the panels over an animated pixel scene (`src/lib/theme/scenes.ts`); flat styles are Graphite (stored id `atelier`) and Plum (stored id `cozy-classic`). Each palette lists about 25 core colors; every other token derives from them, and `tests/themeRegistry.test.ts` holds text to WCAG AA contrast.
+1. **Studio Theme:** twelve styles defined in `src/lib/theme/themes.json` and generated into `src/app/themes.generated.css` (`npm run themes:css`). Scene styles (Moonlit, Sakura, Tidepool, Ember, Moss, Arcade, Cocoa, Drizzle, Harvest, Harbor) float the panels over an animated pixel scene (`src/lib/theme/scenes.ts`); flat styles are Graphite (stored id `atelier`) and Plum (stored id `cozy-classic`). Each palette lists about 25 core colors; every other token derives from them, and `tests/themeRegistry.test.ts` holds text to WCAG AA contrast.
 2. **Color Scheme:** shown as `Night` vs. `Day` (stored as `dark` / `light`).
 
 The token tables above record the Cozy Classic and Atelier values as documented on 2 October 2026; `themes.json` is the current source.
@@ -352,7 +352,7 @@ All primitives consume the v2 design token scale defined in `globals.css`:
 
 ### Appearance Popover
 The `AppearancePopover` (`src/components/ui/AppearancePopover.tsx`) consolidates theme management into a single flyout, superseding the standalone `ThemeToggle` as the primary entry point. It exposes two orthogonal axes:
-1. **Studio Theme:** Moonlit, Sakura, Tidepool, Ember, Moss, Arcade, Graphite (`atelier`) or Plum (`cozy-classic`), sourced from `src/lib/theme/themes.json`.
+1. **Studio Theme:** Moonlit, Sakura, Tidepool, Ember, Moss, Arcade, Cocoa, Drizzle, Harvest, Harbor, Graphite (`atelier`) or Plum (`cozy-classic`), sourced from `src/lib/theme/themes.json`.
 2. **Color Scheme:** Dark or Light.
 
 Live preview swatches show the target theme's accent/surface colors. The popover uses `applyThemeToDOM()` in `themeStore.ts`, briefly suppressing ordinary CSS transitions. Its Day/Night buttons apply directly. The homepage Daylight switch additionally uses [themeTransition](src/lib/theme/themeTransition.ts), with an immediate reduced-motion/unsupported fallback.

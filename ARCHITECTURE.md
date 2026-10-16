@@ -27,7 +27,7 @@ The [source and documentation review](docs/releases/2026-10-15-codebase-and-docu
 | Offline precache | `next build` runs [writePrecacheManifest.mjs](scripts/writePrecacheManifest.mjs), which lists every emitted `/_next/static` file in `public/precache-manifest.json`. The [service worker](src/app/sw.js/route.ts) precaches that list at install only when its version matches and it contains every file the served shell references, so development servers and other builds fall back to shell-only precaching. |
 | Lazy panel failure | Code-split dialogs and the PixiTools panel load through [lazyPanel](src/components/system/lazyPanel.tsx): a failed chunk stays inside its panel with Try again instead of unmounting the Studio route. |
 | Truthful crash screen | The [Studio error screen](src/app/studio/error.tsx) saves through the registered route session ([studioCrashSave](src/lib/project/studioCrashSave.ts)) and publishes a resume ticket before claiming the drawing is saved. |
-| Themes | Eight styles live in [themes.json](src/lib/theme/themes.json); [generateThemeCss.mjs](scripts/generateThemeCss.mjs) writes `src/app/themes.generated.css` (core tokens per style and mode plus one derived-token block). Scene styles draw [procedural scenes](src/lib/theme/scenes.ts) behind floating panels. The theme store starts at server defaults (zustand serves `getInitialState()` for hydration) and [ThemeSync](src/components/system/ThemeSync.tsx) re-applies the `<html>` attributes React drops. |
+| Themes | Twelve styles live in [themes.json](src/lib/theme/themes.json); [generateThemeCss.mjs](scripts/generateThemeCss.mjs) writes `src/app/themes.generated.css` (core tokens per style and mode plus one derived-token block). Scene styles draw [procedural scenes](src/lib/theme/scenes.ts) behind floating panels. The theme store starts at server defaults (zustand serves `getInitialState()` for hydration) and [ThemeSync](src/components/system/ThemeSync.tsx) re-applies the `<html>` attributes React drops. |
 | Onboarding | [WelcomeJourney](src/components/onboarding/WelcomeJourney.tsx) and [CoachTips](src/components/onboarding/CoachTips.tsx) read [preferencesStore](src/stores/preferencesStore.ts) (experience, onboarded time, seen tips, tips switch). Automated browsers skip the journey unless `?welcome=1` is present. |
 
 
@@ -148,7 +148,7 @@ graph TD
 
     subgraph State_Layer [" Reactive State & Memory Pipeline (Zustand + Immer)"]
         Store["useStudioStore (Tools, Zoom, Pan, Active Layer, Palette)"]
-        Theme["themeStore (8 styles from themes.json × Night / Day)"]
+        Theme["themeStore (12 styles from themes.json × Night / Day)"]
         BufferReg["bufferRegistry (detached HTMLCanvasElement layers)"]
         UndoRedo["historyEngine (4,096-Step Stacks / Combined 64 MiB Payload)"]
     end
@@ -457,7 +457,7 @@ graph TD
 
 ## 10. Theme Architecture (`src/stores/themeStore.ts`)
 
-The two axes are studio style (eight ids from `src/lib/theme/themes.json`; Graphite and Plum keep the stored ids `atelier` and `cozy-classic`) and color scheme (`dark` / `light`, shown as Night / Day). `themeStore.ts` temporarily suppresses CSS transitions, updates root attributes/classes and performs a synchronous style read before restoring transitions on a following animation frame. This avoids overlapping transition animations; it still performs layout/repaint work and is not a zero-lag guarantee. Appearance choices are under the Studio menu. Qualify rendered colors, focus and reduced-motion states with the relevant UI checks.
+The two axes are studio style (twelve ids from `src/lib/theme/themes.json`; Graphite and Plum keep the stored ids `atelier` and `cozy-classic`) and color scheme (`dark` / `light`, shown as Night / Day). `themeStore.ts` temporarily suppresses CSS transitions, updates root attributes/classes and performs a synchronous style read before restoring transitions on a following animation frame. This avoids overlapping transition animations; it still performs layout/repaint work and is not a zero-lag guarantee. Appearance choices are under the Studio menu. Qualify rendered colors, focus and reduced-motion states with the relevant UI checks.
 
 ---
 

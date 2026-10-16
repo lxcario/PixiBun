@@ -5,6 +5,7 @@ import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { useStudioStore } from '@/stores/studioStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { ARTIST_PALETTES, samePaletteColors } from '@/config/artistPalettes';
+import { COZY_PALETTES } from '@/config/cozyPalettes';
 import type { ColorPalette } from '@/types/palette';
 
 export function PaletteLibraryModal({ onClose }: { onClose: () => void }) {
@@ -18,7 +19,9 @@ export function PaletteLibraryModal({ onClose }: { onClose: () => void }) {
       const credit = ARTIST_PALETTES.find(a => samePaletteColors(a.colors, p.colors));
       return { ...p, author: p.author ?? credit?.author, source: credit?.source, category: 'Project', favoriteId: credit?.id ?? p.id };
     });
-    return [...project, ...ARTIST_PALETTES.filter(a => !palettes.some(p => samePaletteColors(p.colors, a.colors))).map(a => ({ ...a, favoriteId: a.id }))];
+    // PixiBun's cozy set stays reachable from projects saved before it shipped.
+    const library = [...COZY_PALETTES.map(c => ({ ...c, source: undefined as string | undefined, category: 'Cozy' })), ...ARTIST_PALETTES];
+    return [...project, ...library.filter(a => !palettes.some(p => samePaletteColors(p.colors, a.colors))).map(a => ({ ...a, favoriteId: a.id }))];
   }, [palettes]);
   const preview = catalog.find(p => p.id === previewId) ?? catalog[0];
   const results = catalog.filter(p => `${p.name} ${p.author ?? ''}`.toLowerCase().includes(query.toLowerCase()) &&
