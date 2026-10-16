@@ -1,4 +1,5 @@
 'use client';
+import { AnimatePresence } from 'motion/react';
 
 import { SafeJson } from '@/lib/safety/safeJson';
 import { reportImportError } from '@/lib/project/importFile';
@@ -187,7 +188,7 @@ export const PalettePanel: React.FC<{ basics?: boolean }> = ({ basics = true }) 
           </TactileButton>
         </div>
       </InspectorSection>
-      {browsingPalettes && <PaletteLibraryModal onClose={() => setBrowsingPalettes(false)} />}
+      <AnimatePresence>{browsingPalettes && <PaletteLibraryModal key="PaletteLibraryModal" onClose={() => setBrowsingPalettes(false)} />}</AnimatePresence>
 
       {/* 2. Swatches */}
       <InspectorSection
@@ -303,7 +304,7 @@ export const PalettePanel: React.FC<{ basics?: boolean }> = ({ basics = true }) 
         />
       </InspectorSection>
 
-      {creatingPalette && <CreatePaletteModal onClose={closePaletteCreator} />}
+      <AnimatePresence>{creatingPalette && <CreatePaletteModal key="CreatePaletteModal" onClose={closePaletteCreator} />}</AnimatePresence>
 
       {/* 4. Cycle Engine Section */}
       <PaletteRolesSection key={currentPalette.id} palette={currentPalette} />

@@ -18,7 +18,10 @@ import { CoachTips } from '@/components/onboarding/CoachTips';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import type { AnchorPosition } from '@/components/modals/CanvasResizeModal';
 import type { ImportPayload, ImageImportConfirmPayload } from '@/types/import';
-import { ModalWrapper } from '@/components/ui/ModalWrapper';
+import { NewDrawingModal } from '@/components/modals/NewDrawingModal';
+import { SurfaceToast } from '@/components/ui/surfaces/SurfaceToast';
+import { SpringSurface } from '@/components/ui/surfaces/SpringSurface';
+import { AnimatePresence } from 'motion/react';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { hydrateProject } from '@/lib/project/serialize';
@@ -386,6 +389,12 @@ export const StudioLayout: React.FC = () => {
 
   const scene = isSceneTheme(useThemeStore((s) => s.studioTheme));
 
+  // Every theme gets the shared surface skin (selects, disclosures) for portalled menus and dialogs too.
+  useEffect(() => {
+    document.body.classList.add('studio-ui');
+    return () => document.body.classList.remove('studio-ui');
+  }, []);
+
   // Scene themes skin every control in the studio, including menus and dialogs that portal to <body>.
   useEffect(() => {
     if (!scene) return;
@@ -447,14 +456,14 @@ export const StudioLayout: React.FC = () => {
       <StudioDocumentStatus />
 
       {/* Autosave Disk Write Error / Save Conflict Notice (Non-Layout-Shifting Toast) */}
+      <AnimatePresence>
       {autosaveError && (
-        <div
+        <SpringSurface
+          key="autosave-error"
+          origin="bottom left"
           role="alert"
-          className={`fixed bottom-10 left-16 max-w-md shadow-2xl p-3.5 rounded-[3px] flex flex-col gap-2 z-40 text-xs font-mono backdrop-blur-sm animate-in fade-in slide-in-from-bottom-2 duration-150 ${
-            saveConflict
-              ? 'bg-[var(--desk-surface-raised)]/95 border-2 border-[var(--accent-gold)] text-[#ede8f4]'
-              : 'bg-[var(--danger-bg)]/95 border-2 border-[var(--danger-border)] text-[var(--danger-fg)]'
-          }`}
+          data-tone={saveConflict ? 'warn' : 'error'}
+          className="pb-panel fixed bottom-10 left-16 max-w-md !p-3.5 flex flex-col gap-2 z-40 text-xs"
         >
           <div
             className={`flex items-center justify-between gap-2 border-b pb-1.5 ${
@@ -475,7 +484,7 @@ export const StudioLayout: React.FC = () => {
             </div>
             <button
               onClick={() => setAutosaveError(null)}
-              className="px-1.5 py-0.5 text-xs text-[var(--text-body)] hover:text-white transition-colors cursor-pointer leading-none"
+              className="px-1.5 py-0.5 text-xs text-[var(--text-body)] hover:text-[var(--text-heading)] transition-colors cursor-pointer leading-none"
               title="Dismiss warning"
               aria-label="Dismiss error"
             >
@@ -496,7 +505,7 @@ export const StudioLayout: React.FC = () => {
             <button
               type="button"
               onClick={() => setAutosaveError(null)}
-              className="text-[11px] px-2 py-0.5 text-[#a599b5] hover:text-white transition-colors cursor-pointer"
+              className="text-[11px] px-2 py-0.5 text-[var(--text-muted)] hover:text-[var(--text-heading)] transition-colors cursor-pointer"
             >
               Keep editing
             </button>
@@ -515,8 +524,9 @@ export const StudioLayout: React.FC = () => {
               Export Drawing
             </TactileButton>
           </div>
-        </div>
+        </SpringSurface>
       )}
+      </AnimatePresence>
 
       {/* Main Workspace Area (Left Toolbar + Center Stage + Right Inspector) */}
       <div id="main-workspace" tabIndex={-1} className="flex flex-1 overflow-hidden outline-none relative">
@@ -548,51 +558,13 @@ export const StudioLayout: React.FC = () => {
       />
 
       {/* New Drawing Confirmation Modal */}
-      <ModalWrapper
+      <NewDrawingModal
         isOpen={isNewConfirmOpen}
+        size={newDrawingSize}
+        onSizeChange={setNewDrawingSize}
         onClose={() => setIsNewConfirmOpen(false)}
-        title="Start a New Drawing?"
-      >
-        <div className="p-5 flex flex-col gap-4 text-sm text-[var(--text-body)]">
-          <p className="leading-relaxed">
-            Starting a new drawing will clear the current canvas and reset the studio to a fresh blank project.
-          </p>
-          <div className="flex flex-col gap-2 p-3 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px]">
-            <span className="text-xs font-semibold text-[var(--text-heading)]">Canvas Size Preset:</span>
-            <div className="flex gap-1.5 flex-wrap">
-              {[16, 24, 32, 48, 64, 128].map((size) => (
-                <button
-                  key={size}
-                  type="button"
-                  onClick={() => setNewDrawingSize(size)}
-                  className={`px-2.5 py-1 text-xs font-mono rounded-[2px] border cursor-pointer transition-colors ${newDrawingSize === size ? 'bg-[var(--accent-gold)] text-[var(--surface-0)] font-bold border-[var(--accent-gold)]' : 'border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--text-muted)]'}`}
-                >
-                  {size}×{size}
-                </button>
-              ))}
-            </div>
-          </div>
-          <p className="text-xs text-[var(--accent-gold)] font-mono">
-            <PixelIcon name="export" size={12} className="inline align-[-2px] mr-1" /> If you want to keep your current artwork, remember to export it as PNG or a .pixibun project file first.
-          </p>
-          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-[var(--desk-border)]">
-            <TactileButton
-              size="sm"
-              variant="default"
-              onClick={() => setIsNewConfirmOpen(false)}
-            >
-              Keep Drawing
-            </TactileButton>
-            <TactileButton
-              size="sm"
-              variant="danger"
-              onClick={() => handleConfirmNewDrawing(newDrawingSize)}
-            >
-              Start New Drawing
-            </TactileButton>
-          </div>
-        </div>
-      </ModalWrapper>
+        onConfirm={size => void handleConfirmNewDrawing(size)}
+      />
 
       {/* First visit: skill, look and a first drawing; afterwards, one-time tips */}
       <WelcomeJourney
@@ -611,34 +583,41 @@ export const StudioLayout: React.FC = () => {
       )}
 
       {/* Shortcuts Cheat Sheet Modal (lazy-loaded) */}
+      <AnimatePresence>
       {isShortcutsOpen && (
-        <ShortcutsModal
+        <ShortcutsModal key="ShortcutsModal"
           isOpen={isShortcutsOpen}
           onClose={() => setIsShortcutsOpen(false)}
           onOpenDiagnostics={() => setIsDiagnosticsOpen(true)}
         />
       )}
+      </AnimatePresence>
 
       {/* Privacy, Diagnostics & Offline Health Modal (lazy-loaded) */}
+      <AnimatePresence>
       {isDiagnosticsOpen && (
-        <DiagnosticsModal
+        <DiagnosticsModal key="DiagnosticsModal"
           isOpen={isDiagnosticsOpen}
           onClose={() => setIsDiagnosticsOpen(false)}
         />
       )}
+      </AnimatePresence>
 
       {/* Canvas Resize Modal (lazy-loaded) */}
+      <AnimatePresence>
       {isResizeOpen && (
-        <CanvasResizeModal
+        <CanvasResizeModal key="CanvasResizeModal"
           isOpen={isResizeOpen}
           onClose={() => setIsResizeOpen(false)}
           onResize={handleResize}
         />
       )}
+      </AnimatePresence>
 
       {/* Drag & Drop Import Modal (lazy-loaded) */}
+      <AnimatePresence>
       {isImportOpen && (
-        <ImportModal
+        <ImportModal key="ImportModal"
           isOpen={isImportOpen}
           payload={importPayload}
           error={importError}
@@ -652,10 +631,12 @@ export const StudioLayout: React.FC = () => {
           onFileSelected={handleOpenImport}
         />
       )}
+      </AnimatePresence>
 
       {/* Projects & Artworks Gallery Modal (lazy-loaded) */}
+      <AnimatePresence>
       {isGalleryOpen && (
-        <ProjectsGalleryModal
+        <ProjectsGalleryModal key="ProjectsGalleryModal"
           isOpen={isGalleryOpen}
           onClose={() => setIsGalleryOpen(false)}
           currentProjectId={currentProjectId}
@@ -669,19 +650,23 @@ export const StudioLayout: React.FC = () => {
           onOpenImport={() => handleOpenImport()}
         />
       )}
+      </AnimatePresence>
 
       {/* Peer-to-Peer Co-Draw Modal (lazy-loaded) */}
+      <AnimatePresence>
       {isCoDrawOpen && (
-        <CoDrawModal
+        <CoDrawModal key="CoDrawModal"
           onJoinGuest={joinCoDrawGuest}
           isOpen={isCoDrawOpen}
           onClose={() => setIsCoDrawOpen(false)}
         />
       )}
+      </AnimatePresence>
 
       {/* Command Palette (Ctrl+K) */}
+      <AnimatePresence>
       {isCommandPaletteOpen && (
-        <CommandPaletteModal
+        <CommandPaletteModal key="CommandPaletteModal"
           isOpen={isCommandPaletteOpen}
           onClose={() => setIsCommandPaletteOpen(false)}
           onOpenExport={() => openExport()}
@@ -698,10 +683,12 @@ export const StudioLayout: React.FC = () => {
           onRedo={handleRedo}
         />
       )}
+      </AnimatePresence>
 
       {/* Recovery & Safe Mode Repair Wizard Modal (lazy-loaded) */}
+      <AnimatePresence>
       {isRecoveryOpen && recoveryTarget && (
-        <RecoveryModal
+        <RecoveryModal key="RecoveryModal"
           isOpen={isRecoveryOpen}
           sourceProjectId={recoveryTarget.sourceProjectId}
           initialAssessment={recoveryTarget.assessment}
@@ -711,14 +698,18 @@ export const StudioLayout: React.FC = () => {
           onRecoveryComplete={handleRecoveryComplete}
         />
       )}
+      </AnimatePresence>
 
       {/* Pending Recovery Safe Mode Banner */}
+      <AnimatePresence>
       {pendingRecovery && !isRecoveryOpen && (
-        <div
+        <SpringSurface
+          key="recovery-banner"
+          origin="top center"
           role="region"
           aria-label="Pending Project Recovery"
           data-testid="pending-recovery-banner"
-          className="fixed top-12 left-1/2 -translate-x-1/2 z-40 max-w-xl w-[90%] bg-[var(--surface-1)] border border-[var(--accent-gold)] shadow-2xl p-2.5 rounded-[4px] flex items-center justify-between gap-3 text-xs font-mono text-[var(--text-heading)] backdrop-blur-sm animate-in fade-in slide-in-from-top-2 duration-150"
+          className="pb-panel fixed top-12 left-1/2 -translate-x-1/2 z-40 max-w-xl w-[90%] !py-2.5 flex items-center justify-between gap-3 text-xs"
         >
           <div className="flex items-center gap-2 truncate">
             <PixelIcon name="lock" size={14} className="text-[var(--accent-gold)] shrink-0" />
@@ -749,52 +740,22 @@ export const StudioLayout: React.FC = () => {
               ✕
             </button>
           </div>
-        </div>
+        </SpringSurface>
       )}
+      </AnimatePresence>
 
       {/* Unified Toast & Affirmative Explicit Save Confirmation Toast (UX-14, Phase A) */}
-      {(activeToast || saveToast) && (
-        <div
-          role={activeToast?.type === 'error' ? 'alert' : 'status'}
-          aria-live={activeToast?.type === 'error' ? 'assertive' : 'polite'}
-          data-testid={activeToast ? 'studio-toast' : 'save-affirmation-toast'}
-          className={`fixed bottom-14 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2 font-mono text-xs rounded-lg shadow-xl backdrop-blur-sm transition-all ${
-            activeToast?.action ? 'pointer-events-auto' : 'pointer-events-none'
-          } ${
-            activeToast?.type === 'error'
-              ? 'bg-[var(--danger-bg)]/95 border border-[var(--danger-border)] text-[var(--danger-fg)]'
-              : activeToast?.type === 'success'
-              ? 'bg-[#15241b]/95 border border-[var(--accent-sage)] text-[#8ceec5]'
-              : 'bg-[var(--surface-sunken,#191326)]/95 border border-[var(--accent-gold,#f0be7c)] text-[var(--accent-gold,#f0be7c)]'
-          }`}
-        >
-          <PixelIcon
-            name={activeToast?.type === 'error' ? 'warning' : activeToast?.type === 'success' ? 'sparkles' : 'save'}
-            size={14}
-            className={
-              activeToast?.type === 'error'
-                ? 'text-[var(--danger-fg)] shrink-0'
-                : activeToast?.type === 'success'
-                ? 'text-[var(--accent-sage)] shrink-0'
-                : 'text-[var(--accent-gold,#f0be7c)] shrink-0'
-            }
-          />
-          <span>{activeToast?.message || saveToast}</span>
-          {activeToast?.action && (
-            <button
-              type="button"
-              onClick={() => {
-                activeToast.action?.onClick();
-                setActiveToast(null);
-              }}
-              data-testid="toast-action-button"
-              className="ml-2 px-2 py-0.5 rounded-[2px] bg-[var(--surface-2)] hover:bg-[var(--surface-3)] text-[var(--text-heading)] border border-[var(--desk-border)] hover:border-[var(--accent-gold)] cursor-pointer text-[11px] font-sans font-semibold underline transition-colors"
-            >
-              {activeToast.action.label}
-            </button>
-          )}
-        </div>
-      )}
+      <SurfaceToast
+        toast={activeToast ? {
+          key: `${activeToast.type}:${activeToast.message}`,
+          message: activeToast.message,
+          tone: activeToast.type,
+          icon: activeToast.type === 'error' ? 'warning' : activeToast.type === 'success' ? 'sparkles' : 'save',
+          testId: 'studio-toast',
+          action: activeToast.action,
+        } : saveToast ? { key: `save:${saveToast}`, message: saveToast, tone: 'default', icon: 'save', testId: 'save-affirmation-toast' } : null}
+        onAction={() => setActiveToast(null)}
+      />
     </div>
   );
 };

@@ -24,7 +24,7 @@ describe('ModalWrapper component accessibility & focus management', () => {
       </ModalWrapper>
     );
 
-    expect(screen.getByText('✦ Test Modal')).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Test Modal' })).toBeDefined();
     expect(screen.getByTestId('modal-content')).toBeDefined();
   });
 

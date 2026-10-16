@@ -1,4 +1,5 @@
 'use client';
+import { AnimatePresence } from 'motion/react';
 
 import React, { useState } from 'react';
 import { lazyPanel } from '@/components/system/lazyPanel';
@@ -116,13 +117,15 @@ export const QuickPaletteBar: React.FC = () => {
       </button>
 
       {/* Color Picker Modal */}
+      <AnimatePresence>
       {colorPickerTarget && (
-        <ColorPickerModal
+        <ColorPickerModal key="ColorPickerModal"
           isOpen={Boolean(colorPickerTarget)}
           onClose={() => setColorPickerTarget(null)}
           target={colorPickerTarget}
         />
       )}
+      </AnimatePresence>
     </section>
   );
 };

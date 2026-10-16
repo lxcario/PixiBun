@@ -311,13 +311,15 @@ export const LeftToolbar = React.memo(function LeftToolbar({ isPlaygroundMode = 
       )}
 
       {/* Full Color Picker Modal */}
+      <AnimatePresence>
       {colorPickerTarget && (
-        <ColorPickerModal
+        <ColorPickerModal key="ColorPickerModal"
           isOpen={Boolean(colorPickerTarget)}
           onClose={() => setColorPickerTarget(null)}
           target={colorPickerTarget}
         />
       )}
+      </AnimatePresence>
     </aside>
   );
 });

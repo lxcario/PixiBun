@@ -14,8 +14,11 @@ vi.mock('@/lib/storage/db', async importOriginal => ({
 }));
 vi.mock('@/lib/project/serialize', () => ({ buildAutosavePayloadAsync: vi.fn(), generateCompositeThumbnail: vi.fn(), hydrateProject: vi.fn() }));
 const motionComponents: Record<string, React.ComponentType<Record<string, unknown>>> = {};
-vi.mock('motion/react', () => ({
+// The real module supplies everything not stubbed here (presence hooks, animate, motion values).
+vi.mock('motion/react', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('motion/react')>()),
   useReducedMotion: () => true,
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   motion: new Proxy({}, { get: (_target, tag: string) => {
     if (!motionComponents[tag]) motionComponents[tag] = React.forwardRef((props: Record<string, unknown>, ref: React.Ref<HTMLElement>) => {
       const rest = Object.fromEntries(Object.entries(props).filter(([key]) => !['initial', 'animate', 'exit', 'transition', 'whileHover', 'whileTap', 'variants', 'layout'].includes(key)));
