@@ -591,7 +591,7 @@ export const AtelierRail = React.memo(function AtelierRail({
                 aria-label="Horizontal symmetry"
                 aria-pressed={tools.symmetryHorizontal}
                 data-testid="toggle-symmetry-h"
-                className={`w-6 h-6 rounded-[2px] cursor-pointer flex items-center justify-center transition-all active:translate-y-[1px] ${
+                className={`w-6 h-6 rounded-[2px] cursor-pointer flex items-center justify-center transition-all ${
                   tools.symmetryHorizontal
                     ? 'bg-[var(--surface-3)] text-[var(--accent-gold)] border border-[var(--accent-gold)]/60 shadow-xs font-bold'
                     : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] border border-transparent hover:border-[var(--desk-border)]/50'
@@ -607,7 +607,7 @@ export const AtelierRail = React.memo(function AtelierRail({
                 aria-label="Vertical symmetry"
                 aria-pressed={tools.symmetryVertical}
                 data-testid="toggle-symmetry-v"
-                className={`w-6 h-6 rounded-[2px] cursor-pointer flex items-center justify-center transition-all active:translate-y-[1px] ${
+                className={`w-6 h-6 rounded-[2px] cursor-pointer flex items-center justify-center transition-all ${
                   tools.symmetryVertical
                     ? 'bg-[var(--surface-3)] text-[var(--accent-gold)] border border-[var(--accent-gold)]/60 shadow-xs font-bold'
                     : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] border border-transparent hover:border-[var(--desk-border)]/50'
@@ -624,7 +624,7 @@ export const AtelierRail = React.memo(function AtelierRail({
           <div className="flex items-center">
             <button
               onClick={() => setZoom(getPrevZoomStep(zoom))}
-              className="w-6 h-6 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] active:translate-y-[1px] rounded-[1px] cursor-pointer font-mono text-xs transition-colors"
+              className="w-6 h-6 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] rounded-[1px] cursor-pointer font-mono text-xs transition-colors"
               title="Zoom Out (-)"
               aria-label="Zoom Out"
             >
@@ -653,7 +653,7 @@ export const AtelierRail = React.memo(function AtelierRail({
             </div>
             <button
               onClick={() => setZoom(getNextZoomStep(zoom))}
-              className="w-6 h-6 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] active:translate-y-[1px] rounded-[1px] cursor-pointer font-mono text-xs transition-colors"
+              className="w-6 h-6 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] rounded-[1px] cursor-pointer font-mono text-xs transition-colors"
               title="Zoom In (+)"
               aria-label="Zoom In"
             >
@@ -670,7 +670,7 @@ export const AtelierRail = React.memo(function AtelierRail({
             }}
             aria-label="Fit Canvas to Viewport (Ctrl+0)"
             data-testid="fit-canvas-button"
-            className="h-6 px-1.5 flex items-center justify-center text-xs font-sans font-medium text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] active:translate-y-[1px] rounded-[1px] cursor-pointer transition-colors"
+            className="h-6 px-1.5 flex items-center justify-center text-xs font-sans font-medium text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] rounded-[1px] cursor-pointer transition-colors"
             title="Fit Canvas to Viewport (Ctrl+0)"
           >
             Fit
@@ -690,7 +690,7 @@ export const AtelierRail = React.memo(function AtelierRail({
               className={`h-6 px-2 min-w-[66px] text-xs font-sans font-medium rounded-[1px] cursor-pointer flex items-center justify-between gap-1.5 transition-colors ${
                 isViewMenuOpen
                   ? 'bg-[var(--surface-2)] text-[var(--accent-gold)]'
-                  : 'text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] active:translate-y-[1px]'
+                  : 'text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)]'
               }`}
             >
               <span className="flex items-center gap-1.5">

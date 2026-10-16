@@ -470,7 +470,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           onClick={handleResetCenter}
           aria-label="Recenter light"
           title="Reset middle light point to artwork centroid"
-          className="h-6 px-1.5 bg-[#261838] text-[#dcabdf] border border-[#f0be7c]/30 rounded-[2px] hover:bg-[#382352] active:scale-95 transition-transform cursor-pointer flex items-center gap-1 text-[10px]"
+          className="h-6 px-1.5 bg-[#261838] text-[#dcabdf] border border-[#f0be7c]/30 rounded-[2px] hover:bg-[#382352] transition-transform cursor-pointer flex items-center gap-1 text-[10px]"
         >
           <span aria-hidden="true">↺<span className="hidden xl:inline"> Recenter</span></span>
         </button>
@@ -491,7 +491,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
               e.stopPropagation();
               adjustStrength(-0.15);
             }}
-            className="w-6 h-6 flex items-center justify-center bg-[#181124] text-[#f0be7c] rounded-[2px] hover:bg-[#382352] active:scale-95 cursor-pointer font-bold text-xs border border-[#f0be7c]/30"
+            className="w-6 h-6 flex items-center justify-center bg-[#181124] text-[#f0be7c] rounded-[2px] hover:bg-[#382352] cursor-pointer font-bold text-xs border border-[#f0be7c]/30"
             title="Decrease light strength (- / [)"
             aria-label="Decrease light strength"
           >
@@ -510,7 +510,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
               e.stopPropagation();
               adjustStrength(+0.15);
             }}
-            className="w-6 h-6 flex items-center justify-center bg-[#181124] text-[#f0be7c] rounded-[2px] hover:bg-[#382352] active:scale-95 cursor-pointer font-bold text-xs border border-[#f0be7c]/30"
+            className="w-6 h-6 flex items-center justify-center bg-[#181124] text-[#f0be7c] rounded-[2px] hover:bg-[#382352] cursor-pointer font-bold text-xs border border-[#f0be7c]/30"
             title="Increase light strength (+ / ])"
             aria-label="Increase light strength"
           >
@@ -605,7 +605,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           title="Apply preview to an editable layer (Enter)"
           aria-label="Apply"
           data-testid="pixel-light-apply"
-          className="h-7 px-2.5 bg-[#f0be7c] text-[#140d1f] font-bold rounded-[2px] hover:bg-[#ffe082] active:scale-95 transition-transform cursor-pointer flex items-center gap-1 text-[11px] shadow-xs"
+          className="h-7 px-2.5 bg-[#f0be7c] text-[#140d1f] font-bold rounded-[2px] hover:bg-[#ffe082] transition-transform cursor-pointer flex items-center gap-1 text-[11px] shadow-xs"
         >
           <span>Apply</span>
           <span className="hidden xl:inline text-[9px] opacity-75 font-normal">(Enter)</span>
@@ -617,7 +617,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           title="Discard preview and restore layer (Esc)"
           aria-label="Cancel"
           data-testid="pixel-light-cancel"
-          className="h-7 px-2 bg-[#261838] text-[#dcabdf] border border-[#f0be7c]/40 font-bold rounded-[2px] hover:bg-[#382352] active:scale-95 transition-transform cursor-pointer flex items-center gap-1 text-[11px]"
+          className="h-7 px-2 bg-[#261838] text-[#dcabdf] border border-[#f0be7c]/40 font-bold rounded-[2px] hover:bg-[#382352] transition-transform cursor-pointer flex items-center gap-1 text-[11px]"
         >
           <span>Cancel</span>
           <span className="hidden xl:inline text-[9px] opacity-75 font-normal">(Esc)</span>

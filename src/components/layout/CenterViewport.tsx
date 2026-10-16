@@ -1310,7 +1310,7 @@ export const CenterViewport = React.memo(function CenterViewport({
               e.stopPropagation();
               curveHandler.commit();
             }}
-            className="ml-1 px-2 py-0.5 bg-[var(--accent-gold)] text-[var(--desk-surface-base)] font-bold rounded-[2px] hover:brightness-110 active:scale-95 transition-all text-[10px] shadow-xs cursor-pointer"
+            className="ml-1 px-2 py-0.5 bg-[var(--accent-gold)] text-[var(--desk-surface-base)] font-bold rounded-[2px] hover:brightness-110 transition-all text-[10px] shadow-xs cursor-pointer"
           >
             Apply (Enter)
           </button>
@@ -1322,7 +1322,7 @@ export const CenterViewport = React.memo(function CenterViewport({
               e.stopPropagation();
               curveHandler.cancel();
             }}
-            className="px-1.5 py-0.5 text-[var(--text-muted)] hover:text-[var(--accent-rose)] active:scale-95 transition-colors text-[10px] cursor-pointer"
+            className="px-1.5 py-0.5 text-[var(--text-muted)] hover:text-[var(--accent-rose)] transition-colors text-[10px] cursor-pointer"
           >
             Cancel (Esc)
           </button>
@@ -1348,7 +1348,7 @@ export const CenterViewport = React.memo(function CenterViewport({
               e.stopPropagation();
               curveHandler.reEdit();
             }}
-            className="px-2 py-0.5 bg-[var(--accent-sage)] text-[var(--desk-surface-base)] font-bold rounded-[2px] hover:brightness-110 active:scale-95 transition-all text-[10px] shadow-xs cursor-pointer flex items-center gap-1"
+            className="px-2 py-0.5 bg-[var(--accent-sage)] text-[var(--desk-surface-base)] font-bold rounded-[2px] hover:brightness-110 transition-all text-[10px] shadow-xs cursor-pointer flex items-center gap-1"
           >
             <span>✎</span>
             <span>Re-edit Curve (Enter)</span>
@@ -1361,7 +1361,7 @@ export const CenterViewport = React.memo(function CenterViewport({
               e.stopPropagation();
               curveHandler.dismissReEdit();
             }}
-            className="px-1.5 py-0.5 text-[var(--text-muted)] hover:text-[var(--text-secondary)] active:scale-95 transition-colors text-[10px] cursor-pointer"
+            className="px-1.5 py-0.5 text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors text-[10px] cursor-pointer"
             title="Dismiss"
           >
             ✕

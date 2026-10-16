@@ -230,7 +230,6 @@ body.moon-ui {
   transition: background-color 140ms ease, border-color 140ms ease, transform var(--spring-snap-duration) var(--spring-snap);
 }
 .pb-tile:hover { background: var(--pb-group-hover); }
-.pb-tile:active { transform: scale(0.97); transition-duration: 80ms; }
 .pb-tile:focus-visible { outline: none; border-color: var(--accent-gold); box-shadow: 0 0 0 3px var(--glow, transparent); }
 .pb-tile[aria-pressed="true"], .pb-tile[data-on] {
   background: var(--pb-tint);
@@ -361,7 +360,6 @@ body.moon-ui .pb-segment-thumb { border: 2px solid var(--moon-ink); box-shadow: 
   transition: background-color 120ms ease, border-color 120ms ease, transform var(--spring-snap-duration) var(--spring-snap);
 }
 .pb-button:hover { background: var(--pb-group-hover); border-color: var(--desk-border-highlight); }
-.pb-button:active { transform: scale(0.97); transition-duration: 80ms; }
 .pb-button:focus-visible { outline: none; border-color: var(--accent-gold); box-shadow: 0 0 0 3px var(--glow, transparent); }
 .pb-button[data-tone="primary"] { background: var(--primary-bg); color: var(--primary-fg); border-color: color-mix(in srgb, var(--primary-shade) 80%, transparent); box-shadow: inset 0 -2px 0 var(--primary-shade); }
 .pb-button[data-tone="danger"] { background: var(--danger-bg); color: var(--danger-fg); border-color: var(--danger-border); }
@@ -382,7 +380,6 @@ body.moon-ui .pb-button[data-tone] { border: 2px solid var(--moon-ink); box-shad
   transition: border-color 140ms ease, transform var(--spring-snap-duration) var(--spring-snap);
 }
 .pb-swatch:hover { transform: translateY(-2px); }
-.pb-swatch:active { transform: scale(0.97); transition-duration: 80ms; }
 .pb-swatch[aria-checked="true"] { border-color: var(--accent-gold); box-shadow: 0 0 0 3px var(--pb-tint); }
 .pb-swatch:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--glow, transparent); border-color: var(--accent-gold); }
 .pb-swatch-scene { position: relative; display: block; height: 34px; border-radius: calc(var(--pb-tile-radius) - 4px); overflow: hidden; }
@@ -408,7 +405,6 @@ body.moon-ui .pb-button[data-tone] { border: 2px solid var(--moon-ink); box-shad
   transition: background-color 140ms ease, border-color 140ms ease, transform var(--spring-snap-duration) var(--spring-snap);
 }
 .pb-size:hover { background: var(--pb-group-hover); }
-.pb-size:active { transform: scale(0.97); transition-duration: 80ms; }
 .pb-size:focus-visible { outline: none; border-color: var(--accent-gold); box-shadow: 0 0 0 3px var(--glow, transparent); }
 .pb-size[aria-checked="true"] { background: var(--pb-tint); border-color: var(--pb-tint-edge); }
 .pb-size-preview {
@@ -493,7 +489,6 @@ body.moon-ui .pb-button[data-tone] { border: 2px solid var(--moon-ink); box-shad
   transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease, transform var(--spring-snap-duration) var(--spring-snap);
 }
 .pb-pill:hover:not(:disabled) { color: var(--text-heading); border-color: var(--desk-border-highlight); }
-.pb-pill:active:not(:disabled) { transform: scale(0.96); transition-duration: 80ms; }
 .pb-pill:focus-visible { outline: none; border-color: var(--accent-gold); box-shadow: 0 0 0 3px var(--glow, transparent); }
 .pb-pill[aria-pressed="true"] {
   background: var(--primary-bg, var(--accent-gold));
@@ -672,7 +667,7 @@ body.studio-ui details > summary::marker { color: var(--accent-gold); }
 
 @media (prefers-reduced-motion: reduce) {
   .pb-tile, .pb-chip, .pb-switch::after, .pb-disclosure-chevron, .pb-pill, .pb-button, .pb-swatch, .pb-size, .pb-size-preview, .pb-close { transition-duration: 0ms !important; }
-  .pb-tile:active, .pb-button:active, .pb-swatch:hover, .pb-swatch:active, .pb-size:active { transform: none; }
+  .pb-swatch:hover { transform: none; }
   @supports (interpolate-size: allow-keywords) {
     body.studio-ui details::details-content { transition: none; filter: none; }
   }
@@ -706,12 +701,6 @@ body.studio-ui details > summary::marker { color: var(--accent-gold); }
 }
 :root body .bar-control.bar-control:is(button, select):hover:not(:disabled) {
   background-color: color-mix(in srgb, var(--bar-fill) 82%, var(--accent-gold)) !important;
-  transform: translateY(-1px);
-  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 28%, transparent), 0 3px 0 var(--bar-edge) !important;
-}
-:root body .bar-control.bar-control:is(button, select):active:not(:disabled) {
-  transform: translateY(1px) !important;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 20%, transparent), 0 1px 0 var(--bar-edge) !important;
 }
 :root body .bar-control.bar-control[aria-expanded="true"] {
   background-color: color-mix(in srgb, var(--bar-fill) 70%, var(--accent-gold)) !important;

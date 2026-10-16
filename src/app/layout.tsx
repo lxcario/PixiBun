@@ -9,6 +9,7 @@ import { ThemeSync } from '@/components/system/ThemeSync';
 import { DiagnosticsProvider } from '@/components/system/DiagnosticsProvider';
 import { ServiceWorkerRegistrar } from '@/components/system/ServiceWorkerRegistrar';
 import { SkipToContent } from '@/components/system/SkipToContent';
+import { PressMotion } from '@/components/system/PressMotion';
 
 // Self-hosted via next/font/local: 100% offline-capable, zero external network egress
 // during build or runtime, satisfying CSP and air-gapped environment requirements.
@@ -89,6 +90,7 @@ export default async function RootLayout({
         <DiagnosticsProvider>
           <ServiceWorkerRegistrar />
           <ThemeSync />
+          <PressMotion />
           {children}
         </DiagnosticsProvider>
       </body>
