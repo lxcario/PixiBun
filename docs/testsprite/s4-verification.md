@@ -30,3 +30,13 @@ The repo is private and must be publicly readable for submission. The latest mai
 Official rules: https://www.testsprite.com/hackathon-s4
 
 Integration setup: https://docs.testsprite.com/web-portal/integrations/github-integration
+
+## Integration progress — 16 October
+
+The portal exploration finished with ten agents. Eighteen cases were selected from the proposed plan, reviewed and refined, and generation/execution started in run `c47b5c65-be9d-44d1-bc58-dec0fba58a63`. This is an active run, not a terminal pass.
+
+The project now has an Active pull-request trigger for the Vercel commit-status event. Its target pattern is `https://pixibun-git-{branch-slug}-lxcarios-projects.vercel.app`. TestSprite Merge gate is enabled. Preview login protection was disabled with owner approval so cloud browsers can reach this app. GitHub branch-rule enforcement still needs separate verification.
+
+Auditing the initial reported command-palette pass showed direct Pen selection rather than opening/searching the palette. It is inconclusive for the intended flow. The case was refined with intermediate assertions and rerun; its original result is retained. Exact PNG/GIF and canvas-pixel checks reported blocked runner prerequisites; those are missing cloud coverage, not product defect findings or full passes.
+
+This follow-up commit is also the real deployment event used to verify automatic PR dispatch. The eventual TestSprite execution and check on this commit must be recorded before calling the loop complete.
