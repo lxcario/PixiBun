@@ -9,6 +9,7 @@ import { CenterViewport } from './CenterViewport';
 import { RightInspector } from './RightInspector';
 import { BottomTimeline } from './BottomTimeline';
 import { StatusBar } from './StatusBar';
+import { CanvasReadout } from './CanvasReadout';
 import { StudioSkyBackdrop } from './StudioSkyBackdrop';
 import { useThemeStore } from '@/stores/themeStore';
 import { isSceneTheme } from '@/lib/theme/registry';
@@ -547,6 +548,8 @@ export const StudioLayout: React.FC = () => {
 
       {/* Status Bar */}
       <div hidden={focusMode} className="moon-slot moon-slot-status"><StatusBar /></div>
+      {/* Text account of the drawing; outside the slot so Focus mode keeps it readable */}
+      <CanvasReadout />
 
       <PostcardPicker
         isOpen={isPostcardsOpen}
