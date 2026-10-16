@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { POST } from '@/app/api/diagnostics/relay/route';
 
+// What a browser on the same origin sends with PixiBun's own relay request.
+const browserHeaders = { origin: 'http://localhost:3000', 'content-type': 'application/json' };
+
 describe('POST /api/diagnostics/relay (SSRF guard & proxy)', () => {
   const originalEnv = process.env.DIAGNOSTICS_RELAY_URL;
   const originalFetch = globalThis.fetch;
@@ -25,6 +28,7 @@ describe('POST /api/diagnostics/relay (SSRF guard & proxy)', () => {
 
     const req = new Request('http://localhost:3000/api/diagnostics/relay', {
       method: 'POST',
+      headers: browserHeaders,
       body: JSON.stringify({ events: [{ id: 'diag-1', kind: 'error', message: 'test' }] }),
     });
 
@@ -43,6 +47,7 @@ describe('POST /api/diagnostics/relay (SSRF guard & proxy)', () => {
     // Attacker attempts SSRF to internal metadata service
     const req = new Request('http://localhost:3000/api/diagnostics/relay', {
       method: 'POST',
+      headers: browserHeaders,
       body: JSON.stringify({
         endpoint: 'http://169.254.169.254/latest/meta-data',
         events: [{ id: 'diag-attack', kind: 'error', message: 'ssrf attempt' }],
@@ -68,6 +73,7 @@ describe('POST /api/diagnostics/relay (SSRF guard & proxy)', () => {
 
     const req = new Request('http://localhost:3000/api/diagnostics/relay', {
       method: 'POST',
+      headers: browserHeaders,
       body: JSON.stringify({
         app: 'pixibun',
         version: '1.0.0',
@@ -93,6 +99,7 @@ describe('POST /api/diagnostics/relay (SSRF guard & proxy)', () => {
 
     const req = new Request('http://localhost:3000/api/diagnostics/relay', {
       method: 'POST',
+      headers: browserHeaders,
       body: JSON.stringify({ events: [] }),
     });
 
@@ -110,6 +117,7 @@ describe('POST /api/diagnostics/relay (SSRF guard & proxy)', () => {
       headers: {
         origin: 'https://malicious-site.attacker.com',
         host: 'pixibun.example.com',
+        'content-type': 'application/json',
       },
       body: JSON.stringify({ events: [] }),
     });
@@ -130,6 +138,7 @@ describe('POST /api/diagnostics/relay (SSRF guard & proxy)', () => {
       headers: {
         origin: 'https://pixibun.example.com',
         host: 'pixibun.example.com',
+        'content-type': 'application/json',
       },
       body: JSON.stringify({ events: [] }),
     });
@@ -148,4 +157,29 @@ describe('POST /api/diagnostics/relay (SSRF guard & proxy)', () => {
       expect((await POST(req)).status).toBe(403);
     }
   );
+
+  it.each([
+    ['no Origin', { 'content-type': 'application/json' }, 403],
+    ['a text body', { origin: 'http://localhost:3000', 'content-type': 'text/plain' }, 415],
+    ['no content type', { origin: 'http://localhost:3000' }, 415],
+  ])('refuses a request with %s before spending quota or forwarding', async (_name, headers, status) => {
+    process.env.DIAGNOSTICS_RELAY_URL = 'https://upstream.example.com/collect';
+    const forward = vi.fn(); globalThis.fetch = forward;
+    const req = new Request('http://localhost:3000/api/diagnostics/relay', { method: 'POST', headers, body: JSON.stringify({ events: [] }) });
+    expect((await POST(req)).status).toBe(status);
+    expect(forward).not.toHaveBeenCalled();
+  });
+
+  it('limits by the edge address, not a client-chosen first forwarded entry', async () => {
+    process.env.DIAGNOSTICS_RELAY_URL = 'https://upstream.example.com/collect';
+    globalThis.fetch = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
+    const send = (forwarded: string) => POST(new Request('http://localhost:3000/api/diagnostics/relay', {
+      method: 'POST', headers: { ...browserHeaders, 'x-forwarded-for': forwarded }, body: JSON.stringify({ events: [] }),
+    }));
+    const statuses: number[] = [];
+    // Twelve tokens per client: rotating the spoofed first entry must not mint more.
+    for (let i = 0; i < 13; i++) statuses.push((await send(`198.51.100.${i}, 203.0.113.77`)).status);
+    expect(statuses.slice(0, 12).every(status => status === 200)).toBe(true);
+    expect(statuses[12]).toBe(429);
+  });
 });

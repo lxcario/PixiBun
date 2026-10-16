@@ -58,7 +58,7 @@ export function ToggleRow({
 }) {
   const hintId = useId();
   return (
-    <label className={clsx('insp-toggle flex items-start gap-2.5 py-1.5 select-none', disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer')}>
+    <label className={clsx('insp-toggle relative flex items-start gap-2.5 py-1.5 select-none', disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer')}>
       <span className="flex-1 min-w-0">
         <span className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-heading)]">
           {label}
@@ -66,9 +66,11 @@ export function ToggleRow({
         </span>
         {hint && <span id={hintId} className="block mt-0.5 text-[11px] leading-4 text-[var(--text-muted)]">{hint}</span>}
       </span>
+      {/* The real checkbox lies, invisible, exactly over the drawn switch, so a
+          pointer or an automated click on the control lands on the switch. */}
       <input
         type="checkbox"
-        className="sr-only peer"
+        className="peer absolute right-0 top-2 z-10 m-0 h-[18px] w-[30px] opacity-0 cursor-pointer disabled:cursor-not-allowed"
         checked={checked}
         disabled={disabled}
         aria-describedby={hint ? hintId : undefined}

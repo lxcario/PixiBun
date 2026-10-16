@@ -4,7 +4,7 @@ import { APP_VERSION } from '@/config/version';
 let client = 0;
 const event = { id: 'test', kind: 'error', message: 'Failure', timestamp: 1, route: '/studio', appVersion: 'older-client' };
 const request = (body: unknown) => new Request('https://pixibun.test/api/diagnostics/relay', {
-  method: 'POST', headers: { origin: 'https://pixibun.test', 'x-forwarded-for': `test-${++client}` }, body: JSON.stringify(body),
+  method: 'POST', headers: { origin: 'https://pixibun.test', 'content-type': 'application/json', 'x-forwarded-for': `test-${++client}` }, body: JSON.stringify(body),
 });
 beforeEach(() => { vi.stubEnv('DIAGNOSTICS_RELAY_URL', 'https://relay.test/errors');
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 }))); });

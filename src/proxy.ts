@@ -21,7 +21,7 @@ import { NextRequest, NextResponse } from 'next/server';
  *   which opts every route into dynamic rendering.
  */
 
-const buildCspHeader = (nonce: string): string => {
+export const buildCspHeader = (nonce: string): string => {
   const isDev = process.env.NODE_ENV === 'development';
   return [
     "default-src 'self'",
@@ -34,6 +34,8 @@ const buildCspHeader = (nonce: string): string => {
     "child-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
+    // Forms may only submit to this origin, even if markup were injected.
+    "form-action 'self'",
     "frame-ancestors 'none'",
   ].join('; ');
 };
