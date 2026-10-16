@@ -265,6 +265,16 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       return;
     }
 
+    // The toolbar can select Chisel without going through the surface inspector.
+    // Normal directions belong on an editable surface layer, never diffuse art.
+    if (tools.activeTool === 'normal-chisel' && currentLayer?.tag !== 'normal') {
+      studioEvents.emit('pixibun:toast', {
+        type: 'error',
+        message: 'Create or select an unlocked surface layer to paint raised edges.',
+      });
+      return;
+    }
+
     if (tools.activeTool === 'erase-color') {
       if (!currentLayer) return;
       if (props.floatingSelection) props.commitFloatingSelection();
