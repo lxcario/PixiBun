@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { motion, useIsPresent, type HTMLMotionProps, type Variants } from 'motion/react';
 import {
   BLOOM, ENTER_BLUR, ENTER_SCALE, EXIT, EXIT_BLUR, EXIT_SCALE, FADE_IN, REDUCED_FADE, STAGGER, UNBLUR, spring,
@@ -13,7 +13,41 @@ import { useReducedMotion } from '@/lib/motion/useReducedMotion';
  * and 8 px blur. Children using `revealItem` arrive one after another.
  * Reduced motion: a 120 ms cross-fade, nothing scales, moves or blurs.
  */
-export function surfaceVariants(reduce: boolean): Variants {
+/** Which way a surface unfolds: away from its trigger, or out from its middle for a modal. */
+export type UnfoldFrom = 'top' | 'bottom' | 'center';
+
+const UNFOLD_CLIP: Record<UnfoldFrom, string> = {
+  top: 'inset(0% 0% 40% 0% round 16px)',
+  bottom: 'inset(40% 0% 0% 0% round 16px)',
+  center: 'inset(18% 0% 18% 0% round 16px)',
+};
+const UNFOLDED = 'inset(0% 0% 0% 0% round 16px)';
+
+/** How long the staggered content reveal runs before [data-unfold] is lifted again. */
+export const UNFOLD_MS = 1100;
+
+/** Point the unfold away from the trigger: a surface whose origin is at its bottom grows upward. */
+export function unfoldFromOrigin(origin: string): UnfoldFrom {
+  return /bottom/.test(origin) ? 'bottom' : 'top';
+}
+
+/**
+ * True for the first moments after mount, while content items stagger in through
+ * [data-unfold] (surfaces.css). Lifting it afterwards hands every element back its own
+ * animations, so a spinner inside a modal keeps spinning.
+ */
+export function useUnfolding(enabled = true): boolean {
+  const reduce = useReducedMotion();
+  const [unfolding, setUnfolding] = useState(enabled && !reduce);
+  useEffect(() => {
+    if (!unfolding) return;
+    const timer = setTimeout(() => setUnfolding(false), UNFOLD_MS);
+    return () => clearTimeout(timer);
+  }, [unfolding]);
+  return unfolding;
+}
+
+export function surfaceVariants(reduce: boolean, from: UnfoldFrom = 'top'): Variants {
   if (reduce) {
     return {
       closed: { opacity: 0 },
@@ -22,12 +56,14 @@ export function surfaceVariants(reduce: boolean): Variants {
     };
   }
   return {
-    closed: { opacity: 0, scale: ENTER_SCALE, filter: `blur(${ENTER_BLUR}px)` },
+    // The surface unfolds as it blooms: a clip opens away from the trigger on the same spring.
+    closed: { opacity: 0, scale: ENTER_SCALE, filter: `blur(${ENTER_BLUR}px)`, clipPath: UNFOLD_CLIP[from] },
     open: {
-      opacity: 1, scale: 1, filter: 'blur(0px)',
-      // A lingering filter would make the surface a containing block for fixed children.
-      transitionEnd: { filter: 'none' },
-      transition: { opacity: FADE_IN, filter: UNBLUR, scale: spring(BLOOM), staggerChildren: STAGGER, delayChildren: 0.02 },
+      opacity: 1, scale: 1, filter: 'blur(0px)', clipPath: UNFOLDED,
+      // A lingering filter would make the surface a containing block for fixed children,
+      // and a lingering clip would cut off its shadow and any menu that overhangs it.
+      transitionEnd: { filter: 'none', clipPath: 'none' },
+      transition: { opacity: FADE_IN, filter: UNBLUR, scale: spring(BLOOM), clipPath: spring(BLOOM), staggerChildren: STAGGER, delayChildren: 0.02 },
     },
     exit: { opacity: 0, scale: EXIT_SCALE, filter: `blur(${EXIT_BLUR}px)`, transition: EXIT },
   };
@@ -59,12 +95,14 @@ export const SpringSurface = forwardRef<HTMLDivElement, SurfaceProps>(function S
   const reduce = useReducedMotion();
   // While melting away it is already closed: out of the accessibility tree and not clickable.
   const present = useIsPresent();
+  const unfolding = useUnfolding(appear);
   return (
     <motion.div
       ref={ref}
       aria-hidden={present ? undefined : true}
       inert={!present || undefined}
-      variants={surfaceVariants(reduce)}
+      data-unfold={unfolding || undefined}
+      variants={surfaceVariants(reduce, unfoldFromOrigin(origin))}
       initial={appear ? 'closed' : false}
       animate="open"
       exit="exit"

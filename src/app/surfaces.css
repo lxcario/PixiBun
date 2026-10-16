@@ -682,3 +682,100 @@ body.studio-ui details > summary::marker { color: var(--accent-gold); }
     body.studio-ui select::picker-icon { transition: none; }
   }
 }
+
+/* ── Top bar controls ──────────────────────────────────────────────────
+   One shape for everything in the rail's right half: Export's height, radius,
+   ink edge and drop. Secondary controls are light (the raised surface, near
+   white in Day styles); Export keeps the accent fill. Grouped controls (mirror,
+   zoom, fit, view) share one such shell and stay flat inside it.
+   The :root prefix and doubled class outrank the themes' own !important
+   button rules (body.moon-ui .pixel-tactile-btn and friends). */
+:root { --bar-fill: var(--desk-surface-raised); --bar-edge: var(--ink, #0b0714); --bar-radius: 8px; }
+
+:root body .bar-control.bar-control {
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--bar-radius) !important;
+  border: var(--control-border-w, 2px) solid var(--bar-edge) !important;
+  background-color: var(--bar-fill) !important;
+  color: var(--text-heading) !important;
+  font-weight: 600;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 28%, transparent), 0 2px 0 var(--bar-edge) !important;
+  transition: transform 90ms ease, box-shadow 90ms ease, background-color 120ms ease !important;
+}
+:root body .bar-control.bar-control:is(button, select):hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--bar-fill) 82%, var(--accent-gold)) !important;
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 28%, transparent), 0 3px 0 var(--bar-edge) !important;
+}
+:root body .bar-control.bar-control:is(button, select):active:not(:disabled) {
+  transform: translateY(1px) !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 20%, transparent), 0 1px 0 var(--bar-edge) !important;
+}
+:root body .bar-control.bar-control[aria-expanded="true"] {
+  background-color: color-mix(in srgb, var(--bar-fill) 70%, var(--accent-gold)) !important;
+}
+/* Separate rule: a browser without :open would drop the whole selector list. */
+:root body .bar-control.bar-control:open {
+  background-color: color-mix(in srgb, var(--bar-fill) 70%, var(--accent-gold)) !important;
+}
+:root body .bar-control.bar-control:focus-visible { outline: 2px solid var(--accent-gold) !important; outline-offset: 2px; }
+
+:root body .bar-control.bar-control-primary {
+  background-color: var(--primary-bg, var(--accent-gold)) !important;
+  color: var(--primary-fg, #1d1336) !important;
+}
+:root body .bar-control.bar-control-primary:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--primary-bg, var(--accent-gold)) 88%, #fff) !important;
+}
+
+/* Grouped controls: the shell carries the edge; its buttons are flat and tint on hover. */
+:root body .bar-cluster.bar-cluster { padding: 0 3px; gap: 1px; }
+:root body .bar-cluster.bar-cluster button:not([aria-pressed="true"]) {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+:root body .bar-cluster.bar-cluster button {
+  height: 22px;
+  border-radius: calc(var(--bar-radius) - 3px) !important;
+  color: var(--text-body);
+}
+:root body .bar-cluster.bar-cluster button:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--bar-fill) 78%, var(--accent-gold)) !important;
+  color: var(--text-heading) !important;
+}
+:root body .bar-cluster.bar-cluster [aria-hidden="true"].w-px { background-color: color-mix(in srgb, var(--bar-edge) 22%, transparent) !important; }
+
+/* ── Unfold: what a surface holds arrives one item at a time ───────────
+   While a modal, popover or menu opens it carries [data-unfold] (SpringSurface,
+   ModalWrapper). Its items rise 7px, come into focus from a light blur and settle
+   on the bloom spring, 42ms apart. A surface with a single wrapper staggers that
+   wrapper's children instead. Only the start state is held ("backwards"), so
+   nothing is overridden once an item has arrived, and the attribute is lifted
+   after the reveal so items get their own animations back. */
+@keyframes pb-unfold-item {
+  from { opacity: 0; transform: translateY(7px) scale(0.985); filter: blur(6px); }
+}
+[data-unfold] > :not(:only-child),
+[data-unfold] > :only-child > * {
+  animation: pb-unfold-item var(--spring-bloom-duration, 516ms) var(--spring-bloom, cubic-bezier(0.22, 1, 0.36, 1)) backwards;
+  animation-delay: calc(70ms + var(--unfold-i, 0) * 42ms);
+}
+[data-unfold] > :nth-child(2), [data-unfold] > :only-child > :nth-child(2) { --unfold-i: 1; }
+[data-unfold] > :nth-child(3), [data-unfold] > :only-child > :nth-child(3) { --unfold-i: 2; }
+[data-unfold] > :nth-child(4), [data-unfold] > :only-child > :nth-child(4) { --unfold-i: 3; }
+[data-unfold] > :nth-child(5), [data-unfold] > :only-child > :nth-child(5) { --unfold-i: 4; }
+[data-unfold] > :nth-child(6), [data-unfold] > :only-child > :nth-child(6) { --unfold-i: 5; }
+[data-unfold] > :nth-child(7), [data-unfold] > :only-child > :nth-child(7) { --unfold-i: 6; }
+[data-unfold] > :nth-child(8), [data-unfold] > :only-child > :nth-child(8) { --unfold-i: 7; }
+[data-unfold] > :nth-child(9), [data-unfold] > :only-child > :nth-child(9) { --unfold-i: 8; }
+[data-unfold] > :nth-child(10), [data-unfold] > :only-child > :nth-child(10) { --unfold-i: 9; }
+[data-unfold] > :nth-child(11), [data-unfold] > :only-child > :nth-child(11) { --unfold-i: 10; }
+[data-unfold] > :nth-child(12), [data-unfold] > :only-child > :nth-child(12) { --unfold-i: 11; }
+[data-unfold] > :nth-child(n + 13), [data-unfold] > :only-child > :nth-child(n + 13) { --unfold-i: 11; }
+@media (prefers-reduced-motion: reduce) {
+  [data-unfold] > *, [data-unfold] > :only-child > * { animation: none !important; }
+}
+

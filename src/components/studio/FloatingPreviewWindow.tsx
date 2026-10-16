@@ -1,12 +1,48 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
+import { SpringSurface } from '@/components/ui/surfaces/SpringSurface';
 import { compositeFrame } from '@/lib/render/compositor';
 import { useThrottledValue } from '@/hooks/useThrottledValue';
+import { SNAP, spring } from '@/lib/motion/springs';
+import { useReducedMotion } from '@/lib/motion/useReducedMotion';
+import styles from './FloatingPreviewWindow.module.css';
 
+type Backdrop = 'checker' | 'obsidian' | 'alabaster' | 'amber';
+
+const BACKDROPS: { id: Backdrop; label: string }[] = [
+  { id: 'checker', label: 'Transparent' },
+  { id: 'obsidian', label: 'Dark' },
+  { id: 'alabaster', label: 'Light' },
+  { id: 'amber', label: 'Warm' },
+];
+
+/** Gap kept between the window and the edges of the canvas area. */
+const EDGE = 12;
+/** Within this distance of an edge, a dropped window settles against it. */
+const MAGNET = 20;
+const MIN_STAGE = { width: 140, height: 80 };
+const MAX_STAGE = 640;
+
+type Point = { x: number; y: number };
+
+/**
+ * Live Preview: the current frame (or the playing animation) at 1×, 2× or 4× on a chosen
+ * backdrop. It lives inside the canvas area and can't be dragged or resized out of it.
+ */
 export const FloatingPreviewWindow = React.memo(function FloatingPreviewWindow() {
+  const showFloatingPreview = useStudioStore((s) => s.showFloatingPreview);
+  return (
+    <AnimatePresence>
+      {showFloatingPreview && <PreviewWindow key="live-preview" />}
+    </AnimatePresence>
+  );
+});
+
+function PreviewWindow() {
   const frames = useStudioStore((s) => s.frames);
   const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
@@ -18,314 +54,247 @@ export const FloatingPreviewWindow = React.memo(function FloatingPreviewWindow()
   const setPreviewScale = useStudioStore((s) => s.setPreviewScale);
   const previewBackdrop = useStudioStore((s) => s.previewBackdrop);
   const setPreviewBackdrop = useStudioStore((s) => s.setPreviewBackdrop);
-  const showFloatingPreview = useStudioStore((s) => s.showFloatingPreview);
   const toggleFloatingPreview = useStudioStore((s) => s.toggleFloatingPreview);
   // Redraw a few times a second while painting, not on every stroke frame.
   const bufferVersion = useThrottledValue(useStudioStore((s) => s.bufferVersion), 120);
+  const reduce = useReducedMotion();
 
+  const windowRef = useRef<HTMLDivElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [position, setPosition] = useState<{ x: number; y: number }>({ x: 16, y: 56 });
+  const [stage, setStage] = useState({ width: 184, height: 124 });
+  // null until measured: the window opens in the canvas area's top-right corner.
+  const [position, setPosition] = useState<Point | null>(null);
+  const [gesture, setGesture] = useState<'drag' | 'resize' | null>(null);
+  // Read by the move handler: a fast pointer can move before React re-renders with the state.
+  const gestureRef = useRef<'drag' | 'resize' | null>(null);
+  const gestureStart = useRef({ pointerX: 0, pointerY: 0, x: 0, y: 0, width: 0, height: 0 });
 
-  useEffect(() => {
-    setPosition({ x: Math.max(16, window.innerWidth - 640), y: 16 });
+  /** Keep the whole window inside the canvas area. */
+  const clamp = useCallback((point: Point, magnet = false): Point => {
+    const el = windowRef.current;
+    const area = el?.offsetParent as HTMLElement | null;
+    if (!el || !area) return point;
+    const maxX = Math.max(EDGE, area.clientWidth - el.offsetWidth - EDGE);
+    const maxY = Math.max(EDGE, area.clientHeight - el.offsetHeight - EDGE);
+    let x = Math.min(maxX, Math.max(EDGE, point.x));
+    let y = Math.min(maxY, Math.max(EDGE, point.y));
+    if (magnet) {
+      if (x - EDGE < MAGNET) x = EDGE; else if (maxX - x < MAGNET) x = maxX;
+      if (y - EDGE < MAGNET) y = EDGE; else if (maxY - y < MAGNET) y = maxY;
+    }
+    return { x, y };
   }, []);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  // Custom resizable viewport size (minimum 140px width)
-  const [viewportSize, setViewportSize] = useState<{ width: number; height: number }>({
-    width: 180,
-    height: 120,
-  });
-  const [isResizing, setIsResizing] = useState(false);
-  const resizeStartRef = useRef<{ startX: number; startY: number; startW: number; startH: number }>({
-    startX: 0,
-    startY: 0,
-    startW: 180,
-    startH: 120,
-  });
+  useLayoutEffect(() => {
+    const el = windowRef.current;
+    const area = el?.offsetParent as HTMLElement | null;
+    if (!el || !area) return;
+    setPosition(prev => clamp(prev ?? { x: area.clientWidth - el.offsetWidth - EDGE, y: EDGE }));
+    // The canvas area shrinks when panels open or the window resizes: stay inside it.
+    const observer = new ResizeObserver(() => setPosition(prev => (prev ? clamp(prev) : prev)));
+    observer.observe(area);
+    return () => observer.disconnect();
+  }, [clamp]);
 
-  // Render active composite frame to preview canvas whenever frames, activeFrameIndex, or canvas size changes
+  // A bigger stage or a restored window may now overhang an edge.
+  useLayoutEffect(() => {
+    setPosition(prev => (prev ? clamp(prev) : prev));
+  }, [clamp, stage, isMinimized]);
+
   useEffect(() => {
-    if (!showFloatingPreview || isMinimized) return;
+    if (isMinimized) return;
     const canvas = previewCanvasRef.current;
     if (!canvas) return;
-
     compositeFrame(frames, activeFrameIndex, canvasWidth, canvasHeight, {}, canvas);
-  }, [activeFrameIndex, bufferVersion, canvasHeight, canvasWidth, frames, showFloatingPreview, isMinimized]);
+  }, [activeFrameIndex, bufferVersion, canvasHeight, canvasWidth, frames, isMinimized]);
 
-  // Robust window-level dragging listener (prevents mouse stickiness bug)
-  useEffect(() => {
-    if (!isDragging) return;
-
-    const onGlobalPointerMove = (e: PointerEvent) => {
-      // Abort immediately if pointer button is no longer held
-      if (e.buttons === 0) {
-        setIsDragging(false);
-        return;
-      }
-      setPosition({
-        x: Math.max(10, Math.min(window.innerWidth - 150, e.clientX - dragOffsetRef.current.x)),
-        y: Math.max(10, Math.min(window.innerHeight - 80, e.clientY - dragOffsetRef.current.y)),
-      });
-    };
-
-    const onGlobalPointerUp = () => {
-      setIsDragging(false);
-    };
-
-    window.addEventListener('pointermove', onGlobalPointerMove);
-    window.addEventListener('pointerup', onGlobalPointerUp);
-    window.addEventListener('pointercancel', onGlobalPointerUp);
-
-    return () => {
-      window.removeEventListener('pointermove', onGlobalPointerMove);
-      window.removeEventListener('pointerup', onGlobalPointerUp);
-      window.removeEventListener('pointercancel', onGlobalPointerUp);
-    };
-  }, [isDragging]);
-
-  // Robust window-level resizing listener
-  useEffect(() => {
-    if (!isResizing) return;
-
-    const onGlobalResizeMove = (e: PointerEvent) => {
-      if (e.buttons === 0) {
-        setIsResizing(false);
-        return;
-      }
-      const deltaX = e.clientX - resizeStartRef.current.startX;
-      const deltaY = e.clientY - resizeStartRef.current.startY;
-      setViewportSize({
-        width: Math.max(140, Math.min(640, resizeStartRef.current.startW + deltaX)),
-        height: Math.max(80, Math.min(640, resizeStartRef.current.startH + deltaY)),
-      });
-    };
-
-    const onGlobalResizeUp = () => {
-      setIsResizing(false);
-    };
-
-    window.addEventListener('pointermove', onGlobalResizeMove);
-    window.addEventListener('pointerup', onGlobalResizeUp);
-    window.addEventListener('pointercancel', onGlobalResizeUp);
-
-    return () => {
-      window.removeEventListener('pointermove', onGlobalResizeMove);
-      window.removeEventListener('pointerup', onGlobalResizeUp);
-      window.removeEventListener('pointercancel', onGlobalResizeUp);
-    };
-  }, [isResizing]);
-
-  if (!showFloatingPreview) return null;
-
-  const handleTitlePointerDown = (e: React.PointerEvent) => {
-    if (e.button !== 0) return;
-    dragOffsetRef.current = {
-      x: e.clientX - position.x,
-      y: e.clientY - position.y,
-    };
-    setIsDragging(true);
-  };
-
-  const handleResizePointerDown = (e: React.PointerEvent) => {
-    if (e.button !== 0) return;
+  const begin = (kind: 'drag' | 'resize') => (e: React.PointerEvent<HTMLElement>) => {
+    if (e.button !== 0 || !position) return;
     e.stopPropagation();
-    resizeStartRef.current = {
-      startX: e.clientX,
-      startY: e.clientY,
-      startW: viewportSize.width,
-      startH: viewportSize.height,
-    };
-    setIsResizing(true);
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* the pointer is already gone */ }
+    gestureStart.current = { pointerX: e.clientX, pointerY: e.clientY, x: position.x, y: position.y, width: stage.width, height: stage.height };
+    gestureRef.current = kind;
+    setGesture(kind);
   };
-
-  const scaledWidth = canvasWidth * previewScale;
-  const scaledHeight = canvasHeight * previewScale;
-
-  const getBackdropClass = () => {
-    switch (previewBackdrop) {
-      case 'obsidian':
-        return 'bg-[#2A2130]';
-      case 'alabaster':
-        return 'bg-[#EDE8F4]';
-      case 'amber':
-        return 'bg-[#F0BE7C]/30';
-      case 'checker':
-      default:
-        return 'bg-[repeating-conic-gradient(#3a2e4c_0%_25%,#261c33_0%_50%)] bg-[length:12px_12px]';
+  const move = (e: React.PointerEvent<HTMLElement>) => {
+    const gesture = gestureRef.current;
+    if (!gesture) return;
+    const start = gestureStart.current;
+    const dx = e.clientX - start.pointerX;
+    const dy = e.clientY - start.pointerY;
+    if (gesture === 'drag') {
+      setPosition(clamp({ x: start.x + dx, y: start.y + dy }));
+    } else {
+      // Never grow past the canvas area: the window's far edge stops at its margin.
+      const area = windowRef.current?.offsetParent as HTMLElement | null;
+      const chrome = (windowRef.current?.offsetWidth ?? 0) - stage.width;
+      const chromeY = (windowRef.current?.offsetHeight ?? 0) - stage.height;
+      const roomX = area ? area.clientWidth - start.x - EDGE - chrome : MAX_STAGE;
+      const roomY = area ? area.clientHeight - start.y - EDGE - chromeY : MAX_STAGE;
+      setStage({
+        width: Math.round(Math.max(MIN_STAGE.width, Math.min(MAX_STAGE, roomX, start.width + dx))),
+        height: Math.round(Math.max(MIN_STAGE.height, Math.min(MAX_STAGE, roomY, start.height + dy))),
+      });
     }
   };
+  const end = (e: React.PointerEvent<HTMLElement>) => {
+    const gesture = gestureRef.current;
+    if (!gesture) return;
+    gestureRef.current = null;
+    try { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); } catch { /* released */ }
+    if (gesture === 'drag') setPosition(prev => (prev ? clamp(prev, true) : prev));
+    setGesture(null);
+  };
+
+  const fitsAt = (scale: number) => canvasWidth * scale <= stage.width && canvasHeight * scale <= stage.height;
+  const displayScale = Math.min(previewScale, stage.width / canvasWidth, stage.height / canvasHeight);
 
   return (
-    <div
+    <SpringSurface
+      ref={windowRef}
       role="dialog"
       aria-label="Live Preview Window"
       data-testid="floating-preview-window"
+      data-gesture={gesture ?? undefined}
+      origin="top right"
       onPointerDown={(event) => event.stopPropagation()}
+      className={`pb-panel ${styles.window}`}
       style={{
-        position: 'absolute',
-        left: `${position.x}px`,
-        top: `${position.y}px`,
+        left: position?.x ?? 0,
+        top: position?.y ?? 0,
+        visibility: position ? 'visible' : 'hidden',
       }}
-      className={`z-30 ${
-        isMinimized ? 'w-44' : 'min-w-[140px]'
-      } bg-[var(--desk-surface)] border border-[var(--desk-border)] rounded-[3px] shadow-[0_12px_32px_rgba(0,0,0,0.6)] flex flex-col select-none overflow-hidden ${
-        isDragging || isResizing ? '' : 'transition-opacity duration-150'
-      } opacity-95 hover:opacity-100 relative`}
     >
-      {/* 1. Window Titlebar / Drag Handle */}
       <div
-        onPointerDown={handleTitlePointerDown}
-        className="h-6 bg-[var(--desk-surface-raised)] border-b border-[var(--desk-border)] px-2 flex items-center justify-between cursor-move text-[11px] font-sans font-medium text-[var(--accent-gold)]"
+        className={styles.header}
+        onPointerDown={begin('drag')}
+        onPointerMove={move}
+        onPointerUp={end}
+        onPointerCancel={end}
       >
-        <div className="flex items-center gap-1.5 pointer-events-none">
-          <PixelIcon name="preview" size={12} />
-          <span>Live Preview{isMinimized ? '' : ` (${previewScale}x)`}</span>
-        </div>
-
-        <div className="flex items-center gap-1">
-          <button
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsMinimized(!isMinimized);
-            }}
-            className="text-[var(--text-muted)] hover:text-[var(--accent-gold)] font-mono text-xs px-1 cursor-pointer leading-none"
-            title={isMinimized ? 'Expand Preview Window' : 'Minimize Preview Window'}
-            aria-label={isMinimized ? 'Expand Preview Window' : 'Minimize Preview Window'}
-          >
-            {isMinimized ? '+' : '–'}
-          </button>
-          <button
-            onPointerDown={(e) => {
-              e.stopPropagation();
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleFloatingPreview();
-            }}
-            className="text-[var(--text-body)] hover:text-[#ff99aa] font-bold text-xs p-0.5 cursor-pointer leading-none"
-            title="Close Preview Window"
-            aria-label="Close Preview Window"
-          >
-            ×
-          </button>
-        </div>
-      </div>
-
-      {!isMinimized && (
-        <>
-          {/* 2. Live Canvas Viewport (Dynamic Resizable Size) */}
-      <div className="p-2.5 flex items-center justify-center bg-[var(--desk-bg)]">
-        <div
-          className={`relative border border-[var(--desk-border)] rounded-[2px] overflow-hidden flex items-center justify-center ${getBackdropClass()}`}
-          style={{
-            width: `${viewportSize.width}px`,
-            height: `${viewportSize.height}px`,
-          }}
+        <span className={styles.titleIcon} aria-hidden="true"><PixelIcon name="preview" size={12} /></span>
+        <span className={styles.title}>Live Preview</span>
+        <span className={styles.scaleChip} aria-hidden="true">{previewScale}x</span>
+        <span className={styles.spacer} />
+        <button
+          type="button"
+          className={styles.iconButton}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={() => setIsMinimized(!isMinimized)}
+          title={isMinimized ? 'Show the preview' : 'Fold to the title bar'}
+          aria-label={isMinimized ? 'Expand Preview Window' : 'Minimize Preview Window'}
         >
-          <canvas
-            ref={previewCanvasRef}
-            width={canvasWidth}
-            height={canvasHeight}
-            style={{
-              width: `${scaledWidth}px`,
-              height: `${scaledHeight}px`,
-              maxWidth: `${viewportSize.width}px`,
-              maxHeight: `${viewportSize.height}px`,
-            }}
-            className="pixelated pointer-events-none object-contain"
-          />
-        </div>
+          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" shapeRendering="crispEdges">
+            {isMinimized
+              ? <path fill="currentColor" d="M2 2h8v1H2zM2 9h8v1H2zM2 3h1v6H2zM9 3h1v6H9z" />
+              : <path fill="currentColor" d="M2 6h8v1H2z" />}
+          </svg>
+        </button>
+        <button
+          type="button"
+          className={styles.iconButton}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={toggleFloatingPreview}
+          title="Close (View ▸ Live Preview brings it back)"
+          aria-label="Close Preview Window"
+        >
+          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" shapeRendering="crispEdges">
+            <path fill="currentColor" d="M2 2h2v1H2zM3 3h2v1H3zM4 4h1v1H4zM8 2h2v1H8zM7 3h2v1H7zM7 4h1v1H7zM5 5h2v2H5zM4 7h1v1H4zM3 8h2v1H3zM2 9h2v1H2zM7 7h1v1H7zM7 8h2v1H7zM8 9h2v1H8z" />
+          </svg>
+        </button>
       </div>
 
-      {/* 3. Controls Bar: Play/Pause, Scale (1x/2x/4x), Backdrop Switcher */}
-      <div className="px-2 py-1 bg-[var(--desk-surface-raised)] border-t border-[var(--desk-border)] flex flex-wrap items-center justify-between gap-1 text-[10px] font-mono pr-5">
-        {/* Play / Pause Toggle */}
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setIsPlaying(!isPlaying)}
-            className={`p-1 rounded-[2px] border transition-colors cursor-pointer ${
-              isPlaying
-                ? 'bg-[var(--accent-gold)] text-[#16141a] border-[#995e1e]'
-                : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
-            }`}
-            title={isPlaying ? 'Pause Animation' : 'Play Animation'}
-            aria-label={isPlaying ? 'Pause Animation' : 'Play Animation'}
+      <AnimatePresence initial={false}>
+        {!isMinimized && (
+          <motion.div
+            key="body"
+            className={styles.body}
+            initial={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }}
+            animate={reduce ? { opacity: 1 } : { opacity: 1, height: 'auto', transition: { height: spring(SNAP), opacity: { duration: 0.16 } } }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, height: 0, transition: { duration: 0.14 } }}
           >
-            <PixelIcon name={isPlaying ? 'pause' : 'play'} size={12} />
-          </button>
-          <span className="text-[10px] text-[var(--accent-gold)] font-bold font-mono">
-            #{activeFrameIndex + 1}/{frames.length}
-          </span>
-          <span className="text-[9px] text-[var(--text-body)] font-mono">({fps} FPS)</span>
-        </div>
+            <div className={styles.stageWrap}>
+              <div className={styles.stage} data-backdrop={previewBackdrop} style={{ width: stage.width, height: stage.height }}>
+                <canvas
+                  ref={previewCanvasRef}
+                  width={canvasWidth}
+                  height={canvasHeight}
+                  style={{ width: canvasWidth * displayScale, height: canvasHeight * displayScale }}
+                  className="pixelated pointer-events-none"
+                />
+              </div>
+            </div>
 
-        {/* Scale Selector (1x, 2x, 4x) */}
-        <div className="flex items-center gap-0.5 bg-[var(--desk-surface)] p-0.5 rounded-[2px] border border-[var(--desk-border)]">
-          {([1, 2, 4] as const).map((sc) => (
-            <button
-              key={sc}
-              onClick={() => setPreviewScale(sc)}
-              className={`px-1 py-0.5 text-[9px] font-bold rounded-[1px] cursor-pointer transition-colors font-mono ${
-                previewScale === sc
-                  ? 'bg-[var(--accent-gold)] text-[#16141a]'
-                  : 'text-[var(--text-body)] hover:text-[var(--accent-gold)]'
-              }`}
+            <div className={styles.controls}>
+              <button
+                type="button"
+                className={styles.play}
+                data-playing={isPlaying || undefined}
+                onClick={() => setIsPlaying(!isPlaying)}
+                title={isPlaying ? 'Pause the animation' : 'Play the animation'}
+                aria-label={isPlaying ? 'Pause Animation' : 'Play Animation'}
+              >
+                <PixelIcon name={isPlaying ? 'pause' : 'play'} size={11} />
+              </button>
+              <span className={styles.readout} title={`Frame ${activeFrameIndex + 1} of ${frames.length} at ${fps} frames per second`}>
+                <b>{activeFrameIndex + 1}</b>/{frames.length}
+                <span className={styles.fps}>{fps} fps</span>
+              </span>
+
+              <div className={`pb-segment ${styles.segment}`} role="radiogroup" aria-label="Preview zoom">
+                {([1, 2, 4] as const).map((scale) => (
+                  <button
+                    key={scale}
+                    type="button"
+                    role="radio"
+                    aria-checked={previewScale === scale}
+                    aria-label={`${scale}x`}
+                    title={fitsAt(scale) ? `Show at ${scale}× size` : `${scale}×: larger than the window, shown fitted. Drag the corner to enlarge.`}
+                    onClick={() => setPreviewScale(scale)}
+                    className={`pb-segment-option ${styles.segmentOption}`}
+                  >
+                    {previewScale === scale && (
+                      <motion.span layoutId="live-preview-scale" className="pb-segment-thumb" transition={reduce ? { duration: 0 } : spring(SNAP)} />
+                    )}
+                    {scale}x
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.backdrops} role="radiogroup" aria-label="Preview backdrop">
+              <span className={styles.backdropLabel}>Backdrop</span>
+              {BACKDROPS.map(({ id, label }) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="radio"
+                  aria-checked={previewBackdrop === id}
+                  aria-label={`Backdrop: ${id}`}
+                  title={label}
+                  onClick={() => setPreviewBackdrop(id)}
+                  className={styles.backdrop}
+                  data-backdrop={id}
+                />
+              ))}
+            </div>
+
+            <div
+              className={styles.grip}
+              onPointerDown={begin('resize')}
+              onPointerMove={move}
+              onPointerUp={end}
+              onPointerCancel={end}
+              title="Drag to resize Live Preview window"
             >
-              {sc}x
-            </button>
-          ))}
-        </div>
-
-        {/* Backdrop Swatches */}
-        <div className="flex items-center gap-0.5">
-          {(['checker', 'obsidian', 'alabaster', 'amber'] as const).map((bg) => (
-            <button
-              key={bg}
-              type="button"
-              onClick={() => setPreviewBackdrop(bg)}
-              className="w-5 h-5 flex items-center justify-center cursor-pointer bg-transparent border-0 p-0"
-              title={`Backdrop: ${bg}`}
-              aria-label={`Backdrop: ${bg}`}
-            >
-              <span
-                className={`w-3 h-3 rounded-[1px] border block ${
-                  previewBackdrop === bg ? 'border-[#f0be7c] scale-110' : 'border-[#140d1f]'
-                } ${
-                  bg === 'obsidian'
-                    ? 'bg-[#2A2130]'
-                    : bg === 'alabaster'
-                    ? 'bg-[#EDE8F4]'
-                    : bg === 'amber'
-                    ? 'bg-[#F0BE7C]'
-                    : 'bg-[repeating-conic-gradient(#888_0%_25%,#444_0%_50%)] bg-[length:6px_6px]'
-                }`}
-              />
-            </button>
-          ))}
-        </div>
-      </div>
-
-          {/* 4. Bottom-Right Window Resize Handle */}
-          <div
-            onPointerDown={handleResizePointerDown}
-            className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize flex items-end justify-end p-0.5 select-none text-[var(--text-body)] hover:text-[#f0be7c]"
-            title="Drag to resize Live Preview window"
-          >
-            <svg width="6" height="6" viewBox="0 0 6 6" fill="currentColor" className="pointer-events-none">
-              <rect x="4" y="0" width="2" height="2" />
-              <rect x="2" y="2" width="2" height="2" />
-              <rect x="4" y="2" width="2" height="2" />
-              <rect x="0" y="4" width="2" height="2" />
-              <rect x="2" y="4" width="2" height="2" />
-              <rect x="4" y="4" width="2" height="2" />
-            </svg>
-          </div>
-        </>
-      )}
-    </div>
+              <svg viewBox="0 0 8 8" width="8" height="8" aria-hidden="true" shapeRendering="crispEdges">
+                <path fill="currentColor" d="M6 0h2v2H6zM3 3h2v2H3zM6 3h2v2H6zM0 6h2v2H0zM3 6h2v2H3zM6 6h2v2H6z" />
+              </svg>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </SpringSurface>
   );
-});
+}

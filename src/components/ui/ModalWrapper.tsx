@@ -2,7 +2,7 @@
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useIsPresent } from 'motion/react';
-import { surfaceVariants, revealVariants } from '@/components/ui/surfaces/SpringSurface';
+import { surfaceVariants, revealVariants, useUnfolding } from '@/components/ui/surfaces/SpringSurface';
 import { useMorphHeight } from '@/components/ui/surfaces/useMorphHeight';
 import { useReducedMotion } from '@/lib/motion/useReducedMotion';
 import { EXIT, FADE_IN, REDUCED_FADE } from '@/lib/motion/springs';
@@ -180,6 +180,8 @@ function ModalDialog({
   // the dialog has fully opened (steps, tabs) spring the height.
   const [entered, setEntered] = useState(false);
   useMorphHeight(panelRef, contentRef, { enabled: isPresent && entered, children: true });
+  // Body content arrives one block at a time while the panel unfolds.
+  const unfolding = useUnfolding();
 
   const scrim = reduce
     ? { initial: { opacity: 0 }, animate: { opacity: 1, transition: REDUCED_FADE }, exit: { opacity: 0, transition: REDUCED_FADE } }
@@ -205,7 +207,7 @@ function ModalDialog({
       <motion.div
         ref={panelRef}
         data-surface-panel=""
-        variants={surfaceVariants(reduce)}
+        variants={surfaceVariants(reduce, 'center')}
         initial="closed"
         animate="open"
         exit="exit"
@@ -231,7 +233,7 @@ function ModalDialog({
           </button>
         </motion.div>
 
-        <motion.div ref={contentRef} variants={revealVariants(reduce)} id={bodyId} data-modal-body className={bodyClassName ?? 'flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto'}>
+        <motion.div ref={contentRef} variants={revealVariants(reduce)} id={bodyId} data-modal-body data-unfold={unfolding || undefined} className={bodyClassName ?? 'flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto'}>
           {children}
         </motion.div>
       </motion.div>
