@@ -50,13 +50,17 @@ PixiBun is a browser studio for hand-made pixel art and animation. There is no a
 
 ### 4. Frames and animation
 
-- The timeline (`bottom-timeline`) shows frames. **Add frame** (`add-frame-button`) adds one; the new frame becomes active.
+- The timeline (`bottom-timeline`) shows frames. **Add frame** (`add-frame-button`, accessible name "+ Frame") adds a blank one; the new frame becomes active and, at viewports at least 1536 px wide, the toolbar readout changes, for example from "Frame 1 / 1" to "Frame 2 / 2".
+- **Duplicate frame** in the toolbar (or **Ctrl+D** on a focused frame card) adds a copy right after the selected frame, artwork included. **Delete frame** removes the selected frame and shows a notice with **Undo**, which restores it; Delete is disabled when only one frame remains.
+- **Move frame earlier / later** in the toolbar (or **Alt+←/→** on a focused frame) reorders it; the first frame cannot move earlier and the last cannot move later.
+- Right-clicking a frame card opens a menu named "Frame N actions" with Duplicate, Move earlier, Move later and Delete; Escape closes it.
 - Onion skin (`onion-skin-settings`) can be switched on; a faded guide canvas (`onion-skin-canvas`) appears when there is a neighbouring frame.
 - Play loops the frames; Stop returns to an editable frame.
 
 ### 5. Colors and palettes
 
-- The color dock (`toolbar-color-dock`) shows primary and secondary colors; choosing a swatch changes the primary color.
+- The color dock (`toolbar-color-dock`) shows primary and secondary colors; choosing a quick swatch changes the primary color, right-clicking one changes the secondary.
+- Clicking a color well opens the **Colors** flyout (`color-access-flyout`, a dialog named "Color quick access flyout"). Typing a hex value such as `#FF0000` into the hex field and pressing Enter changes the edited color; the chip shows the new hex. Clicking a palette swatch sets the edited color; Shift+click sets the other one. **Swap colors** exchanges primary and secondary. Escape closes the flyout.
 - A named palette can be created and a color added to it.
 - An OKLCH ramp (`oklch-ramp-button`) produces a row of related shades.
 

@@ -109,7 +109,7 @@ Sources: [Palette panel](../src/components/layout/inspector/PalettePanel.tsx), [
 
 | Feature | What is available | Guide | Screenshot |
 | --- | --- | --- | --- |
-| Timeline editing | Add blank/duplicate/delete frames, reorder, select and edit per-frame holds | [Frames](guides/animation-and-review.md#frames-holds-and-playback) | [Timeline](assets/screenshots/2026-10-15-current-ui/animation-timeline.png) |
+| Timeline editing | Add blank/duplicate/delete frames from the toolbar, each frame card or a right-click frame menu; reorder by drag, arrows or Alt+←/→; frame keys on a focused card; Undo notice after deleting; select and edit per-frame holds | [Frames](guides/animation-and-review.md#frames-holds-and-playback) | [Timeline](assets/screenshots/2026-10-15-current-ui/animation-timeline.png) |
 | Playback and onion skin | Play/pause, step, loop, holds, preview speed; 0–5 previous/next ghosts, separate tints, opacity, presets and F3 toggle | [Playback](guides/animation-and-review.md#frames-holds-and-playback) | [Onion controls](assets/screenshots/2026-10-15-current-ui/onion-settings.png) |
 | Tags and clips | Named inclusive frame ranges, colors and loop choices | [Clips](guides/animation-and-review.md#tags-and-clips) | [Tag editor](assets/screenshots/2026-10-15-current-ui/animation-tags.png) |
 | Animation review | Clip scan, bounded alignment, thumbnails/diff, findings and report navigation | [Review](guides/animation-and-review.md#review-animation) | [Report](assets/screenshots/2026-10-15-current-ui/animation-review.png) |

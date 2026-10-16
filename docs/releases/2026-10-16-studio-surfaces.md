@@ -1,6 +1,6 @@
 # Studio surfaces: spring motion and a shared look — 16 October 2026
 
-Branch `studio-surfaces-motion`, cut from main at `1a4b96b7`. The earlier [Studio Labs motion update](2026-10-15-studio-labs-motion.md) and [island refinement and Liquid controls record](2026-10-15-labs-liquid-controls.md) keep their own source scope, tuning and verdicts. This record changes none of the Labs' behavior.
+Branch `studio-surfaces-motion`, cut from main at `1a4b96b7`. Later the same day, the [Studio follow-up](2026-10-16-studio-follow-up.md) made every surface unfold with staggered content, rebuilt Live Preview on the shared panel and added one press motion for every control; the measurements below describe this branch's own revision. The earlier [Studio Labs motion update](2026-10-15-studio-labs-motion.md) and [island refinement and Liquid controls record](2026-10-15-labs-liquid-controls.md) keep their own source scope, tuning and verdicts. This record changes none of the Labs' behavior.
 
 ## Why this is the default skin, not a Lab
 

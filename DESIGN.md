@@ -203,7 +203,7 @@ stateDiagram-v2
 3. **Hover Leave (Unhover):**
    * Controlled transition back to `scale(1.0)` with the specular sweep gliding back to the left (`-160%`).
 4. **Active / Depression State (Click):**
-   * Mechanical depression bounce: `transform: scale(0.97) translateY(1px)`.
+   * Since 16 October 2026 every control shares one elastic press ([`pressMotion.ts`](src/lib/motion/pressMotion.ts), mounted once in the root layout): while held, it eases down by about 3.5 px on its longer side (scale 0.95 for small buttons, barely for wide rows, over 170 ms), then springs back with one soft overshoot on the `RELEASE` spring (320/17/0.8). It animates the CSS `scale` property, so it composes with existing transforms. Pointer, Space and Enter press; leaving, dragging, cancelling or blurring releases. The canvas, form fields, disabled controls and `[data-no-press]` stay still, and reduced motion turns it off. The earlier `translateY(1px)` drop and per-component `scale(0.97)` presses were removed so one motion governs every press.
    * Inset shadow replacement: `box-shadow: inset 0 2px 4px rgba(0,0,0,0.4)`.
 5. **Focus Visible State:**
    * 2px solid amber ring (`outline: 2px solid #F0BE7C; outline-offset: 2px`).

@@ -662,7 +662,7 @@ export const BottomTimeline = React.memo(function BottomTimeline({ isPlaygroundM
 
         {/* Right: the selected frame's actions, always in view, then layout */}
         <div className="flex shrink-0 items-center gap-1.5">
-          <span className="hidden xl:inline text-[11px] text-[var(--text-muted)] whitespace-nowrap mr-0.5">
+          <span className="hidden 2xl:inline text-[11px] text-[var(--text-muted)] whitespace-nowrap mr-0.5">
             Frame <b className="font-mono text-[var(--text-heading)]">{activeFrameIndex + 1}</b>
             <span className="font-mono"> / {frames.length}</span>
             <span className="font-mono"> · {formatSeconds(totalMs)}</span>
@@ -697,7 +697,7 @@ export const BottomTimeline = React.memo(function BottomTimeline({ isPlaygroundM
                 className="h-7 px-2 text-xs pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] flex items-center gap-1 font-medium"
               >
                 <PixelIcon name="copy" size={12} />
-                <span className="hidden xl:inline">Duplicate</span>
+                <span className="hidden 2xl:inline">Duplicate</span>
               </TactileButton>
               <TactileButton
                 size="sm"
@@ -709,7 +709,7 @@ export const BottomTimeline = React.memo(function BottomTimeline({ isPlaygroundM
                 className="h-7 px-2 text-xs pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--state-danger,#f08a9a)] flex items-center gap-1 font-medium"
               >
                 <PixelIcon name="trash" size={12} />
-                <span className="hidden xl:inline">Delete</span>
+                <span className="hidden 2xl:inline">Delete</span>
               </TactileButton>
               <TactileButton
                 size="icon-sm"
@@ -915,7 +915,8 @@ export const BottomTimeline = React.memo(function BottomTimeline({ isPlaygroundM
               type="button"
               disabled={isGuest}
               onClick={addFrame}
-              aria-label="Add a new frame at the end"
+              // The visible word leads the name, so voice control users can say what they see.
+              aria-label={`${frames.length === 1 ? 'Animate' : 'New frame'}: add a blank frame at the end`}
               title={isGuest ? guestFrameLockTitle : 'Add a blank frame at the end'}
               className="w-[76px] h-16 shrink-0 rounded-[2px] border-2 border-dashed border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--accent-gold)] hover:border-[var(--accent-gold)] flex flex-col items-center justify-center gap-1 text-[10px] font-medium cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >

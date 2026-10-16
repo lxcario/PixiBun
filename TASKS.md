@@ -8,6 +8,19 @@ Maintenance update — 13 October 2026: see the [current status](docs/current-st
 
 > **Historical phase ledger:** Each entry describes its recorded checkpoint, including superseded controls, counts and verification. [Current status](docs/current-status.md) and the [issue registry](docs/research/issue-registry.md) govern present claims. Test assertions are not a formal proof of the full application.
 
+## Studio surfaces and follow-up — 16 October 2026
+
+- [x] Shared spring motion and one look for every modal, popover, menu, select, disclosure and toast ([surfaces record](docs/releases/2026-10-16-studio-surfaces.md)).
+- [x] Hand-pixeled 16×16 tool icons; Colors flyout with hex, eyedropper, hue-shifted shades, palette grid and recents; fewer re-renders while painting.
+- [x] Timeline frame actions in the toolbar, on each frame card and in a right-click menu, with frame keys and an Undo notice after deleting.
+- [x] Live Preview rebuilt on the shared panel; one top-bar control shape; modals and popovers unfold with staggered content.
+- [x] One elastic press for every control.
+- [x] Imperative pan with one store write on release, cached canvas bounds and a stroke layer cache.
+- [x] Keep the timeline toolbar inside 1280 px windows and give the New frame slot an accessible name that starts with its visible word.
+- [ ] Refresh the handbook pictures of the timeline, color dock and Live Preview from a production build.
+
+Record: [Studio follow-up](docs/releases/2026-10-16-studio-follow-up.md).
+
 ## Studio Labs motion integration — 15 October 2026
 
 - [x] Integrate the scene-theme Labs behind saved switches and retain classic Graphite/Plum controls.

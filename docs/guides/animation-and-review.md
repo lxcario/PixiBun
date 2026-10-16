@@ -12,11 +12,13 @@ The timeline control row keeps a fixed height. Onion-skin help occupies a reserv
 
 ![Three-frame timeline with per-frame timing, clip and onion skin enabled; preview speed choices open.](../assets/screenshots/2026-10-15-current-ui/animation-timeline.png)
 
-1. Choose a frame thumbnail to edit it. **+ Frame** adds a blank pose with the current layer names and settings. For a starting pose with actual pixels, use **Frame actions → Duplicate frame**.
+1. Choose a frame thumbnail to edit it. **+ Frame** (or the dashed **New frame** slot at the end of the reel) adds a blank pose with the current layer names and settings. For a starting pose with actual pixels, use **Duplicate** in the timeline toolbar, the small Duplicate button on the frame card, or **Ctrl/Cmd+D** on a focused frame. On windows at least 1536 px wide the toolbar shows the selected frame, the frame count and the animation’s total length, for example **Frame 2 / 6 · 0.6 s**.
 2. Paint the difference on the intended layer. Turn on **Onion Skin** to see nearby poses faintly behind the current artwork. Notices explain when a project budget limits the preview.
 3. Set **Frame time** in milliseconds. A smaller number is quicker; a longer hold can make a blink or the top of a jump easier to read. Admitted holds range from 1 to 60,000 ms.
 4. Press **Play**, or Enter (Space in the PixiBun classic keymap). **Repeat**, **Ping-Pong** and **Once** change the playback loop. **Preview** offers 0.5×, 1× and 2× speed for inspection; preview speed is separate from the stored frame holds and export timing.
-5. Pause before rearranging. Drag a thumbnail or use **Frame actions → Move frame earlier / later**. The same menu deletes the active frame when more than one remains. **,** and **.** step backward and forward. Collapse the timeline for more drawing room, and expand it again when needed.
+5. Pause before rearranging. Drag a thumbnail, use the toolbar's **Move frame earlier / later** arrows, or press **Alt+←/→** on a focused frame. **Delete** in the toolbar, on the frame card or the **Delete** key removes a frame when more than one remains; a notice offers **Undo**. Right-click a frame (or press **Shift+F10** / the Context Menu key on it) for a menu with Duplicate, Move earlier, Move later and Delete. **,** and **.** step backward and forward; on a focused frame the arrow keys, **Home** and **End** also select. Collapse the timeline for more drawing room, and expand it again when needed.
+
+The timeline picture above was captured on 15 October, before these controls moved out of the old **Frame actions** menu.
 
 Duplicating a frame includes the copy in every clip containing its source; clips after the insertion keep their existing artwork. Reordering follows existing clip members and refuses a move that would split a clip into separate ranges. Adjust that clip's range first if you intend to reorganize it. Deleting a frame contracts affected clips and removes an empty clip. These changes are undoable. Frame/layer/pixel limits can refuse growth; adding a frame does not guarantee unlimited memory. [Storage and history limits](../contracts/storage.md) describe admission and bounded Undo.
 
@@ -36,7 +38,7 @@ Try this manual exercise in PixiBun with a simple two- or three-color figure. It
 | 4 | Body rises before the opposite contact | Adjust the head and shoulders together |
 | 5–8 | Repeat the four poses with opposite leg positions | Compare corresponding proportions and silhouette |
 
-1. Draw the first contact pose. Use **Duplicate frame** to retain its pixels while making the next pose. **+ Frame** is blank; it does not copy the previous pose.
+1. Draw the first contact pose. Use **Duplicate** (Ctrl/Cmd+D on the frame) to retain its pixels while making the next pose. **+ Frame** is blank; it does not copy the previous pose.
 2. Use **Previous pose** onion skin at a low opacity while editing. Compare the foot, torso and head separately. Increase the ghost range only when you need to see an arc; too many guides can obscure the current pixels.
 3. Set each hold to 120 ms for an initial inspection, then play at **1×** and inspect the navigator at small scale. Change holds or poses where the weight reads poorly. Preview speed is only an inspection setting.
 4. Step between frames 8 and 1 to check the seam. Onion trails stop at project edges, so inspect those poses manually. Leave out an extra copy of frame 1 at the end unless you intentionally want that longer hold.
