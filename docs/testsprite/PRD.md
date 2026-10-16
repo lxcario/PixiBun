@@ -78,7 +78,7 @@ PixiBun is a browser studio for hand-made pixel art and animation. There is no a
 
 ### 8. Make the desk your own
 
-- The appearance control (`appearance-button`) lists eight themes, each with Night and Day (`scheme-option-dark`, `scheme-option-light`).
+- The appearance control (`appearance-button`) lists twelve themes, each with Night and Day (`scheme-option-dark`, `scheme-option-light`).
 - A chosen theme survives a reload.
 - **Studio → Labs** (`labs-switchboard`) switches the five experiments on and off individually, and **Classic studio** switches them all off. Graphite and Plum always use classic controls.
 
