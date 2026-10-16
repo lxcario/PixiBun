@@ -21,3 +21,5 @@ The strategy recommends freezing the research workbench, animation review, the M
 ## Known failures carried forward
 
 Two production browser cases fail on `6737a78f` without the theme work and remain open: navigator square-pixel alignment (`workspaceConsistency.spec.ts`) and the color dock's under-10px left-edge expectation under the floating layout (`stableStudioGeometry.spec.ts`). See [current status](../current-status.md#strategy-phase-0-and-05-14-october-2026).
+
+Update, 16 October: both cases were rechecked on `testsprite-s4`. The color dock case already passed after the 15 October Graphite fixture fix. The navigator case required exact sub-pixel placement that whole-pixel pan storage cannot reach; it now checks against the pointer position each engine delivered. See the [P0 hardening record](../releases/2026-10-16-p0-hardening.md). The original verdicts above stand for their revisions.

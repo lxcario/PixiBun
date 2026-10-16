@@ -19,6 +19,7 @@ class MockMediaRecorderInstance extends EventTarget {
   public stream: unknown;
   public options: unknown;
   public ondataavailable: ((e: { data: Blob }) => void) | null = null;
+  public onstart: (() => void) | null = null;
   public onstop: (() => void) | null = null;
   public onerror: ((e: unknown) => void) | null = null;
 
@@ -33,13 +34,18 @@ class MockMediaRecorderInstance extends EventTarget {
 
   start() {
     this.state = 'recording';
+    // Real recorders announce capture asynchronously.
+    queueMicrotask(() => this.onstart?.());
   }
 
   stop() {
     if (this.state === 'inactive') return;
     this.state = 'inactive';
     // Deliver mock encoded H.264 / MP4 container chunk
-    const chunk = new Blob([new Uint8Array([0, 0, 0, 24, 102, 116, 121, 112, 105, 115, 111, 109])], {
+    const chunk = new Blob([new Uint8Array([
+      0, 0, 0, 12, 102, 116, 121, 112, 105, 115, 111, 109, // ftyp isom
+      0, 0, 0, 12, 109, 100, 97, 116, 1, 2, 3, 4, // mdat with encoded samples
+    ])], {
       type: 'video/mp4',
     });
     if (this.ondataavailable) {

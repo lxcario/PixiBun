@@ -750,8 +750,10 @@ body.studio-ui details > summary::marker { color: var(--accent-gold); }
   border-color: transparent !important;
   box-shadow: none !important;
 }
+/* 24px fills the 28px cluster inside its 2px border and meets the WCAG 2.2
+   minimum target size (2.5.8); 22px left Mirror, Zoom, Fit and View short. */
 :root body .bar-cluster.bar-cluster button {
-  height: 22px;
+  height: 24px;
   border-radius: calc(var(--bar-radius) - 3px) !important;
   color: var(--text-body);
 }

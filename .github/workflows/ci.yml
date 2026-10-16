@@ -16,16 +16,28 @@ on:
         type: boolean
         default: false
 
+# Least privilege: jobs only read the repository and exchange their own artifacts.
+permissions:
+  contents: read
+  actions: read
+
+# A newer push to the same pull request supersedes its running checks. Runs for
+# main are never cancelled: each completed run gates its own production deploy.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   validate:
     if: ${{ !inputs.evidence_only && !inputs.browser_diagnostics }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -45,7 +57,7 @@ jobs:
 
       - name: Preserve validation evidence
         id: validation-evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
           name: validation-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -58,7 +70,7 @@ jobs:
 
       - name: Download validation evidence independently
         if: ${{ always() && steps.validation-evidence.outputs.artifact-id != '' }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           artifact-ids: ${{ steps.validation-evidence.outputs.artifact-id }}
           path: artifacts/validation-download
@@ -68,7 +80,7 @@ jobs:
         run: node scripts/verifyEvidenceDownload.mjs --index artifacts/validation-index.json --download artifacts/validation-download --downloaded-index artifacts/validation-index.json --receipt artifacts/validation-retrieval.json
       - name: Preserve validation retrieval verdict
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: validation-custody-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/validation-retrieval.json
@@ -77,12 +89,13 @@ jobs:
   e2e:
     needs: validate
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -134,7 +147,7 @@ jobs:
 
       - name: Preserve browser evidence
         id: browser-evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
           name: browsers-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -148,7 +161,7 @@ jobs:
 
       - name: Download browser evidence independently
         if: ${{ always() && steps.browser-evidence.outputs.artifact-id != '' }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           artifact-ids: ${{ steps.browser-evidence.outputs.artifact-id }}
           path: artifacts/browser-download
@@ -158,7 +171,7 @@ jobs:
         run: node scripts/verifyEvidenceDownload.mjs --index artifacts/browser-index.json --download artifacts/browser-download --downloaded-index artifacts/browser-index.json --receipt artifacts/browser-retrieval.json
       - name: Preserve browser retrieval verdict
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: browser-custody-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/browser-retrieval.json
@@ -170,15 +183,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
       - run: npm ci
       - run: npx playwright install --with-deps chromium firefox webkit
       - name: Checkout the pinned compatible application
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: ad957550f6656b82f5f35162c8eabc19a45a1473
           path: artifacts/compatible-previous
@@ -214,7 +227,7 @@ jobs:
       - name: Preserve rollback evidence
         id: rollback-evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: rollback-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           include-hidden-files: true
@@ -224,7 +237,7 @@ jobs:
           retention-days: 90
       - name: Download rollback evidence independently
         if: ${{ always() && steps.rollback-evidence.outputs.artifact-id != '' }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           artifact-ids: ${{ steps.rollback-evidence.outputs.artifact-id }}
           path: artifacts/release-download
@@ -234,7 +247,7 @@ jobs:
         run: node scripts/verifyEvidenceDownload.mjs --index artifacts/release-index.json --download artifacts/release-download --strip-prefix artifacts/ --downloaded-index release-index.json --receipt artifacts/release-retrieval.json
       - name: Preserve rollback retrieval verdict
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: rollback-custody-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/release-retrieval.json
@@ -243,9 +256,10 @@ jobs:
   browser-diagnostics:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.browser_diagnostics && !inputs.evidence_only }}
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -277,7 +291,7 @@ jobs:
         run: node scripts/checkProductionBuild.mjs --verify artifacts/browser-diagnostics/frozen-build.json --receipt artifacts/browser-diagnostics/build-after-pairing.json
       - name: Preserve diagnosis and original failure traces
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: peer-diagnostics-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           include-hidden-files: true
@@ -289,11 +303,12 @@ jobs:
   evidence-custody:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.evidence_only }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: '.nvmrc'
       - name: Prepare real receipt transfer witness
@@ -304,7 +319,7 @@ jobs:
           node scripts/indexVerificationEvidence.mjs --source artifacts/custody-witness --output artifacts/custody-witness-index.json
       - name: Preserve visible and hidden indexed evidence
         id: custody-upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: custody-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           include-hidden-files: true
@@ -314,7 +329,7 @@ jobs:
           retention-days: 90
 
       - name: Download custody witness into an isolated directory
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           artifact-ids: ${{ steps.custody-upload.outputs.artifact-id }}
           path: artifacts/custody-download
@@ -325,7 +340,7 @@ jobs:
 
       - name: Preserve automated retrieval verdict
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: custody-verdict-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/custody-retrieval.json
@@ -334,12 +349,13 @@ jobs:
   lighthouse:
     needs: validate
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -354,7 +370,7 @@ jobs:
         run: npx @lhci/cli@0.15.1 autorun
 
       - name: Upload Lighthouse CI Reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
           name: lhci-reports

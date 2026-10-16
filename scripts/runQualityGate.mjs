@@ -17,6 +17,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
 import process from 'node:process';
 
@@ -84,8 +85,26 @@ if (withBuild) {
   });
 }
 
+// The performance stage and Nibbli refuse other majors, and gate results are
+// recorded against the pinned runtime. Stop before minutes of work instead.
+function checkRuntime() {
+  const pinned = readFileSync(new URL('../.nvmrc', import.meta.url), 'utf8').trim().replace(/^v/, '');
+  const current = process.versions.node;
+  if (pinned.split('.')[0] !== current.split('.')[0]) {
+    log(`${COLOR.bold}${COLOR.red}❌ Node ${current} is not the pinned Node ${pinned} (.nvmrc).${COLOR.reset}`);
+    log(`${COLOR.yellow}   Install and select it first, for example: nvm install ${pinned} && nvm use ${pinned}${COLOR.reset}`);
+    log('');
+    process.exit(1);
+  }
+  if (pinned !== current) {
+    log(`${COLOR.yellow}⚠️  Node ${current} differs from the pinned ${pinned}; record the actual runtime with any results.${COLOR.reset}`);
+    log('');
+  }
+}
+
 async function runGate() {
   printHeader();
+  checkRuntime();
   const overallStart = performance.now();
   let passedStages = 0;
 

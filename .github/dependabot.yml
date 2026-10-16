@@ -1,0 +1,23 @@
+# Weekly update pull requests. Each one runs the full CI gate and browser suites
+# before merge; nothing here merges automatically.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Node 22 is the pinned runtime (.nvmrc); its types follow that major.
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
