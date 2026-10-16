@@ -8,6 +8,19 @@ Current engineering verification and remaining release checks are recorded in th
 
 **Pixels with a pulse.** A cozy studio for hand-made pixel art and animation.
 
+**[Open PixiBun](https://pixibun.vercel.app/)** · [Start drawing](https://pixibun.vercel.app/studio)
+
+### Season 4 verification — 16 October 2026
+
+Our TestSprite 3.0 portal project covers the Studio, drawing and selections, layers, frames and timing, colors and palettes, themes, lighting, Labs motion, lessons, saving/recovery, accessibility and all 14 export destinations. The same account connects the GitHub App. We added 97 detailed scenarios after opening and started their first portal generation/run; planned coverage is not a claim that these features have passed.
+
+The 18-case preparation run finished with **10 Passed, 1 Failed and 7 Blocked**. The lighting failure used decorative SVG counts rather than artwork pixels, so it is not proof of an Undo defect. Several blocked scenarios could not establish exact pixels or decode downloads in that cloud run. Those original verdicts are retained while their assertions are reviewed.
+
+The fresh 97-case exploration is [recorded in the portal](https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/0f149888-7b3a-4f54-b5f4-319c09943f86) (workspace access may be required). [PR #4](https://github.com/lxcario/PixiBun/pull/4) automatically matched its Vercel deployment event, but TestSprite returned **“GitHub CI runs not on the Free plan. No tests were run.”** We have asked support to resolve the mismatch with the advertised Free-plan repository entitlement. Until an actual PR suite executes and its assertions are audited, the automated merge loop is incomplete. Native repository tests and TestSprite evidence are reported separately.
+
+Application source is MIT-licensed. The bundled fonts retain their [SIL Open Font License and copyright notices](src/app/fonts/OFL.txt).
+
+
 Make a small character, a flickering flame, or the first tile of a world. PixiBun gives you a place to draw, light it with the Lamp and bring those little things to life, right in your browser. Hand-made, never generated: PixiBun contains no generative AI ([pledge page source](src/app/pledge/page.tsx), served at `/pledge`). No account needed.
 
 Plum shadows, wisteria accents, amber buttons and a few live pixel glints make Plum feel like a desk with the lamp still on. [See every theme in Night and Day](docs/guides/themes.md).
