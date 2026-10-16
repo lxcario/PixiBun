@@ -1,4 +1,4 @@
-import { useState, useCallback, RefObject } from 'react';
+import { useState, useCallback, useRef, RefObject } from 'react';
 import { Point } from '@/lib/canvas/rasterMath';
 import { useStudioStore } from '@/stores/studioStore';
 import { studioEvents } from '@/lib/events/studioEvents';
@@ -32,6 +32,9 @@ export function useViewportTransform({
 }: UseViewportTransformProps) {
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState<Point>({ x: 0, y: 0 });
+  // Touchpads and pinch gestures send many small deltas; add them up so one
+  // gesture moves a step at a time instead of racing through the zoom ladder.
+  const wheelZoomRef = useRef({ total: 0, at: 0 });
 
   // Convert client viewport coordinates (e.g. mouse event) directly to canvas pixel space
   const clientToCanvasCoords = useCallback(
@@ -87,8 +90,10 @@ export function useViewportTransform({
       }
 
       // Mouse Wheel scrolling (and Ctrl/Cmd+Wheel) = Zoom in/out anchored to cursor
+      const accumulated = accumulateWheelZoom(wheelZoomRef.current, e);
+      if (accumulated === 0) return;
       const safeCurrentZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, MathInvariants.isSafeFinite(zoom) ? zoom : 100));
-      const newZoom = e.deltaY < 0 ? getNextZoomStep(safeCurrentZoom) : getPrevZoomStep(safeCurrentZoom);
+      const newZoom = accumulated < 0 ? getNextZoomStep(safeCurrentZoom) : getPrevZoomStep(safeCurrentZoom);
       if (newZoom === safeCurrentZoom) return;
 
       // Instant cursor-anchored zooming (1:1 deterministic, zero animation lag)
@@ -143,4 +148,28 @@ export function useViewportTransform({
     handleFitToScreen,
     handleResetZoom,
   };
+}
+
+/** A mouse notch (about 100px) is one step; smaller deltas wait until they add up. */
+const WHEEL_ZOOM_STEP_PX = 60;
+const PINCH_ZOOM_STEP_PX = 18;
+const WHEEL_GESTURE_GAP_MS = 220;
+
+/**
+ * Adds a wheel event to the running total and returns the total once it is
+ * large enough for one zoom step (negative zooms in), else 0.
+ */
+export function accumulateWheelZoom(
+  state: { total: number; at: number },
+  e: Pick<WheelEvent, 'deltaY' | 'deltaMode' | 'ctrlKey' | 'timeStamp'>,
+): number {
+  const px = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaMode === 2 ? e.deltaY * 800 : e.deltaY;
+  // A pause or a change of direction starts a new gesture.
+  if (e.timeStamp - state.at > WHEEL_GESTURE_GAP_MS || Math.sign(px) !== Math.sign(state.total)) state.total = 0;
+  state.at = e.timeStamp;
+  state.total += px;
+  if (Math.abs(state.total) < (e.ctrlKey ? PINCH_ZOOM_STEP_PX : WHEEL_ZOOM_STEP_PX)) return 0;
+  const total = state.total;
+  state.total = 0;
+  return total;
 }

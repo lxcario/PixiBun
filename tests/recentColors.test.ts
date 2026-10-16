@@ -77,4 +77,18 @@ describe('Recent Colors LRU Logic', () => {
     // Keeps previous state without throwing
     expect(Array.isArray(useStudioStore.getState().recentColors)).toBe(true);
   });
+
+  it('remembers only the color a picker drag settles on', () => {
+    vi.useFakeTimers();
+    try {
+      const store = useStudioStore.getState();
+      ['#100000', '#200000', '#300000', '#400000'].forEach(c => store.setPrimaryColor(c));
+      expect(useStudioStore.getState().recentColors).toEqual([]);
+      vi.advanceTimersByTime(500);
+      expect(useStudioStore.getState().recentColors).toEqual(['#400000']);
+      expect(useStudioStore.getState().primaryColor).toBe('#400000');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

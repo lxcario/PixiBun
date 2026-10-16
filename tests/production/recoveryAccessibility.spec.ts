@@ -25,7 +25,7 @@ test('large flyout color controls support taps without changing canvas pixels', 
   const triggerBox = (await trigger.boundingBox())!;
   expect(triggerBox.width).toBeGreaterThanOrEqual(24); expect(triggerBox.height).toBeGreaterThanOrEqual(24);
   await trigger.tap();
-  const flyout = page.getByRole('region', { name: 'Color quick access flyout', exact: true });
+  const flyout = page.getByRole('dialog', { name: 'Color quick access flyout', exact: true });
   await expect(flyout).toBeVisible();
   for (const button of await flyout.getByRole('button').all()) {
     const box = (await button.boundingBox())!;

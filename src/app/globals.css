@@ -440,6 +440,12 @@ html, body {
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.4);
 }
 
+/* Tool icons paint in the accent; on an accent-filled control they ink instead. */
+.pixel-primary-btn,
+[data-tool-icon-ink] {
+  --tool-icon-paint: currentColor;
+}
+
 .pixel-primary-btn {
   position: relative;
   overflow: hidden;

@@ -57,7 +57,7 @@ export interface AtelierRailProps {
   canRedo?: boolean;
 }
 
-export const AtelierRail: React.FC<AtelierRailProps> = ({
+export const AtelierRail = React.memo(function AtelierRail({
   onOpenExport,
   onOpenImport,
   onOpenShortcuts,
@@ -71,7 +71,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   onRedo,
   canUndo: propCanUndo,
   canRedo: propCanRedo,
-}) => {
+}: AtelierRailProps) {
   const projectName = useStudioStore((s) => s.projectName);
   const setProjectName = useStudioStore((s) => s.setProjectName);
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
@@ -113,8 +113,9 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   const toggleSquintMode = useStudioStore((s) => s.toggleSquintMode);
   const referenceOverlay = useStudioStore((s) => s.referenceOverlay);
   const cycleReferenceOverlay = useStudioStore((s) => s.cycleReferenceOverlay);
-  const storeCanUndo = useStudioStore((s) => s.canUndo);
-  const storeCanRedo = useStudioStore((s) => s.canRedo);
+  // A motion session keeps its own history; Undo/Redo follow whichever is active.
+  const storeCanUndo = useStudioStore((s) => s.motionPart ? !!s.motionHistory?.past.length || !!s.motionHistory?.pending : s.canUndo);
+  const storeCanRedo = useStudioStore((s) => s.motionPart ? !!s.motionHistory?.future.length : s.canRedo);
   const isDirty = useStudioStore((s) => s.isDirty);
   const saveStatus = useStudioStore((s) => s.saveStatus);
 
@@ -799,7 +800,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               chooseWorkspaceLayout(val);
 
             }}
-            title="Workspace layout preset"
+            title="Workspace: rearranges the panels for drawing, animation or lighting work"
             className="h-6 px-1.5 bg-[var(--surface-0)] text-[var(--text-heading)] rounded-[2px] border border-[var(--desk-border)] text-xs font-sans cursor-pointer hover:border-[var(--accent-gold)] transition-colors"
           >
             <option value="drawing">Drawing</option>
@@ -1244,4 +1245,4 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
       )}
     </header>
   );
-};
+});

@@ -20,7 +20,7 @@ const inkChannel = (v: number): string => (v / 255).toFixed(6);
  * The feColorMatrix values are serialized from CVD_LENS_MATRICES so the
  * display path and the unit-tested math path share one source of truth.
  */
-export const ViewportLensFilters: React.FC = () => {
+export const ViewportLensFilters = React.memo(function ViewportLensFilters() {
   return (
     <svg
       aria-hidden="true"
@@ -73,4 +73,4 @@ export const ViewportLensFilters: React.FC = () => {
       </defs>
     </svg>
   );
-};
+});

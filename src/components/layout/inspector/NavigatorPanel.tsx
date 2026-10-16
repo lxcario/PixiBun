@@ -6,6 +6,7 @@ import { compositeFrame } from '@/lib/render/compositor';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { getNextZoomStep, getPrevZoomStep, MIN_ZOOM, MAX_ZOOM } from '@/config/zoom';
 import { executeStudioCommand } from '@/config/studioCommands';
+import { useThrottledValue } from '@/hooks/useThrottledValue';
 
 export function NavigatorPanel() {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -14,7 +15,8 @@ export function NavigatorPanel() {
   const height = useStudioStore((s) => s.canvasHeight);
   const frames = useStudioStore((s) => s.frames);
   const frame = useStudioStore((s) => s.activeFrameIndex);
-  const version = useStudioStore((s) => s.bufferVersion);
+  // Redraw a few times a second while painting, not on every stroke frame.
+  const version = useThrottledValue(useStudioStore((s) => s.bufferVersion), 120);
   const zoom = useStudioStore((s) => s.zoom);
   const panX = useStudioStore((s) => s.panX);
   const panY = useStudioStore((s) => s.panY);
