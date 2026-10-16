@@ -56,7 +56,6 @@
   box-shadow: 0 3px 0 var(--moon-ink, var(--ink)), 0 0 18px var(--moon-glow, transparent);
 }
 
-.qm-cast:active { transform: scale(0.96); }
 
 .qm-cast:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--moon-glow, var(--accent-gold)); border-color: var(--accent-gold); }
 

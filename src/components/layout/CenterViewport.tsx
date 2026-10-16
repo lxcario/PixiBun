@@ -2,7 +2,7 @@
 
 import { readImportFile, reportImportError } from '@/lib/project/importFile';
 
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useCallback, useMemo, useState } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
@@ -15,6 +15,7 @@ import { RadialContextMenu } from '@/components/studio/RadialContextMenu';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { useRadialContextMenu } from '@/hooks/useRadialContextMenu';
 import { compositeFrame } from '@/lib/render/compositor';
+import { createStrokeCompositeCache } from '@/lib/render/strokeCompositeCache';
 import {
   computeSeparableEDT,
   generateInflatedHeightmap,
@@ -88,18 +89,19 @@ function ScreenGuide({ axis, fraction, color, thickness = 1 }: {
   }} />;
 }
 
-export const CenterViewport: React.FC<CenterViewportProps> = ({
+export const CenterViewport = React.memo(function CenterViewport({
   onCommitHistory,
   onOpenImport,
   retainHistory = false,
   stageOverlay,
   fitZoom,
   plainPaper = false,
-}) => {
+}: CenterViewportProps) {
   const focusMode = useWorkspaceStore(s => s.focusMode);
   const keymap = usePreferencesStore(s => s.keymap);
   const containerRef = useRef<HTMLDivElement>(null);
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const stencilCanvasRef = useRef<HTMLCanvasElement>(null);
   const onionCanvasRef = useRef<HTMLCanvasElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -168,7 +170,11 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
   // PixiMotion session state
   const motionPart = useStudioStore((s) => s.motionPart);
-  const motionBufferVersion = useStudioStore((s) => s.bufferVersion);
+  // Only a motion session needs to re-render on raster edits; outside one this
+  // stays 0 so painting doesn't re-render the whole viewport every frame.
+  const motionBufferVersion = useStudioStore((s) => (s.motionPart ? s.bufferVersion : 0));
+  const tileBufferVersion = useStudioStore((s) => (s.showTilePreview ? s.bufferVersion : 0));
+  const tileCanvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
   const motionActivePose = useStudioStore((s) => s.motionActivePose);
   const motionPreviewIndex = useStudioStore((s) => s.motionPreviewIndex);
   const updateMotionPose = useStudioStore((s) => s.updateMotionPose);
@@ -192,14 +198,16 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   // Hook 1: Viewport transform & pan/zoom
   const {
     isPanning,
-    setIsPanning,
-    panStart,
-    setPanStart,
+    beginPan,
+    movePan,
+    endPan,
+    refreshCanvasRect,
     clientToCanvasCoords,
     handleWheel,
   } = useViewportTransform({
     containerRef,
     mainCanvasRef,
+    stageRef,
     canvasWidth,
     canvasHeight,
     zoom,
@@ -308,6 +316,14 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     destY: number;
   } | null>(null);
 
+  const panGesture = useMemo(
+    () => ({ begin: beginPan, move: movePan, end: endPan, isPanning }),
+    [beginPan, endPan, isPanning, movePan]
+  );
+
+  // While a stroke is in progress, the layers around the active one stay flattened.
+  const [strokeComposite] = useState(createStrokeCompositeCache);
+
   // Pure composite of all visible layers onto the main viewport canvas
   const renderComposite = useCallback(() => {
     // Undo/Redo can publish new dimensions before React replaces this callback.
@@ -326,7 +342,12 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     const currentFrame = state.frames[state.activeFrameIndex];
 
     // 1. Main Active Frame Layers (Unified Bottom-to-Top Compositing)
-    compositeFrame(state.frames, state.activeFrameIndex, canvasWidth, canvasHeight, {}, mainCanvas);
+    if (isDrawingRef.current) {
+      strokeComposite.composite(state.frames, state.activeFrameIndex, state.activeLayerId, canvasWidth, canvasHeight, mainCanvas);
+    } else {
+      strokeComposite.invalidate();
+      compositeFrame(state.frames, state.activeFrameIndex, canvasWidth, canvasHeight, {}, mainCanvas);
+    }
 
     // 2. Floating Selection Buffer overlay
     if (floatingSelection) {
@@ -495,7 +516,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   }, [
     floatingSelection,
     getOrCreateLayerCanvas,
+    isDrawingRef,
     selectionTransform,
+    strokeComposite,
   ]);
 
   // Mark Ferrari 8-Bit Dynamic Palette Cycling 60 FPS Engine
@@ -610,13 +633,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     useViewportPointerEvents({
       canvasWidth,
       canvasHeight,
-      panX,
-      panY,
-      setPan,
-      isPanning,
-      setIsPanning,
-      panStart,
-      setPanStart,
+      panGesture,
+      refreshCanvasRect,
       clientToCanvasCoords,
       isDrawing,
       setIsDrawing,
@@ -726,6 +744,25 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     onionSkin,
     isPlaying,
   ]);
+
+  // Seamless tile preview: copy the composite into the eight neighbours after it
+  // changes, without resizing (and so clearing) them on every viewport render.
+  useEffect(() => {
+    const source = mainCanvasRef.current;
+    if (!showTilePreview || !source) return;
+    for (const tile of tileCanvasRefs.current) {
+      if (!tile) continue;
+      if (tile.width !== canvasWidth || tile.height !== canvasHeight) {
+        tile.width = canvasWidth;
+        tile.height = canvasHeight;
+      }
+      const ctx = tile.getContext('2d');
+      if (!ctx) continue;
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      ctx.drawImage(source, 0, 0);
+    }
+  }, [showTilePreview, tileBufferVersion, frames, activeFrameIndex, canvasWidth, canvasHeight, showNormalMapPreview]);
 
   // Remote co-draw peers paint layer buffers directly (outside React state),
   // so the bridge requests an explicit composite re-render per applied batch.
@@ -1008,6 +1045,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- The focusable drawing application opens its contextual tools with Shift+F10 or the Context Menu key. */}
       <div
         id="center-canvas-area"
+        ref={stageRef}
         onKeyDown={radialMenu.handleKeyDown}
         data-tutorial="canvas"
         role="application"
@@ -1049,18 +1087,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
                     }}
                   >
                     <canvas
-                      ref={(el) => {
-                        if (el && mainCanvasRef.current) {
-                          const ctx = el.getContext('2d');
-                          if (ctx) {
-                            el.width = canvasWidth;
-                            el.height = canvasHeight;
-                            ctx.imageSmoothingEnabled = false;
-                            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-                            ctx.drawImage(mainCanvasRef.current, 0, 0);
-                          }
-                        }
-                      }}
+                      ref={(el) => { tileCanvasRefs.current[(ox + 1) * 3 + (oy + 1)] = el; }}
                       className="w-full h-full pixelated"
                     />
                   </div>
@@ -1298,7 +1325,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
               e.stopPropagation();
               curveHandler.commit();
             }}
-            className="ml-1 px-2 py-0.5 bg-[var(--accent-gold)] text-[var(--desk-surface-base)] font-bold rounded-[2px] hover:brightness-110 active:scale-95 transition-all text-[10px] shadow-xs cursor-pointer"
+            className="ml-1 px-2 py-0.5 bg-[var(--accent-gold)] text-[var(--desk-surface-base)] font-bold rounded-[2px] hover:brightness-110 transition-all text-[10px] shadow-xs cursor-pointer"
           >
             Apply (Enter)
           </button>
@@ -1310,7 +1337,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
               e.stopPropagation();
               curveHandler.cancel();
             }}
-            className="px-1.5 py-0.5 text-[var(--text-muted)] hover:text-[var(--accent-rose)] active:scale-95 transition-colors text-[10px] cursor-pointer"
+            className="px-1.5 py-0.5 text-[var(--text-muted)] hover:text-[var(--accent-rose)] transition-colors text-[10px] cursor-pointer"
           >
             Cancel (Esc)
           </button>
@@ -1336,7 +1363,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
               e.stopPropagation();
               curveHandler.reEdit();
             }}
-            className="px-2 py-0.5 bg-[var(--accent-sage)] text-[var(--desk-surface-base)] font-bold rounded-[2px] hover:brightness-110 active:scale-95 transition-all text-[10px] shadow-xs cursor-pointer flex items-center gap-1"
+            className="px-2 py-0.5 bg-[var(--accent-sage)] text-[var(--desk-surface-base)] font-bold rounded-[2px] hover:brightness-110 transition-all text-[10px] shadow-xs cursor-pointer flex items-center gap-1"
           >
             <span>✎</span>
             <span>Re-edit Curve (Enter)</span>
@@ -1349,7 +1376,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
               e.stopPropagation();
               curveHandler.dismissReEdit();
             }}
-            className="px-1.5 py-0.5 text-[var(--text-muted)] hover:text-[var(--text-secondary)] active:scale-95 transition-colors text-[10px] cursor-pointer"
+            className="px-1.5 py-0.5 text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors text-[10px] cursor-pointer"
             title="Dismiss"
           >
             ✕
@@ -1358,4 +1385,4 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       )}
     </main>
   );
-};
+});

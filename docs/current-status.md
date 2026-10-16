@@ -1,5 +1,13 @@
 # Current project status
 
+## Studio follow-up and pan/stroke performance — 16 October 2026
+
+The [Studio follow-up record](releases/2026-10-16-studio-follow-up.md) covers the work on branch `testsprite-s4` after the surfaces merge: hand-pixeled tool icons, the Colors flyout, timeline frame actions, the rebuilt Live Preview, one elastic press for every control, and the merged imperative pan, cached canvas bounds and stroke layer cache. A first production-build check in Chromium found four failures in the adjusted specs: the timeline toolbar overflowed at 1280 px, the New frame slot's accessible name omitted its visible text, and a touch-target test measured the flyout mid-bloom. The first two were product fixes, the third a test timing fix; After the fixes, an isolated worktree passed types, lint, 2,615 unit tests, a production build and all 18 cases of those specs in Chromium; Firefox, WebKit and the Node 22 performance stage were not run. The record keeps the original verdicts. Production (`main`) was still at `1a4b96b7` when the record was written.
+
+## Studio surfaces — 16 October 2026
+
+The [studio surfaces record](releases/2026-10-16-studio-surfaces.md) gives every modal, popover, menu, select, disclosure and toast the Dynamic island's spring motion and one rounded, grouped look, as the default for all themes. It explains why this is not a Lab and lists the tests added or adjusted. Checks ran in the development server on Windows with Chromium: types and lint passed; 2,573 Vitest tests passed; the selected Playwright specs passed apart from one spec whose expectations predate the branch. Firefox, WebKit, a production build and the Node 22 performance stage were not run.
+
 ## Studio Labs motion integration — 15 October 2026
 
 The [Studio Labs motion update](releases/2026-10-15-studio-labs-motion.md) integrates the local Labs commits through `d2c588f6` with remote audit/handbook updates through `65d29077`. It records the final approved staged blur transition, small text bounce, separate shell springs, stable menus, immediate island reduced-motion preference and calmer liquid-tab/palette/magic motion. Graphite and Plum remain classic. Current publication checks belong to that record; the production-build and screenshot results below retain their original source labels.
@@ -34,7 +42,7 @@ Source commits on `phase-0-offline-safety`: `5c168380` (offline safety), `6737a7
 
 - **Offline (audit defect 1).** A panel first opened offline no longer crashes Studio or loses strokes. Production builds precache every listed static file; failed panels offer Try again; the crash screen saves before reporting "saved". `tests/production/offlinePanels.spec.ts` passed in Chromium, Firefox and WebKit, and failed at the FX panel when the build list was withheld.
 - **Brand.** The product is PixiBun; user-facing "AI" wording and the PixiBud chat state are removed; `/pledge` publishes the dated no-generative-AI pledge.
-- **Themes.** Saved Graphite and Plum choices had silently reverted on reload because hydration dropped the `<html>` theme attributes; that is fixed. Eight styles now have Night and Day palettes from `src/lib/theme/themes.json`; `tests/themeRegistry.test.ts` checks every palette's text roles against its panel colors at WCAG AA (palette pairs, not a conformance audit).
+- **Themes.** Saved Graphite and Plum choices had silently reverted on reload because hydration dropped the `<html>` theme attributes; that is fixed. Twelve styles (Cocoa, Drizzle, Harvest and Harbor added on 16 October) have Night and Day palettes from `src/lib/theme/themes.json`; `tests/themeRegistry.test.ts` checks every palette's text roles against its panel colors at WCAG AA (palette pairs, not a conformance audit).
 - **Onboarding.** First-run welcome, level-based one-time tips, Tips and Replay welcome in the Studio menu. `tests/production/welcomeJourney.spec.ts` passed in Chromium, Firefox and WebKit.
 
 Verification on this source: 2,425 / 2,425 unit tests in 222 files, warning-free lint and type checks, documentation checks. The axe theme suite (`tests/e2e/themeAccessibility.spec.ts`, now 80 cases over 16 styles) passed 76 against the development server; the 4 failures were 4px color-picker sliders in the flat styles. After the 24px slider fix, the 16 affected inspector cases passed; the full 80 were not re-run. The same fix made `compactControlAccessibility.spec.ts` pass 4/4 in each of Chromium, Firefox and WebKit; it failed 4/4 in Chromium on `6737a78f`.

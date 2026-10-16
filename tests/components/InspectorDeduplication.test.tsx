@@ -14,6 +14,9 @@ describe('Inspector Control Deduplication', () => {
     const emitSpy = vi.spyOn(studioEvents, 'emit');
 
     render(<TilesetDecomposerSection />);
+    // The section starts closed; its body is hidden until opened.
+    expect(screen.queryByRole('button', { name: /Preview 47-blob contours/i })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Patterns & Tilesets' }));
 
     const blobBtn = screen.getByRole('button', { name: /Preview 47-blob contours/i });
     expect(blobBtn).toBeDefined();

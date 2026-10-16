@@ -49,9 +49,7 @@ export default function IconButton({
           'flex items-center justify-center rounded-[var(--radius-sm)] transition-colors duration-100 ease-out',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--desk-surface)]',
           sizeClasses,
-          
-          !disabled && 'active:translate-y-[1px]',
-          
+
           disabled && 'opacity-40 cursor-not-allowed',
           
           !disabled && variant === 'ghost' && !active && 'bg-transparent hover:bg-[var(--state-hover)] active:bg-[var(--state-active)] text-[var(--text-body)] hover:text-[var(--text-heading)]',

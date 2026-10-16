@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { isToolIconBitmap, toolIconPaths, TOOL_ICON_GRID } from './pixelToolIcons';
 
 export type PixelIconName = 
   | 'pen' 
@@ -62,7 +63,8 @@ export type PixelIconName =
   | 'pen-pixel'
   | 'plant-pixel'
   | 'clock-pixel'
-  | 'mug-pixel';
+  | 'mug-pixel'
+  | 'swatches';
 
 interface PixelIconProps {
   name: PixelIconName;
@@ -70,11 +72,51 @@ interface PixelIconProps {
   size?: number;
 }
 
-export const PixelIcon: React.FC<PixelIconProps> = ({ 
-  name, 
-  className = '', 
-  size = 18 
+/**
+ * Smallest size that shows a 16-grid tool icon pixel for pixel. Inline label
+ * icons below it keep the line glyph, which survives being shrunk.
+ */
+const PIXEL_ICON_MIN_SIZE = 14;
+
+/** Whole multiples of the grid only: anything else smears or drops pixels. */
+function crispPixelSize(size: number): number {
+  return Math.max(1, Math.round(size / TOOL_ICON_GRID)) * TOOL_ICON_GRID;
+}
+
+const ToolBitmapIcon: React.FC<{ name: Parameters<typeof toolIconPaths>[0]; size: number; className: string }> = ({ name, size, className }) => {
+  const paths = toolIconPaths(name);
+  const px = crispPixelSize(size);
+  return (
+    <span
+      className="inline-flex items-center justify-center pointer-events-none select-none"
+      style={{ width: size, height: size }}
+    >
+      <svg
+        viewBox={`0 0 ${TOOL_ICON_GRID} ${TOOL_ICON_GRID}`}
+        width={px}
+        height={px}
+        shapeRendering="crispEdges"
+        aria-hidden="true"
+        data-pixel-icon={name}
+        className={`shrink-0 ${className}`}
+      >
+        {paths.shade && <path d={paths.shade} fill="currentColor" fillOpacity={0.38} />}
+        {paths.paint && <path d={paths.paint} fill="var(--tool-icon-paint, var(--accent-gold, currentColor))" />}
+        {paths.ink && <path d={paths.ink} fill="currentColor" />}
+      </svg>
+    </span>
+  );
+};
+
+export const PixelIcon: React.FC<PixelIconProps> = ({
+  name,
+  className = '',
+  size = 18
 }) => {
+  if (size >= PIXEL_ICON_MIN_SIZE && isToolIconBitmap(name)) {
+    return <ToolBitmapIcon name={name} size={size} className={className} />;
+  }
+
   const renderSvg = () => {
     switch (name) {
       // 1. Drawing Tools

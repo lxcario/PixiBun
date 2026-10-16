@@ -28,6 +28,8 @@ Two keymaps share every letter shortcut and differ only in Space, Enter, Alt, Sh
 | Command palette / Help | Ctrl/Cmd+K / ? |
 | Play / Pause; previous / next frame | Enter (standard) or Space (classic); comma / period |
 | Onion skin toggle | F3; previous/next counts, tints and opacity are in the timeline gear |
+| Focused timeline frame | Left/Right/Home/End select; Alt+Left/Right move the frame; Ctrl/Cmd+D duplicates; Delete or Backspace removes it (not in Playground); Shift+F10 / Context Menu key opens its menu, where Up/Down move and Escape or Tab return focus to the frame |
+| Colors flyout | Opened from the color wells. Click a swatch to set the color being edited; Shift+click or right-click sets the other one. Arrow keys, Home and End move through a swatch grid; Enter in the hex field applies it and Escape restores it; Escape closes the flyout |
 | Canvas only / restore panels | Shift+Tab with canvas focus; focused controls and dialogs retain keyboard navigation |
 | Canvas tools popup | Right-click beside the artwork (standard) or anywhere in the workspace (classic), or Shift+F10 / Context Menu key with the drawing canvas focused; arrows/Home/End navigate, Enter selects, Tab stays inside, Escape closes |
 | Pan / Zoom / Fit / 100% | Middle drag, plus Space+drag (standard) or Alt+drag (classic); wheel; Ctrl/Cmd+0 / Ctrl/Cmd+1 |

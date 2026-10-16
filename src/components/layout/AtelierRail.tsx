@@ -2,8 +2,7 @@
 
 import { readImportFile, reportImportError } from '@/lib/project/importFile';
 
-import React, { useState, useRef, useEffect, useCallback, useId } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState, useRef, useEffect, useId } from 'react';
 import Link from 'next/link';
 import { executeStudioCommand } from '@/config/studioCommands';
 import { useStudioStore } from '@/stores/studioStore';
@@ -12,34 +11,20 @@ import { CANONICAL_TOOLS } from '@/config/shortcuts';
 import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
 import { AppearancePopover } from '@/components/ui/AppearancePopover';
 import { HeaderFileMenu } from './HeaderFileMenu';
+import { ViewOptionsPanel } from './ViewOptionsPanel';
+import { AnimatePresence } from 'motion/react';
+import { SpringSurface } from '@/components/ui/surfaces/SpringSurface';
 import StudioTooltip from '@/components/ui/StudioTooltip';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { OfflineIndicator } from '@/components/system/OfflineIndicator';
 import type { ImportPayload } from '@/components/modals/ImportModal';
 import { getNextZoomStep, getPrevZoomStep } from '@/config/zoom';
-import { CvdLensMode, cycleCvdLens } from '@/lib/color/cvdLens';
-import { DitherMatrixType, WallpaperGroup } from '@/types/tools';
+import { DitherMatrixType } from '@/types/tools';
 import { MAX_PROJECT_NAME_LENGTH } from '@/lib/project/metadataAdmission';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { IslandSlot } from '@/experimental/island/DynamicIsland';
 import { useLab } from '@/experimental/labsStore';
-
-const CVD_LENS_BUTTON_LABELS: Record<CvdLensMode, string> = {
-  none: 'OFF',
-  protanopia: 'Pro',
-  deuteranopia: 'Deu',
-  tritanopia: 'Tri',
-  monochromacy: 'Mono',
-};
-
-const CVD_LENS_TITLES: Record<CvdLensMode, string> = {
-  none: 'Colorblindness Lens (P): OFF — cycles Protanopia / Deuteranopia / Tritanopia / Monochromacy',
-  protanopia: 'Colorblindness Lens (P): Protanopia (red-weak) — cycles lens modes',
-  deuteranopia: 'Colorblindness Lens (P): Deuteranopia (green-weak) — cycles lens modes',
-  tritanopia: 'Colorblindness Lens (P): Tritanopia (blue-weak) — cycles lens modes',
-  monochromacy: 'Colorblindness Lens (P): Monochromacy (luminance only) — cycles lens modes',
-};
 
 export interface AtelierRailProps {
   onOpenExport?: () => void;
@@ -57,7 +42,7 @@ export interface AtelierRailProps {
   canRedo?: boolean;
 }
 
-export const AtelierRail: React.FC<AtelierRailProps> = ({
+export const AtelierRail = React.memo(function AtelierRail({
   onOpenExport,
   onOpenImport,
   onOpenShortcuts,
@@ -71,7 +56,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   onRedo,
   canUndo: propCanUndo,
   canRedo: propCanRedo,
-}) => {
+}: AtelierRailProps) {
   const projectName = useStudioStore((s) => s.projectName);
   const setProjectName = useStudioStore((s) => s.setProjectName);
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
@@ -96,25 +81,16 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   const setIsoAngleSnap = useStudioStore((s) => s.setIsoAngleSnap);
   const toggleSymmetryH = useStudioStore((s) => s.toggleSymmetryH);
   const toggleSymmetryV = useStudioStore((s) => s.toggleSymmetryV);
-  const setSymmetryGroup = useStudioStore((s) => s.setSymmetryGroup);
   const showGrid = useStudioStore((s) => s.showGrid);
-  const toggleGrid = useStudioStore((s) => s.toggleGrid);
-  const showTransparencyChecker = useStudioStore((s) => s.showTransparencyChecker);
-  const toggleTransparencyChecker = useStudioStore((s) => s.toggleTransparencyChecker);
   const showIsoGuides = useStudioStore((s) => s.showIsoGuides);
-  const toggleIsoGuides = useStudioStore((s) => s.toggleIsoGuides);
   const showTilePreview = useStudioStore((s) => s.showTilePreview);
-  const toggleTilePreview = useStudioStore((s) => s.toggleTilePreview);
   const showFloatingPreview = useStudioStore((s) => s.showFloatingPreview);
-  const toggleFloatingPreview = useStudioStore((s) => s.toggleFloatingPreview);
   const cvdLens = useStudioStore((s) => s.cvdLens);
   const squintMode = useStudioStore((s) => s.squintMode);
-  const setCvdLens = useStudioStore((s) => s.setCvdLens);
-  const toggleSquintMode = useStudioStore((s) => s.toggleSquintMode);
   const referenceOverlay = useStudioStore((s) => s.referenceOverlay);
-  const cycleReferenceOverlay = useStudioStore((s) => s.cycleReferenceOverlay);
-  const storeCanUndo = useStudioStore((s) => s.canUndo);
-  const storeCanRedo = useStudioStore((s) => s.canRedo);
+  // A motion session keeps its own history; Undo/Redo follow whichever is active.
+  const storeCanUndo = useStudioStore((s) => s.motionPart ? !!s.motionHistory?.past.length || !!s.motionHistory?.pending : s.canUndo);
+  const storeCanRedo = useStudioStore((s) => s.motionPart ? !!s.motionHistory?.future.length : s.canRedo);
   const isDirty = useStudioStore((s) => s.isDirty);
   const saveStatus = useStudioStore((s) => s.saveStatus);
 
@@ -136,9 +112,6 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   // View Options Popover state
   const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
   const viewMenuRef = useRef<HTMLDivElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
-  const [popoverCoords, setPopoverCoords] = useState<{ top: number; right: number } | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
   const workspaceLayout = useWorkspaceStore((s) => s.layout);
   const activeWorkspace = useWorkspaceStore((s) => s.activeLayout);
   const savedWorkspaceLayouts = useWorkspaceStore((s) => s.savedLayouts);
@@ -146,14 +119,9 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   const chooseWorkspaceLayout = useWorkspaceStore((s) => s.chooseLayout);
   const saveWorkspaceLayout = useWorkspaceStore((s) => s.saveLayout);
   const deleteWorkspaceLayout = useWorkspaceStore((s) => s.deleteLayout);
-  const toggleFocus = useWorkspaceStore((s) => s.toggleFocus);
   const [isArrangeWorkspaceOpen, setIsArrangeWorkspaceOpen] = useState(false);
   const [newLayoutName, setNewLayoutName] = useState('');
   const [layoutError, setLayoutError] = useState('');
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!isBrushMenuOpen && !isZoomMenuOpen && !isToolMenuOpen) return;
@@ -181,53 +149,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
     };
   }, [isBrushMenuOpen, isZoomMenuOpen, isToolMenuOpen]);
 
-  const updatePopoverCoords = useCallback(() => {
-    if (viewMenuRef.current) {
-      const rect = viewMenuRef.current.getBoundingClientRect();
-      setPopoverCoords({
-        top: rect.bottom + 4,
-        right: Math.max(16, window.innerWidth - rect.right),
-      });
-    }
-  }, []);
-
-  const handleToggleViewMenu = () => {
-    setIsViewMenuOpen((prev) => {
-      const next = !prev;
-      if (next) updatePopoverCoords();
-      return next;
-    });
-  };
-
-  useEffect(() => {
-    if (!isViewMenuOpen) return;
-    updatePopoverCoords();
-
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (
-        viewMenuRef.current && !viewMenuRef.current.contains(target) &&
-        popoverRef.current && !popoverRef.current.contains(target)
-      ) {
-        setIsViewMenuOpen(false);
-      }
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsViewMenuOpen(false);
-    };
-
-    window.addEventListener('resize', updatePopoverCoords);
-    window.addEventListener('scroll', updatePopoverCoords, true);
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('resize', updatePopoverCoords);
-      window.removeEventListener('scroll', updatePopoverCoords, true);
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isViewMenuOpen, updatePopoverCoords]);
+  const handleToggleViewMenu = () => setIsViewMenuOpen((prev) => !prev);
 
   const activeViewModifiers = [
     showGrid,
@@ -660,7 +582,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
 
       {/* ── 3. RIGHT ZONE: Canvas view, Workspace presets & Export ── */}
       <div role="group" aria-label="Workspace and export controls" className="flex shrink-0 items-center gap-1 xl:gap-2.5">
-        <div role="group" aria-label="Canvas controls" className="h-7 flex items-center bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-px text-xs">
+        <div role="group" aria-label="Canvas controls" className="bar-control bar-cluster flex items-center text-xs">
         <div role="group" aria-label="Mirror drawing" className="h-6 flex items-center gap-0.5 px-1">
           <span className="hidden xl:inline px-1 text-[10px] text-[var(--text-body)]">Mirror</span>
             <StudioTooltip position="bottom" content={`Horizontal symmetry (Shift+H) — ${tools.symmetryHorizontal ? 'Active' : 'Off'}`}>
@@ -669,7 +591,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                 aria-label="Horizontal symmetry"
                 aria-pressed={tools.symmetryHorizontal}
                 data-testid="toggle-symmetry-h"
-                className={`w-6 h-6 rounded-[2px] cursor-pointer flex items-center justify-center transition-all active:translate-y-[1px] ${
+                className={`w-6 h-6 rounded-[2px] cursor-pointer flex items-center justify-center transition-all ${
                   tools.symmetryHorizontal
                     ? 'bg-[var(--surface-3)] text-[var(--accent-gold)] border border-[var(--accent-gold)]/60 shadow-xs font-bold'
                     : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] border border-transparent hover:border-[var(--desk-border)]/50'
@@ -685,7 +607,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                 aria-label="Vertical symmetry"
                 aria-pressed={tools.symmetryVertical}
                 data-testid="toggle-symmetry-v"
-                className={`w-6 h-6 rounded-[2px] cursor-pointer flex items-center justify-center transition-all active:translate-y-[1px] ${
+                className={`w-6 h-6 rounded-[2px] cursor-pointer flex items-center justify-center transition-all ${
                   tools.symmetryVertical
                     ? 'bg-[var(--surface-3)] text-[var(--accent-gold)] border border-[var(--accent-gold)]/60 shadow-xs font-bold'
                     : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] border border-transparent hover:border-[var(--desk-border)]/50'
@@ -702,7 +624,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
           <div className="flex items-center">
             <button
               onClick={() => setZoom(getPrevZoomStep(zoom))}
-              className="w-6 h-6 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] active:translate-y-[1px] rounded-[1px] cursor-pointer font-mono text-xs transition-colors"
+              className="w-6 h-6 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] rounded-[1px] cursor-pointer font-mono text-xs transition-colors"
               title="Zoom Out (-)"
               aria-label="Zoom Out"
             >
@@ -715,21 +637,23 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                 className="h-6 px-1.5 min-w-[52px] text-center text-[var(--text-heading)] font-mono text-xs font-semibold tabular-nums hover:bg-[var(--surface-2)]">
                 {zoom}%
               </button>
-              {isZoomMenuOpen && (
-                <div role="group" aria-label="Zoom levels"
-                  className="absolute top-full right-0 mt-1 z-[100] w-28 bg-[var(--surface-2)] border border-[var(--desk-border-highlight)] rounded-[2px] p-1 shadow-lg">
-                  {[100, 200, 400, 800, 1600].map((level) => (
-                    <button key={level} type="button" onClick={() => { setZoom(level); setIsZoomMenuOpen(false); }}
-                      className="block w-full text-left px-2 py-1.5 text-xs font-mono text-[var(--text-body)] hover:bg-[var(--surface-3)] hover:text-[var(--text-heading)]">
-                      {level}%{level === 100 ? ' · Actual size' : ''}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <AnimatePresence>
+                {isZoomMenuOpen && (
+                  <SpringSurface key="zoom" origin="top right" role="group" aria-label="Zoom levels"
+                    className="pb-panel absolute top-full right-0 mt-1.5 z-[100] w-40 !p-1.5">
+                    {[100, 200, 400, 800, 1600].map((level) => (
+                      <button key={level} type="button" aria-pressed={zoom === level} onClick={() => { setZoom(level); setIsZoomMenuOpen(false); }}
+                        className="pb-menu-item !min-h-9 !px-2.5 font-mono tabular-nums">
+                        {level}%{level === 100 ? ' · Actual size' : ''}
+                      </button>
+                    ))}
+                  </SpringSurface>
+                )}
+              </AnimatePresence>
             </div>
             <button
               onClick={() => setZoom(getNextZoomStep(zoom))}
-              className="w-6 h-6 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] active:translate-y-[1px] rounded-[1px] cursor-pointer font-mono text-xs transition-colors"
+              className="w-6 h-6 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] rounded-[1px] cursor-pointer font-mono text-xs transition-colors"
               title="Zoom In (+)"
               aria-label="Zoom In"
             >
@@ -746,7 +670,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             }}
             aria-label="Fit Canvas to Viewport (Ctrl+0)"
             data-testid="fit-canvas-button"
-            className="h-6 px-1.5 flex items-center justify-center text-xs font-sans font-medium text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] active:translate-y-[1px] rounded-[1px] cursor-pointer transition-colors"
+            className="h-6 px-1.5 flex items-center justify-center text-xs font-sans font-medium text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] rounded-[1px] cursor-pointer transition-colors"
             title="Fit Canvas to Viewport (Ctrl+0)"
           >
             Fit
@@ -766,7 +690,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               className={`h-6 px-2 min-w-[66px] text-xs font-sans font-medium rounded-[1px] cursor-pointer flex items-center justify-between gap-1.5 transition-colors ${
                 isViewMenuOpen
                   ? 'bg-[var(--surface-2)] text-[var(--accent-gold)]'
-                  : 'text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] active:translate-y-[1px]'
+                  : 'text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)]'
               }`}
             >
               <span className="flex items-center gap-1.5">
@@ -790,7 +714,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
 
         </div>
 
-        <div role="group" aria-label="Workspace presets" className="h-7 flex items-center text-xs border-l border-[var(--desk-border)] pl-1.5 xl:pl-2">
+        <div role="group" aria-label="Workspace presets" className="h-7 flex items-center text-xs">
           <select
             aria-label="Workspace layout"
             value={activeWorkspace}
@@ -799,8 +723,8 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               chooseWorkspaceLayout(val);
 
             }}
-            title="Workspace layout preset"
-            className="h-6 px-1.5 bg-[var(--surface-0)] text-[var(--text-heading)] rounded-[2px] border border-[var(--desk-border)] text-xs font-sans cursor-pointer hover:border-[var(--accent-gold)] transition-colors"
+            title="Workspace: rearranges the panels for drawing, animation or lighting work"
+            className="bar-control px-2.5 text-xs font-sans cursor-pointer"
           >
             <option value="drawing">Drawing</option>
             <option value="animation">Animation</option>
@@ -811,8 +735,8 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
           </select>
         </div>
 
-        <div role="group" aria-label="Studio settings and help" className="h-7 flex items-center text-xs border-l border-[var(--desk-border)] pl-2 xl:pl-3">
-          <AppearancePopover label="Studio" actions={[
+        <div role="group" aria-label="Studio settings and help" className="h-7 flex items-center text-xs">
+          <AppearancePopover label="Studio" className="bar-control" actions={[
             { label: 'Co-Draw', icon: 'sparkles', ariaLabel: 'Co-Draw session', onSelect: onOpenCoDraw },
             { label: 'Help', icon: 'help', ariaLabel: 'Atelier Guide, Diagnostics and Shortcuts', testId: 'shortcuts-guide-button', onSelect: onOpenShortcuts },
           ]} />
@@ -827,9 +751,9 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             title="Export PNG, GIF, or Spritesheet"
             aria-label="Export drawing"
             data-testid="export-button"
-            className="h-7 px-2.5 text-xs font-bold font-sans tracking-wide flex items-center gap-1.5"
+            className="bar-control bar-control-primary px-3 text-xs font-bold font-sans tracking-wide flex items-center gap-1.5"
           >
-            <PixelIcon name="export" size={12} className="text-[#16141a]" />
+            <PixelIcon name="export" size={12} />
             <span>Export</span>
           </TactileButton>
         </div>
@@ -845,307 +769,20 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
         aria-hidden="true"
       />
 
-      {/* ── View Options Popover Menu Hoisted via Portal (z-index: 9999) ── */}
-      {isViewMenuOpen && isMounted && popoverCoords && createPortal(
-        <div
-          ref={popoverRef}
-          role="region"
-          aria-label="View options menu"
-          style={{
-            position: 'fixed',
-            top: `${popoverCoords.top}px`,
-            right: `${popoverCoords.right}px`,
-            zIndex: 9999,
-          }}
-          className="w-64 bg-[var(--surface-2)] border border-[var(--desk-border-highlight)] rounded-[2px] shadow-[0_8px_24px_rgba(0,0,0,0.7)] p-2.5 flex flex-col gap-2 text-xs font-sans select-none animate-in fade-in duration-100"
-        >
-          <div className="flex items-center justify-between pb-1 border-b border-[var(--desk-border)]">
-            <span className="text-[10px] font-bold tracking-wider text-[var(--text-heading)]">
-              View Options
-            </span>
-            <span className="text-[9px] text-[var(--text-muted)]">ESC to close</span>
-          </div>
-
-          {/* 1. Canvas Grids & Rulers */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-sans font-medium text-[var(--text-muted)]">Grids & Guides</span>
-            <div className="grid grid-cols-2 gap-1">
-              <button
-                onClick={toggleGrid}
-                className={`pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border flex items-center justify-between cursor-pointer transition-colors ${
-                  showGrid
-                    ? 'bg-[var(--surface-3)] text-[var(--text-heading)] border-[var(--desk-border-highlight)] shadow-inner font-semibold'
-                    : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-[1px] ${showGrid ? 'bg-[var(--accent-wisteria)]' : 'bg-transparent border border-[var(--desk-border)]'}`} />
-                  <PixelIcon name="grid-iso" size={11} />
-                  <span>Pixel Grid</span>
-                </span>
-                <span className="text-[8px] font-mono opacity-70">Ctrl+'</span>
-              </button>
-
-              <button
-                onClick={toggleTransparencyChecker}
-                aria-pressed={showTransparencyChecker}
-                data-testid="toggle-transparency-checker"
-                title="Show transparent pixels as a checkerboard"
-                className={`pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border flex items-center justify-between cursor-pointer transition-colors ${
-                  showTransparencyChecker
-                    ? 'bg-[var(--surface-3)] text-[var(--text-heading)] border-[var(--desk-border-highlight)] shadow-inner font-semibold'
-                    : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-[1px] ${showTransparencyChecker ? 'bg-[var(--accent-wisteria)]' : 'bg-transparent border border-[var(--desk-border)]'}`} />
-                  <span aria-hidden="true" className="inline-block w-[11px] h-[11px] border border-[var(--desk-border)]" style={{ backgroundImage: 'repeating-conic-gradient(#d9d9d9 0% 25%, #ffffff 0% 50%)', backgroundSize: '6px 6px' }} />
-                  <span>Transparency</span>
-                </span>
-              </button>
-
-              <button
-                onClick={toggleIsoGuides}
-                className={`pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border flex items-center justify-between cursor-pointer transition-colors ${
-                  showIsoGuides
-                    ? 'bg-[var(--surface-3)] text-[var(--text-heading)] border-[var(--desk-border-highlight)] shadow-inner font-semibold'
-                    : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-[1px] ${showIsoGuides ? 'bg-[var(--accent-wisteria)]' : 'bg-transparent border border-[var(--desk-border)]'}`} />
-                  <PixelIcon name="grid-iso" size={11} />
-                  <span>2:1 Iso Grid</span>
-                </span>
-              </button>
-            </div>
-
-            {/* Composition Reference Overlays */}
-            <button
-              onClick={cycleReferenceOverlay}
-              className={`pixel-tactile-btn w-full px-2 py-1 text-[10px] font-medium rounded-[2px] border flex items-center justify-between cursor-pointer mt-0.5 transition-colors ${
-                referenceOverlay !== 'none'
-                  ? 'bg-[var(--surface-3)] text-[var(--text-heading)] border-[var(--desk-border-highlight)] shadow-inner font-semibold'
-                  : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
-              }`}
-            >
-              <span className="flex items-center gap-1.5">
-                <span className={`w-1.5 h-1.5 rounded-[1px] ${referenceOverlay !== 'none' ? 'bg-[var(--accent-wisteria)]' : 'bg-transparent border border-[var(--desk-border)]'}`} />
-                <PixelIcon name="grid" size={11} />
-                <span>Composition Overlay</span>
-              </span>
-              <span className="text-[9px] text-[var(--text-heading)] font-medium">
-                {{ none: 'Off', thirds: 'Thirds', golden: 'Golden', center: 'Center', diagonals: 'Diagonals', safe: 'Safe area' }[referenceOverlay]}
-              </span>
-            </button>
-          </div>
-
-          <div className="h-px bg-[var(--desk-border)]" />
-
-          {/* 2. Preview Displays */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-sans font-medium text-[var(--text-muted)]">Previews</span>
-            <div className="grid grid-cols-2 gap-1">
-              <button
-                onClick={toggleTilePreview}
-                className={`pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border flex items-center justify-between cursor-pointer transition-colors ${
-                  showTilePreview
-                    ? 'bg-[var(--surface-3)] text-[var(--text-heading)] border-[var(--desk-border-highlight)] shadow-inner font-semibold'
-                    : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-[1px] ${showTilePreview ? 'bg-[var(--accent-wisteria)]' : 'bg-transparent border border-[var(--desk-border)]'}`} />
-                  <PixelIcon name="grid-iso" size={11} />
-                  <span>3x3 Tiling</span>
-                </span>
-              </button>
-
-              <button
-                onClick={toggleFloatingPreview}
-                aria-label="Toggle Live PiP Preview Window"
-                className={`pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border flex items-center justify-between cursor-pointer transition-colors ${
-                  showFloatingPreview
-                    ? 'bg-[var(--surface-3)] text-[var(--text-heading)] border-[var(--desk-border-highlight)] shadow-inner font-semibold'
-                    : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-[1px] ${showFloatingPreview ? 'bg-[var(--accent-wisteria)]' : 'bg-transparent border border-[var(--desk-border)]'}`} />
-                  <PixelIcon name="preview" size={11} />
-                  <span>Live PiP</span>
-                </span>
-              </button>
-            </div>
-          </div>
-
-          <div className="h-px bg-[var(--desk-border)]" />
-
-          {/* 3. Perceptual Lenses */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-sans font-medium text-[var(--text-muted)]">Perceptual Lenses</span>
-            <div className="grid grid-cols-2 gap-1">
-              <button
-                onClick={() => setCvdLens(cycleCvdLens(cvdLens))}
-                title={CVD_LENS_TITLES[cvdLens]}
-                className={`pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border flex items-center justify-between cursor-pointer transition-colors ${
-                  cvdLens !== 'none'
-                    ? 'bg-[var(--surface-3)] text-[var(--text-heading)] border-[var(--desk-border-highlight)] shadow-inner font-semibold'
-                    : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-[1px] ${cvdLens !== 'none' ? 'bg-[var(--accent-wisteria)]' : 'bg-transparent border border-[var(--desk-border)]'}`} />
-                  <PixelIcon name="eyedropper" size={11} />
-                  <span>CVD: {CVD_LENS_BUTTON_LABELS[cvdLens]}</span>
-                </span>
-                <span className="text-[8px] font-mono opacity-70">P</span>
-              </button>
-
-              <button
-                onClick={toggleSquintMode}
-                title="Silhouette / Squint Mode (S)"
-                className={`pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border flex items-center justify-between cursor-pointer transition-colors ${
-                  squintMode
-                    ? 'bg-[var(--surface-3)] text-[var(--text-heading)] border-[var(--desk-border-highlight)] shadow-inner font-semibold'
-                    : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-[1px] ${squintMode ? 'bg-[var(--accent-wisteria)]' : 'bg-transparent border border-[var(--desk-border)]'}`} />
-                  <PixelIcon name="select-box" size={11} />
-                  <span>Silhouette</span>
-                </span>
-                <span className="text-[8px] font-mono opacity-70">S</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="h-px bg-[var(--desk-border)]" />
-
-          {/* 4. Symmetry & Mirroring */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-sans font-medium text-[var(--text-muted)]">Symmetry & Mirroring</span>
-            <div className="grid grid-cols-2 gap-1">
-              <button
-                onClick={toggleSymmetryH}
-                className={`pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border flex items-center justify-between cursor-pointer transition-colors ${
-                  tools.symmetryHorizontal
-                    ? 'bg-[var(--surface-3)] text-[var(--text-heading)] border-[var(--desk-border-highlight)] shadow-inner font-semibold'
-                    : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-[1px] ${tools.symmetryHorizontal ? 'bg-[var(--accent-gold)]' : 'bg-transparent border border-[var(--desk-border)]'}`} />
-                  <PixelIcon name="symmetry-h" size={11} />
-                  <span>Mirror H</span>
-                </span>
-                <span className="text-[8px] font-mono opacity-70">Shift+H</span>
-              </button>
-
-              <button
-                onClick={toggleSymmetryV}
-                className={`pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border flex items-center justify-between cursor-pointer transition-colors ${
-                  tools.symmetryVertical
-                    ? 'bg-[var(--surface-3)] text-[var(--text-heading)] border-[var(--desk-border-highlight)] shadow-inner font-semibold'
-                    : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-[1px] ${tools.symmetryVertical ? 'bg-[var(--accent-gold)]' : 'bg-transparent border border-[var(--desk-border)]'}`} />
-                  <PixelIcon name="symmetry-v" size={11} />
-                  <span>Mirror V</span>
-                </span>
-                <span className="text-[8px] font-mono opacity-70">Shift+V</span>
-              </button>
-            </div>
-
-            {/* Crystallographic Wallpaper Group Symmetry Brush */}
-            <div className="flex items-center gap-1 mt-0.5">
-              <span className="text-[9px] text-[var(--text-muted)] uppercase font-bold shrink-0">Group:</span>
-              <select
-                value={tools.symmetryGroup || 'none'}
-                aria-label="Wallpaper group symmetry brush mode"
-                onChange={(e) => setSymmetryGroup(e.target.value as WallpaperGroup)}
-                className="w-full bg-[var(--surface-0)] text-[var(--text-heading)] font-medium text-[10px] px-1.5 py-0.5 rounded-[2px] border border-[var(--desk-border)] outline-none cursor-pointer hover:border-[var(--desk-border-highlight)]"
-                title="Crystallographic Wallpaper Group Symmetry Brush (Schattschneider 1978): p2, pm, p4, p4m, p6m"
-              >
-                <option value="none">None (Standard)</option>
-                <option value="p2">p2 (180° Rotational)</option>
-                <option value="pm">pm (Mirror Reflection)</option>
-                <option value="p4">p4 (4-Fold 90° Rotational)</option>
-                <option value="p4m">p4m (8-Way Dihedral D4)</option>
-                <option value="p6m">p6m (12-Way Hexagonal D6)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="h-px bg-[var(--desk-border)]" />
-
-          {/* 5. Panels & Workspace */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-sans font-medium text-[var(--text-muted)]">Panels & Workspace</span>
-            <div className="grid grid-cols-2 gap-1">
-              <button
-                onClick={() => updateWorkspaceLayout({ timeline: !workspaceLayout.timeline })}
-                className={`pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border flex items-center justify-between cursor-pointer transition-colors ${
-                  workspaceLayout.timeline
-                    ? 'bg-[var(--surface-3)] text-[var(--text-heading)] border-[var(--desk-border-highlight)] shadow-inner font-semibold'
-                    : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-[1px] ${workspaceLayout.timeline ? 'bg-[var(--accent-gold)]' : 'bg-transparent border border-[var(--desk-border)]'}`} />
-                  <span>Timeline</span>
-                </span>
-              </button>
-
-              <button
-                onClick={() => updateWorkspaceLayout({ navigator: !workspaceLayout.navigator })}
-                className={`pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border flex items-center justify-between cursor-pointer transition-colors ${
-                  workspaceLayout.navigator
-                    ? 'bg-[var(--surface-3)] text-[var(--text-heading)] border-[var(--desk-border-highlight)] shadow-inner font-semibold'
-                    : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-[1px] ${workspaceLayout.navigator ? 'bg-[var(--accent-gold)]' : 'bg-transparent border border-[var(--desk-border)]'}`} />
-                  <span>Navigator</span>
-                </span>
-              </button>
-            </div>
-
-            <div className="flex items-center gap-1 mt-0.5">
-              <button
-                onClick={() => {
-                  toggleFocus();
-                  document.getElementById('center-canvas-area')?.focus({ preventScroll: true });
-                }}
-                className="pixel-tactile-btn flex-1 px-2 py-1 text-[10px] font-medium rounded-[2px] border bg-[var(--surface-0)] text-[var(--text-muted)] hover:text-[var(--text-heading)] flex items-center justify-between cursor-pointer"
-                title="Canvas only mode (Shift+Tab)"
-              >
-                <span>Canvas Only</span>
-                <span className="text-[8px] font-mono opacity-70">⇧ Tab</span>
-              </button>
-              <button
-                onClick={() => {
-                  setIsViewMenuOpen(false);
-                  // The menu item disappears; restore to its persistent opener.
-                  viewMenuRef.current?.querySelector('button')?.focus();
-                  setIsArrangeWorkspaceOpen(true);
-                }}
-                className="pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border bg-[var(--surface-0)] text-[var(--text-muted)] hover:text-[var(--text-heading)] cursor-pointer"
-              >
-                Arrange...
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+      {/* ── View Options ── */}
+      <ViewOptionsPanel
+        open={isViewMenuOpen}
+        anchorRef={viewMenuRef}
+        onClose={() => setIsViewMenuOpen(false)}
+        onArrange={() => {
+          setIsViewMenuOpen(false);
+          // The menu item disappears; restore to its persistent opener.
+          viewMenuRef.current?.querySelector('button')?.focus();
+          setIsArrangeWorkspaceOpen(true);
+        }}
+      />
       {/* Arrange Workspace Modal */}
-      {isArrangeWorkspaceOpen && (
-        <ModalWrapper isOpen onClose={() => setIsArrangeWorkspaceOpen(false)} title="Arrange workspace" maxWidth="max-w-md">
+      <ModalWrapper isOpen={isArrangeWorkspaceOpen} onClose={() => setIsArrangeWorkspaceOpen(false)} title="Arrange workspace" maxWidth="max-w-md">
           <div className="space-y-4 text-sm text-[var(--text-heading)]">
             <p className="text-[var(--text-muted)] text-xs">Keep the panels you use close to the canvas. Layouts are saved in this browser.</p>
             <label className="flex items-center justify-between text-xs">
@@ -1241,7 +878,6 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             </button>
           </div>
         </ModalWrapper>
-      )}
     </header>
   );
-};
+});

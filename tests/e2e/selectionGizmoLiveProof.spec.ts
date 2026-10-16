@@ -81,7 +81,7 @@ test.describe('Selection Free-Transform Gizmo E2E Live Proof', () => {
     if (!canvasBox) return;
 
     // 2. Draw a prominent cross/diamond with Pen tool in center of canvas
-    const penBtn = page.getByTitle(/Pen \(B\)|Pen \(P\)/i).first();
+    const penBtn = page.getByTestId('pen-tool').first();
     if (await penBtn.isVisible()) {
       await penBtn.click();
     }

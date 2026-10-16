@@ -60,6 +60,8 @@ export interface ToolPreviewDefinition {
   group?: string;
   proTip?: string;
   icon?: PixelIconName;
+  /** Shown under the description, e.g. how to reach the other tools folded into a slot. */
+  more?: string;
 }
 
 export const DRAWING_PREVIEWS: Record<string, ToolPreviewDefinition> = {
@@ -498,7 +500,7 @@ function PreviewCard({
         <div className={styles.header}>
           <div className={styles.headerTitleGroup}>
             <div className={styles.iconWrap}>
-              <PixelIcon name={definition.icon || 'pen'} size={14} />
+              <PixelIcon name={definition.icon || 'pen'} size={16} />
             </div>
             <div className={styles.titleStack}>
               {definition.group && <span className={styles.eyebrow}>{definition.group}</span>}
@@ -554,6 +556,12 @@ function PreviewCard({
             <div className={styles.tip}>
               <span className={styles.tipBadge}>TIP</span>
               <span>{definition.proTip}</span>
+            </div>
+          )}
+          {definition.more && (
+            <div className={styles.tip}>
+              <span className={styles.tipBadge}>MORE</span>
+              <span>{definition.more}</span>
             </div>
           )}
           <div className={styles.footer}>
@@ -832,13 +840,16 @@ export function DrawingToolsPreviewLayer({ children }: { children: React.ReactNo
 
 export function DrawingToolPreview({
   toolId,
+  more,
   children,
 }: {
   toolId: string;
+  more?: string;
   children: React.ReactNode;
 }) {
   const contextController = React.useContext(DrawingPreviewContext);
-  const definition = DRAWING_PREVIEWS[toolId];
+  const base = DRAWING_PREVIEWS[toolId];
+  const definition = more && base ? { ...base, more } : base;
 
   if (contextController) {
     return (

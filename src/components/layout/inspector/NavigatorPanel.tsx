@@ -6,15 +6,19 @@ import { compositeFrame } from '@/lib/render/compositor';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { getNextZoomStep, getPrevZoomStep, MIN_ZOOM, MAX_ZOOM } from '@/config/zoom';
 import { executeStudioCommand } from '@/config/studioCommands';
+import { useThrottledValue } from '@/hooks/useThrottledValue';
+import { commitLivePan, previewPan, subscribeLivePan, type PanPoint } from '@/lib/viewport/livePan';
 
 export function NavigatorPanel() {
   const canvas = useRef<HTMLCanvasElement>(null);
   const dragging = useRef(false);
+  const viewBounds = useRef<HTMLDivElement>(null);
   const width = useStudioStore((s) => s.canvasWidth);
   const height = useStudioStore((s) => s.canvasHeight);
   const frames = useStudioStore((s) => s.frames);
   const frame = useStudioStore((s) => s.activeFrameIndex);
-  const version = useStudioStore((s) => s.bufferVersion);
+  // Redraw a few times a second while painting, not on every stroke frame.
+  const version = useThrottledValue(useStudioStore((s) => s.bufferVersion), 120);
   const zoom = useStudioStore((s) => s.zoom);
   const panX = useStudioStore((s) => s.panX);
   const panY = useStudioStore((s) => s.panY);
@@ -81,13 +85,35 @@ export function NavigatorPanel() {
       const r = e.currentTarget.getBoundingClientRect();
       const x = Math.max(0, Math.min(width, (((e.clientX - r.left) * 224) / r.width - left) / scale));
       const y = Math.max(0, Math.min(height, (((e.clientY - r.top) * 112) / r.height - top) / scale));
-      setPan(((width / 2 - x) * zoom) / 100, ((height / 2 - y) * zoom) / 100);
+      // The viewport follows the drag live; the store is written once on release.
+      previewPan(((width / 2 - x) * zoom) / 100, ((height / 2 - y) * zoom) / 100);
     },
-    [height, left, scale, setPan, top, width, zoom]
+    [height, left, scale, top, width, zoom]
   );
+  const endDrag = useCallback(() => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    commitLivePan(setPan);
+  }, [setPan]);
 
   const visibleW = viewport.width / (zoom / 100);
   const visibleH = viewport.height / (zoom / 100);
+  const boundsLeft = (pan: PanPoint) => left + (width / 2 - pan.x / (zoom / 100) - visibleW / 2) * scale;
+  const boundsTop = (pan: PanPoint) => top + (height / 2 - pan.y / (zoom / 100) - visibleH / 2) * scale;
+  const placeBounds = useRef((pan: PanPoint) => ({ left: boundsLeft(pan), top: boundsTop(pan) }));
+  useEffect(() => {
+    placeBounds.current = (pan: PanPoint) => ({ left: boundsLeft(pan), top: boundsTop(pan) });
+  });
+
+  // Follow a pan in progress without re-rendering the panel on every move.
+  useEffect(() => subscribeLivePan((pan, settled) => {
+    const el = viewBounds.current;
+    if (!el) return;
+    const state = useStudioStore.getState();
+    const place = placeBounds.current(pan ?? settled ?? { x: state.panX, y: state.panY });
+    el.style.left = `${place.left}px`;
+    el.style.top = `${place.top}px`;
+  }), []);
 
   const handleFit = () => executeStudioCommand('view-fit-screen');
 
@@ -148,25 +174,20 @@ export function NavigatorPanel() {
           onPointerMove={(e) => {
             if (dragging.current) move(e);
           }}
-          onPointerUp={() => {
-            dragging.current = false;
-          }}
-          onPointerCancel={() => {
-            dragging.current = false;
-          }}
-          onLostPointerCapture={() => {
-            dragging.current = false;
-          }}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+          onLostPointerCapture={endDrag}
         />
 
         {/* Viewport Frustum Box */}
         <div
+          ref={viewBounds}
           className="absolute pointer-events-none border-2 border-[var(--accent-gold)] shadow-[0_0_6px_rgba(240,190,124,0.5)] rounded-[1px]"
           data-testid="navigator-view-bounds"
           aria-hidden="true"
           style={{
-            left: left + (width / 2 - panX / (zoom / 100) - visibleW / 2) * scale,
-            top: top + (height / 2 - panY / (zoom / 100) - visibleH / 2) * scale,
+            left: boundsLeft({ x: panX, y: panY }),
+            top: boundsTop({ x: panX, y: panY }),
             width: visibleW * scale,
             height: visibleH * scale,
           }}
@@ -181,7 +202,7 @@ export function NavigatorPanel() {
           onClick={() => setZoom(getPrevZoomStep(zoom))}
           title="Zoom out"
           aria-label="Zoom out"
-          className="w-5 h-5 flex items-center justify-center rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-xs text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 active:translate-y-[1px] cursor-pointer"
+          className="w-5 h-5 flex items-center justify-center rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-xs text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 cursor-pointer"
         >
           -
         </button>
@@ -199,7 +220,7 @@ export function NavigatorPanel() {
           onClick={() => setZoom(getNextZoomStep(zoom))}
           title="Zoom in"
           aria-label="Zoom in"
-          className="w-5 h-5 flex items-center justify-center rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-xs text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 active:translate-y-[1px] cursor-pointer"
+          className="w-5 h-5 flex items-center justify-center rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-xs text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 cursor-pointer"
         >
           +
         </button>
@@ -210,14 +231,14 @@ export function NavigatorPanel() {
         <button
           type="button"
           onClick={() => setZoomAndPan(100, 0, 0)}
-          className="px-2 py-0.5 rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 cursor-pointer active:translate-y-[1px]"
+          className="px-2 py-0.5 rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 cursor-pointer"
         >
           1:1
         </button>
         <button
           type="button"
           onClick={handleFit}
-          className="px-2 py-0.5 rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 cursor-pointer active:translate-y-[1px]"
+          className="px-2 py-0.5 rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 cursor-pointer"
         >
           Fit canvas
         </button>
@@ -225,7 +246,7 @@ export function NavigatorPanel() {
           type="button"
           onClick={() => setPan(0, 0)}
           title="Center canvas without changing zoom"
-          className="px-2 py-0.5 rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 cursor-pointer active:translate-y-[1px]"
+          className="px-2 py-0.5 rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 cursor-pointer"
         >
           Center
         </button>

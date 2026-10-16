@@ -300,7 +300,7 @@ const Skill: React.FC<{ titleId: string; value: Experience | null; onPick: (e: E
             data-autofocus={i === 0 ? true : undefined}
             onClick={() => onPick(skill.id)}
             whileHover={{ y: -3 }}
-            whileTap={{ y: 1 }}
+            
             className={`relative flex flex-col items-start gap-3 rounded-[10px] border-2 p-4 text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] ${
               selected ? 'border-[var(--accent-gold)] bg-[var(--state-active)] shadow-[0_3px_0_var(--ink)]' : 'border-[var(--desk-border)] bg-[var(--desk-surface-raised)] hover:border-[var(--desk-border-highlight)]'
             }`}
@@ -375,7 +375,7 @@ const ThemeCard: React.FC<{ theme: StudioThemeDefinition; day: boolean; selected
       data-autofocus={autofocus ? true : undefined}
       onClick={onPick}
       whileHover={{ y: -4 }}
-      whileTap={{ scale: 0.97 }}
+      
       animate={{ boxShadow: selected ? `0 0 0 3px ${palette.accent}, 0 4px 0 ${palette.ink}` : `0 0 0 0px transparent, 0 2px 0 ${palette.ink}` }}
       className="group relative flex flex-col overflow-hidden rounded-[10px] border-2 text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--accent-gold)]"
       style={{ borderColor: palette.ink, backgroundColor: palette.surface }}
@@ -479,7 +479,7 @@ const Start: React.FC<{ titleId: string; experience: Experience; ready: boolean;
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 * i }}
           whileHover={ready ? { y: -3 } : undefined}
-          whileTap={ready ? { scale: 0.97 } : undefined}
+          
           onClick={e => {
             const rect = e.currentTarget.getBoundingClientRect();
             onPick(option.choice, { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });

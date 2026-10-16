@@ -96,7 +96,6 @@ test('saved rig deletion is reversible and edited source is refused after save a
 
 test('opening a saved rig selects its source cel after a frame copy and cancellation restores that source display', async ({ page }) => {
   const original = await readyWithMark(page); await capture(page); await setArc(page); await saveRig(page);
-  await page.locator('summary').filter({ hasText: 'Frame actions' }).click();
   await page.getByRole('button', { name: 'Duplicate frame', exact: true }).click();
   const first = page.getByRole('button', { name: /Select frame 1\./ }), second = page.getByRole('button', { name: /Select frame 2\./ });
   await expect(second).toHaveClass(/timeline-frame-active-bg/);

@@ -4,7 +4,7 @@ Current engineering verification and remaining release checks are recorded in th
 
 For artists: [illustrated handbook](docs/guides/README.md) and [complete feature index](docs/features.md).
 
-PixiBun is a browser studio for small pixel-art drawings, sprites, tiles and animation loops. Its audience includes pixel artists, beginners and people making art for games. The visual direction is a readable drawing desk across eight styles, each with Night and Day palettes. Scene styles add animated pixel backgrounds; Graphite and Plum keep flat backgrounds.
+PixiBun is a browser studio for small pixel-art drawings, sprites, tiles and animation loops. Its audience includes pixel artists, beginners and people making art for games. The visual direction is a readable drawing desk across twelve styles, each with Night and Day palettes. Scene styles add animated pixel backgrounds; Graphite and Plum keep flat backgrounds.
 
 Scene themes also offer [Studio Labs](src/experimental/README.md): optional alternative controls for the tool bar, inspector tabs, sliders and tool rail, palette and quick effects. They are experimental presentation choices; Graphite and Plum keep classic controls. They do not add a second drawing engine or change export contracts.
 

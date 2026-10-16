@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { lazyPanel } from '@/components/system/lazyPanel';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon, PixelIconName } from '@/components/ui/PixelIcon';
-import { motion } from 'motion/react';
+import { AnimatePresence } from 'motion/react';
 import { ToolType } from '@/types/tools';
 import {
   DrawingToolPreview,
@@ -21,6 +21,7 @@ const ColorPickerModal = lazyPanel(
 
 import { EXTRAS_SLOT, TOOL_GROUPS, TOOL_SLOTS } from '@/config/shortcuts';
 import { ToolSlotButton } from './ToolSlotButton';
+import { ColorAccessFlyout, type ColorTarget } from './ColorAccessFlyout';
 import { ToolRailLens } from '@/experimental/liquidControls/ToolRailLens';
 import { planShelf, visibleGroups, type FoldStage } from '@/lib/layout/toolShelf';
 
@@ -31,8 +32,8 @@ export interface LeftToolbarProps {
   isPlaygroundMode?: boolean;
 }
 
-export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = false }) => {
-  const tools = useStudioStore((s) => s.tools);
+export const LeftToolbar = React.memo(function LeftToolbar({ isPlaygroundMode = false }: LeftToolbarProps) {
+  const activeTool = useStudioStore((s) => s.tools.activeTool);
   const setActiveTool = useStudioStore((s) => s.setActiveTool);
   const primaryColor = useStudioStore((s) => s.primaryColor);
   const secondaryColor = useStudioStore((s) => s.secondaryColor);
@@ -43,85 +44,38 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
   const currentPaletteId = useStudioStore((s) => s.currentPaletteId);
   const recentColors = useStudioStore((s) => s.recentColors);
   const loadRecentColors = useStudioStore((s) => s.loadRecentColors);
-  const setActiveInspectorTab = useStudioStore((s) => s.setActiveInspectorTab);
 
-  const [colorPickerTarget, setColorPickerTarget] = useState<'primary' | 'secondary' | null>(null);
+  const [colorPickerTarget, setColorPickerTarget] = useState<ColorTarget | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false);
-  const [activeFlyoutTarget, setActiveFlyoutTarget] = useState<'primary' | 'secondary'>('primary');
+  const [activeFlyoutTarget, setActiveFlyoutTarget] = useState<ColorTarget>('primary');
   const wellsContainerRef = useRef<HTMLDivElement>(null);
-  const flyoutRef = useRef<HTMLDivElement>(null);
-  const [flyoutBottom, setFlyoutBottom] = useState<number | null>(null);
+  const flyoutTriggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
     loadRecentColors();
   }, [loadRecentColors]);
 
-  const calculateFlyoutBottom = useCallback((triggerEl?: HTMLElement | null) => {
-    const el = triggerEl || wellsContainerRef.current;
-    if (el) {
-      const rect = el.getBoundingClientRect();
-      const timelineEl = typeof document !== 'undefined' ? document.querySelector('footer') : null;
-      const timelineHeight = timelineEl ? timelineEl.getBoundingClientRect().height : 112;
-      const desiredBottom = window.innerHeight - rect.bottom;
-      return Math.max(timelineHeight + 8, desiredBottom);
-    }
-    return 120;
+  const openFlyout = useCallback((target: ColorTarget) => {
+    setActiveFlyoutTarget(target);
+    setIsFlyoutOpen(true);
   }, []);
 
-  const openFlyout = useCallback((target: 'primary' | 'secondary', triggerEl?: HTMLElement | null) => {
-    setActiveFlyoutTarget(target);
-    const calculated = calculateFlyoutBottom(triggerEl);
-    setFlyoutBottom(calculated);
-    setIsFlyoutOpen(true);
-  }, [calculateFlyoutBottom]);
+  const closeFlyout = useCallback((restoreFocus: boolean) => {
+    setIsFlyoutOpen(false);
+    if (restoreFocus) flyoutTriggerRef.current?.focus();
+  }, []);
 
-  const toggleFlyout = useCallback((e?: React.MouseEvent<HTMLElement>) => {
-    if (!isFlyoutOpen) {
-      openFlyout('primary', e?.currentTarget);
-    } else {
-      setIsFlyoutOpen(false);
-    }
-  }, [isFlyoutOpen, openFlyout]);
-
-  const updateFlyoutCoords = useCallback(() => {
-    const calculated = calculateFlyoutBottom();
-    setFlyoutBottom(calculated);
-  }, [calculateFlyoutBottom]);
+  const openSpectrum = useCallback((target: ColorTarget) => {
+    setIsFlyoutOpen(false);
+    setColorPickerTarget(target);
+  }, []);
 
   const resetDefaultColors = useCallback(() => {
     setPrimaryColor('#000000');
     setSecondaryColor('#ffffff');
   }, [setPrimaryColor, setSecondaryColor]);
-
-  useEffect(() => {
-    if (!isFlyoutOpen) return;
-    updateFlyoutCoords();
-
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (
-        wellsContainerRef.current && !wellsContainerRef.current.contains(target) &&
-        flyoutRef.current && !flyoutRef.current.contains(target)
-      ) {
-        setIsFlyoutOpen(false);
-      }
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsFlyoutOpen(false);
-    };
-
-    window.addEventListener('resize', updateFlyoutCoords);
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('resize', updateFlyoutCoords);
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isFlyoutOpen, updateFlyoutCoords]);
 
   // Small windows: fold tool groups into flyout slots, only as many as needed.
   const toolScrollRef = useRef<HTMLDivElement>(null);
@@ -142,9 +96,9 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
   // Each slot shows the active tool if it is in that group, else the last one used there.
   const [lastUsed, setLastUsed] = useState<Record<string, ToolType>>({});
   useEffect(() => {
-    const slot = TOOL_SLOTS.find(candidate => candidate.tools.includes(tools.activeTool));
-    if (slot) setLastUsed(prev => (prev[slot.id] === tools.activeTool ? prev : { ...prev, [slot.id]: tools.activeTool }));
-  }, [tools.activeTool]);
+    const slot = TOOL_SLOTS.find(candidate => candidate.tools.includes(activeTool));
+    if (slot) setLastUsed(prev => (prev[slot.id] === activeTool ? prev : { ...prev, [slot.id]: activeTool }));
+  }, [activeTool]);
 
   const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];
 
@@ -160,15 +114,6 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
       ]
     : TOOL_GROUPS;
 
-  const handleApplyColor = (color: string, overrideTarget?: 'primary' | 'secondary') => {
-    const target = overrideTarget || activeFlyoutTarget;
-    if (target === 'primary') {
-      setPrimaryColor(color);
-    } else {
-      setSecondaryColor(color);
-    }
-  };
-
   return (
     <aside className="w-14 h-full max-h-full bg-[var(--desk-surface)] border-r border-[var(--desk-border)] flex flex-col items-center select-none z-10 transition-colors duration-150 relative overflow-hidden">
       {/* 1. Categorized Tool Groups: Scrollable Container */}
@@ -180,7 +125,7 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
         <DrawingToolsPreviewLayer>
           <div className="lq-rail-host flex flex-col gap-1 w-full px-0.5 items-center">
             {/* Labs: a glass lens sweeps between tools (renders nothing when off) */}
-            <ToolRailLens activeTool={tools.activeTool} />
+            <ToolRailLens activeTool={activeTool} />
             {activeToolGroups.filter(group => isPlaygroundMode || visibleGroups(folded).some(name => name === group.groupName)).map((group, gIdx) => (
               <div
                 key={group.groupName}
@@ -195,11 +140,11 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
                   />
                 )}
                 {(folded.has(group.groupName as FoldStage) || (group.groupName === '2.5D Sculpt' && folded.has('Extras'))) && !isPlaygroundMode ? (group.groupName === '2.5D Sculpt' && folded.has('Extras') ? [EXTRAS_SLOT] : TOOL_SLOTS.filter(slot => slot.group === group.groupName)).map(slot => {
-                  const holdsActive = slot.tools.includes(tools.activeTool);
-                  const shown = holdsActive ? tools.activeTool : lastUsed[slot.id] ?? slot.tools[0];
+                  const holdsActive = slot.tools.includes(activeTool);
+                  const shown = holdsActive ? activeTool : lastUsed[slot.id] ?? slot.tools[0];
                   return <ToolSlotButton key={slot.id} slot={slot} shown={shown} active={holdsActive} onChoose={setActiveTool} />;
                 }) : group.tools.map((tool) => {
-                  const isActive = tools.activeTool === tool.id;
+                  const isActive = activeTool === tool.id;
                   return (
                     <DrawingToolPreview
                       key={tool.id}
@@ -209,16 +154,17 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
                         onClick={() => setActiveTool(tool.id)}
                         aria-label={tool.label}
                         aria-pressed={isActive}
-                        title={`${tool.label}${tool.shortcut ? ` (${tool.shortcut})` : ''}`}
+                        // The hover card names the tool and its key; a native title would stack on top of it.
+                        aria-keyshortcuts={tool.shortcut ? tool.shortcut.replace(/ \+ /g, '+') : undefined}
                         data-testid={`${tool.id}-tool`}
                         data-tutorial={`${tool.id}-tool`}
-                        className={`w-9 h-9 rounded-[2px] flex items-center justify-center cursor-pointer transition-all ${
+                        className={`w-10 h-10 rounded-[2px] flex items-center justify-center cursor-pointer transition-all ${
                           isActive
                             ? 'pixel-primary-btn font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_1px_0_var(--btn-shadow)] ring-2 ring-[var(--accent-gold)] ring-offset-1 ring-offset-[var(--desk-surface)] z-10'
                             : 'pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)]'
                         }`}
                       >
-                        <PixelIcon name={tool.icon} size={16} />
+                        <PixelIcon name={tool.icon} size={32} />
                       </button>
                     </DrawingToolPreview>
                   );
@@ -327,218 +273,53 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
             ))}
           </div>
 
-          {/* Discreet Flyout Trigger Button */}
+          {/* Opens the Colors flyout: palette, shades, recent colors and hex entry */}
           <button
-            onClick={toggleFlyout}
-            title="Quick Swatches & Color Access (Click to toggle)"
+            ref={flyoutTriggerRef}
+            type="button"
+            onClick={() => (isFlyoutOpen ? closeFlyout(false) : openFlyout('primary'))}
+            title="Colors: palette, shades, recent colors and hex"
             aria-label="Quick Swatches Flyout"
-            className={`w-9 h-6 rounded-[2px] border text-[8px] font-mono flex items-center justify-center gap-0.5 cursor-pointer transition-colors pixel-tactile-btn ${
+            aria-haspopup="dialog"
+            aria-expanded={isFlyoutOpen}
+            className={`w-9 h-6 rounded-[2px] border flex items-center justify-center cursor-pointer transition-colors pixel-tactile-btn ${
               isFlyoutOpen
                 ? 'bg-[var(--surface-2)] text-[var(--accent-gold)] border-[var(--accent-gold)]/60'
                 : 'text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
             }`}
           >
-            <span className="w-0.5 h-0.5 rounded-full bg-current" />
-            <span className="w-0.5 h-0.5 rounded-full bg-current" />
-            <span className="w-0.5 h-0.5 rounded-full bg-current" />
+            <PixelIcon name="swatches" size={16} />
           </button>
         </div>
       </div>
 
-      {/* 3. Discreet Floating Color Flyout (Hoisted via Portal at z-9999) */}
-      {isFlyoutOpen && isMounted && flyoutBottom !== null && createPortal(
-        <motion.div
-          ref={flyoutRef}
-          role="region"
-          aria-label="Color quick access flyout"
-          initial={{ opacity: 0, x: -8 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -8 }}
-          transition={{ duration: 0.1, ease: 'easeOut' }}
-          style={{
-            position: 'fixed',
-            left: '58px',
-            bottom: `${flyoutBottom}px`,
-            zIndex: 9999,
-            transformOrigin: 'left bottom',
-            maxHeight: 'calc(100vh - 120px)',
-          }}
-          className="w-56 bg-[var(--surface-2)] border border-[var(--desk-border-highlight)] rounded-[3px] shadow-[0_8px_28px_rgba(0,0,0,0.65)] p-2.5 flex flex-col gap-2 text-xs font-sans select-none overflow-y-auto [&_button]:min-w-11 [&_button]:min-h-11"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between pb-1.5 border-b border-[var(--desk-border)]">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--accent-gold)] font-sans flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)]" />
-              Color Access
-            </span>
-            <button
-              type="button"
-              onClick={() => setIsFlyoutOpen(false)}
-              aria-label="Close color access"
-              className="text-[9px] text-[var(--text-muted)] hover:text-[var(--text-heading)] font-mono px-1 py-0.5 rounded-[2px] cursor-pointer transition-colors"
-            >
-              ESC ✕
-            </button>
-          </div>
-
-          {/* Active Target Switcher & Hex Info */}
-          <div className="flex items-center justify-between gap-1 p-1 bg-[var(--surface-0)] rounded-[2px] border border-[var(--desk-border)]">
-            <button
-              onClick={() => setActiveFlyoutTarget('primary')}
-              aria-label={`Pri ${primaryColor}`}
-              className={`flex-1 h-8 flex items-center gap-1.5 px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
-                activeFlyoutTarget === 'primary'
-                  ? 'bg-[var(--surface-2)] text-[var(--text-heading)] border border-[var(--accent-gold)]'
-                  : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] border border-transparent'
-              }`}
-            >
-              <span
-                className="w-3.5 h-3.5 rounded-[1px] border border-[var(--desk-border)] shrink-0"
-                style={{ backgroundColor: primaryColor }}
-              />
-              <div className="flex flex-col text-left leading-tight min-w-0">
-                <span className="text-[8px] font-sans font-medium text-[var(--text-muted)] uppercase">Pri</span>
-                <span className="text-[9px] font-mono font-bold text-[var(--text-heading)] truncate max-w-[52px]">
-                  {primaryColor}
-                </span>
-              </div>
-            </button>
-
-            <button
-              onClick={swapColors}
-              aria-label="Swap colors"
-              title="Swap Colors (X)"
-              className="w-7 h-8 shrink-0 flex items-center justify-center text-[11px] text-[var(--text-muted)] hover:text-[var(--accent-gold)] hover:bg-[var(--surface-1)] rounded-[2px] transition-colors cursor-pointer"
-            >
-              ⇄
-            </button>
-
-            <button
-              onClick={() => setActiveFlyoutTarget('secondary')}
-              aria-label={`Sec ${secondaryColor}`}
-              className={`flex-1 h-8 flex items-center gap-1.5 px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
-                activeFlyoutTarget === 'secondary'
-                  ? 'bg-[var(--surface-2)] text-[var(--text-heading)] border border-[var(--accent-plum)]'
-                  : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] border border-transparent'
-              }`}
-            >
-              <span
-                className="w-3.5 h-3.5 rounded-[1px] border border-[var(--desk-border)] shrink-0"
-                style={{ backgroundColor: secondaryColor }}
-              />
-              <div className="flex flex-col text-left leading-tight min-w-0">
-                <span className="text-[8px] font-sans font-medium text-[var(--text-muted)] uppercase">Sec</span>
-                <span className="text-[9px] font-mono font-bold text-[var(--text-heading)] truncate max-w-[52px]">
-                  {secondaryColor}
-                </span>
-              </div>
-            </button>
-          </div>
-
-          {/* Larger alternatives to the compact dock keep 44px targets. */}
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between text-[9px] text-[var(--text-muted)]">
-              <span className="truncate max-w-[130px] font-medium font-sans">{currentPalette.name}</span>
-              <span className="font-mono text-[8px]">{currentPalette.colors.length}c</span>
-            </div>
-            <div className="grid grid-cols-4 gap-1 p-1 bg-[var(--surface-0)] rounded-[2px] border border-[var(--desk-border)]">
-              {currentPalette.colors.slice(0, 32).map((color, idx) => {
-                const isSelected =
-                  (activeFlyoutTarget === 'primary' ? primaryColor : secondaryColor).toLowerCase() ===
-                  color.toLowerCase();
-                return (
-                  <button
-                    key={`flyout-pal-${color}-${idx}`}
-                    onClick={() => handleApplyColor(color)}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      handleApplyColor(color, activeFlyoutTarget === 'primary' ? 'secondary' : 'primary');
-                    }}
-                    style={{ backgroundColor: color }}
-                    aria-label={`Palette color ${color}`}
-                    className={`aspect-square w-full rounded-[1px] border transition-transform hover:scale-125 active:scale-95 cursor-pointer relative ${
-                      isSelected
-                        ? 'border-white ring-1 ring-[var(--accent-gold)] z-10'
-                        : 'border-[var(--desk-border)]/80 hover:border-white/80'
-                    }`}
-                    title={`${color} (Click: ${activeFlyoutTarget} | Right-click: alternate)`}
-                  />
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Recent Colors (Cozy compact strip) */}
-          {recentColors.length > 0 && (
-            <div className="flex flex-col gap-1 pt-1 border-t border-[var(--desk-border)]">
-              <span className="text-[9px] text-[var(--text-muted)] font-medium font-sans">Recent Colors</span>
-              <div className="flex items-center gap-1 flex-wrap p-1 bg-[var(--surface-0)] rounded-[2px] border border-[var(--desk-border)]">
-                {recentColors.slice(0, 8).map((color, idx) => (
-                  <button
-                    key={`flyout-rec-${color}-${idx}`}
-                    onClick={() => handleApplyColor(color)}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      handleApplyColor(color, activeFlyoutTarget === 'primary' ? 'secondary' : 'primary');
-                    }}
-                    style={{ backgroundColor: color }}
-                    aria-label={`Recent color ${color}`}
-                    className="w-5 h-5 rounded-[1px] border border-[var(--desk-border)] hover:scale-125 hover:border-white/80 cursor-pointer transition-transform"
-                    title={`${color} (Recent)`}
-                  />
-                ))}
-              </div>
-            </div>
+      {/* 3. Colors flyout, portaled above every panel */}
+      {isMounted && createPortal(
+        <AnimatePresence>
+          {isFlyoutOpen && (
+            <ColorAccessFlyout
+              key="color-access"
+              anchor={wellsContainerRef.current}
+              target={activeFlyoutTarget}
+              onTargetChange={setActiveFlyoutTarget}
+              onClose={closeFlyout}
+              onOpenSpectrum={openSpectrum}
+            />
           )}
-
-          {/* Progressive Actions: Spectrum Picker & Full Palette Tab */}
-          <div className="flex flex-col gap-1.5 pt-1.5 border-t border-[var(--desk-border)]">
-            <div className="grid grid-cols-2 gap-1.5">
-              <button
-                type="button"
-                onClick={resetDefaultColors}
-                aria-label="Reset default black and white colors"
-                title="Reset to default Black and White (Shift+D)"
-                className="h-7 px-2 text-[10px] font-medium font-sans border border-[var(--desk-border)] bg-[var(--surface-0)] hover:bg-[var(--surface-1)] hover:border-[var(--desk-border-highlight)] text-[var(--text-body)] rounded-[2px] cursor-pointer truncate transition-colors"
-              >
-                Reset B&amp;W
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsFlyoutOpen(false);
-                  setColorPickerTarget(activeFlyoutTarget);
-                }}
-                className="h-7 px-2 text-[10px] font-sans font-medium pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] border border-[var(--desk-border)] rounded-[2px] cursor-pointer flex items-center justify-between transition-colors"
-              >
-                <span className="truncate">Spectrum…</span>
-                <span className="text-[10px] text-[var(--accent-gold)] font-mono ml-0.5">+</span>
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setIsFlyoutOpen(false);
-                setActiveInspectorTab('palette');
-              }}
-              className="h-7 w-full px-2 text-[10px] font-sans font-medium pixel-tactile-btn text-[var(--accent-gold)] hover:bg-[var(--surface-3)] border border-[var(--accent-gold)]/30 hover:border-[var(--accent-gold)] rounded-[2px] cursor-pointer flex items-center justify-between transition-colors"
-            >
-              <span>Open Palette Panel</span>
-              <span className="text-[10px]">▸</span>
-            </button>
-          </div>
-        </motion.div>,
+        </AnimatePresence>,
         document.body
       )}
 
       {/* Full Color Picker Modal */}
+      <AnimatePresence>
       {colorPickerTarget && (
-        <ColorPickerModal
+        <ColorPickerModal key="ColorPickerModal"
           isOpen={Boolean(colorPickerTarget)}
           onClose={() => setColorPickerTarget(null)}
           target={colorPickerTarget}
         />
       )}
+      </AnimatePresence>
     </aside>
   );
-};
+});

@@ -25,8 +25,12 @@ test('large flyout color controls support taps without changing canvas pixels', 
   const triggerBox = (await trigger.boundingBox())!;
   expect(triggerBox.width).toBeGreaterThanOrEqual(24); expect(triggerBox.height).toBeGreaterThanOrEqual(24);
   await trigger.tap();
-  const flyout = page.getByRole('region', { name: 'Color quick access flyout', exact: true });
+  const flyout = page.getByRole('dialog', { name: 'Color quick access flyout', exact: true });
   await expect(flyout).toBeVisible();
+  // Measure targets at rest: the flyout blooms and unfolds its rows before settling.
+  await flyout.evaluate(element => Promise.all(element.getAnimations({ subtree: true })
+    .filter(animation => animation.effect?.getComputedTiming().endTime !== Infinity)
+    .map(animation => animation.finished.catch(() => undefined))));
   for (const button of await flyout.getByRole('button').all()) {
     const box = (await button.boundingBox())!;
     expect(box.width).toBeGreaterThanOrEqual(44); expect(box.height).toBeGreaterThanOrEqual(44);
@@ -36,7 +40,7 @@ test('large flyout color controls support taps without changing canvas pixels', 
   const swatch = flyout.getByRole('button', { name: /^Palette color / }).nth(2);
   const swatchColor = await swatch.evaluate(button => (button as HTMLButtonElement).style.backgroundColor);
   await swatch.tap(); expect(await color()).toBe(swatchColor);
-  await flyout.getByRole('button', { name: /^Sec / }).tap();
+  await flyout.getByRole('button', { name: /^Secondary/ }).tap();
   await flyout.getByRole('button', { name: /^Palette color / }).nth(3).tap();
   await flyout.getByRole('button', { name: 'Reset default black and white colors', exact: true }).tap();
   expect(await color()).toBe('rgb(0, 0, 0)');

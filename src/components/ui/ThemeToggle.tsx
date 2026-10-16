@@ -35,7 +35,7 @@ export const ThemeToggle: React.FC<{ className?: string }> = ({ className = '' }
       onClick={toggleColorScheme}
       title={isLight ? 'Switch to Dark Scheme' : 'Switch to Light Scheme'}
       aria-label="Toggle Theme"
-      className={`w-6 h-6 flex items-center justify-center rounded-[1px] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-1)] active:translate-y-[1px] transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent-wisteria)] ${className}`}
+      className={`w-6 h-6 flex items-center justify-center rounded-[1px] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-1)] transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent-wisteria)] ${className}`}
     >
       {isLight ? (
         // Pixel-native Moon icon for switching to dark
