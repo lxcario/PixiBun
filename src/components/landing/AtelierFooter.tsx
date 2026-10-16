@@ -116,6 +116,11 @@ export const AtelierFooter: React.FC = () => {
                     Our pledge: no generative AI, ever.
                   </Link>
                 </p>
+                <p className="leading-relaxed">
+                  <Link href="/verified" className="text-[var(--accent-gold)] underline underline-offset-2 hover:opacity-80">
+                    How it&rsquo;s tested: every pull request, checked.
+                  </Link>
+                </p>
                 <div className="pt-2 flex items-center gap-4 text-xs font-mono">
                   <a href="#features" className="text-[var(--text-body)] hover:text-[var(--accent-gold)] transition-colors">
                     Studio
