@@ -1,5 +1,11 @@
 # Current project status
 
+## Replay links — 16 October 2026
+
+`/studio?replay=<recipe>` saves the current drawing, opens a new one and redraws a short, versioned recipe of Pen, Eraser, Line, Rectangle, Ellipse, Fill, add-layer and add-frame steps, each as its own Undo step ([format and goldens](testsprite/replays.md), [testing guide](guides/testing.md#replay-links)). Paired with the canvas readout below, it lets a black-box browser assert exact pixel counts and digests. Five golden recipes are published as [TestSprite PRD journeys](testsprite/PRD.md#13-replay-a-known-drawing-and-check-its-exact-pixels). Replay steps commit through the shared patch-based Undo helper used by lesson edits and the store's layer and frame actions; they do not drive pointer events, so they do not test pointer handling.
+
+Verification on branch `claude/competent-germain-4237b9`, cut from the readout commit `ebd9607e`, in a development server (not a production build): `tests/replayLink.test.ts` (65 cases) and `tests/applyReplay.test.ts` (6) passed. `tests/e2e/replayLink.spec.ts` (Chromium, two workers) passed 6 of 6, then 24 of 24 with `--repeat-each=4`; on the same source `canvasReadout.spec.ts`, `lessonHistory.spec.ts` and `practiceIsolation.spec.ts` passed 17 of 17 after lesson edits moved onto the shared history helper. `npm run gate` passed all five stages under Node 22.23.3 with **2,637 unit tests / 247 files**. The production build (`gate:full`) was not run. No TestSprite run is claimed; the live site does not serve replay links until a build with them is deployed.
+
 ## Canvas readout — 16 October 2026
 
 The Studio now writes the active frame out as text: canvas size, active frame and layer, frame and layer counts, painted pixels, the most used colors with counts and a digest of the composite ([hooks](guides/testing.md#canvas-readout)). It serves screen-reader users and lets black-box browsers such as TestSprite assert what a stroke drew; the [TestSprite PRD](testsprite/PRD.md#canvas-readout-assert-what-was-drawn) now asks for that. The region is visually hidden and re-reads the frame only after a commit settles, Undo or Redo.

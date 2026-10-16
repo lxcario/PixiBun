@@ -71,7 +71,7 @@ export const WelcomeJourney: React.FC<{ ready: boolean; onStart: (choice: Welcom
     const url = new URL(window.location.href);
     if (!shouldOpenWelcome(url, usePreferencesStore.getState().onboardedAt, navigator.webdriver === true)) return;
     // Arriving with a starter or size already chosen: that drawing is the start.
-    setSkipStart(url.searchParams.has('template') || url.searchParams.has('width'));
+    setSkipStart(url.searchParams.has('template') || url.searchParams.has('width') || url.searchParams.has('replay'));
     setOpen(true);
   }, []);
 
