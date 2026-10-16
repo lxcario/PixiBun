@@ -183,7 +183,7 @@ export function NavigatorPanel() {
           onClick={() => setZoom(getPrevZoomStep(zoom))}
           title="Zoom out"
           aria-label="Zoom out"
-          className="w-5 h-5 flex items-center justify-center rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-xs text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 active:translate-y-[1px] cursor-pointer"
+          className="w-5 h-5 flex items-center justify-center rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-xs text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 cursor-pointer"
         >
           -
         </button>
@@ -201,7 +201,7 @@ export function NavigatorPanel() {
           onClick={() => setZoom(getNextZoomStep(zoom))}
           title="Zoom in"
           aria-label="Zoom in"
-          className="w-5 h-5 flex items-center justify-center rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-xs text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 active:translate-y-[1px] cursor-pointer"
+          className="w-5 h-5 flex items-center justify-center rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-xs text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 cursor-pointer"
         >
           +
         </button>
@@ -212,14 +212,14 @@ export function NavigatorPanel() {
         <button
           type="button"
           onClick={() => setZoomAndPan(100, 0, 0)}
-          className="px-2 py-0.5 rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 cursor-pointer active:translate-y-[1px]"
+          className="px-2 py-0.5 rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 cursor-pointer"
         >
           1:1
         </button>
         <button
           type="button"
           onClick={handleFit}
-          className="px-2 py-0.5 rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 cursor-pointer active:translate-y-[1px]"
+          className="px-2 py-0.5 rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 cursor-pointer"
         >
           Fit canvas
         </button>
@@ -227,7 +227,7 @@ export function NavigatorPanel() {
           type="button"
           onClick={() => setPan(0, 0)}
           title="Center canvas without changing zoom"
-          className="px-2 py-0.5 rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 cursor-pointer active:translate-y-[1px]"
+          className="px-2 py-0.5 rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)]/50 cursor-pointer"
         >
           Center
         </button>

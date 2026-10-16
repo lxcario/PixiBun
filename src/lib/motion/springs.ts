@@ -9,6 +9,7 @@ import type { Transition } from 'motion/react';
  *   MORPH_H  460/25   ζ≈0.58  carries the bounce for height changes (collapse/expand)
  *   BLOOM    600/26/0.9       one small bounce as a surface scales in
  *   SNAP     300/25/0.9       sliding selection thumbs (the liquid tabs' SNAP)
+ *   RELEASE  320/17/0.8       a pressed control springing back to size, one soft overshoot
  */
 export interface SpringSpec { stiffness: number; damping: number; mass: number }
 
@@ -16,6 +17,7 @@ export const MORPH_W: SpringSpec = { stiffness: 420, damping: 31, mass: 1 };
 export const MORPH_H: SpringSpec = { stiffness: 460, damping: 25, mass: 1 };
 export const BLOOM: SpringSpec = { stiffness: 600, damping: 26, mass: 0.9 };
 export const SNAP: SpringSpec = { stiffness: 300, damping: 25, mass: 0.9 };
+export const RELEASE: SpringSpec = { stiffness: 320, damping: 17, mass: 0.8 };
 
 /** A motion/react spring transition from a spec, with tight rest thresholds for pixel and scale values. */
 export function spring(spec: SpringSpec, extra: Partial<Transition> = {}): Transition {

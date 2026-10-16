@@ -39,7 +39,7 @@ export const DayNightSwitch: React.FC = () => {
       aria-label="Daylight"
       title={day ? 'Switch to night' : 'Switch to day'}
       onClick={() => toggleColorSchemeFrom(ref.current)}
-      className="daynight-switch group relative w-[52px] h-[28px] shrink-0 rounded-[3px] border-2 border-[var(--ink)] overflow-hidden cursor-pointer shadow-[0_2px_0_var(--ink)] active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--desk-bg)]"
+      className="daynight-switch group relative w-[52px] h-[28px] shrink-0 rounded-[3px] border-2 border-[var(--ink)] overflow-hidden cursor-pointer shadow-[0_2px_0_var(--ink)] active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--desk-bg)]"
       data-day={day ? 'true' : 'false'}
     >
       {/* Sky */}

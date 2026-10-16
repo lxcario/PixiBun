@@ -1119,7 +1119,7 @@ html[data-color-scheme="light"] [data-layout="scene"] {
    ═══════════════════════════════════════════════════════════════════ */
 /* Control skin tokens (--moon-ink, --moon-glow, --moon-chevron, --moon-check) come from themes.generated.css */
 
-/* Buttons: rounder, and every press visibly pushes in */
+/* Buttons: rounder. Presses scale and spring back (src/lib/motion/pressMotion.ts), never shift. */
 body.moon-ui .pixel-tactile-btn,
 body.moon-ui .pixel-primary-btn {
   border-radius: 6px !important;
@@ -1129,10 +1129,6 @@ body.moon-ui .pixel-primary-btn {
 body.moon-ui .pixel-tactile-btn:hover:not(:disabled),
 body.moon-ui .pixel-primary-btn:hover:not(:disabled) {
   transform: translateY(-1px) !important;
-}
-
-body.moon-ui button:active:not(:disabled) {
-  transform: translateY(1px) !important;
 }
 
 body.moon-ui button:disabled {
