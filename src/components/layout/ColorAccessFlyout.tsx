@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import { SpringSurface } from '@/components/ui/surfaces/SpringSurface';
 import { useStudioStore } from '@/stores/studioStore';
 import { usePreferencesStore } from '@/stores/preferencesStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
@@ -75,7 +75,6 @@ export function ColorAccessFlyout({ anchor, target, onTargetChange, onClose, onO
   const setActiveTool = useStudioStore(s => s.setActiveTool);
   const keymap = usePreferencesStore(s => s.keymap);
   const coarse = useSyncExternalStore(subscribeCoarse, isCoarse, () => false);
-  const reduceMotion = useReducedMotion();
 
   const panelRef = useRef<HTMLDivElement>(null);
   const [place, setPlace] = useState<{ left: number; bottom: number; maxHeight: number } | null>(null);
@@ -181,17 +180,15 @@ export function ColorAccessFlyout({ anchor, target, onTargetChange, onClose, onO
   });
 
   return (
-    <motion.div
+    <SpringSurface
       ref={panelRef}
       role="dialog"
       aria-label="Color quick access flyout"
       data-testid="color-access-flyout"
       data-touch={coarse || undefined}
-      className={styles.panel}
-      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.94, x: -10 }}
-      animate={{ opacity: 1, scale: 1, x: 0 }}
-      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, x: -6 }}
-      transition={{ type: 'spring', stiffness: 520, damping: 36, mass: 0.7 }}
+      // The studio's shared surface: same bloom, blur and edge as every other popover.
+      className={`pb-panel ${styles.panel}`}
+      origin="left bottom"
       style={{
         left: place?.left ?? 64,
         bottom: place?.bottom ?? EDGE,
@@ -349,6 +346,6 @@ export function ColorAccessFlyout({ anchor, target, onTargetChange, onClose, onO
           Click sets <b>{target}</b>. Right-click or <kbd>⇧</kbd> click sets {other}.
         </p>
       </footer>
-    </motion.div>
+    </SpringSurface>
   );
 }

@@ -32,8 +32,10 @@ vi.mock('@/lib/project/serialize', async (importOriginal) => {
 });
 
 const motionComponentCache: Record<string, React.ComponentType<Record<string, unknown>>> = {};
-vi.mock('motion/react', () => {
+// The real module supplies everything not stubbed here (presence hooks, animate, motion values).
+vi.mock('motion/react', async (importOriginal) => {
   return {
+    ...(await importOriginal<typeof import('motion/react')>()),
     useReducedMotion: () => true,
     AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     motion: new Proxy(

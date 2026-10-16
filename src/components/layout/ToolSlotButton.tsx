@@ -2,7 +2,8 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence } from 'motion/react';
+import { SpringSurface } from '@/components/ui/surfaces/SpringSurface';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { DrawingToolPreview } from '@/components/ui/ToolMotionPreview';
 import { TOOL_METADATA_MAP, type ToolSlot } from '@/config/shortcuts';
@@ -29,12 +30,14 @@ const HOLD_MS = 350;
 export function ToolSlotButton({ slot, shown, active, onChoose }: ToolSlotButtonProps) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<{ left: number; top: number } | null>(null);
+  // Where the flyout was, so it can melt away in place after closing.
+  const shownAt = useRef<{ left: number; top: number } | null>(null);
+  if (position) shownAt.current = position;
   const slotRef = useRef<HTMLDivElement>(null);
   const openerRef = useRef<HTMLButtonElement>(null);
   const holdTimerRef = useRef<number | null>(null);
   const heldOpenRef = useRef(false);
   const flyoutRef = useRef<HTMLDivElement>(null);
-  const reduceMotion = useReducedMotion();
   const meta = TOOL_METADATA_MAP[shown];
   const grouped = slot.tools.length > 1;
 
@@ -137,18 +140,19 @@ export function ToolSlotButton({ slot, shown, active, onChoose }: ToolSlotButton
           )}
         </button>
       </DrawingToolPreview>
-      {open && position && typeof document !== 'undefined' && createPortal(
-        <motion.div
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+        {open && shownAt.current && (
+        <SpringSurface
+          key="flyout"
           ref={flyoutRef}
+          origin="left center"
           role="menu"
           aria-label={slot.label}
           data-testid={`tool-flyout-${slot.id}`}
           onKeyDown={onFlyoutKeyDown}
-          initial={reduceMotion ? false : { x: -6, scaleX: 0.92 }}
-          animate={{ x: 0, scaleX: 1 }}
-          transition={{ type: 'spring', stiffness: 700, damping: 38 }}
-          style={{ left: position.left, top: position.top, transformOrigin: 'left center' }}
-          className="fixed z-[9500] min-w-[188px] p-1 rounded-[4px] border border-[var(--desk-border)] bg-[var(--desk-surface-raised,var(--desk-surface))] shadow-[0_8px_24px_var(--shadow-far,rgba(0,0,0,0.35))]"
+          style={{ left: shownAt.current.left, top: shownAt.current.top }}
+          className="pb-panel fixed z-[9500] min-w-[200px] !p-1.5"
         >
           <div className="px-2 pt-1 pb-1.5 text-[10px] font-medium uppercase tracking-wide text-[var(--text-muted)]">{slot.label}</div>
           {slot.tools.map(tool => {
@@ -176,7 +180,9 @@ export function ToolSlotButton({ slot, shown, active, onChoose }: ToolSlotButton
               </button>
             );
           })}
-        </motion.div>,
+        </SpringSurface>
+        )}
+        </AnimatePresence>,
         document.body,
       )}
     </div>

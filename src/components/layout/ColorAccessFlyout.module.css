@@ -15,17 +15,10 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 10px var(--pad) var(--pad);
+  padding: var(--pad);
   overflow-y: auto;
   overscroll-behavior: contain;
-  transform-origin: left bottom;
-  background: var(--desk-surface-raised, var(--desk-surface));
-  border: 1px solid var(--desk-border-highlight, var(--desk-border));
-  border-radius: calc(var(--radius) + 2px);
-  box-shadow: 0 1px 0 color-mix(in srgb, var(--text-heading) 8%, transparent) inset, 0 14px 36px -8px rgba(0, 0, 0, 0.55), 0 2px 0 var(--ink, rgba(0, 0, 0, 0.4));
-  color: var(--text-body);
-  font-family: var(--font-sans, inherit);
-  font-size: 12px;
+  /* Surface, edge, shadow and type come from the shared .pb-panel. */
   user-select: none;
   scrollbar-width: thin;
 }

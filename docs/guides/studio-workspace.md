@@ -21,6 +21,10 @@ The island shows the active tool’s name. When the tool has settings, a ▾ bes
 
 Liquid tabs keep the same Tools, Layers, Palette and Effects destinations. Tap normally, or press and hold/slide the lens and release over the desired tab. Keyboard activation still uses the tab buttons. **Liquid controls** turns slider handles into glass while you drag them, and they glide to a clicked spot. On the tool rail, the highlight works like the tab lens: it springs to each new tool. Press and hold a tool, or press and slide, to lift it into glass, run it along the rail and release over the tool you want. On slots with a corner triangle, a still hold still opens their tool list. The [paint-pot palette](palettes-and-cycling.md#paint-pot-palette) and [Quick magic](pixitools-cleanup-and-tiles.md#quick-magic) change how existing actions are presented. The theme screenshots were captured with Labs off and do not illustrate these motion states.
 
+## Menus, dialogs and panels
+
+Every dialog opens the same way, blooming from its centre with a small spring, and melts away when closed. Menus and dropdowns grow out of the button you pressed. Collapsible sections and notices use the same spring. Escape or a click outside closes a menu or dialog, and focus returns to the button that opened it. Arrow keys still move through menus, style cards and size choices. A dialog grows or shrinks smoothly when its content changes. The timeline's **Collapse** and **Expand** spring between the full strip and a compact bar. With reduced motion turned on in your system, all of these cross-fade instead of moving. Dropdowns are your browser's own; in browsers that support it, their list is drawn in the studio's style. Details: [design notes](../../DESIGN.md#studio-surfaces--16-october-2026).
+
 ## Projects and names
 
 ![Local project gallery showing the saved original sample project.](../assets/screenshots/2026-10-15-current-ui/projects-gallery.png)
@@ -116,25 +120,27 @@ Selection masks matter: a lasso or wand selection does not fill its entire bound
 
 ![Actual grids, composition overlays, tile/PiP previews, CVD/silhouette lenses and symmetry choices.](../assets/screenshots/2026-10-15-current-ui/view-options.png)
 
+*15 October production build, before the 16 October surface refresh. **View** now groups the same options as tiles under Grids & guides, Check your art, Mirror and Panels. Composition guide, Color vision and Pattern brush are dropdowns.*
+
 | Feature | A gentle first use | Artwork effect |
 | --- | --- | --- |
 | Zoom / Fit / 100% | Wheel or +/− to inspect pixels; Ctrl+0 to fit; Ctrl+1 for native scale. A drawing opens fitted to the window, at most 1600% | View only |
 | Pan | Hold Space and drag, or middle-drag (PixiBun classic: Alt-drag when not subtracting a selection); arrows when no selection | View only |
-| Pixel Grid | Turn on View → Pixel Grid for precise placement | Not exported |
-| 2:1 Iso Grid | Use alongside isometric shapes | Not exported |
-| Composition Overlay | Choose Off / Thirds / Golden / Center / Diagonals / Safe area (10%) | Not exported |
+| Pixel grid | Turn on View → Pixel grid (Ctrl+') for precise placement | Not exported |
+| Iso grid (2:1) | Use alongside isometric shapes | Not exported |
+| Composition guide | Choose Off, Rule of thirds, Golden ratio, Center lines, Diagonals or Safe area (10%) | Not exported |
 | 3×3 Tiling | Repeat the canvas to inspect its outer seams | Does not enlarge the saved canvas |
-| Live PiP | Open a floating preview, then move/resize/minimize it; choose a backdrop or play | Does not create another project |
-| CVD lens | Cycle the color-vision simulation with P or the menu | View filter, not a recoloring operation or accessibility certification |
+| Live preview (PiP) | Open a floating preview, then move/resize/minimize it; choose a backdrop or play | Does not create another project |
+| Color vision | Pick a color-vision simulation in View, or cycle it with P | View filter, not a recoloring operation or accessibility certification |
 | Silhouette | Press S to inspect the shape apart from its colors | View filter |
 | Mirror H / V | Turn on a mirror before drawing a balanced sprite | New supported drawing gestures paint mirrored pixels |
-| Wallpaper group | Choose p2, pm, p4, p4m or p6m for repeated rotational/reflection gestures | A drawing symmetry mode; inspect results on the rectangular canvas |
+| Pattern brush (wallpaper group) | Choose p2, pm, p4, p4m or p6m for repeated rotational/reflection gestures | A drawing symmetry mode; inspect results on the rectangular canvas |
 
 For an exact selected tile's repeating preview and download, use [Patterns & Tilesets](pixitools-cleanup-and-tiles.md#repeat-a-selected-tile). The View preview repeats the canvas instead.
 
 ![One current floating live-preview window beside the drawing.](../assets/screenshots/2026-10-15-current-ui/single-live-preview.png)
 
-Choose **View → Live PiP** to open one floating **Live Preview** window. You can also search for Picture-in-Picture in **Ctrl/Cmd+K**.
+Choose **View → Live preview** to open one floating **Live Preview** window. You can also search for Picture-in-Picture in **Ctrl/Cmd+K**.
 
 1. Drag the title bar to place it where it helps you. Drag the small bottom-right handle to resize its viewing area.
 2. Choose **1x / 2x / 4x** and a backdrop to check the artwork at another size or against another surface. These controls leave your drawing unchanged.
@@ -159,6 +165,8 @@ The bottom status area helps you check cursor coordinates, canvas size, zoom, cu
 ## Appearance, help and command search
 
 ![Actual studio theme, color scheme and tool preview preferences.](../assets/screenshots/2026-10-15-current-ui/studio-options.png)
+
+*15 October production build, before the 16 October surface refresh. Each style card now shows a tiny scene of its colors, and Night/Day is a sliding switch. Labs, Tool previews and Tips are switch rows.*
 
 Open **Studio** to choose a style and **Night / Day**. Moonlit, Sakura, Tidepool, Ember, Moss and Arcade float the panels over an animated pixel scene with Bun perched on the canvas frame; Graphite and Plum keep a flat, quiet desk. Every style has a Day and a Night palette, and a unit test checks each palette's text colors against its panel colors at WCAG AA contrast (palette pairs, not a full conformance audit). The same menu opens **Co-Draw**, **Help**, the tool-preview and **Tips** preferences, and **Replay welcome**.
 

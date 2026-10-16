@@ -1,5 +1,9 @@
 # Current project status
 
+## Studio surfaces — 16 October 2026
+
+The [studio surfaces record](releases/2026-10-16-studio-surfaces.md) gives every modal, popover, menu, select, disclosure and toast the Dynamic island's spring motion and one rounded, grouped look, as the default for all themes. It explains why this is not a Lab and lists the tests added or adjusted. Checks ran in the development server on Windows with Chromium: types and lint passed; 2,573 Vitest tests passed; the selected Playwright specs passed apart from one spec whose expectations predate the branch. Firefox, WebKit, a production build and the Node 22 performance stage were not run.
+
 ## Studio Labs motion integration — 15 October 2026
 
 The [Studio Labs motion update](releases/2026-10-15-studio-labs-motion.md) integrates the local Labs commits through `d2c588f6` with remote audit/handbook updates through `65d29077`. It records the final approved staged blur transition, small text bounce, separate shell springs, stable menus, immediate island reduced-motion preference and calmer liquid-tab/palette/magic motion. Graphite and Plum remain classic. Current publication checks belong to that record; the production-build and screenshot results below retain their original source labels.
