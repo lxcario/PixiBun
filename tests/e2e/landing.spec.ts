@@ -21,26 +21,58 @@ test.describe('Landing Page & Accessibility', () => {
     await expect(page.getByText(/APNG and a Godot kit, ready to drop into a project/)).toBeVisible();
     await expect(page.getByText(/native Godot 4 & Unity exports/)).toHaveCount(0);
 
-    // Navigation must remain responsive while the default lighting demo animates.
-    const orbit = page.getByTitle('Toggle automatic orbital rotation', { exact: true });
-    const light = page.getByRole('slider', { name: /Lamp direction/ });
-    const preview = page.locator('canvas[aria-label^="2.5D Photometrically shaded"]');
-    const pixels = () => preview.evaluate((canvas: HTMLCanvasElement) => canvas.toDataURL());
-    await expect(orbit).toHaveText('⏸ Orbit');
-    const initialPixels = await pixels();
-    await expect.poll(pixels).not.toBe(initialPixels);
+    // The bench: one sprite, four engines, one stage canvas that redraws when something on it changes.
+    const stage = page.getByRole('img', { name: /^Bun on the bench, / });
+    const readout = page.locator('#engine-showcase').getByText(/^[☀↻] /);
+    const pixels = () => stage.evaluate((canvas: HTMLCanvasElement) => canvas.toDataURL());
+    const tool = (name: string) => page.getByRole('radiogroup', { name: 'Tool' }).getByRole('radio', { name: new RegExp(`^${name}`) });
+    await stage.scrollIntoViewIfNeeded();
+    await expect(tool('Draw')).toHaveAttribute('aria-checked', 'true');
+    await expect(stage).toHaveAccessibleName(/Draw tool/);
 
-    await orbit.click();
-    await expect(orbit).toHaveText('▶ Auto-Orbit');
-    await light.press('Home');
-    await expect(light).toHaveAttribute('aria-valuenow', '0');
-    await light.press('ArrowRight');
-    await expect(light).toHaveAttribute('aria-valuenow', '15');
-    await orbit.click();
-    await expect(orbit).toHaveText('⏸ Orbit');
-    const resumedPixels = await pixels();
-    await expect.poll(pixels).not.toBe(resumedPixels);
+    // Draw: keyboard painting edits the sprite and enables Start over.
+    const undo = page.getByRole('button', { name: 'Undo every edit to Bun' });
+    await expect(undo).toBeDisabled();
+    const beforePaint = await pixels();
+    await stage.press('ArrowRight');
+    await stage.press(' ');
+    await expect(undo).toBeEnabled();
+    await expect.poll(pixels).not.toBe(beforePaint);
 
+    // Light: the lamp swings in, then arrow keys move it in 15° steps and the stage relights.
+    await tool('Light').click();
+    await expect(stage).toHaveAccessibleName(/Light tool/);
+    await expect(readout).toHaveText('☀ 315° · up 50°');
+    const beforeLamp = await pixels();
+    await stage.press('ArrowRight');
+    await expect(readout).toHaveText('☀ 330° · up 50°');
+    await expect.poll(pixels).not.toBe(beforeLamp);
+    const gold = page.getByRole('button', { name: 'Gold', exact: true });
+    await expect(gold).toHaveAttribute('aria-pressed', 'false');
+    const beforeGold = await pixels();
+    await gold.click();
+    await expect(gold).toHaveAttribute('aria-pressed', 'true');
+    await expect.poll(pixels).not.toBe(beforeGold);
+
+    // Turn: number keys switch tools; snaps and arrows set the RotSprite angle.
+    await stage.press('3');
+    await expect(tool('Turn')).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByText('plain turn', { exact: true })).toBeVisible();
+    const beforeTurn = await pixels();
+    await page.getByRole('button', { name: '45°', exact: true }).click();
+    await expect(readout).toHaveText('↻ 45°');
+    await expect.poll(pixels).not.toBe(beforeTurn);
+    await stage.press('ArrowRight');
+    await expect(readout).toHaveText('↻ 50°');
+
+    // Hop: the edited sprite loops on its own and the GIF export is offered.
+    await tool('Hop').click();
+    await expect(stage).toHaveAccessibleName(/Hop tool/);
+    await expect(page.getByRole('button', { name: 'Save GIF', exact: true })).toBeVisible();
+    const hopFrame = await pixels();
+    await expect.poll(pixels).not.toBe(hopFrame);
+
+    // Navigation must remain responsive while the hop animates.
     await page.getByRole('link', { name: 'Playground', exact: true }).click();
     await expect(page).toHaveURL(/\/playground$/, { timeout: 15000 });
     await expect(page.getByRole('button', { name: 'Return to drawing', exact: true })).toBeVisible();
