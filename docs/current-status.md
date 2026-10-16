@@ -1,5 +1,9 @@
 # Current project status
 
+## Normal Chisel layer safety — 17 October 2026
+
+The [chisel safety record](releases/2026-10-17-chisel-layer-safety.md) documents a toolbar path that could paint normal directions into a color layer and the new canvas-level guard. The regression failed on the prior source, then passed with the fix, including exact surface-layer Undo/Redo. The full six-stage local gate passed on Node 22.23.3, including 2,626 tests across 251 files, configured coverage, warmed performance budgets and a production build. Preview and TestSprite verification are still pending, and are not implied by these local results.
+
 ## Studio follow-up and pan/stroke performance — 16 October 2026
 
 The [Studio follow-up record](releases/2026-10-16-studio-follow-up.md) covers the work on branch `testsprite-s4` after the surfaces merge: hand-pixeled tool icons, the Colors flyout, timeline frame actions, the rebuilt Live Preview, one elastic press for every control, and the merged imperative pan, cached canvas bounds and stroke layer cache. A first production-build check in Chromium found four failures in the adjusted specs: the timeline toolbar overflowed at 1280 px, the New frame slot's accessible name omitted its visible text, and a touch-target test measured the flyout mid-bloom. The first two were product fixes, the third a test timing fix; After the fixes, an isolated worktree passed types, lint, 2,615 unit tests, a production build and all 18 cases of those specs in Chromium; Firefox, WebKit and the Node 22 performance stage were not run. The record keeps the original verdicts. Production (`main`) was still at `1a4b96b7` when the record was written.
