@@ -8,6 +8,13 @@ Maintenance update — 13 October 2026: see the [current status](docs/current-st
 
 > **Historical phase ledger:** Each entry describes its recorded checkpoint, including superseded controls, counts and verification. [Current status](docs/current-status.md) and the [issue registry](docs/research/issue-registry.md) govern present claims. Test assertions are not a formal proof of the full application.
 
+## TestSprite loop page — 16 October 2026
+
+- [x] `/verified` route: the TestSprite loop, counts and the loop ledger, linked from the footer and pledge page.
+- [x] Committed, schema-validated [loop ledger](docs/testsprite/loop-ledger.json) with a generated [Markdown twin](docs/testsprite/loop-ledger.md); `npm run verify:docs` rejects an invalid or stale ledger.
+- [ ] Add the first real loop PR once TestSprite checks a pull request; fill `suiteCases` and the project link from the portal.
+- [ ] Add the README "Tested on every pull request" section the page links to (planned with the loop wiring PR).
+
 ## Studio Labs motion integration — 15 October 2026
 
 - [x] Integrate the scene-theme Labs behind saved switches and retain classic Graphite/Plum controls.

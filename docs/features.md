@@ -29,6 +29,7 @@ The [3 October session record (local archive)](archives.md#record-docs-research-
 | Interactive welcome scene | Animated town opening, Bun reactions and temporary sky constellations; scroll story from sketch to export | [Desk](guides/welcome-and-demos.md#a-small-moment-at-the-desk) | [Welcome](assets/screenshots/2026-10-15-current-ui/welcome-overview.png) |
 | Blank drawing entry | Small canvas presets and full Studio entry | [Begin](guides/welcome-and-demos.md#ready-to-draw) | [Welcome](assets/screenshots/2026-10-15-current-ui/welcome-overview.png) |
 | Four starter sprites | Bun (the mascot), Mochi the marmalade cat, Sprout the mint slime and Teacup Frog open as editable starting points | [Starter shelf](guides/welcome-and-demos.md#choose-a-starter-friend) | [All four](assets/screenshots/2026-10-15-current-ui/starter-shelf.png) |
+| How it’s tested (`/verified`) | The TestSprite loop, suite/PR/bug counts and the committed loop ledger of checked pull requests; linked from the footer and pledge | [Loop ledger](guides/testing.md#loop-ledger-and-verified) | Not yet captured |
 | The bench (homepage Engine section) | Draw on a starter, then light it (photometric lamp and cast shadow), turn it (RotSprite beside a plain turn) and hop it (four-frame loop, transparent GIF download), all on the same edited pixels | [The bench](guides/welcome-and-demos.md#the-bench) | Not yet captured; the 15 October four-tab captures show the earlier workbench |
 
 

@@ -1,5 +1,11 @@
 # Current project status
 
+## TestSprite loop page — 16 October 2026
+
+`/verified` shows the TestSprite loop, suite/PR/bug counts and the [loop ledger](testsprite/loop-ledger.md), sourced from the committed, schema-validated [loop-ledger.json](testsprite/loop-ledger.json) with no runtime calls. The ledger starts empty: no pull request has been checked by TestSprite yet, and the suite case count and project link are unset until the portal provides them. `npm run verify:docs` rejects an invalid ledger or a stale Markdown twin. [How to add a row](guides/testing.md#loop-ledger-and-verified).
+
+Checks on the working tree over `1a4b96b7`: `npm run gate` passed all five stages on Node 22.14.0 (2,576 unit tests in 246 files; no production build), and `tests/e2e/verified.spec.ts` (18 cases, development server, Chromium: smoke, phone width, axe WCAG 2.2 AA in all eight themes Night and Day) passed. The README section the page links to (`#tested-on-every-pull-request`) is not on main yet. Unrelated to this change, `tests/e2e/landing.spec.ts` still looks for the orbit toggle removed with the four-tab workbench in `88389c4f` and fails on main.
+
 ## Studio Labs motion integration — 15 October 2026
 
 The [Studio Labs motion update](releases/2026-10-15-studio-labs-motion.md) integrates the local Labs commits through `d2c588f6` with remote audit/handbook updates through `65d29077`. It records the final approved staged blur transition, small text bounce, separate shell springs, stable menus, immediate island reduced-motion preference and calmer liquid-tab/palette/magic motion. Graphite and Plum remain classic. Current publication checks belong to that record; the production-build and screenshot results below retain their original source labels.

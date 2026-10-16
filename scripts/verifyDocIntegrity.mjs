@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ownedMarkdown, publishableProjectFiles, validateMarkdownLinks, sourceContracts, testInventory } from './docContracts.mjs';
+import { LEDGER_JSON_PATH, LEDGER_MARKDOWN_PATH, loopLedgerProblems, renderLoopLedgerMarkdown } from '../src/lib/verified/loopLedger.mjs';
 const root = process.cwd();
 const errors = [];
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
@@ -43,6 +44,11 @@ try {
     if (!fs.existsSync(file) || JSON.stringify(JSON.parse(read(file))) !== JSON.stringify(actual)) fail(file + ' is stale; run npm run docs:inventory');
   }
   console.log('Runner enumeration and selected tool/encoder/runtime contracts checked; enumeration is not a verdict.');
+  const ledger = JSON.parse(read(LEDGER_JSON_PATH));
+  const ledgerProblems = loopLedgerProblems(ledger);
+  for (const problem of ledgerProblems) fail(LEDGER_JSON_PATH + ': ' + problem);
+  if (!ledgerProblems.length && read(LEDGER_MARKDOWN_PATH).replace(/\r\n/g, '\n') !== renderLoopLedgerMarkdown(ledger)) fail(LEDGER_MARKDOWN_PATH + ' is stale; run npm run ledger:md');
+  console.log('Loop ledger: ' + (ledgerProblems.length ? 'invalid' : ledger.entries.length + ' entries; schema and Markdown twin checked') + '.');
   if (/\| \*\*Audio Engine\*\*/.test(read('README.md'))) fail('README advertises removed audio engine');
   if (/N for Rivet|Space\+Drag for Pan|Z\/Ctrl\+Z for Undo/.test(read('SKILL.md'))) fail('Retired/incorrect shortcut instruction remains');
 } catch (error) { fail(error.message); }
