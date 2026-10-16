@@ -8,6 +8,16 @@ Maintenance update — 13 October 2026: see the [current status](docs/current-st
 
 > **Historical phase ledger:** Each entry describes its recorded checkpoint, including superseded controls, counts and verification. [Current status](docs/current-status.md) and the [issue registry](docs/research/issue-registry.md) govern present claims. Test assertions are not a formal proof of the full application.
 
+## Replay links — 16 October 2026
+
+- [x] `/studio?replay=` recipe format: versioned, URL-safe, strict validation with size, palette, step, path, layer and frame limits; clear messages, never a throw.
+- [x] Apply each step as its own Undo step through the shared history edit (pixels) and the store's add-layer/add-frame actions; remove the parameter once opened.
+- [x] Five golden replays with exact readout values before and after one Undo ([replays.md](docs/testsprite/replays.md)), added to the [TestSprite PRD](docs/testsprite/PRD.md#13-replay-a-known-drawing-and-check-its-exact-pixels) as journeys.
+- [x] Vitest: format round-trip, validation table, fuzzing, step geometry, applier, goldens against an independent model and document parity. Playwright: one case per golden plus a broken link.
+- [ ] Run the PRD journeys in TestSprite against a deployment that includes replay links and record the result.
+
+Record: [current status](docs/current-status.md#replay-links--16-october-2026), [testing guide](docs/guides/testing.md#replay-links).
+
 ## Canvas readout — 16 October 2026
 
 - [x] Describe the active frame as text for screen readers and black-box tests: size, frame/layer, counts, painted pixels, top colors and a composite digest, behind `canvas-readout-*` hooks.
