@@ -115,6 +115,7 @@
 .chip[data-which='secondary'] { --mark: var(--secondary-mark); }
 
 .chipFill {
+  position: relative;
   display: flex;
   align-items: flex-end;
   gap: 4px;
@@ -170,8 +171,9 @@
 
 .chip[aria-pressed='true'] .chipFill::after {
   content: 'Editing';
-  margin-left: auto;
-  align-self: flex-start;
+  position: absolute;
+  top: 4px;
+  right: 4px;
   padding: 1px 4px;
   border-radius: 2px;
   font-size: 9px;
