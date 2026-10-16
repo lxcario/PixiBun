@@ -582,7 +582,7 @@ export const AtelierRail = React.memo(function AtelierRail({
 
       {/* ── 3. RIGHT ZONE: Canvas view, Workspace presets & Export ── */}
       <div role="group" aria-label="Workspace and export controls" className="flex shrink-0 items-center gap-1 xl:gap-2.5">
-        <div role="group" aria-label="Canvas controls" className="h-7 flex items-center bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-px text-xs">
+        <div role="group" aria-label="Canvas controls" className="bar-control bar-cluster flex items-center text-xs">
         <div role="group" aria-label="Mirror drawing" className="h-6 flex items-center gap-0.5 px-1">
           <span className="hidden xl:inline px-1 text-[10px] text-[var(--text-body)]">Mirror</span>
             <StudioTooltip position="bottom" content={`Horizontal symmetry (Shift+H) — ${tools.symmetryHorizontal ? 'Active' : 'Off'}`}>
@@ -714,7 +714,7 @@ export const AtelierRail = React.memo(function AtelierRail({
 
         </div>
 
-        <div role="group" aria-label="Workspace presets" className="h-7 flex items-center text-xs border-l border-[var(--desk-border)] pl-1.5 xl:pl-2">
+        <div role="group" aria-label="Workspace presets" className="h-7 flex items-center text-xs">
           <select
             aria-label="Workspace layout"
             value={activeWorkspace}
@@ -724,7 +724,7 @@ export const AtelierRail = React.memo(function AtelierRail({
 
             }}
             title="Workspace: rearranges the panels for drawing, animation or lighting work"
-            className="h-6 px-1.5 bg-[var(--surface-0)] text-[var(--text-heading)] rounded-[2px] border border-[var(--desk-border)] text-xs font-sans cursor-pointer hover:border-[var(--accent-gold)] transition-colors"
+            className="bar-control px-2.5 text-xs font-sans cursor-pointer"
           >
             <option value="drawing">Drawing</option>
             <option value="animation">Animation</option>
@@ -735,8 +735,8 @@ export const AtelierRail = React.memo(function AtelierRail({
           </select>
         </div>
 
-        <div role="group" aria-label="Studio settings and help" className="h-7 flex items-center text-xs border-l border-[var(--desk-border)] pl-2 xl:pl-3">
-          <AppearancePopover label="Studio" actions={[
+        <div role="group" aria-label="Studio settings and help" className="h-7 flex items-center text-xs">
+          <AppearancePopover label="Studio" className="bar-control" actions={[
             { label: 'Co-Draw', icon: 'sparkles', ariaLabel: 'Co-Draw session', onSelect: onOpenCoDraw },
             { label: 'Help', icon: 'help', ariaLabel: 'Atelier Guide, Diagnostics and Shortcuts', testId: 'shortcuts-guide-button', onSelect: onOpenShortcuts },
           ]} />
@@ -751,9 +751,9 @@ export const AtelierRail = React.memo(function AtelierRail({
             title="Export PNG, GIF, or Spritesheet"
             aria-label="Export drawing"
             data-testid="export-button"
-            className="h-7 px-2.5 text-xs font-bold font-sans tracking-wide flex items-center gap-1.5"
+            className="bar-control bar-control-primary px-3 text-xs font-bold font-sans tracking-wide flex items-center gap-1.5"
           >
-            <PixelIcon name="export" size={12} className="text-[#16141a]" />
+            <PixelIcon name="export" size={12} />
             <span>Export</span>
           </TactileButton>
         </div>
