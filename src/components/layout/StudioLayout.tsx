@@ -223,6 +223,8 @@ export const StudioLayout: React.FC = () => {
   const { saveToast, triggerSaveToast, handleSaveDesktopProject } = useStudioFileSystem();
 
   const setCanvasSize = useStudioStore((s) => s.setCanvasSize);
+  // The light bar sits where the status pill floats; the pill steps aside while it is open.
+  const lightBarOpen = useStudioStore((s) => s.photometricGizmoActive);
   const currentProjectId = useStudioStore((s) => s.currentProjectId);
   const resetToNewProject = useStudioStore((s) => s.resetToNewProject);
 
@@ -544,7 +546,7 @@ export const StudioLayout: React.FC = () => {
       <div hidden={focusMode || !workspace.timeline} className="moon-slot moon-slot-timeline shrink-0"><BottomTimeline /></div>
 
       {/* Status Bar */}
-      <div hidden={focusMode} className="moon-slot moon-slot-status"><StatusBar /></div>
+      <div hidden={focusMode} className="moon-slot moon-slot-status" data-away={lightBarOpen || undefined} inert={lightBarOpen || undefined}><StatusBar /></div>
 
       <PostcardPicker
         isOpen={isPostcardsOpen}

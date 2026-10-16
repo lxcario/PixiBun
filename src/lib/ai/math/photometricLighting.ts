@@ -960,14 +960,21 @@ export function executePhotometricPipeline(
           const ditherVal = getBayerMatrixThreshold(x, y, params.bayerSize);
           shadowThresh += (ditherVal - 0.5) * 0.16 * params.ditherModulation;
         }
+        // Material moves the terminator: velvet wraps light further round, metal cuts it harder.
+        if (params.material === 'fabric') shadowThresh -= 0.06;
+        else if (mat.isMetallic) shadowThresh += 0.05;
 
-        // Cavity AO crevice threshold: deep concave seams trigger the darkest tone.
-        // Dynamically scales with cavityStrength to prevent dense thin-appendage geometry from being engulfed.
+        // Cavity AO crevice threshold: deep concave seams trigger the darkest tone. Edge depth 0
+        // turns crevices off; 1 is the classic 0.28; 2 sinks every seam (capped so thin parts survive).
         const cavStrength = params.cavityStrength ?? 1.0;
-        const creviceAOThresh = Math.min(0.30, Math.max(0.12, 0.12 + 0.16 * cavStrength));
+        const creviceAOThresh = cavStrength <= 0.01 ? -1 : Math.min(0.42, 0.06 + 0.22 * cavStrength);
 
-        // Highlight condition: only for shiny/metallic materials (never on matte clay or velvet fabric)
-        const isShinyMaterial = params.glintStyle === undefined && mat.ks > 0.1 && params.material !== 'matte' && params.material !== 'fabric';
+        // Highlight condition: never on matte clay or velvet fabric. Metal, gold and glass always
+        // catch a highlight tone; other shiny profiles only when no separate glint is drawn.
+        const shinyByMaterial = mat.isMetallic || params.material === 'glass';
+        const isShinyMaterial = mat.ks > 0.1 && params.material !== 'matte' && params.material !== 'fabric'
+          && (params.glintStyle === undefined || shinyByMaterial);
+        const highlightCut = shinyByMaterial ? 0.95 : 1.10;
 
         // Highlight uses the full directional signal amplified by brightness
         const highlightLevel = diffSignal * brightness;
@@ -978,6 +985,7 @@ export function executePhotometricPipeline(
         let toneR: number;
         let toneG: number;
         let toneB: number;
+        let inShadow = true;
 
         if (ao < creviceAOThresh && diffSignal < shadowThresh + 0.10) {
           // Deep crevice tone (ambient cavity occlusion)
@@ -1021,20 +1029,46 @@ export function executePhotometricPipeline(
               toneB = ramp.shadowB;
             }
           }
-        } else if (highlightLevel > 1.10 && isShinyMaterial) {
+        } else if (highlightLevel > highlightCut && isShinyMaterial) {
           // Specular highlight tone (only for shiny/metallic materials, suppressed on fabric/matte)
           toneR = ramp.hiR;
           toneG = ramp.hiG;
           toneB = ramp.hiB;
+          inShadow = false;
         } else {
           // Base authored artist color
           toneR = ramp.baseR;
           toneG = ramp.baseG;
           toneB = ramp.baseB;
+          inShadow = false;
         }
-        outData[pIdx] = toneR;
-        outData[pIdx + 1] = toneG;
-        outData[pIdx + 2] = toneB;
+
+        // Fill light: above the neutral band shadows lift toward the base color, below it they sink.
+        // The engine's usual ambient values (0.30-0.50) leave the cel tones exactly as authored.
+        if (inShadow && effectiveAmbient > 0.5) {
+          const k = Math.min(1, (effectiveAmbient - 0.5) / 0.15) * 0.55;
+          toneR += (ramp.baseR - toneR) * k; toneG += (ramp.baseG - toneG) * k; toneB += (ramp.baseB - toneB) * k;
+        } else if (inShadow && effectiveAmbient < 0.3) {
+          const k = 1 - Math.min(1, (0.3 - effectiveAmbient) / 0.22) * 0.5;
+          toneR *= k; toneG *= k; toneB *= k;
+        }
+        // Glass lets light through its shadows; gold warms everything.
+        if (params.material === 'glass' && inShadow) {
+          toneR += (ramp.baseR - toneR) * 0.35; toneG += (ramp.baseG - toneG) * 0.35; toneB += (ramp.baseB - toneB) * 0.35;
+        } else if (params.material === 'gold') {
+          const [gr, gg, gb] = inShadow ? [0.62, 0.38, 0.12] : [1, 0.84, 0.48];
+          const k = inShadow ? 0.3 : 0.4;
+          toneR += (toneR * gr - toneR) * k; toneG += (toneG * gg - toneG) * k; toneB += (toneB * gb - toneB) * k;
+        }
+        // Light tint: the lit side takes on the light's color, shadows keep a little of it.
+        // White light changes nothing.
+        if (lightR < 1 || lightG < 1 || lightB < 1) {
+          const k = inShadow ? 0.25 : 0.6;
+          toneR *= 1 + (lightR - 1) * k; toneG *= 1 + (lightG - 1) * k; toneB *= 1 + (lightB - 1) * k;
+        }
+        outData[pIdx] = Math.max(0, Math.min(255, Math.round(toneR)));
+        outData[pIdx + 1] = Math.max(0, Math.min(255, Math.round(toneG)));
+        outData[pIdx + 2] = Math.max(0, Math.min(255, Math.round(toneB)));
         outData[pIdx + 3] = data[pIdx + 3];
         continue;
       }

@@ -4,7 +4,7 @@
  * Eliminates loose window.dispatchEvent(new CustomEvent(...)) strings and provides
  * type safety, lifecycle cleanup, and predictable event dispatch across studio panels.
  */
-import type { ShadingBandMode } from '@/types/tools';
+import type { MaterialType, ShadingBandMode } from '@/types/tools';
 import type { P2PConnectionState, RemoteCursor } from '@/lib/sync/p2pSync';
 import type { SpriteCleanupOptions, SpriteCleanupStats } from '@/lib/ai/spriteCleanup';
 
@@ -107,6 +107,10 @@ export type StudioEventMap = {
     lightCenterX?: number;
     lightCenterY?: number;
     lightBrightness?: number;
+    /** Light tint, fill (ambient) level and surface material, changed from the light bar. */
+    lightColor?: string;
+    ambientIntensity?: number;
+    material?: MaterialType;
   };
   'pixibun:bake-normal-map': void;
   'pixibun:in-between-frame': void;

@@ -46,6 +46,12 @@ function setGlass(el: HTMLInputElement, glass: boolean) {
   else delete el.dataset.lqGlass;
 }
 
+/**
+ * Dispatch on a range after its value was changed by something other than the slider itself
+ * (a stepper, a preset, the mouse wheel), with the old value, and the lens glides from there.
+ */
+export const LIQUID_GLIDE_EVENT = 'pixibun:liquid-glide';
+
 function clear(el: HTMLInputElement) {
   for (const name of ['--lq-x', '--lq-s', '--lq-sx', '--lq-sy']) el.style.removeProperty(name);
 }
@@ -135,6 +141,14 @@ export function LiquidSliders() {
     };
     const onKey = (event: KeyboardEvent) => { if (isRange(event.target)) wake(event.target); };
     const onInput = (event: Event) => { if (isRange(event.target)) wake(event.target); };
+    const onGlide = (event: Event) => {
+      if (!isRange(event.target) || reduce.matches) return;
+      const el = event.target;
+      const from = (event as CustomEvent<{ from?: number }>).detail?.from;
+      const t = wake(el);
+      if (typeof from !== 'number' || !Number.isFinite(from)) return;
+      t.pos = thumbOffset(from, el.min === '' ? 0 : Number(el.min), el.max === '' ? 100 : Number(el.max), el.clientWidth);
+    };
 
     document.addEventListener('pointerdown', onDown, true);
     window.addEventListener('pointerup', onUp, true);
@@ -144,6 +158,7 @@ export function LiquidSliders() {
     document.addEventListener('pointerout', onOut, true);
     document.addEventListener('keydown', onKey, true);
     document.addEventListener('input', onInput, true);
+    document.addEventListener(LIQUID_GLIDE_EVENT, onGlide, true);
     return () => {
       document.body.classList.remove('lq-sliders');
       document.removeEventListener('pointerdown', onDown, true);
@@ -154,6 +169,7 @@ export function LiquidSliders() {
       document.removeEventListener('pointerout', onOut, true);
       document.removeEventListener('keydown', onKey, true);
       document.removeEventListener('input', onInput, true);
+      document.removeEventListener(LIQUID_GLIDE_EVENT, onGlide, true);
       cancelAnimationFrame(frame);
       for (const t of awake) { clear(t.el); setGlass(t.el, false); }
       if (pressed) setGlass(pressed.el, false);

@@ -10,6 +10,7 @@ import {
 import { runEdtNormalMapInWorker } from '@/lib/engine/workerDispatcher';
 import { inferPhotometricSettings, RecognizedFormType } from '@/lib/ai/math/photometricAuto';
 import { computeArtworkCentroid } from '@/lib/canvas/lightGizmoMath';
+import { useLightLook } from '@/lib/canvas/lightLook';
 import { createId } from '@/lib/engine/id';
 import type { ViewportPhotometricContext } from './types';
 import type { LayerEffectRecipe } from '@/types/canvas';
@@ -54,6 +55,9 @@ export function usePhotometricEvents({
     targetLayerId: string;
     isNewLayer: boolean;
     material: MaterialType;
+    /** Light tint and fill level; the light bar changes them live and Apply saves them. */
+    lightColor: string;
+    ambientIntensity: number;
     glintOnly: boolean;
     previousTargetBlend?: import('@/types/canvas').BlendMode;
     brightness: number;
@@ -64,6 +68,8 @@ export function usePhotometricEvents({
     normalMapData?: ImageData | null;
     analysis?: PhotometricAnalysisGeometry;
     cachedAzimuth?: number;
+    /** Edge depth the cached analysis was built with; a change rebuilds it (it shapes the crevices). */
+    analysisCavity: number;
     previousTargetData?: ImageData;
     previousTargetName?: string;
     previousTargetTag?: string;
@@ -244,14 +250,17 @@ export function usePhotometricEvents({
         x: readNumber('lightCenterX', inferredCenter.x),
         y: readNumber('lightCenterY', inferredCenter.y),
       };
+      const savedColor = readString('lightColor', '#FFFFFF');
+      const lightColor = /^#[0-9a-f]{6}$/i.test(savedColor) ? savedColor : '#FFFFFF';
+      const ambientIntensity = Math.max(0.08, Math.min(0.65, readNumber('ambientIntensity', 0.48)));
 
       const params = {
         glintStyle: useStudioStore.getState().tools.glintStyle ?? 'soft',
         lightAzimuth: azimuth,
         lightElevation: elevation,
         lightRadius: 64,
-        lightColor: '#FFFFFF',
-        ambientIntensity: 0.48,
+        lightColor,
+        ambientIntensity,
         lightBrightness: brightness,
         sourceShadingRemoval,
         material,
@@ -294,6 +303,8 @@ export function usePhotometricEvents({
         targetLayerId,
         isNewLayer,
         material,
+        lightColor,
+        ambientIntensity,
         glintOnly,
         previousTargetBlend: existing?.blendMode,
         brightness,
@@ -301,6 +312,7 @@ export function usePhotometricEvents({
         paletteColors: [],
         normalMapData,
         analysis,
+        analysisCavity: cavityStrength,
         cachedAzimuth: azimuth,
         lastCenterX: initialCenter.x,
         lastCenterY: initialCenter.y,
@@ -317,6 +329,7 @@ export function usePhotometricEvents({
         state.setActiveLayer(previousActiveLayerId);
       }
       useStudioStore.setState({ photometricGlintOnly: glintOnly });
+      useLightLook.setState({ lightColor, ambientIntensity, material });
       state.setPhotometricGizmoActive(true);
     };
 
@@ -326,9 +339,15 @@ export function usePhotometricEvents({
       lightCenterX?: number;
       lightCenterY?: number;
       lightBrightness?: number;
+      lightColor?: string;
+      ambientIntensity?: number;
+      material?: MaterialType;
     }) => {
       const session = photometricSessionRef.current;
       if (!session) return;
+      if (detail.lightColor && /^#[0-9a-f]{6}$/i.test(detail.lightColor)) session.lightColor = detail.lightColor;
+      if (detail.ambientIntensity !== undefined) session.ambientIntensity = Math.max(0.08, Math.min(0.65, detail.ambientIntensity));
+      if (detail.material) session.material = detail.material;
 
       if (detail.lightCenterX !== undefined) session.lastCenterX = detail.lightCenterX;
       if (detail.lightCenterY !== undefined) session.lastCenterY = detail.lightCenterY;
@@ -349,8 +368,8 @@ export function usePhotometricEvents({
           lightAzimuth: detail.lightAzimuth,
             lightElevation: detail.lightElevation,
             lightRadius: 64,
-            lightColor: '#FFFFFF',
-            ambientIntensity: 0.48,
+            lightColor: session.lightColor,
+            ambientIntensity: session.ambientIntensity,
             lightBrightness: session.brightness,
             sourceShadingRemoval: state.tools.sourceShadingRemoval,
             material: session.material,
@@ -373,6 +392,29 @@ export function usePhotometricEvents({
         }
       }
 
+      if (state.tools.cavityStrength !== session.analysisCavity) {
+        session.analysis = computePhotometricAnalysis(session.srcCtx, canvasWidth, canvasHeight, {
+          glintStyle: state.tools.glintStyle ?? 'soft',
+          lightAzimuth: detail.lightAzimuth,
+          lightElevation: detail.lightElevation,
+          lightRadius: 64,
+          lightColor: session.lightColor,
+          ambientIntensity: session.ambientIntensity,
+          lightBrightness: session.brightness,
+          sourceShadingRemoval: state.tools.sourceShadingRemoval,
+          material: session.material,
+          cavityStrength: state.tools.cavityStrength,
+          ditherModulation: state.tools.ditherModulation,
+          bayerSize: '4x4',
+          formType: session.formType,
+          minecraftSkinMode: state.tools.minecraftSkinMode,
+          shadingBands: state.tools.shadingBands,
+          normalMapData: session.normalMapData || undefined,
+        }, session.inference);
+        session.analysisCavity = state.tools.cavityStrength;
+        session.cachedAzimuth = detail.lightAzimuth;
+      }
+
       const shadedCanvas = renderLightPreview(
         session.srcCtx,
         canvasWidth,
@@ -382,8 +424,8 @@ export function usePhotometricEvents({
           lightAzimuth: detail.lightAzimuth,
           lightElevation: detail.lightElevation,
           lightRadius: 64,
-          lightColor: '#FFFFFF',
-          ambientIntensity: 0.48,
+          lightColor: session.lightColor,
+          ambientIntensity: session.ambientIntensity,
           lightBrightness: session.brightness,
           sourceShadingRemoval: state.tools.sourceShadingRemoval,
           material: session.material,
@@ -428,8 +470,8 @@ export function usePhotometricEvents({
             lightAzimuth: state.tools.lightAzimuth,
             lightElevation: state.tools.lightElevation,
             lightRadius: 64,
-            lightColor: '#FFFFFF',
-            ambientIntensity: 0.48,
+            lightColor: session.lightColor,
+            ambientIntensity: session.ambientIntensity,
             lightBrightness: session.brightness,
             sourceShadingRemoval: state.tools.sourceShadingRemoval,
             material: session.material,
@@ -453,8 +495,8 @@ export function usePhotometricEvents({
             lightAzimuth: state.tools.lightAzimuth,
             lightElevation: state.tools.lightElevation,
             lightRadius: 64,
-            lightColor: '#FFFFFF',
-            ambientIntensity: 0.48,
+            lightColor: session.lightColor,
+            ambientIntensity: session.ambientIntensity,
             lightBrightness: session.brightness,
             sourceShadingRemoval: state.tools.sourceShadingRemoval,
             material: session.material,
@@ -493,6 +535,8 @@ export function usePhotometricEvents({
             lightCenterX: session.lastCenterX ?? null,
             lightCenterY: session.lastCenterY ?? null,
             lightBrightness: session.brightness,
+            lightColor: session.lightColor,
+            ambientIntensity: session.ambientIntensity,
             material: session.material,
             cavityStrength: state.tools.cavityStrength,
             ditherModulation: state.tools.ditherModulation,
