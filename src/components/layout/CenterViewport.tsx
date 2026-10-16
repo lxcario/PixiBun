@@ -2,7 +2,7 @@
 
 import { readImportFile, reportImportError } from '@/lib/project/importFile';
 
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useCallback, useMemo, useState } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
@@ -15,6 +15,7 @@ import { RadialContextMenu } from '@/components/studio/RadialContextMenu';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { useRadialContextMenu } from '@/hooks/useRadialContextMenu';
 import { compositeFrame } from '@/lib/render/compositor';
+import { createStrokeCompositeCache } from '@/lib/render/strokeCompositeCache';
 import {
   computeSeparableEDT,
   generateInflatedHeightmap,
@@ -100,6 +101,7 @@ export const CenterViewport = React.memo(function CenterViewport({
   const keymap = usePreferencesStore(s => s.keymap);
   const containerRef = useRef<HTMLDivElement>(null);
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const stencilCanvasRef = useRef<HTMLCanvasElement>(null);
   const onionCanvasRef = useRef<HTMLCanvasElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -196,14 +198,16 @@ export const CenterViewport = React.memo(function CenterViewport({
   // Hook 1: Viewport transform & pan/zoom
   const {
     isPanning,
-    setIsPanning,
-    panStart,
-    setPanStart,
+    beginPan,
+    movePan,
+    endPan,
+    refreshCanvasRect,
     clientToCanvasCoords,
     handleWheel,
   } = useViewportTransform({
     containerRef,
     mainCanvasRef,
+    stageRef,
     canvasWidth,
     canvasHeight,
     zoom,
@@ -312,6 +316,14 @@ export const CenterViewport = React.memo(function CenterViewport({
     destY: number;
   } | null>(null);
 
+  const panGesture = useMemo(
+    () => ({ begin: beginPan, move: movePan, end: endPan, isPanning }),
+    [beginPan, endPan, isPanning, movePan]
+  );
+
+  // While a stroke is in progress, the layers around the active one stay flattened.
+  const [strokeComposite] = useState(createStrokeCompositeCache);
+
   // Pure composite of all visible layers onto the main viewport canvas
   const renderComposite = useCallback(() => {
     // Undo/Redo can publish new dimensions before React replaces this callback.
@@ -330,7 +342,12 @@ export const CenterViewport = React.memo(function CenterViewport({
     const currentFrame = state.frames[state.activeFrameIndex];
 
     // 1. Main Active Frame Layers (Unified Bottom-to-Top Compositing)
-    compositeFrame(state.frames, state.activeFrameIndex, canvasWidth, canvasHeight, {}, mainCanvas);
+    if (isDrawingRef.current) {
+      strokeComposite.composite(state.frames, state.activeFrameIndex, state.activeLayerId, canvasWidth, canvasHeight, mainCanvas);
+    } else {
+      strokeComposite.invalidate();
+      compositeFrame(state.frames, state.activeFrameIndex, canvasWidth, canvasHeight, {}, mainCanvas);
+    }
 
     // 2. Floating Selection Buffer overlay
     if (floatingSelection) {
@@ -499,7 +516,9 @@ export const CenterViewport = React.memo(function CenterViewport({
   }, [
     floatingSelection,
     getOrCreateLayerCanvas,
+    isDrawingRef,
     selectionTransform,
+    strokeComposite,
   ]);
 
   // Mark Ferrari 8-Bit Dynamic Palette Cycling 60 FPS Engine
@@ -614,13 +633,8 @@ export const CenterViewport = React.memo(function CenterViewport({
     useViewportPointerEvents({
       canvasWidth,
       canvasHeight,
-      panX,
-      panY,
-      setPan,
-      isPanning,
-      setIsPanning,
-      panStart,
-      setPanStart,
+      panGesture,
+      refreshCanvasRect,
       clientToCanvasCoords,
       isDrawing,
       setIsDrawing,
@@ -1031,6 +1045,7 @@ export const CenterViewport = React.memo(function CenterViewport({
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- The focusable drawing application opens its contextual tools with Shift+F10 or the Context Menu key. */}
       <div
         id="center-canvas-area"
+        ref={stageRef}
         onKeyDown={radialMenu.handleKeyDown}
         data-tutorial="canvas"
         role="application"

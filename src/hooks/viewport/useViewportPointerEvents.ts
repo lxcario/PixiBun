@@ -26,16 +26,21 @@ import { useCurvePointerHandler } from './useCurvePointerHandler';
 import { useChiselPointerHandler } from './useChiselPointerHandler';
 import { useGradientPointerHandler } from './useGradientPointerHandler';
 
+export interface ViewportPanGesture {
+  begin: (clientX: number, clientY: number) => void;
+  /** False when no pan is in progress. */
+  move: (clientX: number, clientY: number) => boolean;
+  end: () => void;
+  isPanning: () => boolean;
+}
+
 export interface UseViewportPointerEventsProps {
   canvasWidth: number;
   canvasHeight: number;
-  panX: number;
-  panY: number;
-  setPan: (x: number, y: number) => void;
-  isPanning: boolean;
-  setIsPanning: (panning: boolean) => void;
-  panStart: { x: number; y: number };
-  setPanStart: (start: { x: number; y: number }) => void;
+  /** Drag pan; moves the stage imperatively and writes the store once on release. */
+  panGesture: ViewportPanGesture;
+  /** Forgets cached canvas bounds so a new press reads them fresh. */
+  refreshCanvasRect?: () => void;
   clientToCanvasCoords: (clientX: number, clientY: number, clamped?: boolean) => Point | null;
   isDrawing: boolean;
   setIsDrawing: (drawing: boolean) => void;
@@ -208,9 +213,9 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     // The keymap decides what this press means: pan, pick a color or use the tool.
     // Middle-click always pans; selection tools keep Alt for subtraction.
     const intent = pointerIntent(usePreferencesStore.getState().keymap, e, tools.activeTool, isSpaceHeld());
+    props.refreshCanvasRect?.();
     if (intent.kind === 'pan') {
-      props.setIsPanning(true);
-      props.setPanStart({ x: e.clientX - props.panX, y: e.clientY - props.panY });
+      props.panGesture.begin(e.clientX, e.clientY);
       return;
     }
     if (intent.kind === 'ignore') return;
@@ -440,10 +445,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (e.pointerType === 'touch' && !e.isPrimary) return;
-    if (props.isPanning) {
-      props.setPan(e.clientX - props.panStart.x, e.clientY - props.panStart.y);
-      return;
-    }
+    if (props.panGesture.move(e.clientX, e.clientY)) return;
     if (samplingRef.current) {
       const sampleAt = props.clientToCanvasCoords(e.clientX, e.clientY);
       if (sampleAt) sampleColor(sampleAt, samplingRef.current.secondary);
@@ -510,9 +512,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       capturedPointerRef.current = null;
     }
 
-    if (props.isPanning) {
-      props.setIsPanning(false);
-    }
+    props.panGesture.end();
     if (samplingRef.current) {
       samplingRef.current = null;
       return;
@@ -621,9 +621,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       capturedPointerRef.current = null;
     }
 
-    if (props.isPanning) {
-      props.setIsPanning(false);
-    }
+    props.panGesture.end();
     samplingRef.current = null;
 
     if (props.isDraggingSelection) {
