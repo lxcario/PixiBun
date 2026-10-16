@@ -7,10 +7,12 @@ import { PixelIcon } from '@/components/ui/PixelIcon';
 import { getNextZoomStep, getPrevZoomStep, MIN_ZOOM, MAX_ZOOM } from '@/config/zoom';
 import { executeStudioCommand } from '@/config/studioCommands';
 import { useThrottledValue } from '@/hooks/useThrottledValue';
+import { commitLivePan, previewPan, subscribeLivePan, type PanPoint } from '@/lib/viewport/livePan';
 
 export function NavigatorPanel() {
   const canvas = useRef<HTMLCanvasElement>(null);
   const dragging = useRef(false);
+  const viewBounds = useRef<HTMLDivElement>(null);
   const width = useStudioStore((s) => s.canvasWidth);
   const height = useStudioStore((s) => s.canvasHeight);
   const frames = useStudioStore((s) => s.frames);
@@ -83,13 +85,35 @@ export function NavigatorPanel() {
       const r = e.currentTarget.getBoundingClientRect();
       const x = Math.max(0, Math.min(width, (((e.clientX - r.left) * 224) / r.width - left) / scale));
       const y = Math.max(0, Math.min(height, (((e.clientY - r.top) * 112) / r.height - top) / scale));
-      setPan(((width / 2 - x) * zoom) / 100, ((height / 2 - y) * zoom) / 100);
+      // The viewport follows the drag live; the store is written once on release.
+      previewPan(((width / 2 - x) * zoom) / 100, ((height / 2 - y) * zoom) / 100);
     },
-    [height, left, scale, setPan, top, width, zoom]
+    [height, left, scale, top, width, zoom]
   );
+  const endDrag = useCallback(() => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    commitLivePan(setPan);
+  }, [setPan]);
 
   const visibleW = viewport.width / (zoom / 100);
   const visibleH = viewport.height / (zoom / 100);
+  const boundsLeft = (pan: PanPoint) => left + (width / 2 - pan.x / (zoom / 100) - visibleW / 2) * scale;
+  const boundsTop = (pan: PanPoint) => top + (height / 2 - pan.y / (zoom / 100) - visibleH / 2) * scale;
+  const placeBounds = useRef((pan: PanPoint) => ({ left: boundsLeft(pan), top: boundsTop(pan) }));
+  useEffect(() => {
+    placeBounds.current = (pan: PanPoint) => ({ left: boundsLeft(pan), top: boundsTop(pan) });
+  });
+
+  // Follow a pan in progress without re-rendering the panel on every move.
+  useEffect(() => subscribeLivePan((pan, settled) => {
+    const el = viewBounds.current;
+    if (!el) return;
+    const state = useStudioStore.getState();
+    const place = placeBounds.current(pan ?? settled ?? { x: state.panX, y: state.panY });
+    el.style.left = `${place.left}px`;
+    el.style.top = `${place.top}px`;
+  }), []);
 
   const handleFit = () => executeStudioCommand('view-fit-screen');
 
@@ -150,25 +174,20 @@ export function NavigatorPanel() {
           onPointerMove={(e) => {
             if (dragging.current) move(e);
           }}
-          onPointerUp={() => {
-            dragging.current = false;
-          }}
-          onPointerCancel={() => {
-            dragging.current = false;
-          }}
-          onLostPointerCapture={() => {
-            dragging.current = false;
-          }}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+          onLostPointerCapture={endDrag}
         />
 
         {/* Viewport Frustum Box */}
         <div
+          ref={viewBounds}
           className="absolute pointer-events-none border-2 border-[var(--accent-gold)] shadow-[0_0_6px_rgba(240,190,124,0.5)] rounded-[1px]"
           data-testid="navigator-view-bounds"
           aria-hidden="true"
           style={{
-            left: left + (width / 2 - panX / (zoom / 100) - visibleW / 2) * scale,
-            top: top + (height / 2 - panY / (zoom / 100) - visibleH / 2) * scale,
+            left: boundsLeft({ x: panX, y: panY }),
+            top: boundsTop({ x: panX, y: panY }),
             width: visibleW * scale,
             height: visibleH * scale,
           }}
