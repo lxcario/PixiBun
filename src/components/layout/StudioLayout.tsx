@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { lazyPanel } from '@/components/system/lazyPanel';
 import { useStudioStore } from '@/stores/studioStore';
 import { AtelierRail } from './AtelierRail';
@@ -219,11 +219,8 @@ export const StudioLayout: React.FC = () => {
 
   const { saveToast, triggerSaveToast, handleSaveDesktopProject } = useStudioFileSystem();
 
-  const canUndo = useStudioStore((s) => s.motionPart ? !!s.motionHistory?.past.length || !!s.motionHistory?.pending : s.canUndo);
-  const canRedo = useStudioStore((s) => s.motionPart ? !!s.motionHistory?.future.length : s.canRedo);
   const setCanvasSize = useStudioStore((s) => s.setCanvasSize);
   const currentProjectId = useStudioStore((s) => s.currentProjectId);
-  const projectName = useStudioStore((s) => s.projectName);
   const resetToNewProject = useStudioStore((s) => s.resetToNewProject);
 
   const saveBeforeReplacingWorkspace = useCallback(async (): Promise<boolean> => {
@@ -294,17 +291,6 @@ export const StudioLayout: React.FC = () => {
     },
     [clearPendingRecovery, openStoredProject]
   );
-
-  const isDirty = useStudioStore((s) => s.isDirty);
-  const saveStatus = useStudioStore((s) => s.saveStatus);
-
-  // Synchronize document title with unsaved dirty indicator
-  useEffect(() => {
-    document.title = `${isDirty ? '● ' : ''}${projectName} — PixiBun`;
-    return () => {
-      document.title = 'PixiBun — Pixels with a pulse';
-    };
-  }, [isDirty, projectName]);
 
   // Undo / Redo handlers dispatching to canvas engine
   const handleUndo = useCallback(() => {
@@ -419,6 +405,26 @@ export const StudioLayout: React.FC = () => {
     handleRedo,
   });
 
+  // The rail is memoized; hand it stable callbacks that always reach the latest handlers.
+  const latestRailActions = useRef({ openExport, handleOpenImport, runAutosave, triggerSaveToast });
+  latestRailActions.current = { openExport, handleOpenImport, runAutosave, triggerSaveToast };
+  const railActions = useMemo(() => ({
+    onOpenExport: () => latestRailActions.current.openExport(),
+    onOpenImport: (payload?: ImportPayload) => latestRailActions.current.handleOpenImport(payload),
+    onOpenShortcuts: () => setIsShortcutsOpen(true),
+    onOpenResize: () => setIsResizeOpen(true),
+    onNewDrawing: () => setIsNewConfirmOpen(true),
+    onOpenPostcards: () => setIsPostcardsOpen(true),
+    onOpenGallery: () => setIsGalleryOpen(true),
+    onOpenCoDraw: () => setIsCoDrawOpen(true),
+    onUndo: handleUndo,
+    onRedo: handleRedo,
+    onSaveNow: () => {
+      const { runAutosave: save, triggerSaveToast: toast } = latestRailActions.current;
+      void save().then((res) => { if (res.ok) toast(); });
+    },
+  }), [handleRedo, handleUndo]);
+
   return (
     <div
       data-restoration-phase={lifecycleState.phase}
@@ -432,31 +438,13 @@ export const StudioLayout: React.FC = () => {
 
       {/* Unified Atelier Rail (~40px instrument panel) */}
       <div hidden={focusMode} className="moon-slot moon-slot-rail">
-      <AtelierRail
-        onOpenExport={() => openExport()}
-        onOpenImport={handleOpenImport}
-        onOpenShortcuts={() => setIsShortcutsOpen(true)}
-        onOpenResize={() => setIsResizeOpen(true)}
-        onNewDrawing={() => setIsNewConfirmOpen(true)}
-        onOpenPostcards={() => setIsPostcardsOpen(true)}
-        onOpenGallery={() => setIsGalleryOpen(true)}
-        onOpenCoDraw={() => setIsCoDrawOpen(true)}
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        canUndo={canUndo}
-        canRedo={canRedo}
-        onSaveNow={() => {
-          void runAutosave().then((res) => { if (res.ok) triggerSaveToast(); });
-        }}
-      />
+      <AtelierRail {...railActions} />
 
       </div>
       {focusMode && <button type="button" onClick={() => { useWorkspaceStore.getState().toggleFocus(); document.getElementById('center-canvas-area')?.focus({ preventScroll: true }); }} className="fixed top-3 right-3 z-30 text-xs px-3 py-2 bg-[var(--desk-surface)] border border-[var(--desk-border)] shadow-sm">Restore panels <kbd className="ml-2 text-[var(--text-muted)]">⇧ Tab</kbd></button>}
 
-      {/* Accessible Status Announcements for Screen Readers (WCAG 4.1.3) */}
-      <div className="sr-only" role="status" aria-live="polite">
-        {getLocalSaveLabel(saveStatus, isDirty)}
-      </div>
+      {/* Title dot and screen-reader save status (WCAG 4.1.3) */}
+      <StudioDocumentStatus />
 
       {/* Autosave Disk Write Error / Save Conflict Notice (Non-Layout-Shifting Toast) */}
       {autosaveError && (
@@ -810,3 +798,24 @@ export const StudioLayout: React.FC = () => {
     </div>
   );
 };
+
+/**
+ * Title dot and screen-reader save status. Kept out of StudioLayout so the
+ * dirty flag flipping at the first stroke after each save re-renders only this.
+ */
+function StudioDocumentStatus() {
+  const isDirty = useStudioStore((s) => s.isDirty);
+  const saveStatus = useStudioStore((s) => s.saveStatus);
+  const projectName = useStudioStore((s) => s.projectName);
+
+  useEffect(() => {
+    document.title = `${isDirty ? '● ' : ''}${projectName} — PixiBun`;
+  }, [isDirty, projectName]);
+  useEffect(() => () => { document.title = 'PixiBun — Pixels with a pulse'; }, []);
+
+  return (
+    <div className="sr-only" role="status" aria-live="polite">
+      {getLocalSaveLabel(saveStatus, isDirty)}
+    </div>
+  );
+}

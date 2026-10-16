@@ -172,3 +172,29 @@ describe('OKLCH Pixel Art Color Ramp Generator (rampGenerator.ts)', () => {
     });
   });
 });
+
+describe('generateShadeStrip', () => {
+  it('keeps the base in the middle and orders shades dark to light', async () => {
+    const { generateShadeStrip } = await import('@/lib/color/rampGenerator');
+    const strip = generateShadeStrip('#C792DF');
+    expect(strip).toHaveLength(7);
+    expect(strip[3]).toBe('#C792DF');
+    const luminance = strip.map(getRelativeLuminance);
+    for (let i = 1; i < luminance.length; i++) expect(luminance[i]).toBeGreaterThan(luminance[i - 1]);
+  });
+
+  it('shifts shadows cooler (bluer) and highlights warmer (redder) than the base', async () => {
+    const { generateShadeStrip } = await import('@/lib/color/rampGenerator');
+    const strip = generateShadeStrip('#5FA04E').map(hexToRgb);
+    const [deep, , , base, , , light] = strip;
+    expect(deep[2] / Math.max(1, deep[0] + deep[1] + deep[2])).toBeGreaterThan(base[2] / (base[0] + base[1] + base[2]));
+    expect(light[0] / (light[0] + light[1] + light[2])).toBeGreaterThan(base[0] / (base[0] + base[1] + base[2]));
+  });
+
+  it('drops steps that clip to the same extreme instead of repeating them', async () => {
+    const { generateShadeStrip } = await import('@/lib/color/rampGenerator');
+    const strip = generateShadeStrip('#FFFFFF');
+    expect(new Set(strip).size).toBe(strip.length);
+    expect(strip).toContain('#FFFFFF');
+  });
+});

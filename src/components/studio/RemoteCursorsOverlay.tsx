@@ -12,7 +12,7 @@ import type { RemoteCursor } from '@/lib/sync/p2pSync';
  * presence channel at ~30fps; a short linear transition smooths jitter
  * without masking intentional movement.
  */
-export const RemoteCursorsOverlay: React.FC<{ zoom: number }> = ({ zoom }) => {
+export const RemoteCursorsOverlay = React.memo(function RemoteCursorsOverlay({ zoom }: { zoom: number }) {
   const [cursors, setCursors] = useState<RemoteCursor[]>([]);
 
   useEffect(() => {
@@ -65,4 +65,4 @@ export const RemoteCursorsOverlay: React.FC<{ zoom: number }> = ({ zoom }) => {
       ))}
     </div>
   );
-};
+});

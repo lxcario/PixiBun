@@ -4,8 +4,9 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { compositeFrame } from '@/lib/render/compositor';
+import { useThrottledValue } from '@/hooks/useThrottledValue';
 
-export const FloatingPreviewWindow: React.FC = () => {
+export const FloatingPreviewWindow = React.memo(function FloatingPreviewWindow() {
   const frames = useStudioStore((s) => s.frames);
   const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
@@ -19,7 +20,8 @@ export const FloatingPreviewWindow: React.FC = () => {
   const setPreviewBackdrop = useStudioStore((s) => s.setPreviewBackdrop);
   const showFloatingPreview = useStudioStore((s) => s.showFloatingPreview);
   const toggleFloatingPreview = useStudioStore((s) => s.toggleFloatingPreview);
-  const bufferVersion = useStudioStore((s) => s.bufferVersion);
+  // Redraw a few times a second while painting, not on every stroke frame.
+  const bufferVersion = useThrottledValue(useStudioStore((s) => s.bufferVersion), 120);
 
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -326,4 +328,4 @@ export const FloatingPreviewWindow: React.FC = () => {
       )}
     </div>
   );
-};
+});

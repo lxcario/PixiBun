@@ -93,7 +93,7 @@ export function ToolSlotButton({ slot, shown, active, onChoose }: ToolSlotButton
 
   return (
     <div ref={slotRef} className="relative inline-flex" data-tool-slot={slot.id} data-tools={slot.tools.join(' ')}>
-      <DrawingToolPreview toolId={shown}>
+      <DrawingToolPreview toolId={shown} more={grouped ? `Hold, right-click or press → for ${slot.tools.filter(tool => tool !== shown).map(tool => TOOL_METADATA_MAP[tool].label).join(', ')}.` : undefined}>
         <button
           ref={openerRef}
           type="button"
@@ -118,8 +118,7 @@ export function ToolSlotButton({ slot, shown, active, onChoose }: ToolSlotButton
           aria-pressed={active}
           aria-haspopup={grouped ? 'menu' : undefined}
           aria-expanded={grouped ? open : undefined}
-          aria-keyshortcuts={grouped ? 'ArrowRight' : undefined}
-          title={`${meta.label} (${meta.shortcut})${grouped ? ` · hold or right-click for more ${slot.label.toLowerCase()}` : ''}`}
+          aria-keyshortcuts={grouped ? `${meta.shortcut.replace(/ \+ /g, '+')} ArrowRight` : meta.shortcut.replace(/ \+ /g, '+')}
           data-testid={`${shown}-tool`}
           data-tutorial={`${shown}-tool`}
           className={`relative w-9 h-9 rounded-[2px] flex items-center justify-center cursor-pointer transition-all ${
@@ -164,13 +163,14 @@ export function ToolSlotButton({ slot, shown, active, onChoose }: ToolSlotButton
                 onClick={() => { onChoose(tool); close(false); }}
                 // The shown tool already owns this test id on the slot button.
                 data-testid={current ? undefined : `${tool}-tool`}
+                data-tool-icon-ink={current ? '' : undefined}
                 className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded-[3px] text-left text-xs cursor-pointer outline-none ${
                   current
                     ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)]'
                     : 'text-[var(--text-body)] hover:bg-[var(--menu-hover,var(--surface-2))] focus-visible:bg-[var(--menu-hover,var(--surface-2))] hover:text-[var(--text-heading)]'
                 }`}
               >
-                <PixelIcon name={item.icon} size={14} />
+                <PixelIcon name={item.icon} size={16} />
                 <span className="flex-1">{item.label}</span>
                 <kbd className={`font-mono text-[10px] ${current ? 'opacity-80' : 'text-[var(--text-muted)]'}`}>{item.shortcut}</kbd>
               </button>

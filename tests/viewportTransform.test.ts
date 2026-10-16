@@ -247,3 +247,33 @@ describe('useViewportTransform', () => {
     expect(setPan).not.toHaveBeenCalled();
   });
 });
+
+describe('accumulateWheelZoom', () => {
+  it('steps once per mouse notch', async () => {
+    const { accumulateWheelZoom } = await import('@/hooks/viewport/useViewportTransform');
+    const state = { total: 0, at: 0 };
+    expect(accumulateWheelZoom(state, { deltaY: -100, deltaMode: 0, ctrlKey: false, timeStamp: 1000 })).toBe(-100);
+    expect(accumulateWheelZoom(state, { deltaY: 100, deltaMode: 0, ctrlKey: false, timeStamp: 1050 })).toBe(100);
+  });
+
+  it('adds up small touchpad deltas into one step instead of one step per event', async () => {
+    const { accumulateWheelZoom } = await import('@/hooks/viewport/useViewportTransform');
+    const state = { total: 0, at: 0 };
+    const steps = Array.from({ length: 12 }, (_, i) => accumulateWheelZoom(state, { deltaY: -8, deltaMode: 0, ctrlKey: false, timeStamp: 1000 + i * 8 }));
+    expect(steps.filter(Boolean)).toHaveLength(1);
+  });
+
+  it('treats a pause or a reversal as a new gesture', async () => {
+    const { accumulateWheelZoom } = await import('@/hooks/viewport/useViewportTransform');
+    const state = { total: 0, at: 0 };
+    accumulateWheelZoom(state, { deltaY: -40, deltaMode: 0, ctrlKey: false, timeStamp: 1000 });
+    expect(accumulateWheelZoom(state, { deltaY: -40, deltaMode: 0, ctrlKey: false, timeStamp: 2000 })).toBe(0);
+    expect(accumulateWheelZoom(state, { deltaY: 40, deltaMode: 0, ctrlKey: false, timeStamp: 2010 })).toBe(0);
+  });
+
+  it('uses a shorter step for pinch (Ctrl) gestures and converts line deltas', async () => {
+    const { accumulateWheelZoom } = await import('@/hooks/viewport/useViewportTransform');
+    expect(accumulateWheelZoom({ total: 0, at: 0 }, { deltaY: -20, deltaMode: 0, ctrlKey: true, timeStamp: 10 })).toBe(-20);
+    expect(accumulateWheelZoom({ total: 0, at: 0 }, { deltaY: 3, deltaMode: 1, ctrlKey: false, timeStamp: 10 })).toBe(99);
+  });
+});

@@ -14,6 +14,19 @@ import { studioEvents } from '@/lib/events/studioEvents';
 import { estimatePaletteBytes, parsePaletteSemantics } from '@/lib/color/paletteSemantics';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 
+// A picker drag sets the color on every pointer move. Remember only the color
+// the artist settles on, so one drag adds one recent color, not eight shades of it.
+const RECENT_COLOR_SETTLE_MS = 450;
+let pendingRecentColor: ReturnType<typeof setTimeout> | null = null;
+
+function rememberWhenSettled(color: string, remember: (color: string) => void): void {
+  if (pendingRecentColor !== null) clearTimeout(pendingRecentColor);
+  pendingRecentColor = setTimeout(() => {
+    pendingRecentColor = null;
+    remember(color);
+  }, RECENT_COLOR_SETTLE_MS);
+}
+
 function rejectPaletteEdit(message: string): void {
   studioEvents.emit('pixibun:toast', { type: 'error', message });
 }
@@ -457,14 +470,14 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
     set(state => {
       state.primaryColor = color;
     });
-    get().addRecentColor(color);
+    rememberWhenSettled(color, get().addRecentColor);
   },
 
   setSecondaryColor: color => {
     set(state => {
       state.secondaryColor = color;
     });
-    get().addRecentColor(color);
+    rememberWhenSettled(color, get().addRecentColor);
   },
 
   addRecentColor: color => {
@@ -475,10 +488,13 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
       if (state.recentColors.length > 8) {
         state.recentColors.pop();
       }
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.setItem('pixibun_recent_colors', JSON.stringify(state.recentColors));
-      }
     });
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      window.localStorage.setItem('pixibun_recent_colors', JSON.stringify(get().recentColors));
+    } catch {
+      // Storage full or blocked: the list still works for this session.
+    }
   },
 
   loadRecentColors: () => {

@@ -21,7 +21,7 @@ test('the original compact color dock stays bottom left and its wells, swatches,
   const swatch = dock.getByRole('button', { name: /^Quick color / }).first(), swatchColor = await color(swatch); await swatch.click(); expect(await color(primary)).toBe(swatchColor);
   await swatch.click({ button: 'right' }); expect(await color(secondary)).toBe(swatchColor);
   await dock.getByRole('button', { name: /^Reset default/ }).click(); expect(await Promise.all([color(primary), color(secondary)])).toEqual(['rgb(0, 0, 0)', 'rgb(255, 255, 255)']);
-  await dock.getByRole('button', { name: 'Quick Swatches Flyout', exact: true }).click(); await expect(page.getByRole('region', { name: 'Color quick access flyout', exact: true })).toBeVisible(); await page.keyboard.press('Escape');
+  await dock.getByRole('button', { name: 'Quick Swatches Flyout', exact: true }).click(); await expect(page.getByRole('dialog', { name: 'Color quick access flyout', exact: true })).toBeVisible(); await page.keyboard.press('Escape');
   await dock.screenshot({ path: info.outputPath('compact-color-dock.png') });
 });
 

@@ -32,7 +32,7 @@ const TABS: { id: InspectorTab; label: string; ariaLabel: string; title: string;
   { id: 'ai', label: 'Effects', ariaLabel: 'Effects (PixiTools)', title: 'PixiTools: lighting, tiles, cleanup and animation review', icon: 'lamp' },
 ];
 
-export const RightInspector: React.FC = () => {
+export const RightInspector = React.memo(function RightInspector() {
   const activeInspectorTab = useStudioStore((s) => s.activeInspectorTab);
   const setActiveInspectorTab = useStudioStore((s) => s.setActiveInspectorTab);
   const motionPart = useStudioStore((s) => s.motionPart);
@@ -119,4 +119,4 @@ export const RightInspector: React.FC = () => {
       {layout.navigator && <NavigatorPanel />}
     </aside>
   );
-};
+});

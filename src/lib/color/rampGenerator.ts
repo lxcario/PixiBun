@@ -87,3 +87,29 @@ export function generateOklchRamp(baseHex: string): string[] {
     rgbToHex(or, og, ob),
   ];
 }
+
+/** Lightness offsets of the shade strip, darkest first; the base sits in the middle. */
+const SHADE_STRIP_STEPS = [-0.36, -0.24, -0.12, 0, 0.1, 0.19, 0.27];
+
+/**
+ * Seven hue-shifted shades around one color, darkest first, with the base
+ * unchanged in the middle: shadows lean cool and gain a little chroma,
+ * highlights lean warm and lose some, as pixel artists build ramps by hand.
+ * Steps that would clip to the same black or white are dropped.
+ */
+export function generateShadeStrip(baseHex: string): string[] {
+  const [r, g, b] = hexToRgb(baseHex);
+  const [L, C, H] = rgbToOklch(r, g, b);
+  const base = rgbToHex(r, g, b);
+  const strip: string[] = [];
+  for (const offset of SHADE_STRIP_STEPS) {
+    if (offset === 0) { strip.push(base); continue; }
+    const depth = Math.abs(offset) / 0.36;
+    const hue = offset < 0 ? shiftHueToward(H, COOL_SHADOW_HUE, 26 * depth) : shiftHueToward(H, WARM_SUN_HUE, 20 * depth);
+    const chroma = offset < 0 ? Math.min(0.32, C * (1 + 0.12 * depth)) : C * (1 - 0.3 * depth);
+    const lightness = Math.max(0.04, Math.min(0.98, L + offset));
+    const [sr, sg, sb] = oklchToRgb(lightness, chroma, hue);
+    strip.push(rgbToHex(sr, sg, sb));
+  }
+  return strip.filter((hex, index) => hex === base || strip.indexOf(hex) === index);
+}

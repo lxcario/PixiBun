@@ -13,6 +13,9 @@ import { useCoDrawStatus } from '@/hooks/useCoDrawStatus';
 import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
 import { usePlaybackClock } from '@/hooks/studio/usePlaybackClock';
 import { OnionSkinSettings } from './OnionSkinSettings';
+import { useThrottledValue } from '@/hooks/useThrottledValue';
+import { usePreferencesStore } from '@/stores/preferencesStore';
+import { playbackKey } from '@/lib/input/keymap';
 
 interface FrameThumbnailProps {
   frameIndex: number;
@@ -39,7 +42,8 @@ export const FramePreviewCanvas: React.FC<{ frameIndex: number; maxSize: number;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasWidth = useStudioStore((state) => state.canvasWidth);
   const canvasHeight = useStudioStore((state) => state.canvasHeight);
-  const visualKey = useStudioStore((state) => frameVisualKey(state.frames[frameIndex]));
+  // Thumbnails catch up a few times a second during a stroke instead of re-compositing every frame.
+  const visualKey = useThrottledValue(useStudioStore((state) => frameVisualKey(state.frames[frameIndex])), 150);
   const currentProjectId = useStudioStore((state) => state.currentProjectId);
   const size = previewSize(canvasWidth, canvasHeight, maxSize);
   useEffect(() => {
@@ -90,7 +94,9 @@ export interface BottomTimelineProps {
   isPlaygroundMode?: boolean;
 }
 
-export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode = false }) => {
+export const BottomTimeline = React.memo(function BottomTimeline({ isPlaygroundMode = false }: BottomTimelineProps) {
+  // Standard keymap plays with Enter (Space pans); classic plays with Space.
+  const playKeyLabel = usePreferencesStore((s) => (playbackKey(s.keymap) === 'Enter' ? 'Enter' : 'Space'));
   const frames = useStudioStore((s) => s.frames);
   const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
   const currentProjectId = useStudioStore((s) => s.currentProjectId);
@@ -284,7 +290,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
 
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              title="Play / Pause Animation (Space)"
+              title={`Play / Pause Animation (${playKeyLabel})`}
               className={`h-7 min-w-[68px] px-2 text-[10px] font-bold rounded-[2px] border cursor-pointer flex items-center justify-center gap-1 ${
                 isPlaying
                   ? 'pixel-primary-btn shadow-[0_2px_0_#8c5120]'
@@ -354,7 +360,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
               size="sm"
               variant={isPlaying ? 'primary' : 'default'}
               onClick={() => setIsPlaying(!isPlaying)}
-              title="Play / Pause Animation (Space)"
+              title={`Play / Pause Animation (${playKeyLabel})`}
               data-tutorial="play-button"
               className={`h-7 min-w-[78px] px-2 text-xs flex items-center justify-center gap-1.5 font-medium ${
                 isPlaying
@@ -672,4 +678,4 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
       />
     </footer>
   );
-};
+});
