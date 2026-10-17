@@ -10,29 +10,46 @@ import { coDrawBridge } from '@/lib/sync/coDrawBridge';
 import type { SaveResult } from '@/types/project';
 import type { StarterTemplate } from '@/types/landing';
 import { postcard, postcardRgba, type Postcard } from '@/lib/postcards/scenes';
+import type { ReplayScript } from './replayLink';
+
+interface WorkspaceSeed {
+  width: number;
+  height: number;
+  name?: string;
+  template?: StarterTemplate;
+  card?: Postcard;
+  /** Replaces the default palette's colors. */
+  palette?: string[];
+}
 
 /** Open supplied starter artwork as a separate document after preserving the old one. */
 export async function openStarterWorkspace(templateId: string, checkpoint: () => Promise<SaveResult>, signal?: AbortSignal): Promise<boolean> {
   const template = findStarterTemplate(templateId);
   if (!template) return false;
-  return openWelcomeWorkspace(template, template.width, checkpoint, signal);
+  return openWelcomeWorkspace({ template, width: template.width, height: template.width }, checkpoint, signal);
 }
 
 /** Open a Living Postcard: its scene, its palette with cycle tracks, cycling switched on. */
 export async function openPostcardWorkspace(postcardId: string, checkpoint: () => Promise<SaveResult>, signal?: AbortSignal): Promise<boolean> {
   const card = postcard(postcardId);
   if (!card) return false;
-  const opened = await openWelcomeWorkspace(undefined, card.width, checkpoint, signal, card);
+  const opened = await openWelcomeWorkspace({ card, width: card.width, height: card.height }, checkpoint, signal);
   if (opened) useStudioStore.getState().setPaletteCycling(true);
   return opened;
 }
 
 export async function openBlankWorkspace(size: number, checkpoint: () => Promise<SaveResult>, signal?: AbortSignal): Promise<boolean> {
   if (![16, 24, 32, 48].includes(size)) throw new RangeError('Choose a blank canvas size offered on the welcome page.');
-  return openWelcomeWorkspace(undefined, size, checkpoint, signal);
+  return openWelcomeWorkspace({ width: size, height: size }, checkpoint, signal);
 }
 
-async function openWelcomeWorkspace(template: StarterTemplate | undefined, size: number, checkpoint: () => Promise<SaveResult>, signal?: AbortSignal, card?: Postcard): Promise<boolean> {
+/** Open an empty drawing of a replay link's size and palette; the steps are applied afterwards. */
+export async function openReplayWorkspace(script: ReplayScript, checkpoint: () => Promise<SaveResult>, signal?: AbortSignal): Promise<boolean> {
+  return openWelcomeWorkspace({ name: 'Replay', width: script.width, height: script.height, palette: script.palette }, checkpoint, signal);
+}
+
+async function openWelcomeWorkspace(seed: WorkspaceSeed, checkpoint: () => Promise<SaveResult>, signal?: AbortSignal): Promise<boolean> {
+  const { template, card, width, height } = seed;
   const available = () => !isPracticeActive() && coDrawBridge.getRole() === null &&
     !useStudioStore.getState().hasFloatingSelection && !useStudioStore.getState().motionPart;
   if (!available()) throw new Error('Finish the current motion or floating selection and close Co-Draw before opening a new drawing.');
@@ -47,9 +64,9 @@ async function openWelcomeWorkspace(template: StarterTemplate | undefined, size:
     const saved = await checkpoint();
     job.check();
     if (!saved.ok || useStudioStore.getState().isDirty) throw new Error('The current drawing could not be saved. Export a backup before opening a new drawing.');
-    const width = card?.width ?? size, height = card?.height ?? size;
-    const file = createBlankProjectFile(card?.name ?? template?.name ?? 'Untitled Sprite', width, height);
+    const file = createBlankProjectFile(seed.name ?? card?.name ?? template?.name ?? 'Untitled Sprite', width, height);
     if (template) file.palettes[0].colors = [...new Set(Object.values(TEMPLATE_PALETTE))];
+    if (seed.palette) file.palettes[0].colors = [...seed.palette];
     if (card) {
       file.palettes[0] = { ...file.palettes[0], name: `${card.name} cycle`, colors: [...card.palette], cycleTracks: card.tracks.map(track => ({ ...track })) };
       file.fps = 12;

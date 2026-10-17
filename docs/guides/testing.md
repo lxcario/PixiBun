@@ -40,6 +40,31 @@ Labs are off in Vitest and automated browsers unless their fixture opts in. Befo
 
 [The island browser suite](../../tests/e2e/dynamicIsland.spec.ts) samples actual rendered control positions, waits for the staged tool swap, checks a small uniform scale range, verifies that outgoing controls are inert, and exercises rapid replacement, settings focus, compact geometry, repeated bubbles, viewport changes and live reduced-motion changes. It tests geometry and behavior, not a physical-device frame-rate budget. Earlier single-layer or intermediate trial results are separate from the final integrated publication run in the [Studio Labs motion update](../releases/2026-10-15-studio-labs-motion.md).
 
+## Canvas readout
+
+The Studio writes the active frame out as text in `canvas-readout` ([component](../../src/components/layout/CanvasReadout.tsx), [summary](../../src/lib/render/canvasReadout.ts)), so a black-box browser can assert what a stroke drew instead of only whether Undo became available. Each value has its own hook:
+
+| Hook | Example | Meaning |
+| --- | --- | --- |
+| `canvas-readout-size` | `32×32` | Canvas width × height |
+| `canvas-readout-frame` / `-frames` | `2 of 3` / `3` | Active frame number and frame count |
+| `canvas-readout-layer` / `-layers` | `Base Layer` / `1` | Active layer name and the active frame's layer count |
+| `canvas-readout-pixels` | `8` | Painted pixels (alpha above zero) in the active frame's visible composite |
+| `canvas-readout-colors` | `1` | Distinct painted colors, alpha included |
+| `canvas-readout-top-colors` | `#3a2e4c 8` | Up to four `#rrggbb count` pairs, most used first, ties by hex; translucent colors read `#rrggbbaa`; an empty frame reads `none` |
+| `canvas-readout-digest` | `f26dc755` | Eight hex digits of FNV-1a over width, height and RGBA, with fully transparent pixels hashed as zero. A blank 32×32 frame is `8c00b365`; the example is that frame with `#3a2e4c` on x 4–11 of row 4 |
+| `canvas-readout-summary` | `32×32 canvas, frame 1 of 1, layer Base Layer: 8 painted pixels in 1 color.` | The sentence announced to screen readers |
+
+The root's `data-state` is `pending` from an edit until the frame has been read again, then `ready`; `data-revision` counts reads. Wait for `ready` before reading values. The readout reads the frame 80 ms after the last change, never while a pointer is held or the animation plays, so values mid-drag still describe the previous commit. The digest fingerprints the composite; it is not a security hash. Compute expected digests with `summarizeCanvasPixels` from the known RGBA, as [the readout browser case](../../tests/e2e/canvasReadout.spec.ts) does; a hard-coded digest holds only for those exact pixels and that canvas size. Prefer opaque fixtures: engines may round translucent blending differently.
+
+## Replay links
+
+`/studio?replay=<recipe>` saves the current drawing, opens a new one at the recipe's size and palette, and applies its Pen, Eraser, Line, Rectangle, Ellipse, Fill, add-layer and add-frame steps in order, each as its own Undo step ([format](../../src/lib/project/replayLink.ts), [applier](../../src/lib/project/applyReplay.ts)). Paired with the readout above it gives a black-box test exact pixels to assert. Wait for `replay-status` `data-state="applied"` (`data-steps` is the step count), then for the readout's `ready`. A recipe that cannot be read leaves the drawing alone and shows `replay-error` with the first problem in `replay-error-message`; `replay-status` reads `error`.
+
+Replay steps stamp single pixels with the Studio's line, rectangle and ellipse rasterizers and its flood fill, and ignore the session's brush size, symmetry, selection and fill settings, so a link draws the same pixels in every browser profile. They commit through the same patch-based Undo history as lesson edits ([historyEdit.ts](../../src/lib/engine/historyEdit.ts)), and add layers and frames through the store actions the Layers panel and timeline call. They do not dispatch pointer events, so they do not exercise pointer handling, pressure, pixel-perfect filtering or tool options.
+
+The golden recipes and their readout values live in [replays.json](../testsprite/replays.json) and are explained, with the format, in [replays.md](../testsprite/replays.md). [The unit suite](../../tests/replayLink.test.ts) recomputes each golden with [a plain-array model](../../tests/helpers/replayReference.ts) that shares only the rasterizers with the Studio, and checks the PRD and guide quote the values; [the browser suite](../../tests/e2e/replayLink.spec.ts) opens each link and asserts every readout hook, one Undo and one Redo. When you change a golden, update replays.json first; both suites and the documents follow from it.
+
 ## Preserve evidence
 
 `npm run nibbli:hands -- --mock` runs bounded editing fixtures in the same three recorded browser profiles. It covers real layer/selection/translation and same-layer Copy/Paste, protected source/layer/frame pixels, Undo/Redo, saved reload/export, pasted-copy cancellation and strict refusals. Copy fixtures include an eye at 1600% and an asymmetric three-color motif with transparent holes at 800%. Default `--conversation` selects the earlier alignment journey; `--conversation --copy` requests a coordinate-free copying goal and one observation-bound conversation plan. The deterministic fixtures do not measure original artistic planning, and their results do not close M3 clock stability. Preserve original failed probes and Tester/Artist evidence with their own source/build labels; operation support and discovery counts are not execution verdicts.

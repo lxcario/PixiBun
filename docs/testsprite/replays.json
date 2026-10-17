@@ -1,0 +1,126 @@
+{
+  "$comment": "Golden replay links for /studio?replay=. Expected values are the Canvas readout after the link is drawn, and after one Undo. Pinned by tests/replayLink.test.ts (reference model) and tests/e2e/replayLink.spec.ts (the Studio). See replays.md.",
+  "format": 1,
+  "replays": [
+    {
+      "id": "heart",
+      "title": "Heart",
+      "about": "A red heart drawn row by row with Line, the background filled pale pink, and a three-pixel white highlight drawn with Pen.",
+      "replay": "1_16x16_e83a5c.ffd6e0.ffffff_l0.3.3.5.3~l0.10.3.12.3~l0.2.4.6.4~l0.9.4.13.4~l0.1.5.14.5~l0.1.6.14.6~l0.1.7.14.7~l0.2.8.13.8~l0.3.9.12.9~l0.4.10.11.10~l0.5.11.10.11~l0.6.12.9.12~l0.7.13.8.13~f1.0.0~p2.4.4.3.5.3.6",
+      "steps": 15,
+      "expect": {
+        "size": "16×16",
+        "frame": "1 of 1",
+        "frames": 1,
+        "layer": "Base Layer",
+        "layers": 1,
+        "pixels": 256,
+        "colors": 3,
+        "topColors": "#ffd6e0 156, #e83a5c 97, #ffffff 3",
+        "digest": "57feec3e"
+      },
+      "afterUndo": {
+        "pixels": 256,
+        "colors": 2,
+        "topColors": "#ffd6e0 156, #e83a5c 100",
+        "digest": "ddfeef45"
+      }
+    },
+    {
+      "id": "hop",
+      "title": "Three-frame bun hop",
+      "about": "A bun crouching, in the air and landing squashed: filled ellipses, Line ears and Pen eyes over three frames. The readout shows the last frame.",
+      "replay": "1_16x16_f4e6d0.3a2e4c_E0.2.9.12.15~l0.5.6.5.10~l0.9.6.9.10~p1.5.11~p1.9.11~F~E0.2.3.12.9~l0.5.0.5.4~l0.9.0.9.4~p1.5.5~p1.9.5~F~E0.1.9.13.15~l0.5.7.5.10~l0.9.7.9.10~p1.5.12~p1.9.12",
+      "steps": 17,
+      "expect": {
+        "size": "16×16",
+        "frame": "3 of 3",
+        "frames": 3,
+        "layer": "Base Layer",
+        "layers": 1,
+        "pixels": 61,
+        "colors": 2,
+        "topColors": "#f4e6d0 59, #3a2e4c 2",
+        "digest": "6a67b496"
+      },
+      "afterUndo": {
+        "pixels": 61,
+        "colors": 2,
+        "topColors": "#f4e6d0 60, #3a2e4c 1",
+        "digest": "b64dfb9c"
+      }
+    },
+    {
+      "id": "sunset",
+      "title": "Sunset on two layers",
+      "about": "Sky filled orange and a filled sea rectangle on the base layer; a sun on Layer 2, then the Eraser cuts the horizon row out of the sun so the sea shows through.",
+      "replay": "1_16x16_ffb36b.2b4c7e.ffe66d_f0.0.0~R1.0.10.15.15~L~E2.4.5.11.12~x.3.10.12.10",
+      "steps": 5,
+      "expect": {
+        "size": "16×16",
+        "frame": "1 of 1",
+        "frames": 1,
+        "layer": "Layer 2",
+        "layers": 2,
+        "pixels": 256,
+        "colors": 3,
+        "topColors": "#ffb36b 137, #2b4c7e 95, #ffe66d 24",
+        "digest": "9511f3a5"
+      },
+      "afterUndo": {
+        "pixels": 256,
+        "colors": 3,
+        "topColors": "#ffb36b 137, #2b4c7e 90, #ffe66d 29",
+        "digest": "5e3f3ca4"
+      }
+    },
+    {
+      "id": "shapes",
+      "title": "Outlined shapes on a wide canvas",
+      "about": "A 32×20 canvas: a rectangle outline filled light blue, an ellipse outline filled yellow (the fill must stay inside), then a diagonal Line across both.",
+      "replay": "1_32x20_3a2e4c.7ec8e3.ffd166_r0.1.1.12.10~f1.5.5~e0.15.2.30.17~f2.22.9~l0.0.19.31.0",
+      "steps": 5,
+      "expect": {
+        "size": "32×20",
+        "frame": "1 of 1",
+        "frames": 1,
+        "layer": "Base Layer",
+        "layers": 1,
+        "pixels": 317,
+        "colors": 3,
+        "topColors": "#ffd166 127, #3a2e4c 110, #7ec8e3 80",
+        "digest": "04609d7e"
+      },
+      "afterUndo": {
+        "pixels": 297,
+        "colors": 3,
+        "topColors": "#ffd166 137, #3a2e4c 80, #7ec8e3 80",
+        "digest": "4af21a4e"
+      }
+    },
+    {
+      "id": "wink",
+      "title": "Winking face",
+      "about": "An ellipse outline filled yellow, Pen eyes and smile, the Eraser removes one eye, Pen draws the wink and a fill closes the erased pixel.",
+      "replay": "1_16x16_ffd23f.3a2e4c_e1.1.1.14.14~f0.7.7~p1.5.5.5.6~p1.9.5.9.6~p1.4.9.5.10.9.10.10.9~x.9.5.9.6~p1.8.6.10.6~f0.9.5",
+      "steps": 8,
+      "expect": {
+        "size": "16×16",
+        "frame": "1 of 1",
+        "frames": 1,
+        "layer": "Base Layer",
+        "layers": 1,
+        "pixels": 129,
+        "colors": 2,
+        "topColors": "#ffd23f 85, #3a2e4c 44",
+        "digest": "c2a9a132"
+      },
+      "afterUndo": {
+        "pixels": 128,
+        "colors": 2,
+        "topColors": "#ffd23f 84, #3a2e4c 44",
+        "digest": "e514c2d1"
+      }
+    }
+  ]
+}
