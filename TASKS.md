@@ -21,6 +21,27 @@ Maintenance update — 13 October 2026: see the [current status](docs/current-st
 
 Record: [Studio follow-up](docs/releases/2026-10-16-studio-follow-up.md).
 
+## Replay links — 16 October 2026
+
+- [x] `/studio?replay=` recipe format: versioned, URL-safe, strict validation with size, palette, step, path, layer and frame limits; clear messages, never a throw.
+- [x] Apply each step as its own Undo step through the shared history edit (pixels) and the store's add-layer/add-frame actions; remove the parameter once opened.
+- [x] Five golden replays with exact readout values before and after one Undo ([replays.md](docs/testsprite/replays.md)), added to the [TestSprite PRD](docs/testsprite/PRD.md#13-replay-a-known-drawing-and-check-its-exact-pixels) as journeys.
+- [x] Vitest: format round-trip, validation table, fuzzing, step geometry, applier, goldens against an independent model and document parity. Playwright: one case per golden plus a broken link.
+- [ ] Run the PRD journeys in TestSprite against a deployment that includes replay links and record the result.
+
+Record: [current status](docs/current-status.md#replay-links--16-october-2026), [testing guide](docs/guides/testing.md#replay-links).
+
+## Canvas readout — 16 October 2026
+
+- [x] Describe the active frame as text for screen readers and black-box tests: size, frame/layer, counts, painted pixels, top colors and a composite digest, behind `canvas-readout-*` hooks.
+- [x] Re-read only after a commit settles, Undo or Redo; never during a held pointer or playback; keep it outside the Focus-mode hidden slot.
+- [x] Unit coverage for counts, ranking and an independent digest reference; browser cases for stroke, mid-drag, Undo/Redo, erase, hidden and locked layers, layer/frame changes and a starter template.
+- [x] Tell TestSprite to assert drawing outcomes through the readout ([PRD](docs/testsprite/PRD.md#canvas-readout-assert-what-was-drawn)).
+- [ ] Open as a TestSprite Season 4 loop PR inside the build window and record its check result.
+- [ ] Day-theme and Graphite/Plum Night axe contrast findings in `themeAccessibility.spec.ts` predate this change (also failing without the readout mounted); fix separately.
+
+Record: [current status](docs/current-status.md#canvas-readout--16-october-2026), [hooks](docs/guides/testing.md#canvas-readout).
+
 ## Studio Labs motion integration — 15 October 2026
 
 - [x] Integrate the scene-theme Labs behind saved switches and retain classic Graphite/Plum controls.
