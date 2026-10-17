@@ -165,7 +165,7 @@ body:not(.moon-ui) .lb-range:active::-webkit-slider-thumb { transform: scale(1.3
 body:not(.moon-ui) .lb-range:hover::-moz-range-thumb { transform: scale(1.18); }
 body:not(.moon-ui) .lb-range:active::-moz-range-thumb { transform: scale(1.35); }
 
-/* Segmented choices: the thumb is a motion layoutId, so it slides on the snap spring. */
+/* Segmented choices: one lens per segment, placed from offsets and sprung on SNAP (ChoiceSegment). */
 .lb-seg {
   position: relative;
   display: flex;
@@ -191,13 +191,30 @@ body:not(.moon-ui) .lb-range:active::-moz-range-thumb { transform: scale(1.35); 
 .lb-seg-opt[aria-pressed="true"] { color: var(--primary-fg); }
 .lb-seg-thumb {
   position: absolute;
-  inset: 0;
-  z-index: -1;
+  top: 2px;
+  bottom: 2px;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
   border-radius: var(--pb-control-radius);
   background: var(--primary-bg);
   box-shadow: inset 0 -2px 0 var(--primary-shade);
+  transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease, backdrop-filter 140ms ease;
 }
 body.moon-ui .lb-seg-thumb { border: 2px solid var(--moon-ink); box-shadow: inset 0 -2px 0 var(--primary-shade), 0 2px 0 var(--moon-ink); }
+/* Liquid controls lab: held, the lens is a clear drop of glass, like the tool rail's. Let go,
+   it is solid again at once and only springs into place. */
+.lb-seg[data-liquid] { touch-action: none; }
+.lb-seg-thumb.is-glass { z-index: 2; }
+.lb-seg-opt[data-lq-under] { transform: scale(1.12); color: var(--text-heading); transition: color 160ms ease, transform 160ms ease; }
+.lb-seg:has(.lb-seg-thumb.is-glass) .lb-seg-opt[aria-pressed="true"]:not([data-lq-under]) { color: var(--text-heading); }
+body.lq-sliders .lb-seg-thumb.is-glass {
+  background: color-mix(in srgb, var(--desk-surface-raised) 18%, transparent);
+  border-color: color-mix(in srgb, white 55%, transparent);
+  backdrop-filter: blur(1.5px) saturate(1.9) brightness(1.12);
+  -webkit-backdrop-filter: blur(1.5px) saturate(1.9) brightness(1.12);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.7), inset 0 -2px 4px color-mix(in srgb, black 20%, transparent), 0 4px 12px color-mix(in srgb, black 35%, transparent);
+}
 
 /* Compass: eight quick light directions around Recenter. */
 .lb-compass {

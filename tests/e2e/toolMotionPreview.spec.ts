@@ -1,8 +1,11 @@
 import { expect, test } from '@playwright/test';
 
 test('drawing tools show a short visual preview on hover and keyboard focus', async ({ page }, testInfo) => {
+  // Tall enough that the tool shelf shows every tool as its own button (796px of shelf).
+  await page.setViewportSize({ width: 1600, height: 1440 });
   await page.goto('/studio');
   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
+  await expect(page.locator('[data-shelf]')).toHaveAttribute('data-shelf', 'full');
   await page.evaluate(() => localStorage.removeItem('pixibun:tool-previews-disabled'));
   const pen = page.getByTestId('pen-tool');
   await page.mouse.move(400, 200);

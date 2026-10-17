@@ -10,6 +10,7 @@ import { DiagnosticsProvider } from '@/components/system/DiagnosticsProvider';
 import { ServiceWorkerRegistrar } from '@/components/system/ServiceWorkerRegistrar';
 import { SkipToContent } from '@/components/system/SkipToContent';
 import { PressMotion } from '@/components/system/PressMotion';
+import { Analytics } from '@vercel/analytics/next';
 
 // Self-hosted via next/font/local: 100% offline-capable, zero external network egress
 // during build or runtime, satisfying CSP and air-gapped environment requirements.
@@ -93,6 +94,10 @@ export default async function RootLayout({
           <PressMotion />
           {children}
         </DiagnosticsProvider>
+        {/* Vercel Web Analytics (cookieless page views) only where Vercel serves it from this
+            origin. Elsewhere it would load a debug script from another host, which the CSP
+            refuses, or post to an endpoint that does not exist. */}
+        {process.env.VERCEL === '1' && <Analytics />}
       </body>
     </html>
   );

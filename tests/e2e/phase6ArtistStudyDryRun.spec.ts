@@ -120,6 +120,9 @@ test.describe('Phase 6 Artist Study Dry-Run Verification', () => {
     // 6. Direct click on Result Canvas cell
     const resultCanvas = page.getByRole('img', { name: 'Research result', exact: true });
     await expect(resultCanvas).toBeVisible();
+    // Centre it in the inspector first: scrolled to the top, it sits under the sticky task
+    // switcher, and a click there would choose another task.
+    await resultCanvas.evaluate(element => element.scrollIntoView({ block: 'center', behavior: 'instant' }));
     const cBox = (await resultCanvas.boundingBox())!;
     await page.mouse.click(cBox.x + cBox.width * 0.75, cBox.y + cBox.height * 0.75);
 

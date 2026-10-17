@@ -60,7 +60,7 @@ jobs:
 
       - name: Checkout the guard script
         if: steps.secrets.outputs.ready == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
           sparse-checkout: |
@@ -70,7 +70,7 @@ jobs:
 
       - name: Setup Node.js
         if: steps.secrets.outputs.ready == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: '.nvmrc'
 
@@ -121,7 +121,7 @@ jobs:
 
       - name: Checkout the guard script
         if: steps.secrets.outputs.ready == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
           sparse-checkout: |
@@ -131,7 +131,7 @@ jobs:
 
       - name: Setup Node.js
         if: steps.secrets.outputs.ready == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: '.nvmrc'
 
@@ -159,7 +159,7 @@ jobs:
       changed: ${{ steps.review.outputs.changed }}
     steps:
       - name: Checkout the trusted guard script
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           path: trusted
           persist-credentials: false
@@ -172,13 +172,13 @@ jobs:
           rm -rf trusted
 
       - name: Checkout the pull request head
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: ${{ needs.admit.outputs.head_sha }}
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -230,7 +230,7 @@ jobs:
 
       - name: Preserve failure bundles
         if: ${{ always() && steps.bundles.outputs.count != '' && steps.bundles.outputs.count != '0' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: testsprite-failure-pr-${{ needs.admit.outputs.pr }}-${{ github.run_id }}-${{ github.run_attempt }}
           include-hidden-files: true
@@ -241,7 +241,7 @@ jobs:
 
       - name: Repair the root cause with Claude
         if: ${{ steps.bundles.outputs.count != '0' }}
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@f27be6b65a4652f08a2ba3cff79114829b588967 # v1.0.252
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ github.token }}
@@ -290,7 +290,7 @@ jobs:
 
       - name: Preserve the reviewed patch
         if: ${{ steps.review.outputs.changed == 'true' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: testsprite-autofix-pr-${{ needs.admit.outputs.pr }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -309,7 +309,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout the trusted guard script
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           path: trusted
           persist-credentials: false
@@ -322,7 +322,7 @@ jobs:
           rm -rf trusted
 
       - name: Checkout the pull request head
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: ${{ needs.admit.outputs.head_sha }}
           # A personal or app token lets the push start pull_request workflows; GITHUB_TOKEN pushes do not.
@@ -330,7 +330,7 @@ jobs:
           persist-credentials: true
 
       - name: Download the reviewed patch
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: testsprite-autofix-pr-${{ needs.admit.outputs.pr }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/autofix

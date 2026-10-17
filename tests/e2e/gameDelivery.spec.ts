@@ -77,7 +77,9 @@ test('visible selection bindings resolve duplicate register identity on every ex
   await chooseTool(page, 'select-box');
   for (let i = 1; i <= 3; i++) {
     await page.getByRole('button', { name: new RegExp(`^Select frame ${i}\\.`) }).click();
-    // A drag inside the previous marquee moves artwork. Start a new selection.
+    // A drag inside the previous marquee moves artwork. Start a new selection. Ctrl+D on the
+    // focused frame card duplicates the frame, so deselect from the canvas area.
+    await page.locator('#main-content').focus();
     await page.keyboard.press('Control+d');
     await expect.poll(() => page.evaluate(() => (window as unknown as { __studioStore: { getState(): import('../../src/stores/studioStore').StudioState } }).__studioStore.getState().selection)).toBeNull();
     const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;

@@ -14,6 +14,8 @@ const PALETTES = {
  * into view, with a spinning gem in the middle. Purely decorative.
  */
 export const PixelWaveDivider: React.FC<{ tone?: keyof typeof PALETTES }> = ({ tone = 'gold' }) => {
+  // Null while rendering on the server, so it may only change how the bars move,
+  // never their first render: a differing `initial` broke hydration under reduced motion.
   const reduceMotion = useReducedMotion();
   const colors = PALETTES[tone];
   const half = COLUMNS / 2;
@@ -26,10 +28,10 @@ export const PixelWaveDivider: React.FC<{ tone?: keyof typeof PALETTES }> = ({ t
             <motion.span
               key="gem"
               className="mx-3 mb-1 w-3 h-3 shrink-0 rotate-45 bg-[var(--accent-gold)] shadow-[0_0_10px_color-mix(in srgb, var(--primary-bg) 60%, transparent)]"
-              initial={reduceMotion ? false : { scale: 0, rotate: 45 }}
-              whileInView={reduceMotion ? undefined : { scale: 1, rotate: 405 }}
+              initial={{ scale: 0, rotate: 45 }}
+              whileInView={reduceMotion ? { scale: 1, rotate: 45 } : { scale: 1, rotate: 405 }}
               viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+              transition={reduceMotion ? { duration: 0 } : { duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
             />
           );
         }
@@ -40,10 +42,10 @@ export const PixelWaveDivider: React.FC<{ tone?: keyof typeof PALETTES }> = ({ t
             key={i}
             className="w-[6px] shrink-0 origin-bottom"
             style={{ height, backgroundColor: colors[i % colors.length], opacity: 0.35 + (1 - dist) * 0.55 }}
-            initial={reduceMotion ? false : { scaleY: 0 }}
-            whileInView={reduceMotion ? undefined : { scaleY: [0, 1.6, 0.8, 1] }}
+            initial={{ scaleY: 0 }}
+            whileInView={reduceMotion ? { scaleY: 1 } : { scaleY: [0, 1.6, 0.8, 1] }}
             viewport={{ once: true, margin: '-40px' }}
-            transition={{ duration: 0.7, delay: Math.abs(i - half) * 0.035, ease: 'easeOut' }}
+            transition={reduceMotion ? { duration: 0 } : { duration: 0.7, delay: Math.abs(i - half) * 0.035, ease: 'easeOut' }}
           />
         );
       })}

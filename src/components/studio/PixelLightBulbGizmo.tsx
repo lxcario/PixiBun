@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useCallback, useMemo, useLayoutEffect, useId } from 'react';
-import { motion } from 'motion/react';
+import { animate, motion, useMotionValue, useSpring, useTransform, useVelocity } from 'motion/react';
 import { useStudioStore } from '@/stores/studioStore';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { PixelIcon } from '@/components/ui/PixelIcon';
@@ -17,6 +17,7 @@ import { SpringSurface, Reveal } from '@/components/ui/surfaces/SpringSurface';
 import { Collapse } from '@/components/ui/surfaces/Collapse';
 import { SNAP, spring } from '@/lib/motion/springs';
 import { useReducedMotion } from '@/lib/motion/useReducedMotion';
+import { useLab } from '@/experimental/labsStore';
 import type { MaterialType } from '@/types/tools';
 import './lightBar.css';
 
@@ -101,27 +102,187 @@ function tintName(color: string) {
 }
 
 /** Pressed-button choices whose highlight slides between them on the snap spring. */
+// The tool rail lens's timings (src/experimental/liquidControls/ToolRailLens.tsx), so the
+// light bar's segments and the rail read as one material.
+const LENS_HOLD_MS = 170;
+const LENS_DRAG_SLOP = 5;
+const LENS_FOLLOW = { type: 'spring', stiffness: 700, damping: 50, mass: 0.6 } as const;
+
+/**
+ * Segmented choice with a liquid lens: the chosen option's highlight springs to it and
+ * stretches with its speed, like the tool rail's lens. With the Liquid controls lab on,
+ * press and hold (or press and slide) lifts the lens into glass that follows the pointer;
+ * releasing chooses the option under it. Taps and the keyboard work as before.
+ * The lens is placed from offsets inside the segment, so the bar moving or growing
+ * (opening More) never displaces it; a shared-layout thumb was measured on screen and
+ * trailed a row behind while the bar moved.
+ */
 function ChoiceSegment<T extends string | number>({ label, value, options, onChange }: {
   label: string;
   value: T;
   options: Array<{ value: T; label: string; testId?: string; title?: string }>;
   onChange: (value: T) => void;
 }) {
-  const thumbId = useId();
   const reduce = useReducedMotion();
+  const liquid = useLab('liquidControls');
+  const segmentRef = useRef<HTMLDivElement>(null);
+  const index = options.findIndex((option) => option.value === value);
+  const x = useMotionValue(0);
+  const width = useMotionValue(0);
+  const lift = useMotionValue(1);
+  const speed = useSpring(useTransform(useVelocity(x), (v) => Math.min(Math.abs(v) / 2400, 0.22)), { stiffness: 420, damping: 40 });
+  const scaleX = useTransform([speed, lift], ([s, l]: number[]) => l * (1 + s));
+  const scaleY = useTransform([speed, lift], ([s, l]: number[]) => l * (1 - s * 0.45));
+  const [placed, setPlaced] = useState(false);
+  const [glass, setGlass] = useState(false);
+  const placedRef = useRef(false);
+  const holding = useRef(false);
+
+  const optionRects = useCallback(() => Array.from(segmentRef.current?.querySelectorAll<HTMLElement>('.lb-seg-opt') ?? [])
+    .map((button) => ({ button, left: button.offsetLeft, width: button.offsetWidth })), []);
+  const target = useCallback(() => optionRects()[index] ?? null, [index, optionRects]);
+
+  // A new choice glides (also from wherever a held lens was let go); the first placement jumps.
+  useLayoutEffect(() => {
+    const to = target();
+    if (!to) return;
+    if (!placedRef.current || reduce) {
+      x.jump(to.left); width.jump(to.width);
+      placedRef.current = true; setPlaced(true);
+      return;
+    }
+    const runs = [animate(x, to.left, spring(SNAP)), animate(width, to.width, spring(SNAP))];
+    return () => runs.forEach((run) => run.stop());
+  }, [target, reduce, x, width]);
+
+  // Only the segment's own size (fonts, labels) re-places the lens, at once. One observer
+  // for the segment's life: a new one reports at once and would cut every glide short.
+  const targetRef = useRef(target);
+  targetRef.current = target;
+  useLayoutEffect(() => {
+    const segment = segmentRef.current;
+    if (!segment || typeof ResizeObserver === 'undefined') return;
+    let size = { width: segment.offsetWidth, height: segment.offsetHeight };
+    const observer = new ResizeObserver(() => {
+      const next = { width: segment.offsetWidth, height: segment.offsetHeight };
+      if (next.width === size.width && next.height === size.height) return;
+      size = next;
+      const to = targetRef.current();
+      if (to && placedRef.current && !holding.current) { x.jump(to.left); width.jump(to.width); }
+    });
+    observer.observe(segment);
+    return () => observer.disconnect();
+  }, [x, width]);
+
+  // Press, hold and slide, as on the tool rail, along x.
+  useEffect(() => {
+    const segment = segmentRef.current;
+    if (!segment || !liquid) return;
+    type Rect = ReturnType<typeof optionRects>[number];
+    type Drag = { id: number; startX: number; offset: number; timer: ReturnType<typeof setTimeout> | null; live: boolean };
+    let drag: Drag | null = null;
+    let under: HTMLElement | null = null;
+    let suppressClick = false;
+    const markUnder = (button: HTMLElement | null) => {
+      if (under === button) return;
+      if (under) delete under.dataset.lqUnder;
+      under = button;
+      if (under) under.dataset.lqUnder = '';
+    };
+    const nearest = (center: number) => optionRects().reduce<Rect | null>((best, rect) =>
+      !best || Math.abs(rect.left + rect.width / 2 - center) < Math.abs(best.left + best.width / 2 - center) ? rect : best, null);
+    const begin = () => {
+      const d = drag;
+      if (!d || d.live) return;
+      d.live = true; holding.current = true; setGlass(true);
+      if (!reduce) animate(lift, 1.1, { type: 'spring', stiffness: 300, damping: 22 });
+      try { segment.setPointerCapture(d.id); } catch { /* The pointer was already released. */ }
+    };
+    const follow = (clientX: number) => {
+      const d = drag;
+      const rects = optionRects();
+      if (!d || !rects.length) return;
+      const min = rects[0].left, max = rects[rects.length - 1].left;
+      let left = clientX - segment.getBoundingClientRect().left - d.offset;
+      // Rubber band past the ends, like pulling an elastic.
+      if (left < min) left = min - Math.pow(min - left, 0.7);
+      else if (left > max) left = max + Math.pow(left - max, 0.7);
+      const over = nearest(left + width.get() / 2);
+      if (reduce) x.set(left); else animate(x, left, LENS_FOLLOW);
+      if (over) {
+        if (reduce) width.set(over.width); else animate(width, over.width, LENS_FOLLOW);
+        markUnder(over.button);
+      }
+    };
+    const end = (commit: boolean) => {
+      const d = drag;
+      drag = null;
+      if (!d) return;
+      if (d.timer) clearTimeout(d.timer);
+      if (!d.live) return;
+      // Choose the option shown magnified under the lens: it follows the pointer, while the
+      // lens itself is still springing after it.
+      const chosen = commit ? under : null;
+      holding.current = false; setGlass(false); markUnder(null);
+      if (!reduce) animate(lift, 1, { type: 'spring', stiffness: 280, damping: 21 });
+      if (chosen && chosen.getAttribute('aria-pressed') !== 'true') chosen.click();
+      else {
+        const to = targetRef.current();
+        if (to) { animate(x, to.left, spring(SNAP)); animate(width, to.width, spring(SNAP)); }
+      }
+      // The release is not also a click on whatever sits under it.
+      suppressClick = true;
+      setTimeout(() => { suppressClick = false; }, 0);
+    };
+    const onDown = (e: PointerEvent) => {
+      if (e.button !== 0 || drag || !(e.target as Element | null)?.closest('.lb-seg-opt')) return;
+      // Grab the lens where it was touched, so it does not jump under the finger.
+      const touch = e.clientX - segment.getBoundingClientRect().left;
+      const onLens = touch >= x.get() && touch <= x.get() + width.get();
+      drag = { id: e.pointerId, startX: e.clientX, offset: onLens ? touch - x.get() : width.get() / 2, live: false,
+        timer: setTimeout(() => { begin(); follow(e.clientX); }, LENS_HOLD_MS) };
+    };
+    const onMove = (e: PointerEvent) => {
+      const d = drag;
+      if (!d || d.id !== e.pointerId) return;
+      if (!d.live && Math.abs(e.clientX - d.startX) > LENS_DRAG_SLOP) begin();
+      if (d.live) follow(e.clientX);
+    };
+    const onUp = (e: PointerEvent) => { if (drag?.id === e.pointerId) end(true); };
+    const onCancel = () => end(false);
+    const onLost = () => { if (drag?.live) end(true); };
+    const onClick = (e: MouseEvent) => { if (suppressClick) { suppressClick = false; e.stopPropagation(); e.preventDefault(); } };
+    segment.addEventListener('pointerdown', onDown);
+    segment.addEventListener('pointermove', onMove);
+    segment.addEventListener('pointerup', onUp);
+    segment.addEventListener('pointercancel', onCancel);
+    segment.addEventListener('lostpointercapture', onLost);
+    segment.addEventListener('click', onClick, true);
+    return () => {
+      if (drag?.timer) clearTimeout(drag.timer);
+      drag = null; holding.current = false; markUnder(null);
+      segment.removeEventListener('pointerdown', onDown);
+      segment.removeEventListener('pointermove', onMove);
+      segment.removeEventListener('pointerup', onUp);
+      segment.removeEventListener('pointercancel', onCancel);
+      segment.removeEventListener('lostpointercapture', onLost);
+      segment.removeEventListener('click', onClick, true);
+    };
+  }, [liquid, reduce, optionRects, x, width, lift]);
+
   return (
-    <div className="lb-seg" role="group" aria-label={label}>
-      {options.map((option) => {
-        const on = option.value === value;
-        return (
-          <button key={String(option.value)} type="button" className="lb-seg-opt" aria-pressed={on}
-            data-testid={option.testId} title={option.title}
-            onClick={(e) => { e.stopPropagation(); onChange(option.value); }}>
-            {on && <motion.span layoutId={thumbId} className="lb-seg-thumb" transition={reduce ? { duration: 0 } : spring(SNAP)} />}
-            {option.label}
-          </button>
-        );
-      })}
+    <div ref={segmentRef} className="lb-seg" role="group" aria-label={label} data-liquid={liquid || undefined}>
+      {index >= 0 && (
+        <motion.span aria-hidden="true" className={`lb-seg-thumb${glass ? ' is-glass' : ''}`}
+          style={{ x, width, scaleX, scaleY, opacity: placed ? 1 : 0 }} />
+      )}
+      {options.map((option) => (
+        <button key={String(option.value)} type="button" className="lb-seg-opt" aria-pressed={option.value === value}
+          data-testid={option.testId} title={option.title}
+          onClick={(e) => { e.stopPropagation(); onChange(option.value); }}>
+          {option.label}
+        </button>
+      ))}
     </div>
   );
 }

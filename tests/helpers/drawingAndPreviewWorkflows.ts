@@ -92,8 +92,10 @@ export async function verifyFloatingPreview(page: Page, capture?: (name: string)
   const titleBox = (await title.boundingBox())!;
   await page.mouse.move(titleBox.x + 20, titleBox.y + 5); await page.mouse.down();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 5 }); await page.mouse.up();
-  await window.getByRole('button', { name: '4x', exact: true }).click();
-  await window.getByRole('button', { name: 'Backdrop: alabaster', exact: true }).click();
+  // Zoom and backdrop are radio groups in the rebuilt Live Preview (16 October).
+  const zoom = window.getByRole('radio', { name: '4x', exact: true }), backdrop = window.getByRole('radio', { name: 'Backdrop: alabaster', exact: true });
+  await zoom.click(); await expect(zoom).toHaveAttribute('aria-checked', 'true');
+  await backdrop.click(); await expect(backdrop).toHaveAttribute('aria-checked', 'true');
   expect(await pixels(page)).toEqual(original);
   const previewArea = preview.locator('..');
   const beforeResize = (await previewArea.boundingBox())!;

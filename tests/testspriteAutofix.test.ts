@@ -160,12 +160,13 @@ describe('TestSprite autofix repair and publish steps', () => {
     expect(bundles).toContain('testsprite --output json test list --project "$project" --status failed');
     expect(bundles).toContain('testsprite test failure get "$id" --out ".testsprite/failure/$id"');
     const upload = fixJob.steps[fixJob.steps.indexOf(step(fixJob, 'bundles')) + 1];
-    expect(upload.uses).toBe('actions/upload-artifact@v4');
+    // Actions are pinned to full commit SHAs, never moving tags.
+    expect(upload.uses).toMatch(/^actions\/upload-artifact@[0-9a-f]{40}$/);
     expect(upload.with?.path).toContain('.testsprite/failure/');
   });
 
   it('gives Claude a read-only token, no push tools and the root-cause contract', () => {
-    expect(claude.uses).toBe('anthropics/claude-code-action@v1');
+    expect(claude.uses).toMatch(/^anthropics\/claude-code-action@[0-9a-f]{40}$/);
     expect(claude.with?.github_token).toBe('${{ github.token }}');
     const prompt = String(claude.with?.prompt);
     expect(prompt).toMatch(/Never weaken, delete, skip or loosen a correct assertion/);

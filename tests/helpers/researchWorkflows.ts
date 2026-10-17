@@ -42,8 +42,17 @@ export async function verifyResearchKeyboardWorkflow(page: Page) {
   await expect(page.getByRole('tab', { name: 'Tiles', exact: true })).toBeFocused();
   await preview(page);
   const view = page.getByRole('combobox', { name: 'Scene preview cell' });
-  await view.focus(); await page.keyboard.press('End');
+  await view.focus();
+  // Styled selects (appearance: base-select, 16 October surfaces; Chromium and WebKit) open
+  // with Space, which both engines accept (WebKit does not open on an arrow key); End then
+  // highlights the last option and Enter picks it. Elsewhere End picks directly.
+  if (await view.evaluate(el => getComputedStyle(el).appearance === 'base-select')) {
+    await page.keyboard.press('Space'); await page.keyboard.press('End'); await page.keyboard.press('Enter');
+  } else {
+    await page.keyboard.press('End');
+  }
   const count = await view.locator('option').count();
+  await expect(view).toHaveValue(String(count - 1));
   await openResearchOptions(page);
   await expect(page.getByRole('combobox', { name: 'Pinned scene cell' })).toHaveValue(String(count - 1));
   await expect(page.getByText(`Scene cell ${count} selected.`, { exact: true })).toBeVisible();
