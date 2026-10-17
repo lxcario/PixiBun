@@ -97,6 +97,8 @@ test('a receipt counts the strokes and the player replays the making-of', async 
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto('/studio?width=16&height=16');
   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
+  // The 16 × 16 drawing opens after the Studio is active; it drops the size from the address once open.
+  await expect(page).not.toHaveURL(/width=16/);
   const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
   const at = (x: number, y: number) => ({ x: box.x + (x + 0.5) * box.width / 16, y: box.y + (y + 0.5) * box.height / 16 });
   for (const [x0, x1, y] of [[2, 12, 3], [2, 12, 7], [4, 9, 11]]) {

@@ -125,6 +125,8 @@ test('Erase Sampled Color skips a locked frame layer', async ({ page }) => {
 });
 
 test('Default color family clears pale spill, repairs dark green outline pixels, and has a distinct icon', async ({ page }) => {
+  // Tall enough that the tool shelf shows Eraser and Erase Sampled Color as separate buttons.
+  await page.setViewportSize({ width: 1600, height: 1100 });
   await importGreenSheet(page);
   await chooseTool(page, 'erase-color');
   await page.getByTestId('tool-options-button').click();
@@ -197,7 +199,7 @@ test('Erase Sampled Color with All Frames scope clears matching color across ani
   await expect.poll(() => thumbnailPixel(page, 0, 16, 16)).toEqual([0, 0, 0, 0]);
 
   // Select frame 1 in the bottom timeline
-  await page.getByRole('button', { name: /Frame 1/i }).click();
+  await page.getByRole('button', { name: /^Select frame 1\./ }).click();
   await expect.poll(() => page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { activeFrameIndex: number } } }).__studioStore!.getState().activeFrameIndex)).toBe(0);
 
   // Verify the orange mark on frame 1 was also removed across the animation timeline

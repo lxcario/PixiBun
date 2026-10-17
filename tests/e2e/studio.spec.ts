@@ -210,7 +210,7 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     expect(frame1Pixel[3]).toBeGreaterThan(0);
 
     // 2. Add a new blank frame (Frame 2)
-    const addFrameBtn = page.getByTitle(/Add Blank Frame/i);
+    const addFrameBtn = page.getByTestId('add-frame-button');
     await addFrameBtn.click();
     await page.waitForTimeout(200);
 
@@ -305,7 +305,7 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     expect(thumb0PaintedCount).toBeGreaterThan(0);
 
     // Add a second frame
-    const addFrameBtn = page.getByTitle(/Add Blank Frame/i);
+    const addFrameBtn = page.getByTestId('add-frame-button');
     await addFrameBtn.click();
     await page.waitForTimeout(200);
 

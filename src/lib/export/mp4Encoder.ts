@@ -59,6 +59,43 @@ export function isMp4ExportSupported(): boolean {
   return getVideoRecordingMimeType('mp4') !== null;
 }
 
+const trialEncodes = new Map<string, Promise<boolean>>();
+
+/**
+ * Encodes one small frame with the given configuration. Some browsers report an
+ * H.264 configuration as supported and then fail every encode (Firefox without
+ * its H.264 plugin), so support is only claimed once a real chunk comes out.
+ */
+function trialEncode(config: { width: number; height: number; framerate: number } & Record<string, unknown>): Promise<boolean> {
+  const key = `${config.width}x${config.height}@${config.framerate}`;
+  const cached = trialEncodes.get(key);
+  if (cached) return cached;
+  const attempt = (async () => {
+    const { VideoEncoder: Encoder, VideoFrame: Frame } = window as WebCodecsWindow;
+    if (!Encoder || !Frame) return false;
+    let chunks = 0, failed = false;
+    const encoder = new Encoder({ output: () => { chunks += 1; }, error: () => { failed = true; } });
+    let frame: { close: () => void } | undefined;
+    try {
+      encoder.configure(config);
+      const canvas = document.createElement('canvas');
+      canvas.width = config.width; canvas.height = config.height;
+      frame = new Frame(canvas, { timestamp: 0, duration: 33_333 });
+      encoder.encode(frame, { keyFrame: true });
+      frame.close(); frame = undefined;
+      await awaitVideoOperation(encoder.flush());
+      return !failed && chunks > 0;
+    } catch {
+      return false;
+    } finally {
+      try { frame?.close(); } catch { /* already closed */ }
+      try { encoder.close(); } catch { /* a failed encoder may already be closed */ }
+    }
+  })();
+  trialEncodes.set(key, attempt);
+  return attempt;
+}
+
 /** Exact configuration probe for export controls; API presence alone is insufficient. */
 export async function probeMp4ExportSupport(width: number, height: number, fps = 30): Promise<boolean> {
   if (typeof window === 'undefined') return false;
@@ -67,10 +104,16 @@ export async function probeMp4ExportSupport(width: number, height: number, fps =
     try {
       const config = { codec: 'avc1.42001f', width: (width + 1) & ~1, height: (height + 1) & ~1,
         bitrate: 2_000_000, framerate: fps, avc: { format: 'avc' } };
-      if ((await awaitVideoOperation(encoder.isConfigSupported(config))).supported) return true;
+      if ((await awaitVideoOperation(encoder.isConfigSupported(config))).supported
+        && await trialEncode({ ...config, width: 16, height: 16 })) return true;
     } catch { /* Check recording fallback independently. */ }
   }
   return getVideoRecordingMimeType('mp4') !== null;
+}
+
+/** Test seam: forget earlier trial encodes. */
+export function resetMp4ProbeCache(): void {
+  trialEncodes.clear();
 }
 
 async function exportAnimationWithWebCodecsAsync(

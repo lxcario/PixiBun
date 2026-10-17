@@ -55,7 +55,19 @@ test('actual MP4 is playable with both painted poses, or its unsupported platfor
   const dialog = page.getByRole('dialog'); await dialog.getByRole('button', { name: '1x', exact: true }).click();
   const supported = await page.evaluate(async () => {
     if (typeof VideoEncoder !== 'undefined' && typeof VideoFrame !== 'undefined') {
-      try { if ((await VideoEncoder.isConfigSupported({ codec: 'avc1.42001f', width: 32, height: 32, bitrate: 2_000_000, framerate: 30, avc: { format: 'avc' } })).supported) return true; } catch { /* Query recording support independently. */ }
+      // A claimed configuration is not enough: some engines claim H.264 and fail every encode.
+      try {
+        const config = { codec: 'avc1.42001f', width: 32, height: 32, bitrate: 2_000_000, framerate: 30, avc: { format: 'avc' as const } };
+        if ((await VideoEncoder.isConfigSupported(config)).supported) {
+          let chunks = 0, failed = false;
+          const encoder = new VideoEncoder({ output: () => { chunks += 1; }, error: () => { failed = true; } });
+          encoder.configure(config);
+          const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32;
+          const frame = new VideoFrame(canvas, { timestamp: 0, duration: 33_333 }); encoder.encode(frame, { keyFrame: true }); frame.close();
+          await encoder.flush().catch(() => { failed = true; }); try { encoder.close(); } catch { /* already closed */ }
+          if (!failed && chunks > 0) return true;
+        }
+      } catch { /* Query recording support independently. */ }
     }
     return typeof MediaRecorder === 'function' && typeof HTMLCanvasElement.prototype.captureStream === 'function'
       && ['video/mp4;codecs=avc1', 'video/mp4'].some(mime => MediaRecorder.isTypeSupported(mime));

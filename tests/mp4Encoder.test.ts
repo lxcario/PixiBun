@@ -6,6 +6,7 @@ import {
   exportAnimationToMp4Async,
   isMp4ExportSupported,
   probeMp4ExportSupport,
+  resetMp4ProbeCache,
 } from '@/lib/export/mp4Encoder';
 import { exportProcessReplayMp4Async } from '@/lib/export/speedpaintExporter';
 import { HistoryStep } from '@/lib/engine/historyEngine';
@@ -193,6 +194,29 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
     expect(probe).toHaveBeenCalledWith(expect.objectContaining({ width: 16, height: 34, codec: 'avc1.42001f' }));
     await expect(exportAnimationToMp4Async([createMockCanvas(16, 16)])).rejects.toThrow('unsupported');
     expect(configure).not.toHaveBeenCalled(); expect(close).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    ['reports the configuration as supported but fails to encode (Firefox without H.264)', 'error', false],
+    ['produces no chunk', 'silent', false],
+    ['encodes a real chunk', 'ok', true],
+  ] as const)('claims MP4 support only when a trial encode works: encoder %s', async (_name, behaviour, expected) => {
+    uninstallMediaRecorderMock(); resetMp4ProbeCache();
+    const encode = vi.fn(); const close = vi.fn();
+    vi.stubGlobal('VideoEncoder', class {
+      static isConfigSupported = async () => ({ supported: true });
+      constructor(private init: { output: (chunk: unknown) => void; error: (e: unknown) => void }) {}
+      configure() {}
+      encode() { encode(); if (behaviour === 'ok') this.init.output({}); if (behaviour === 'error') this.init.error(new DOMException('Encoding failed', 'EncodingError')); }
+      async flush() {}
+      close = close;
+    });
+    vi.stubGlobal('VideoFrame', class { close() {} });
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => mockCtx) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+    expect(await probeMp4ExportSupport(32, 32)).toBe(expected);
+    expect(await probeMp4ExportSupport(32, 32)).toBe(expected);
+    expect(encode).toHaveBeenCalledOnce();
+    expect(close).toHaveBeenCalledOnce();
   });
 
   it('cancels a stalled hardware flush and closes the encoder', async () => {

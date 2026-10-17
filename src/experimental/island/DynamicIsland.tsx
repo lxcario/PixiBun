@@ -451,6 +451,8 @@ function DynamicIsland({ contentKey, idleLabel, children }: { contentKey: string
         type="button"
         className="isl-quick-tool"
         data-testid="island-quick-tool"
+        // The face carries this control's own press; the hit target itself must not move.
+        data-no-press
         aria-label={quickAction.label}
         aria-pressed={quickAction.pressed}
         title={quickAction.label}

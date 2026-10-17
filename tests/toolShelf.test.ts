@@ -15,22 +15,33 @@ describe('tool shelf folding', () => {
   });
 
   it('shows every tool when there is room', () => {
-    expect(planShelf(shelfHeight(new Set()))).toEqual(new Set());
+    expect(planShelf(shelfHeight(new Set()) - 8)).toEqual(new Set());
     expect(planShelf(2000)).toEqual(new Set());
   });
 
   it('folds one stage at a time, shapes first, only as far as needed', () => {
     const full = shelfHeight(new Set());
-    expect(planShelf(full - 1)).toEqual(new Set(['Geometry']));
+    expect(planShelf(full - 8 - 1)).toEqual(new Set(['Geometry']));
     const afterShapes = shelfHeight(new Set(['Geometry']));
     expect(afterShapes).toBeLessThan(full);
-    expect(planShelf(afterShapes - 1)).toEqual(new Set(['Geometry', 'Selection']));
+    expect(planShelf(afterShapes - 8 - 1)).toEqual(new Set(['Geometry', 'Selection']));
     expect([...planShelf(0)]).toEqual(FOLD_ORDER);
   });
 
+  it('matches the measured Studio shelf: 40px slots, 347px fully folded at full size', () => {
+    // Measured at 1366×657 on 17 October: four slots in Drawing and one each in
+    // Selection, Geometry and 2.5D Sculpt, before the Compact stage existed.
+    expect(shelfHeight(new Set(['Geometry', 'Selection', 'Drawing', 'Extras']))).toBe(347);
+    expect(shelfHeight(new Set(FOLD_ORDER))).toBeLessThan(347);
+  });
+
   it('fits the measured 1366×657 and 1280×720 shelves', () => {
-    // Shelf heights measured in Studio at those window sizes.
-    for (const available of [332, 395]) expect(shelfHeight(planShelf(available))).toBeLessThanOrEqual(available);
+    // Shelf heights measured in Studio at those window sizes. The last button must show;
+    // the 8px bottom padding may be clipped.
+    for (const available of [332, 395]) expect(shelfHeight(planShelf(available)) - 8).toBeLessThanOrEqual(available);
+    // 1280×720 keeps Normal Chisel and the Eyedropper as separate buttons; 1366×657 compacts.
+    expect(planShelf(395)).toEqual(new Set(['Geometry', 'Selection', 'Drawing']));
+    expect(planShelf(332).has('Compact')).toBe(true);
   });
 
   it('merges the eyedropper into the chisel slot only at the last stage', () => {

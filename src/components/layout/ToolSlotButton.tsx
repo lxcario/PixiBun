@@ -14,6 +14,8 @@ interface ToolSlotButtonProps {
   /** The tool this slot shows: the active one if it belongs here, else the last used. */
   shown: ToolType;
   active: boolean;
+  /** 36px instead of 40px, on the shortest windows (the shelf's Compact stage). */
+  compact?: boolean;
   onChoose: (tool: ToolType) => void;
 }
 
@@ -27,7 +29,7 @@ const HOLD_MS = 350;
  * button opens the group's other tools beside it on right-click, press and
  * hold, or the Right/Down arrow keys; a corner triangle marks those slots.
  */
-export function ToolSlotButton({ slot, shown, active, onChoose }: ToolSlotButtonProps) {
+export function ToolSlotButton({ slot, shown, active, compact = false, onChoose }: ToolSlotButtonProps) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<{ left: number; top: number } | null>(null);
   // Where the flyout was, so it can melt away in place after closing.
@@ -124,7 +126,7 @@ export function ToolSlotButton({ slot, shown, active, onChoose }: ToolSlotButton
           aria-keyshortcuts={grouped ? `${meta.shortcut.replace(/ \+ /g, '+')} ArrowRight` : meta.shortcut.replace(/ \+ /g, '+')}
           data-testid={`${shown}-tool`}
           data-tutorial={`${shown}-tool`}
-          className={`relative w-10 h-10 rounded-[2px] flex items-center justify-center cursor-pointer transition-all ${
+          className={`relative ${compact ? 'w-9 h-9' : 'w-10 h-10'} rounded-[2px] flex items-center justify-center cursor-pointer transition-all ${
             active
               ? 'pixel-primary-btn font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_1px_0_var(--btn-shadow)] ring-2 ring-[var(--accent-gold)] ring-offset-1 ring-offset-[var(--desk-surface)] z-10'
               : 'pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)]'

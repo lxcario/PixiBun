@@ -146,6 +146,14 @@ export function useViewportDrawing({
 
   // Commit Undo Snapshot to Stack
   const commitSnapshot = useCallback(() => {
+    // A stroke publishes its store update once per frame while it is drawn. When
+    // it is committed, publish now: callers record the workspace revision right
+    // after (Curve's re-edit ownership) and a late update would read as a change.
+    if (rafBufferBumpRef.current !== null) {
+      cancelAnimationFrame(rafBufferBumpRef.current);
+      rafBufferBumpRef.current = null;
+      useStudioStore.getState().commitBufferEdit();
+    }
     if (currentStrokeSnapshotRef.current) {
       const snapshot = currentStrokeSnapshotRef.current;
       if (

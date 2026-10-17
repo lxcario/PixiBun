@@ -39,9 +39,10 @@ test('scaling and rotating a lasso does not pick up excluded pixels or leave a t
     state.setCanvasSize(32, 32);
     state.setActiveTool('pen');
   });
-  const stage = await page.locator('#center-canvas-area').boundingBox();
-  expect(stage).not.toBeNull();
-  const at = (x: number, y: number) => ({ x: stage!.x + (x + 0.5) * 16, y: stage!.y + (y + 0.5) * 16 });
+  // Aim from the artwork's own box: its place in the stage depends on the desk layout.
+  await expect.poll(() => artwork.evaluate((c: HTMLCanvasElement) => c.width)).toBe(32);
+  const box = (await artwork.boundingBox())!;
+  const at = (x: number, y: number) => ({ x: box.x + (x + 0.5) * box.width / 32, y: box.y + (y + 0.5) * box.height / 32 });
   await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => StudioState } }).__studioStore!.getState().setPrimaryColor('#ff0000'));
   await page.mouse.click(at(10, 10).x, at(10, 10).y);
   await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => StudioState } }).__studioStore!.getState().setPrimaryColor('#0000ff'));
@@ -111,9 +112,10 @@ test('Delete removes only lasso pixels and clears any stale preview', async ({ p
     state.setActiveTool('pen');
     state.setPrimaryColor('#ff0000');
   });
-  const stage = await page.locator('#center-canvas-area').boundingBox();
-  expect(stage).not.toBeNull();
-  const at = (x: number, y: number) => ({ x: stage!.x + (x + 0.5) * 16, y: stage!.y + (y + 0.5) * 16 });
+  // Aim from the artwork's own box: its place in the stage depends on the desk layout.
+  await expect.poll(() => artwork.evaluate((c: HTMLCanvasElement) => c.width)).toBe(32);
+  const box = (await artwork.boundingBox())!;
+  const at = (x: number, y: number) => ({ x: box.x + (x + 0.5) * box.width / 32, y: box.y + (y + 0.5) * box.height / 32 });
   await page.mouse.click(at(10, 10).x, at(10, 10).y);
   await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => StudioState } }).__studioStore!.getState().setPrimaryColor('#0000ff'));
   await page.mouse.click(at(20, 20).x, at(20, 20).y);

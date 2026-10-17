@@ -189,3 +189,32 @@ test('the lighting bulb exposes glint choices beside Shade and previews them imm
   await page.keyboard.press('Escape');
   await expect(toolbar).toBeHidden();
 });
+
+test('light bar choices: press, hold and slide the glass lens, release to choose', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 1000 });
+  // Automated browsers start with Labs off; this gesture belongs to the Liquid controls lab.
+  await page.addInitScript(() => localStorage.setItem('pixibun:labs:v1', JSON.stringify({ liquidControls: true })));
+  await page.goto('/studio');
+  await expect(page.locator('[data-restoration-phase]')).toHaveAttribute('data-restoration-phase', 'active');
+  await importBlueObject(page);
+  await page.getByRole('button', { name: /PixiTools/ }).click();
+  await page.getByTestId('pixitools-task-lighting').click();
+  await page.getByTestId('analyze-light-bulb').click();
+  const shade = page.getByRole('group', { name: 'Shading tones' }), lens = shade.locator('.lb-seg-thumb');
+  await expect(shade).toBeVisible();
+  const one = (await page.getByTestId('pixel-light-shade-1').boundingBox())!, three = (await page.getByTestId('pixel-light-shade-3').boundingBox())!;
+  await page.mouse.move(one.x + one.width / 2, one.y + one.height / 2); await page.mouse.down();
+  await expect(lens).toHaveClass(/is-glass/);
+  await page.mouse.move(three.x + three.width / 2, three.y + three.height / 2, { steps: 12 });
+  await expect(shade.locator('[data-lq-under]')).toHaveText('3');
+  await page.mouse.up();
+  await expect(page.getByTestId('pixel-light-shade-3')).toHaveAttribute('aria-pressed', 'true');
+  await expect(lens).not.toHaveClass(/is-glass/);
+  await expect.poll(async () => {
+    const at = (await lens.boundingBox())!, chosen = (await page.getByTestId('pixel-light-shade-3').boundingBox())!;
+    return Math.abs(at.x - chosen.x) < 0.5 && Math.abs(at.width - chosen.width) < 0.5;
+  }).toBe(true);
+  // A plain tap still chooses directly.
+  await page.getByTestId('pixel-light-shade-1').click();
+  await expect(page.getByTestId('pixel-light-shade-1')).toHaveAttribute('aria-pressed', 'true');
+});
