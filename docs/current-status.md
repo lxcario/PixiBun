@@ -1,16 +1,20 @@
 # Current project status
 
+## Final integration — 17 October 2026
+
+The [final integration record](releases/2026-10-17-final-integration.md) merges the pending agent branches (portal and publication docs, Chisel layer safety, canvas readout, replay links, `/verified`, the TestSprite autofix workflow) after review, and fixes what the first complete browser suites since 15 October found: Curve re-edit had been broken since the 16 October painting change, the tool shelf cut off the Eyedropper on small laptops, a hydration mismatch under reduced motion, Firefox offering MP4 it cannot encode, the light bar's trailing segment highlight (now a liquid lens with the rail's hold-and-slide gesture), Frames list ARIA, frame-card target sizes, Cocoa Day contrast, analytics outside Vercel, and receipt stroke miscounts. Tests that still described earlier interfaces were updated and listed. Chromium MP4 colour still fails on this machine (environment; the pre-merge commit fails identically). Results and what was not run are in the record.
+
 ## P1 hardening — 17 October 2026
 
 The [P1 hardening record](releases/2026-10-17-p1-hardening.md) bounds slow page loads in the service worker, stops caching Next.js flight data, sweeps older builds' caches, checks for updates in long-lived pages, fixes a WebKit first-visit update banner, requires Origin and JSON at the diagnostics relay, adds `form-action` and cross-origin isolation headers, validates stored recent colors and makes inspector toggles reachable by automated clicks. It also retains a failed attempt to limit cross-build cache reads, which delayed worker activation. Results and what was not run are in the record.
 
-## P0 hardening — 16 October 2026
-
-The [P0 hardening record](releases/2026-10-16-p0-hardening.md) repairs WebM/MP4 recording: a single held frame never reached the recorder, so short animations could download as an empty 110-byte WebM, and header-only recordings are now refused. It also raises seven top-bar controls from 22 px to the 24 px minimum target size, pins Node 22.23.3 with an early gate check, hardens CI permissions, cancellation, timeouts and action pinning, adds Dependabot, and brings the stale `backupTrust` and navigator browser checks up to date. Checks ran on Node 26 with production builds of the working tree; the Node 22 gate, its performance stage and the complete browser suites were not run.
-
 ## Normal Chisel layer safety — 17 October 2026
 
 The [chisel safety record](releases/2026-10-17-chisel-layer-safety.md) documents a toolbar path that could paint normal directions into a color layer and the new canvas-level guard. The regression failed on the prior source, then passed with the fix, including exact surface-layer Undo/Redo. The full six-stage local gate passed on Node 22.23.3, including 2,626 tests across 251 files, configured coverage, warmed performance budgets and a production build. Preview and TestSprite verification are still pending, and are not implied by these local results.
+
+## P0 hardening — 16 October 2026
+
+The [P0 hardening record](releases/2026-10-16-p0-hardening.md) repairs WebM/MP4 recording: a single held frame never reached the recorder, so short animations could download as an empty 110-byte WebM, and header-only recordings are now refused. It also raises seven top-bar controls from 22 px to the 24 px minimum target size, pins Node 22.23.3 with an early gate check, hardens CI permissions, cancellation, timeouts and action pinning, adds Dependabot, and brings the stale `backupTrust` and navigator browser checks up to date. Checks ran on Node 26 with production builds of the working tree; the Node 22 gate, its performance stage and the complete browser suites were not run.
 
 ## Studio follow-up and pan/stroke performance — 16 October 2026
 
