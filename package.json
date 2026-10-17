@@ -19,6 +19,7 @@
     "nibbli:hands": "node scripts/nibbli/runArtist.mjs --hands",
     "verify:docs": "node scripts/verifyDocIntegrity.mjs",
     "docs:inventory": "node scripts/generateDocInventory.mjs",
+    "ledger:md": "node scripts/generateLoopLedger.mjs",
     "themes:css": "node scripts/generateThemeCss.mjs",
     "evidence:publish": "node scripts/publishEvidence.mjs",
     "evidence:index": "node scripts/indexVerificationEvidence.mjs",
