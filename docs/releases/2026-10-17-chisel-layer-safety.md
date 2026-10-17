@@ -1,0 +1,13 @@
+# Normal Chisel layer safety — 17 October 2026
+
+Investigating the first expanded TestSprite run's Normal Chisel failure led to a separate, reproducible product defect. The cloud agent had not established the intended editable surface-layer fixture, so its failure alone did not prove a drawing defect. A manual check on production source `92de6c74` selected Normal Chisel from the toolbar on Bun's ordinary Base Layer; one canvas click repainted part of the diffuse artwork in normal-map colors. Undo restored it.
+
+The surface inspector already restricts painting to an unlocked layer tagged `normal`. The canvas pointer path now enforces the same boundary, including when Chisel is selected from the toolbar. An unsupported layer gets a clear instruction to create or select an unlocked surface layer before any pixel snapshot or stroke begins. Existing lock handling remains in effect.
+
+The new viewport regression compares actual buffer RGBA and history state. Against the unchanged source, the color-layer protection case failed while valid surface painting and locked-layer protection passed. With the guard, all three pass; the valid surface case also verifies exact Undo and Redo pixels. The focused run of this file, viewport interruption/isolation, normal sculpting and normal-layer tests passed all 31 tests on Node 22.23.3.
+
+This is native unit evidence using the repository's byte-copy canvas fixture, not a native-browser export or a TestSprite green check. The original cloud verdict remains unchanged. A preview deployment and fresh portal verification are required before claiming the automatic PR loop has verified this fix. The TestSprite Free-plan GitHub entitlement rollout is separate from this application defect.
+
+The full local quality gate subsequently passed all six stages on Node 22.23.3: documentation, types, lint, 2,626 tests across 251 files with configured coverage thresholds, the separate warmed performance budgets, and a production build. The build embeds the parent source revision because these checks ran before the fixing commit was created; it is not a deployed-fix identity.
+
+A focused portal-generated SAFE-05 follow-up failed to see the refusal message, but its generated code repeatedly clicked a layer thumbnail while describing the main canvas. That run is retained as a locator failure, not used as a valid stroke regression. A reviewed stored-code refinement targets `main-composite-canvas`, compares actual RGBA, checks disabled Undo, and requires the refusal toast. A new strict replay against unchanged production was queued; its outcome and preview verification are not implied here.
