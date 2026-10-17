@@ -66,7 +66,7 @@ Run on Windows with Node **26.5.1** (not the pinned runtime; the performance sta
 | `artistWorkspace` radial gradient ×3 | Toggle rows hid their checkbox as a 1 px `sr-only` input under the label text, so a direct click on the checkbox was intercepted | Product fix in the [P1 record](2026-10-17-p1-hardening.md#toggle-rows); the original `uncheck()` lines are unchanged |
 | `animatedExportIntegrity` GIF and MP4, WebKit | The app-update banner covered "+ Frame" in a fresh browser | Product fix in the [P1 record](2026-10-17-p1-hardening.md#first-visit-update-banner-in-webkit) |
 | `stableStudioGeometry` Atelier, WebKit | The pose button was measured mid-press (32.03 instead of 32 px); every press springs the control's scale since 16 October | Measured once the press animation finishes |
-| `animatedExportIntegrity` MP4, Firefox | WebCodecs reports H.264 support and then fails; Firefox's MediaRecorder offers no MP4. The same with the old and the new recorder, checked directly against Firefox's MediaRecorder | Remains open, as previously recorded |
+| `animatedExportIntegrity` MP4, Firefox | WebCodecs reports H.264 support and then fails; Firefox's MediaRecorder offers no MP4. The same with the old and the new recorder, checked directly against Firefox's MediaRecorder | Remained open in this record. Update, 17 October: MP4 support is now probed with a real one-frame encode, so such an engine is refused explicitly ([final integration](2026-10-17-final-integration.md#fixes)) |
 
 Re-runs after these repairs are recorded in the [P1 record](2026-10-17-p1-hardening.md#verification).
 

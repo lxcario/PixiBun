@@ -15,6 +15,7 @@ PixiBun is architected as an offline-first, client-side application:
 - All canvas manipulation, photometric lighting calculations, and animation exports run on the client device.
 - Artwork and project data persist on-device in browser IndexedDB storage. The `window.__pixibunDb` and `window.__studioStore` debug handles are exposed only in development and test builds, including when those builds run on localhost. Production builds do not expose them on any hostname. Browser E2E tests use a development server to access these handles.
 - No user account is needed. Local diagnostics default on; they can include error text and paths. Sending diagnostics requires opt-in, as described below.
+- Vercel deployments render Vercel Web Analytics (cookieless page views, served and reported on the same origin, so the page CSP needs no new host). Other hosts, development and local production tests omit it (`src/app/layout.tsx`).
 - WebRTC P2P co-draw defaults to a local-network configuration without public STUN servers (`LAN_ICE_SERVERS = []`); public STUN requires `lanOnly: false`.
 
 ## 2. Secrets & Secret Hygiene
