@@ -83,6 +83,17 @@ A screenshot proves captured visible state rather than full interaction, timing,
 
 ## TestSprite
 
+### Loop ledger and /verified
+
+`/verified` renders [docs/testsprite/loop-ledger.json](../testsprite/loop-ledger.json): one entry per pull request TestSprite checked. The page makes no runtime calls; the JSON is bundled at build time and `parseLoopLedger` rejects a malformed file, so a bad edit fails the build and `npm run verify:docs`, not the visitor.
+
+To record a run, after the PR's TestSprite check has finished:
+
+1. Add an entry with `pr`, `title`, `prUrl` (`https://github.com/lxcario/PixiBun/pull/<pr>`), `checkedOn` (date of the first run), `testspriteRunUrl` (an https testsprite.com link), `failures` (what failed on the first run, each with `case`, `cause` of `product-bug`, `test-fix` or `environment`, and a one-sentence `note`), `fixCommit` and `verdict` (`passed`, `failed` or `pending`). Bump `updated`; set `suiteCases` and `testspriteProjectUrl` once known.
+2. Run `npm run ledger:md` to regenerate [loop-ledger.md](../testsprite/loop-ledger.md), then `npm run verify:docs`.
+
+The schema enforces the loop: a `fixCommit` needs a recorded failure, a red first run that ended `passed` needs the fixing commit, and a `failed` verdict needs a failure. Only `product-bug` failures count as bugs caught. Never add a row without a real run link; keep red runs, they are the evidence.
+
 For the bounded M4 Flip journey, use `npm run nibbli:hands -- --conversation --flip`; its default is one Chromium session, with an explicit `--project` selecting another engine. `npm run nibbli:hands -- --mock` retains the full Move/Copy fixture set and adds both Flip axes, odd/even rectangles, two zooms, protected-content/history/export checks, Cancel and safe rejections. A symmetric no-op is refused. Read the [agent contract](nibbli-agent.md) and terminal outcome before accepting a result. The final local source passed 2,325 unit tests /210 files, 33 Hands cases, six existing selection cases and one conversation Flip; current status preserves exact source/build labels and the inconclusive interrupted gate. No new external TestSprite run was claimed. M3 playback stability remains open; retained mock/conversation opinions do not establish artistic quality. Raw traces and reports stay ignored under the local storage planning policy.
 
 For exact quarter-turn Hands editing, use `npm run nibbli:hands -- --conversation --rotate`. Plans include explicit pivots and admit only clockwise 90°, 180° or 270° with fully contained grid-aligned empty destinations. The R1/R2 candidate passed a full gate with 2,358 unit tests /211 files, 24 scoped Rotation cases, six existing selection regressions and one conversation rotation. After correcting only the separate R3 grip fixture, a fresh full gate, three R3 diagnostics and six fresh selection cases passed on a separately labeled rebuilt candidate. The earlier 24 cases, conversation and Move/Copy/Flip browser results retain original labels and were not rerun; all product/controller/quarter-fixture bytes stayed identical. The trusted approximately 37° R3 fixture uses a separate protection/palette/history/file diagnostic and records silhouette metrics for review. Free-angle Artist plans remain refused. Read terminal outcomes and current-status source/build labels; preserve original profiles, recordings, expectations, deadlines and failures. No external TestSprite run or M3 stability closure is claimed.

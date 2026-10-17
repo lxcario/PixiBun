@@ -48,9 +48,14 @@ export default function PledgePage() {
 
         <p className="text-base leading-relaxed text-[var(--text-body)]">If we ever break this, this page will say so.</p>
 
-        <Link href="/studio" className="self-start font-mono text-sm text-[var(--accent-gold)] underline underline-offset-4 hover:opacity-80">
-          Open the Desk →
-        </Link>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          <Link href="/studio" className="font-mono text-sm text-[var(--accent-gold)] underline underline-offset-4 hover:opacity-80">
+            Open the Desk →
+          </Link>
+          <Link href="/verified" className="font-mono text-sm text-[var(--accent-gold)] underline underline-offset-4 hover:opacity-80">
+            How PixiBun is tested →
+          </Link>
+        </div>
       </article>
     </main>
   );

@@ -42,6 +42,13 @@ Record: [current status](docs/current-status.md#replay-links--16-october-2026), 
 
 Record: [current status](docs/current-status.md#canvas-readout--16-october-2026), [hooks](docs/guides/testing.md#canvas-readout).
 
+## TestSprite loop page — 16 October 2026
+
+- [x] `/verified` route: the TestSprite loop, counts and the loop ledger, linked from the footer and pledge page.
+- [x] Committed, schema-validated [loop ledger](docs/testsprite/loop-ledger.json) with a generated [Markdown twin](docs/testsprite/loop-ledger.md); `npm run verify:docs` rejects an invalid or stale ledger.
+- [ ] Add the first real loop PR once TestSprite checks a pull request; fill `suiteCases` and the project link from the portal.
+- [ ] Add the README "Tested on every pull request" section the page links to (planned with the loop wiring PR).
+
 ## Studio Labs motion integration — 15 October 2026
 
 - [x] Integrate the scene-theme Labs behind saved switches and retain classic Graphite/Plum controls.
