@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useEffect, useId, useRef, useState } from 'react';
+import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ToolPreviewCanvas } from './ToolPreviewCanvas';
+import { AnimatePresence } from 'motion/react';
+import { preloadToolClips, ToolPreviewStage } from './toolPreview/ToolPreviewStage';
+import { SpringSurface } from './surfaces/SpringSurface';
 import { PixelIcon, PixelIconName } from './PixelIcon';
+import { MORPH_W, cssSpring } from '@/lib/motion/springs';
 import styles from './ToolMotionPreview.module.css';
 
 export type Scene =
@@ -459,15 +462,24 @@ export function setToolPreviewsDisabled(disabled: boolean) {
 // Global warmth tracker for instant cross-tool transitions
 let globalLastDismissTime = 0;
 let globalActiveSource: HTMLElement | null = null;
-const PREVIEW_WIDTH = 304;
-const PREVIEW_HEIGHT = 360;
+
+/** "Shift + G" → "⇧G": modifier glyphs keep the keycap from crowding the title. */
+function keycap(shortcut: string): string {
+  return shortcut.replace(/Shift\s*\+\s*/gi, '⇧').replace(/(Ctrl|Control)\s*\+\s*/gi, '⌃').replace(/Alt\s*\+\s*/gi, '⌥');
+}
+
+/** 224px stage + 3px frame + 6px padding + 2px border on each side. */
+const PREVIEW_WIDTH = 246;
+/** Typical height, for placement; the caret is clamped inside whatever height renders. */
+const PREVIEW_HEIGHT = 330;
+/** Moving between tools glides the card on the surfaces' width/position spring. */
+const GLIDE = cssSpring(MORPH_W);
 
 function PreviewCard({
   definition,
   id,
   side,
   caretTop,
-  isClosing,
   onClose,
   onDisable,
 }: {
@@ -475,108 +487,62 @@ function PreviewCard({
   id: string;
   side: 'left' | 'right';
   caretTop: number;
-  isClosing?: boolean;
   onClose: () => void;
   onDisable: () => void;
 }) {
+  const caret = Math.max(14, Math.min(PREVIEW_HEIGHT - 20, caretTop));
   return (
-    <div
+    <SpringSurface
       id={id}
       className={styles.card}
       role="group"
       aria-label={`${definition.title} preview`}
       data-side={side}
-      data-closing={isClosing ? 'true' : undefined}
+      origin={side === 'right' ? `0px ${caret}px` : `100% ${caret}px`}
     >
-      {/* Caret arrow pointing at triggering tool button */}
-      <div
-        className={styles.caret}
-        style={{ top: `${Math.max(10, Math.min(PREVIEW_HEIGHT - 16, caretTop))}px` }}
-        aria-hidden="true"
-      />
+      <div className={styles.caret} style={{ top: caret }} aria-hidden="true" />
 
-      <div key={definition.title} className={styles.contentWrap}>
-        {/* Header */}
-        <div className={styles.header}>
-          <div className={styles.headerTitleGroup}>
-            <div className={styles.iconWrap}>
-              <PixelIcon name={definition.icon || 'pen'} size={16} />
-            </div>
-            <div className={styles.titleStack}>
-              {definition.group && <span className={styles.eyebrow}>{definition.group}</span>}
-              <span className={styles.titleText}>{definition.title}</span>
-            </div>
-          </div>
+      {/* Keyed by tool, so gliding to another tool swaps the content in place */}
+      <div key={definition.title} className={styles.swap}>
+        <header className={styles.header}>
+          <span className={styles.iconWrap} aria-hidden="true">
+            <PixelIcon name={definition.icon || 'pen'} size={14} />
+          </span>
+          <span className={styles.titleStack}>
+            {definition.group && <span className={styles.eyebrow}>{definition.group}</span>}
+            <span className={styles.titleText}>{definition.title}</span>
+          </span>
+          {definition.shortcut && <kbd className={styles.shortcutKey} title={definition.shortcut}>{keycap(definition.shortcut)}</kbd>}
+          {definition.secondaryShortcut && <kbd className={styles.shortcutKey} title={definition.secondaryShortcut}>{keycap(definition.secondaryShortcut)}</kbd>}
+          <button type="button" className={styles.closeBtn} aria-label="Close tool preview" onClick={onClose}>
+            <span aria-hidden="true">✕</span>
+          </button>
+        </header>
 
-          <div className={styles.headerActions}>
-            {definition.shortcut && (
-              <kbd className={styles.shortcutKey}>{definition.shortcut}</kbd>
-            )}
-            {definition.secondaryShortcut && (
-              <kbd className={styles.shortcutKey}>{definition.secondaryShortcut}</kbd>
-            )}
-            <button
-              type="button"
-              className={styles.closeBtn}
-              aria-label="Close tool preview"
-              onClick={onClose}
-            >
-              <span aria-hidden="true">✕</span>
-            </button>
-          </div>
-        </div>
+        <ToolPreviewStage scene={definition.scene} toolName={definition.title} />
 
-        {/* Stage: Interactive Animated Pixel Art Canvas */}
-        <div className={styles.stageFrame}>
-          <div className={styles.stage}>
-            <ToolPreviewCanvas scene={definition.scene} />
-          </div>
-        </div>
-
-        {/* Storyboard: before, action, result, filling in step with the demo */}
-        <div className={styles.storyboard} aria-hidden="true">
-          <div className={`${styles.storyStep} ${styles.storyBefore}`}>
-            <div className={styles.storyBar}><span /></div>
-            <span className={styles.storyLabel}>before</span>
-          </div>
-          <div className={`${styles.storyStep} ${styles.storyAction}`}>
-            <div className={styles.storyBar}><span /></div>
-            <span className={styles.storyLabel}>action</span>
-          </div>
-          <div className={`${styles.storyStep} ${styles.storyResult}`}>
-            <div className={styles.storyBar}><span /></div>
-            <span className={styles.storyLabel}>result</span>
-          </div>
-        </div>
-
-        {/* Body: Actionable Description & Dismiss Option */}
-        <div className={styles.body}>
-          <p className={styles.description}>{definition.description}</p>
-          {definition.proTip && (
-            <div className={styles.tip}>
-              <span className={styles.tipBadge}>TIP</span>
-              <span>{definition.proTip}</span>
-            </div>
-          )}
-          {definition.more && (
-            <div className={styles.tip}>
-              <span className={styles.tipBadge}>MORE</span>
-              <span>{definition.more}</span>
-            </div>
-          )}
-          <div className={styles.footer}>
-            <span className={styles.escHint} aria-hidden="true">esc to close</span>
-            <button
-              type="button"
-              className={styles.dontShowBtn}
-              onClick={onDisable}
-            >
-              Don&apos;t show again
-            </button>
-          </div>
-        </div>
+        <p className={styles.description}>{definition.description}</p>
+        {definition.proTip && (
+          <p className={styles.tip}>
+            <span className={styles.tipMark}>tip</span>
+            <span>{definition.proTip}</span>
+          </p>
+        )}
+        {definition.more && (
+          <p className={styles.tip}>
+            <span className={styles.tipMark} data-tone="more">more</span>
+            <span>{definition.more}</span>
+          </p>
+        )}
       </div>
-    </div>
+
+      <footer className={styles.footer}>
+        <span className={styles.hint} aria-hidden="true">hover clip to scrub</span>
+        <button type="button" className={styles.dontShowBtn} onClick={onDisable}>
+          Don&apos;t show again
+        </button>
+      </footer>
+    </SpringSurface>
   );
 }
 
@@ -588,7 +554,6 @@ interface ActivePreview {
   source: HTMLElement;
   version: number;
   isGliding: boolean;
-  isClosing?: boolean;
 }
 
 interface PendingPreview {
@@ -604,6 +569,7 @@ function usePreviewController(side: 'left' | 'right') {
   const originalDescription = useRef<{ source: HTMLElement; value: string | null } | null>(null);
   const version = useRef(0);
   const id = useId();
+  const positionRef = useRef<HTMLDivElement>(null);
 
   const cancelHide = () => {
     if (hideTimer.current) {
@@ -640,10 +606,8 @@ function usePreviewController(side: 'left' | 'right') {
       globalActiveSource = null;
       globalLastDismissTime = Date.now();
     }
-    setActive((prev) => (prev ? { ...prev, isClosing: true } : null));
-    hideTimer.current = setTimeout(() => {
-      setActive(null);
-    }, 120);
+    // AnimatePresence plays the surface's exit.
+    setActive(null);
   };
 
   const explicitDismiss = () => {
@@ -669,15 +633,16 @@ function usePreviewController(side: 'left' | 'right') {
 
   const requestShow = (source: HTMLElement, definition: ToolPreviewDefinition, isKeyboard = false) => {
     if (isToolPreviewsDisabled()) return;
+    preloadToolClips();
     cancelHide();
-    if (active?.source === source && !active.isClosing) return;
+    if (active?.source === source) return;
 
     // Determine delay:
     // If actively open (gliding between tools): 0ms (immediate glide)!
     // If warm group (last 450ms): 30ms.
     // If keyboard focus: 60ms.
     // If cold hover: 260ms (prompt, comfortable, avoids flicker when brushing cursor).
-    const isCurrentlyOpen = active !== null && !active.isClosing;
+    const isCurrentlyOpen = active !== null;
     const now = Date.now();
     const isWarm = isCurrentlyOpen || globalActiveSource !== null || (now - globalLastDismissTime < 450);
     const delay = isKeyboard ? 60 : isCurrentlyOpen ? 0 : isWarm ? 30 : 260;
@@ -728,8 +693,7 @@ function usePreviewController(side: 'left' | 'right') {
         caretTop,
         source,
         version: ++version.current,
-        isGliding: prev !== null && !prev.isClosing,
-        isClosing: false,
+        isGliding: prev !== null,
       }));
     }, delay);
 
@@ -798,27 +762,44 @@ function usePreviewController(side: 'left' | 'right') {
     }
   }, []);
 
-  const popup = active && typeof document !== 'undefined'
+  // Placement assumes a typical height; once the card renders, keep its real height on screen.
+  useLayoutEffect(() => {
+    const height = positionRef.current?.offsetHeight;
+    if (!active || !height) return;
+    const maxY = Math.max(48, window.innerHeight - height - 12);
+    if (active.y <= maxY + 0.5) return;
+    setActive((prev) => (prev ? { ...prev, y: maxY, caretTop: prev.caretTop + (prev.y - maxY) } : null));
+  }, [active]);
+
+  const popup = typeof document !== 'undefined'
     ? createPortal(
-        <div
-          className={styles.position}
-          data-gliding={active.isGliding ? 'true' : undefined}
-          style={{ left: active.x, top: active.y }}
-          onMouseEnter={cancelHide}
-          onMouseLeave={scheduleHide}
-          onFocus={cancelHide}
-          onBlur={scheduleHide}
-        >
-          <PreviewCard
-            definition={active.definition}
-            id={id}
-            side={side}
-            caretTop={active.caretTop}
-            isClosing={active.isClosing}
-            onClose={explicitDismiss}
-            onDisable={disablePreviews}
-          />
-        </div>,
+        <AnimatePresence>
+          {active && (
+            <div
+              key="tool-preview"
+              ref={positionRef}
+              className={styles.position}
+              style={{
+                left: active.x,
+                top: active.y,
+                transition: active.isGliding ? `left ${GLIDE.duration}ms ${GLIDE.easing}, top ${GLIDE.duration}ms ${GLIDE.easing}` : undefined,
+              }}
+              onMouseEnter={cancelHide}
+              onMouseLeave={scheduleHide}
+              onFocus={cancelHide}
+              onBlur={scheduleHide}
+            >
+              <PreviewCard
+                definition={active.definition}
+                id={id}
+                side={side}
+                caretTop={active.caretTop}
+                onClose={explicitDismiss}
+                onDisable={disablePreviews}
+              />
+            </div>
+          )}
+        </AnimatePresence>,
         document.body
       )
     : null;

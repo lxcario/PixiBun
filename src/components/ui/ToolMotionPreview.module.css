@@ -1,85 +1,44 @@
 /*
- * Tool preview card: a little framed "screen" that pops out of the tool you
- * point at, plays a short storyboard (before → action → result) and teaches
- * one pro tip. Sizes follow DESIGN.md: 304px frame, 14px title, 13px text,
- * 11px dismiss, 24×24 close target.
+ * Tool preview card: a pocket copy of the studio canvas that pops out of the
+ * tool you point at and plays what the tool really does to Bun. 246px wide:
+ * a 224×168 stage in the canvas's wooden frame, a status strip, one line of
+ * description and one tip. Motion comes from SpringSurface; the card only
+ * styles itself here.
  */
 
 .position {
   position: fixed;
   z-index: 1000;
-  width: min(304px, calc(100vw - 24px));
+  width: min(246px, calc(100vw - 24px));
   pointer-events: auto;
 }
 
-.position[data-gliding="true"] {
-  transition: top 0.22s cubic-bezier(0.22, 1, 0.36, 1), left 0.22s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: top, left;
-}
-
 .card {
-  --ink: var(--btn-shadow, #0b0714);
+  --ink: var(--moon-ink, var(--btn-shadow, #0b0714));
+  --card-bg: color-mix(in srgb, var(--desk-surface-raised) 94%, var(--desk-bg));
   position: relative;
   width: 100%;
-  padding: 10px 10px 10px;
-  border-radius: 14px;
+  padding: 6px;
+  border-radius: 13px;
   color: var(--text-heading);
-  background:
-    radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--accent-gold) 8%, transparent), transparent 60%),
-    color-mix(in srgb, var(--desk-surface-raised) 92%, #0f0a1c);
+  background: var(--card-bg);
   border: 2px solid var(--ink);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 4px 0 var(--ink),
-    0 18px 40px rgba(5, 2, 12, 0.55);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+    0 3px 0 var(--ink),
+    0 16px 34px rgba(5, 2, 12, 0.42);
   font-family: var(--font-sans), system-ui, sans-serif;
-  will-change: transform, opacity;
-  transition: opacity 0.12s ease-out, transform 0.12s ease-out;
-}
-
-/* Springs out of the button it points at, with a tiny overshoot */
-.card[data-side="right"] { transform-origin: 0 50%; animation: card-pop-right 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.card[data-side="left"] { transform-origin: 100% 50%; animation: card-pop-left 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
-
-@keyframes card-pop-right {
-  0% { opacity: 0; transform: translateX(-10px) scale(0.92); }
-  60% { opacity: 1; transform: translateX(2px) scale(1.015); }
-  100% { opacity: 1; transform: none; }
-}
-
-@keyframes card-pop-left {
-  0% { opacity: 0; transform: translateX(10px) scale(0.92); }
-  60% { opacity: 1; transform: translateX(-2px) scale(1.015); }
-  100% { opacity: 1; transform: none; }
-}
-
-.card[data-closing="true"] {
-  opacity: 0;
-  transform: scale(0.95);
-  pointer-events: none;
-}
-
-/* When gliding between tools, the content slides in from the direction of travel */
-.contentWrap {
-  animation: content-in 0.24s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@keyframes content-in {
-  0% { opacity: 0; transform: translateY(6px); }
-  100% { opacity: 1; transform: none; }
 }
 
 /* Caret pointing at the triggering tool */
 .caret {
   position: absolute;
-  width: 12px;
-  height: 12px;
-  background: color-mix(in srgb, var(--desk-surface-raised) 92%, #0f0a1c);
+  width: 10px;
+  height: 10px;
+  margin-top: -5px;
+  background: var(--card-bg);
   transform: rotate(45deg);
   pointer-events: none;
-  z-index: -1;
   transition: top 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -95,347 +54,308 @@
   border-top: 2px solid var(--ink);
 }
 
+/* Gliding to another tool: the new content comes into focus in place */
+.swap {
+  animation: swap-in 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes swap-in {
+  from { opacity: 0; filter: blur(4px); }
+  to { opacity: 1; filter: none; }
+}
+
 /* Header */
 .header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 7px;
   min-width: 0;
-}
-
-.headerTitleGroup {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  flex: 1;
+  padding: 1px 1px 6px 2px;
 }
 
 .iconWrap {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 7px;
   background: linear-gradient(180deg, #ffe1a6, #ffd285 55%, #f0be7c);
   border: 2px solid var(--ink);
-  box-shadow: inset 0 -2px 0 #d89a55, 0 2px 0 var(--ink);
+  box-shadow: inset 0 -2px 0 #d89a55;
   color: #1d1336;
-  flex-shrink: 0;
 }
 
 .titleStack {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  gap: 1px;
+  flex: 1;
 }
 
 .eyebrow {
   font-family: var(--font-mono), monospace;
-  font-size: 10px;
-  letter-spacing: 0.12em;
+  font-size: 9px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-muted);
-  line-height: 1.1;
+  line-height: 1.15;
 }
 
 .titleText {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--text-heading);
   line-height: 1.2;
+  color: var(--text-heading);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.headerActions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-  margin-left: auto;
-}
-
-/* Chunky 3D keycap */
+/* Keycap */
 .shortcutKey {
   display: inline-flex;
   align-items: center;
-  height: 22px;
-  padding: 0 7px 2px;
+  height: 20px;
+  padding: 0 6px 2px;
+  flex-shrink: 0;
   font-family: var(--font-mono), monospace;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
-  color: var(--text-heading);
-  background: linear-gradient(180deg, var(--surface-3), var(--desk-surface-raised));
-  border: 2px solid var(--ink);
-  border-radius: 6px;
-  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.3), 0 1px 0 var(--ink);
   line-height: 1;
   white-space: nowrap;
+  color: var(--text-heading);
+  background: linear-gradient(180deg, var(--surface-3, var(--desk-surface)), var(--desk-surface-raised));
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.22);
 }
 
 .closeBtn {
-  cursor: pointer;
   display: grid;
   place-items: center;
   width: 24px;
   height: 24px;
+  flex-shrink: 0;
   padding: 0;
-  border: 2px solid transparent;
+  cursor: pointer;
+  border: 1.5px solid transparent;
   border-radius: 7px;
   background: transparent;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1;
-  transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
-  flex-shrink: 0;
+  transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
 
 .closeBtn:hover {
   color: var(--text-heading);
-  background: var(--surface-3);
+  background: var(--surface-3, var(--desk-surface));
   border-color: var(--ink);
-  transform: rotate(90deg);
 }
 
-.closeBtn:focus-visible {
+.closeBtn:focus-visible,
+.dontShowBtn:focus-visible {
   outline: 2px solid var(--accent-gold);
   outline-offset: 1px;
 }
 
-/* Stage: a little framed screen with a lamp glow */
-.stageFrame {
-  position: relative;
+/* Player: the canvas in its wooden frame, a status strip and a progress rule */
+.player {
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--desk-bg) 80%, #000);
+  /* A ring, not a border, so the stage keeps its full 224px */
+  box-shadow: 0 0 0 2px var(--ink), 0 3px 0 1px var(--ink);
   overflow: hidden;
-  border: 2px solid var(--ink);
-  border-radius: 10px;
-  background: #140c22;
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.05), 0 3px 0 var(--ink);
 }
 
 .stage {
   position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: center;
+  /* The studio canvas hangs in this frame (globals.css .canvas-platen) */
+  border: 3px solid var(--frame-wood, #7a4a34);
+  box-shadow:
+    inset 2px 2px 0 var(--frame-dark, rgba(0, 0, 0, 0.35)),
+    inset -1px -1px 0 var(--frame-light, rgba(255, 255, 255, 0.18));
+  background: var(--frame-wood, #7a4a34);
+  border-radius: 7px 7px 0 0;
+  cursor: ew-resize;
+}
+
+.canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.status {
   display: flex;
   align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  justify-content: space-between;
+  gap: 8px;
+  height: 20px;
+  padding: 0 7px;
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  line-height: 1;
+  color: #e9def5;
+  background: #1a1228;
 }
 
-/* Soft vignette and a slow light sweep over the screen */
-.stage::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse at 50% 55%, transparent 55%, rgba(8, 4, 16, 0.55) 100%),
-    linear-gradient(115deg, transparent 40%, rgba(255, 243, 224, 0.06) 50%, transparent 60%);
-  background-size: 100% 100%, 300% 100%;
-  animation: screen-sheen 3s linear infinite;
-}
-
-@keyframes screen-sheen {
-  from { background-position: 0 0, 120% 0; }
-  to { background-position: 0 0, -120% 0; }
-}
-
-/* Kinetic caption: slides up out of a blur each time the demo moves to a new step */
 .caption {
-  position: absolute;
-  z-index: 2;
-  top: 8px;
-  left: 8px;
-  max-width: calc(100% - 16px);
-  padding: 4px 10px 4px 20px;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
-  background: rgba(20, 12, 34, 0.9);
-  color: #fff3e0;
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.2;
+  position: relative;
+  min-width: 0;
+  padding-left: 12px;
+  overflow: hidden;
   white-space: nowrap;
-  pointer-events: none;
-  box-shadow: 0 3px 0 var(--ink);
-  animation: caption-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  text-overflow: ellipsis;
+  animation: caption-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Phase dot: lilac before, pulsing gold while the tool works, green on the result */
 .caption::before {
   content: '';
   position: absolute;
-  left: 8px;
+  left: 0;
   top: 50%;
-  width: 7px;
-  height: 7px;
-  margin-top: -3.5px;
-  border-radius: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 2px;
   background: #c792df;
-  box-shadow: 0 0 8px currentColor;
 }
 
-.caption[data-phase="action"]::before { background: #ffd285; color: #ffd285; animation: dot-pulse 0.6s ease-in-out infinite alternate; }
-.caption[data-phase="result"]::before { background: #a8e092; color: #a8e092; }
-.caption[data-phase="before"]::before { color: #c792df; }
+.caption[data-phase="action"]::before { background: #ffd285; box-shadow: 0 0 6px #ffd285; animation: dot-pulse 0.5s ease-in-out infinite alternate; }
+.caption[data-phase="result"]::before { background: #a8e092; box-shadow: 0 0 6px #a8e092; }
 
 @keyframes caption-in {
-  0% { opacity: 0; transform: translateY(10px) scale(0.92); filter: blur(4px); }
-  100% { opacity: 1; transform: none; filter: none; }
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: none; }
 }
 
 @keyframes dot-pulse {
-  from { transform: scale(0.8); }
-  to { transform: scale(1.25); }
+  from { transform: scale(0.75); }
+  to { transform: scale(1.2); }
 }
 
-.stage canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.readout {
+  flex-shrink: 0;
+  color: #9d8fb4;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Storyboard: three segments that fill in step with the demo */
-.storyboard {
-  display: grid;
-  grid-template-columns: minmax(46px, 12fr) 56fr 32fr;
-  gap: 4px;
-  margin-top: 8px;
-}
-
-.storyStep {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.storyBar {
+/* Three segments sized to the clip's timeline: 16% before, 56% action, 28% result */
+.progress {
+  --clip-progress: 0;
   position: relative;
-  height: 5px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--desk-border) 70%, transparent);
-  overflow: hidden;
+  display: grid;
+  grid-template-columns: 16fr 56fr 28fr;
+  gap: 2px;
+  height: 4px;
+  padding: 0 2px 2px;
+  background: #1a1228;
 }
 
-.storyBar > span {
+.progress > span {
+  position: relative;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgba(233, 222, 245, 0.14);
+}
+
+.progress > span::after {
+  content: '';
   position: absolute;
   inset: 0;
-  border-radius: inherit;
   transform-origin: left;
-  transform: scaleX(0);
-  animation-duration: 3s;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
+  border-radius: inherit;
 }
 
-.storyBefore .storyBar > span { background: #c792df; animation-name: fill-before; }
-.storyAction .storyBar > span { background: linear-gradient(90deg, #ffd285, #f0be7c); animation-name: fill-action; }
-.storyResult .storyBar > span { background: #a8e092; animation-name: fill-result; }
+.progress > span[data-seg="before"]::after { background: #c792df; transform: scaleX(clamp(0, calc(var(--clip-progress) / 0.16), 1)); }
+.progress > span[data-seg="action"]::after { background: #ffd285; transform: scaleX(clamp(0, calc((var(--clip-progress) - 0.16) / 0.56), 1)); }
+.progress > span[data-seg="result"]::after { background: #a8e092; transform: scaleX(clamp(0, calc((var(--clip-progress) - 0.72) / 0.28), 1)); }
 
-@keyframes fill-before {
-  0% { transform: scaleX(0); }
-  12% { transform: scaleX(1); }
-  93% { transform: scaleX(1); opacity: 1; }
-  100% { transform: scaleX(1); opacity: 0; }
+.playhead {
+  position: absolute;
+  top: -3px;
+  left: calc(2px + var(--clip-progress) * (100% - 4px));
+  width: 2px;
+  height: 8px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: #fff3e0;
+  opacity: 0;
+  transition: opacity 0.15s ease;
 }
 
-@keyframes fill-action {
-  0%, 12% { transform: scaleX(0); }
-  68% { transform: scaleX(1); }
-  93% { transform: scaleX(1); opacity: 1; }
-  100% { transform: scaleX(1); opacity: 0; }
-}
-
-@keyframes fill-result {
-  0%, 68% { transform: scaleX(0); }
-  93% { transform: scaleX(1); opacity: 1; }
-  100% { transform: scaleX(1); opacity: 0; }
-}
-
-.storyLabel {
-  font-family: var(--font-mono), monospace;
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+.player[data-scrubbing] .playhead { opacity: 1; }
 
 /* Body */
-.body {
-  margin-top: 9px;
-}
-
 .description {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.45;
-  color: var(--text-body);
-}
-
-.tip {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-  margin-top: 8px;
-  padding: 7px 9px;
-  border-radius: 9px;
-  border: 2px dashed color-mix(in srgb, var(--accent-gold) 45%, transparent);
-  background: color-mix(in srgb, var(--accent-gold) 7%, transparent);
+  margin: 7px 2px 0;
   font-size: 12px;
   line-height: 1.4;
   color: var(--text-body);
 }
 
-.tipBadge {
+.tip {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  margin: 5px 2px 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.tipMark {
   flex-shrink: 0;
-  margin-top: 1px;
-  padding: 1px 5px;
-  border-radius: 5px;
-  background: #ffd285;
-  color: #1d1336;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent-gold) 22%, transparent);
+  color: var(--text-heading);
   font-family: var(--font-mono), monospace;
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 15px;
 }
+
+.tipMark[data-tone="more"] { background: color-mix(in srgb, #c792df 26%, transparent); }
 
 .footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-top: 8px;
-  padding-top: 7px;
-  border-top: 2px dashed color-mix(in srgb, var(--desk-border) 60%, transparent);
+  gap: 6px;
+  margin: 6px 2px 0;
+  padding-top: 5px;
+  border-top: 1px solid color-mix(in srgb, var(--desk-border) 70%, transparent);
 }
 
-.escHint {
+.hint {
   font-family: var(--font-mono), monospace;
-  font-size: 10px;
+  font-size: 9.5px;
   color: var(--text-muted);
+  opacity: 0.8;
+  white-space: nowrap;
 }
 
 .dontShowBtn {
   cursor: pointer;
-  background: transparent;
+  padding: 2px 4px;
   border: none;
-  padding: 3px 4px;
   border-radius: 5px;
-  font-size: 11px;
-  font-family: var(--font-sans), system-ui, sans-serif;
+  background: transparent;
   color: var(--text-muted);
-  transition: color 0.12s ease, background-color 0.12s ease;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 11px;
   line-height: 1;
+  white-space: nowrap;
+  transition: color 0.12s ease, background-color 0.12s ease;
 }
 
 .dontShowBtn:hover {
@@ -443,20 +363,9 @@
   background: color-mix(in srgb, var(--accent-gold) 10%, transparent);
 }
 
-.dontShowBtn:focus-visible {
-  outline: 2px solid var(--accent-gold);
-  outline-offset: 1px;
-}
-
-/* Reduced motion: no pops, no sweeps, the storyboard simply shows the result */
 @media (prefers-reduced-motion: reduce) {
-  .position[data-gliding="true"],
-  .caret { transition: none; }
-  .card,
-  .card[data-side="right"],
-  .card[data-side="left"],
-  .contentWrap,
+  .caret,
+  .swap,
   .caption,
-  .stage::before { animation: none; transform: none; transition: none; }
-  .storyBar > span { animation: none; transform: scaleX(1); }
+  .caption::before { animation: none; transition: none; }
 }
