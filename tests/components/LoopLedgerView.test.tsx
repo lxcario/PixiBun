@@ -39,14 +39,16 @@ describe('LoopLedgerView', () => {
 
   it('keeps supporting cloud passes out of automatic PR counts and retains pending repairs', () => {
     const evidence = parseVerificationStories(JSON.parse(fs.readFileSync('docs/testsprite/verification-stories.json', 'utf8')));
-    render(<LoopLedgerView ledger={committed} evidence={evidence} />);
+    // Exercise a pending repair even after every committed story has a preview follow-up.
+    evidence.stories[0] = { ...evidence.stories[0], status: 'local-passed', followUpUrl: null };
+    render(<LoopLedgerView ledger={{ ...committed, entries: [] }} evidence={evidence} />);
     expect(screen.getByTestId('verification-automation-status').textContent).toContain('blocked by billing');
-    expect(screen.getAllByTestId('verification-story')).toHaveLength(2);
-    expect(screen.getAllByTestId('verification-supporting-check')).toHaveLength(8);
+    expect(screen.getAllByTestId('verification-story')).toHaveLength(evidence.stories.length);
+    expect(screen.getAllByTestId('verification-supporting-check')).toHaveLength(evidence.checks.length);
     expect(screen.getByRole('link', { name: 'Draw this little heart →' }).getAttribute('href')).toMatch(/^\/studio\?replay=1_16x16_/);
     expect(screen.getByTestId('verified-prs-checked').textContent).toContain('0');
-    expect(screen.getByText('Local repair passed · deployment and cloud rerun pending')).toBeTruthy();
-    expect(screen.getAllByRole('link', { name: 'Original cloud failure' })).toHaveLength(2);
+    expect(screen.getAllByText('Local repair passed · deployment and cloud rerun pending').length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: 'Original cloud failure' })).toHaveLength(evidence.stories.length);
   });
 
   it('lists each PR newest first with its run, failures, fix and verdict', () => {
