@@ -68,3 +68,11 @@ The keyboard came back to the color well it had opened. The same cloud question 
 We followed the surface question a little further, too. A color canvas cannot tell the whole story of a normal layer. This time TestSprite downloaded the actual project, checked the surface’s own pixels, undid the mark and brought it back. The paint underneath stayed exactly as it was. On a separate two-frame color fixture, the green family could leave while its red and blue neighbors—and the other frame—stayed. Undo brought the original pixels back.
 
 Those controlled cloud journeys passed on source `77a40070`. So did the brush-painted heart’s lighting check with waits that respect the app’s CSP. The [fixing record](../releases/2026-10-18-color-focus-return.md#qualified-fixing-preview--source-77a40070) and [versioned receipts](cloud-receipts-2026-10-18.json) carry the precise scope. The automatic PR gate is still waiting on service billing; its empty counter remains honest.
+
+## The drawing that was still there
+
+We gave the first frame one last little red mark, and the second a different pause. Then we saved, reloaded, closed the desk and opened it again. The mark was there. So were both layers, both pauses, the palette and the pixels inside each real PNG.
+
+Next we brought the desk two broken files. It told us why they could not come in, let us Cancel, and left the original drawing alone. We could still make a mark and undo it. The onion ghost was gentler still: visible while we drew, absent from the file we took home. Those three controlled cloud checks passed, alongside the saved-rig and normal-source comparisons. The [trust record](../releases/2026-10-18-testsprite-trust-and-triage.md) keeps their exact source and limits.
+
+These questions did not need new repairs. They made the evidence better. We want the account of TestSprite helping PixiBun to be as careful as the small drawing itself: a real failure where one happened, a repair with its proof, and a promise already kept where the stronger check found it. The [evidence guide](evidence-guide.md) brings those threads together.

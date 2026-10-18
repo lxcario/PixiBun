@@ -1,6 +1,6 @@
 # The small promises journeys
 
-Twelve standalone Python/Playwright scripts for the existing TestSprite Season 4 portal project. They refine its browser verification with independent literal-pixel and file oracles. They are supporting saved-script replays; the required GitHub App automatic suite remains a separate qualification.
+Seventeen standalone Python/Playwright scripts for the existing TestSprite Season 4 portal project. They refine its browser verification with independent literal-pixel and file oracles. They are supporting saved-script replays; the required GitHub App automatic suite remains a separate qualification.
 
 | Script | Promise | Independent observation |
 | --- | --- | --- |
@@ -43,3 +43,15 @@ With Pillow installed, run `python scripts/testsprite/check_oracles.py` from the
 The homepage journey’s independent GIF reader permits dimensions up to 256×256 for the bench’s 4× download (observed 80×96, four distinct poses). The original animation readers retain their smaller bounded fixtures. Stale angle text and a nonexistent frame-rename field are not test prerequisites: use the bench’s actual canvas/selected controls and the real workspace-name input. Initial template opening is asynchronous; establish a nonempty 16×16 Bun before taking a baseline.
 
 The source `77a40070` production qualification passed all four complete original journeys, twelve decoder fixture checks and the new Colors/surface/family journeys. The three new scenarios and the painted-lighting CSP-safe variant also passed strict source-pinned controlled cloud replays. Reusable scripts remove one-off target/source pins only after exact run/code proof has been retained; removing a pin is not another executed pass. Full source-labelled receipts are in [the dated cloud record](../../docs/testsprite/cloud-receipts-2026-10-18.json).
+
+## Trust and refusal journeys — 18 October follow-up
+
+| Script | Independent observation |
+| --- | --- |
+| `pixibun-stale-rig-integrity.py` | Actual saved-rig source fingerprint, real edit/reload, useful refusal and exact protected project |
+| `pixibun-explicit-normal-sources-integrity.py` | Literal decoded Godot normal atlas, exact lighting Cancel, two-normal export refusal with zero downloads |
+| `pixibun-save-reopen-integrity.py` | Last Pen pixel, changed holds, exact all-layer/project/PNG observations after save/reload/new-tab reopening |
+| `pixibun-corrupted-import-integrity.py` | Explicit invalid files, clear refusal/Cancel, unchanged original and subsequent real edit/Undo |
+| `pixibun-onion-overlay-integrity.py` | Actual nonempty ghost and clearing sensitivity; exact artwork and PNG guide exclusion |
+
+For these five scripts, `PIXIBUN_QUALIFICATION=1` permits an explicit installed browser executable against the public preview and omits Linux-only launch flags on Windows. Controlled proofs still pin and assert the full deployed source; this switch does not bypass app security, change application data or establish native picker coverage. These scripts passed fifteen local three-engine journeys plus five controlled cloud replays on source `36ccc620`. See the [trust record](../../docs/releases/2026-10-18-testsprite-trust-and-triage.md). Reusable target restoration does not itself establish an executed result.

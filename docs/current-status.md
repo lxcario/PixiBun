@@ -1,5 +1,9 @@
 # Current project status
 
+## TestSprite trust and blocked-case triage — 18 October 2026
+
+The [trust record](releases/2026-10-18-testsprite-trust-and-triage.md) adds five strict controlled cloud comparisons and fifteen local three-engine journeys on exact source `36ccc620`: saved-rig source refusal, explicit normal exports/Cancel, last-stroke save/reopening, invalid-import preservation and onion-guide export isolation. All 55 original Blocked reports are classified; latest case statuses are 69 Passed /0 Failed /52 Blocked across separate runs. The [evidence guide](testsprite/evidence-guide.md) separates three genuine product discoveries from verification improvements. Automatic App dispatch remains billing-blocked at the observation; the original publication preview retains its three Vercel-toolbar/CSP console failures. No production release or new app repair is claimed.
+
 ## Colors keyboard return — 18 October 2026
 
 The [Colors follow-up](releases/2026-10-18-color-focus-return.md) records a third TestSprite-led product discovery: opening Colors from either color well and pressing Escape returned focus to the separate swatches button. The repair remembers the actual opener; three browser regressions cover all openings and preserved artwork. On fixing source `77a40070`, the same cloud scenario passed; 75 affected production-browser cases passed across three engines, including all opener paths. The original `37b37191` cloud red remains linked separately. Saved layouts, frame keys and the homepage bench also gained strict controlled cloud passes on `37b37191`.

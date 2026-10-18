@@ -56,3 +56,9 @@ Colors now returns to its actual opener on the fixing preview: the original sour
 The supported Normal Chisel path now observes the actual downloaded normal-layer pixels, preserving diffuse paint through exact Undo/Redo. Erase Family now uses a known two-frame fixture, explicit modes/scope, fresh actual canvas bounds and decoded backups. Both passed controlled cloud qualification without needing another application repair. The real painted-heart/lighting test also passed on the candidate with CSP-safe waits and unchanged assertions.
 
 Latest recorded catalog: 121 cases, 64 Passed / 2 Failed / 55 Blocked (13:07 UTC). The stale-rig and surface/shadow-source plans still need qualified fixtures. The normal App trigger remains externally blocked and the automatic ledger stays empty; supporting passes never increment it.
+
+## Five stronger questions, no invented rescues
+
+The saved rig now has a qualified actual-source edit/reload/refusal check. Godot export proves one normal source succeeds before testing a two-normal refusal. Last-stroke saving, malformed-import preservation and an onion ghost kept out of exported pixels each gained their own strict controlled cloud pass. All five also passed in fifteen local three-engine journeys on source `36ccc620`. These are verification improvements, not five extra app bugs. The [trust record](../releases/2026-10-18-testsprite-trust-and-triage.md) retains exact runs, hashes and limits; the [evidence guide](evidence-guide.md) leads through the three genuine product discoveries.
+
+All 55 original Blocked reports were read and classified in the [complete register](blocked-triage-2026-10-18.md). The refreshed latest-case catalog is 69 Passed /0 Failed /52 Blocked across different runs. Original verdicts remain historical; no complete automatic suite or all-feature certificate is claimed.
