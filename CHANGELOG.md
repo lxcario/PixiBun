@@ -3,6 +3,8 @@
 All notable changes and architectural enhancements to the PixiBun codebase are documented below.
 ## Unreleased
 
+- Cleanup and the homepage Day/Night switch ([record](docs/releases/2026-10-18-cleanup-and-day-switch.md)). Pressing Day no longer flies a large sun into the page or spins a glowing ring over a dimmed page: the new sky spreads from the switch with a few sparkles, and the knob's moon fades into the sun as it slides. The switch no longer blocks the page for over 100 ms. Unused files, components, the retired volumetric-optics engine and fourteen unused exports are removed. The README opens with the welcome, and the handbook's theme and export counts are corrected.
+
 - Audit follow-ups ([record](docs/releases/2026-10-18-audit-triage.md#follow-ups-resolved-and-the-feature-proposals--18-october)). A moved or pasted selection drops back onto the layer it came from, even after choosing another layer. Each tolerance slider under **Tools** says what it compares. The unused older ground-shadow event and engine are removed (**Add Floor Shadow** uses the ray-marched cast shadow), and that button's tool preview now runs the real shadow. Local audit and agent-coordination folders are ignored by Git. The audit's twelve feature proposals are checked against the code in the record.
 
 - Smooth Dithering keeps a ramp's tones: its 16 error weights summed to about 5.6, so a black-to-white ramp came out solid black; they are normalised (`src/lib/graphics/math/dithering.ts`). A documentation sweep corrected stale playback, tool-preview, frame-card, light bar, shelf and Smooth Jaggies descriptions and five renamed UI labels ([record](docs/releases/2026-10-18-open-issues.md#documentation-sweep)).

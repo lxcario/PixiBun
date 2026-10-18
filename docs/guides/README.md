@@ -21,7 +21,7 @@ On scene themes, [Studio Labs](studio-workspace.md#studio-labs) offers a morphin
 
 | When you want to… | Illustrated guide |
 | --- | --- |
-| Compare every Studio theme in Day and Night | [All 16 desk appearances](themes.md) |
+| Compare every Studio theme in Day and Night | [All 24 desk appearances: 12 styles, Night and Day](themes.md) |
 | Explore the welcome page, four starters and four demonstrations | [Meet the little studio](welcome-and-demos.md) |
 | Open, import, resize and organize a drawing; use layers, selections and view controls | [Settle into your studio](studio-workspace.md) |
 | Learn every drawing tool and its settings | [All 17 drawing tools](drawing-tools.md) |
@@ -32,7 +32,7 @@ On scene themes, [Studio Labs](studio-workspace.md#studio-labs) offers a morphin
 | Move a light, choose materials, shape normals and add a shadow | [Lighting and surfaces](lighting-and-surfaces.md) |
 | Clean up pixels, rotate, try color moods and inspect tiles | [Cleanup and tiles](pixitools-cleanup-and-tiles.md) |
 | Preview simplification, shared lighting and small tile scenes | [Variations and scenes](variations-and-scenes.md) |
-| Choose among all 12 export tabs, including game delivery and project backup | [Take your pixels with you](exporting.md) |
+| Choose among all 14 export tabs, from carts and GIFs to game delivery and project backup | [Take your pixels with you](exporting.md) |
 | Practice all 12 lessons, inspect the Teaching Board or doodle on a phone | [Learning and Playground](learning-and-playground.md) |
 | Draw with one guest, use the cached studio offline and choose diagnostic preferences | [Collaboration and privacy](collaboration-and-privacy.md) |
 | Keep a backup, handle save conflicts or recover damaged local records | [Artwork safety and backup](artwork-safety.md) |

@@ -4,24 +4,9 @@
 
 # PixiBun
 
-Current engineering verification and remaining release checks are recorded in the [current status](docs/current-status.md).
-
 **Pixels with a pulse.** A cozy studio for hand-made pixel art and animation.
 
 **[Open PixiBun](https://pixibun.vercel.app/)** · [Start drawing](https://pixibun.vercel.app/studio)
-
-### Season 4 verification — 17 October 2026
-
-Our TestSprite 3.0 portal project spans the Studio, drawing and selections, layers, frames and timing, colors and palettes, themes, lighting, Labs motion, lessons, saving/recovery, accessibility and all 14 export destinations. The same account connects the GitHub App. After opening, we authored 97 detailed scenarios and generated/ran them in the portal. The [first expanded run](https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/0f149888-7b3a-4f54-b5f4-319c09943f86) finished **34 Passed, 13 Failed and 50 Blocked** (workspace access may be required). These are provider verdicts, not certification that every planned assertion executed.
-
-The 18-case preparation run finished with **10 Passed, 1 Failed and 7 Blocked**. Its lighting failure counted decorative SVGs rather than artwork pixels, so it is not proof of an Undo defect. Exact raster checks, downloaded-byte decoding and some import fixtures remain gaps in cloud coverage. Original failures and blocked outcomes are retained while tests are reviewed.
-
-Investigating the expanded Normal Chisel result led to a separately reproduced product defect: toolbar selection could paint normal-map colors onto an ordinary color layer. [PR #5](https://github.com/lxcario/PixiBun/pull/5) adds the missing layer guard with exact native RGBA/history regressions. Its local six-stage gate passed, including 2,626 tests and a production build; preview/cloud verification and merge remain separate.
-
-[PR #4](https://github.com/lxcario/PixiBun/pull/4) and PR #5 automatically matched their Vercel deployment events, but TestSprite reported **“GitHub CI runs not on the Free plan. No tests were run.”** Human support confirms a Free-plan CI rollout is in development and says no upgrade is needed. Actual PR activity still shows the entitlement block. GitHub now requires TestSprite V3 and validate on main, with bypass disabled. The automatic testing loop remains incomplete until an actual latest-commit suite executes and its assertions are audited. Native repository tests and TestSprite evidence are reported separately.
-
-Application source is MIT-licensed. The bundled fonts retain their [SIL Open Font License and copyright notices](src/app/fonts/OFL.txt).
-
 
 Make a small character, a flickering flame, or the first tile of a world. PixiBun gives you a place to draw, light it with the Lamp and bring those little things to life, right in your browser. Hand-made, never generated: PixiBun contains no generative AI ([pledge page source](src/app/pledge/page.tsx), served at `/pledge`). No account needed.
 
@@ -123,3 +108,19 @@ These screenshots show the local production build on **15 October 2026**, using 
 PixiBun is licensed under the [MIT License](LICENSE).
 
 *A few colors. A little patience. Something only you could make.*
+
+## Tested on every pull request
+
+Current engineering verification and remaining release checks are recorded in the [current status](docs/current-status.md).
+
+### Season 4 verification — 17 October 2026
+
+Our TestSprite 3.0 portal project spans the Studio, drawing and selections, layers, frames and timing, colors and palettes, themes, lighting, Labs motion, lessons, saving/recovery, accessibility and all 14 export destinations. The same account connects the GitHub App. After opening, we authored 97 detailed scenarios and generated/ran them in the portal. The [first expanded run](https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/0f149888-7b3a-4f54-b5f4-319c09943f86) finished **34 Passed, 13 Failed and 50 Blocked** (workspace access may be required). These are provider verdicts, not certification that every planned assertion executed.
+
+The 18-case preparation run finished with **10 Passed, 1 Failed and 7 Blocked**. Its lighting failure counted decorative SVGs rather than artwork pixels, so it is not proof of an Undo defect. Exact raster checks, downloaded-byte decoding and some import fixtures remain gaps in cloud coverage. Original failures and blocked outcomes are retained while tests are reviewed.
+
+Investigating the expanded Normal Chisel result led to a separately reproduced product defect: toolbar selection could paint normal-map colors onto an ordinary color layer. [PR #5](https://github.com/lxcario/PixiBun/pull/5) adds the missing layer guard with exact native RGBA/history regressions. Its local six-stage gate passed, including 2,626 tests and a production build; preview/cloud verification and merge remain separate.
+
+[PR #4](https://github.com/lxcario/PixiBun/pull/4) and PR #5 automatically matched their Vercel deployment events, but TestSprite reported **“GitHub CI runs not on the Free plan. No tests were run.”** Human support confirms a Free-plan CI rollout is in development and says no upgrade is needed. Actual PR activity still shows the entitlement block. GitHub now requires TestSprite V3 and validate on main, with bypass disabled. The automatic testing loop remains incomplete until an actual latest-commit suite executes and its assertions are audited. Native repository tests and TestSprite evidence are reported separately.
+
+Application source is MIT-licensed. The bundled fonts retain their [SIL Open Font License and copyright notices](src/app/fonts/OFL.txt).

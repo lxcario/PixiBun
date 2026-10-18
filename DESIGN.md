@@ -214,7 +214,7 @@ stateDiagram-v2
 
 On fine-pointer devices (mouse / trackpad), the landing hero uses custom pixel cursors. Its current interactions are owned by [NightHero](src/components/landing/night/NightHero.tsx):
 * **Custom SVG Cursors:** Sharp pixel-art quill/arrow for resting state and an illuminated golden wand for clickable elements.
-* **Hero interactions:** Bun taps trigger companion reactions; drawing in the sky adds temporary constellations. `src/components/reactbits/ClickSpark.tsx` is retained source but is not mounted by the current app.
+* **Hero interactions:** Bun taps trigger companion reactions; drawing in the sky adds temporary constellations. The unmounted `ClickSpark` effect was removed on 18 October.
 
 ---
 
@@ -351,7 +351,7 @@ All primitives consume the v2 design token scale defined in `globals.css`:
 * **Surfaces:** `--surface-0` through `--surface-3` for layered elevation.
 
 ### Appearance Popover
-The `AppearancePopover` (`src/components/ui/AppearancePopover.tsx`) consolidates theme management into a single flyout, superseding the standalone `ThemeToggle` as the primary entry point. It exposes two orthogonal axes:
+The `AppearancePopover` (`src/components/ui/AppearancePopover.tsx`) consolidates theme management into a single flyout, replacing the standalone theme toggle (removed on 18 October). It exposes two orthogonal axes:
 1. **Studio Theme:** Moonlit, Sakura, Tidepool, Ember, Moss, Arcade, Cocoa, Drizzle, Harvest, Harbor, Graphite (`atelier`) or Plum (`cozy-classic`), sourced from `src/lib/theme/themes.json`.
 2. **Color Scheme:** Dark or Light.
 

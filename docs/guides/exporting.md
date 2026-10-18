@@ -125,4 +125,4 @@ Reduce scale or frame count if the panel rejects the geometry. Raster output adm
 
 During a supported asynchronous export, use its progress/cancel controls and wait for the result before closing the page. A capture of an enabled button is not a download verdict. The [export contract](../contracts/exports.md) keeps codec, fidelity and scope details together.
 
-Sources: [all 12 tabs](../../src/components/modals/export/ExportTabsNav.tsx), [actual download dispatch](../../src/components/modals/ExportModal.tsx), [Godot kit](../../src/lib/export/godotKit.ts), [geometry validation](../../src/lib/export/exportGeometryValidation.ts), [sheet packer](../../src/lib/export/spriteSheetPacker.ts).
+Sources: [all 14 tabs](../../src/components/modals/export/ExportTabsNav.tsx), [actual download dispatch](../../src/components/modals/ExportModal.tsx), [Godot kit](../../src/lib/export/godotKit.ts), [geometry validation](../../src/lib/export/exportGeometryValidation.ts), [sheet packer](../../src/lib/export/spriteSheetPacker.ts).
