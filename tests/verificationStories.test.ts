@@ -8,9 +8,9 @@ describe('supporting verification evidence', () => {
   it('accepts the retained scoped evidence and qualified preview follow-ups', () => {
     const evidence = parseVerificationStories(actual());
     expect(evidence.stories).toHaveLength(3);
-    expect(evidence.checks).toHaveLength(14);
+    expect(evidence.checks).toHaveLength(16);
     expect(evidence.stories.find(s => s.id === 'a-lock-keeps-its-promise')?.status).toBe('preview-passed');
-    expect(evidence.stories.find(s => s.id === 'colors-find-their-way-back')?.followUpUrl).toBeNull();
+    expect(evidence.stories.find(s => s.id === 'colors-find-their-way-back')?.status).toBe('preview-passed');
   });
 
   it('requires a different cloud follow-up and actual fix identity for a preview pass', () => {

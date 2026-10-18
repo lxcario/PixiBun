@@ -1,7 +1,6 @@
 {
-  "observedUtc": "2026-10-18T12:24:59.078Z",
+  "observedUtc": "2026-10-18T13:13:20.416Z",
   "scope": "Controlled saved-script cloud qualification on actual origin and full source pin, with autoHeal false. Separate from automatic PR verification. Earlier script versions/results remain retained.",
-  "candidateSource": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9",
   "records": [
     {
       "key": "lockedSelection",
@@ -131,6 +130,75 @@
       "source": "cli",
       "autoHeal": false,
       "scope": "Controlled saved-script cloud replay with exact origin/full-source pin; no automatic GitHub App claim."
+    },
+    {
+      "key": "color-focus",
+      "testId": "48fad655-2a7c-49e7-9bb8-c58f74e0f5eb",
+      "runId": "ecc73d9f-0332-488d-897e-f245ef90d917",
+      "status": "passed",
+      "finishedAt": "2026-10-18T13:04:00.811Z",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/f10b4575-8258-4048-86ee-6fb0dd175928",
+      "codeVersion": "v-b4cc560aeb75",
+      "scriptSha256": "48b6f4583ddaf3cf188e9ab2e57d7c749b7b222cce1f1afb0d26dffa10300b7c",
+      "sourceCommit": "77a40070cd1351a2c8f794d6b2d74dbd0eb428d9",
+      "target": "https://pixibun-git-codex-s4-artwork-proof-lxcarios-projects.vercel.app",
+      "reportedTargetUrl": "https://pixibun.vercel.app/",
+      "source": "cli",
+      "autoHeal": false,
+      "scope": "Strict controlled preview replay; full actual origin and manifest source asserted. Separate from automatic GitHub App execution. No per-assertion cloud stdout exposed."
+    },
+    {
+      "key": "valid-surface",
+      "testId": "055924c4-9b9d-4a1f-9215-2685358f3896",
+      "runId": "4abd2d98-cca6-4e2e-967d-df095b781a3f",
+      "status": "passed",
+      "finishedAt": "2026-10-18T13:04:09.334Z",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/8189dd16-5a40-4abd-a39e-03880bd46125",
+      "codeVersion": "v-09eae17b70cc",
+      "scriptSha256": "51eabc7e855842e0501274425efac2928c026dba10d3766fd25bac0dc7a1c75b",
+      "sourceCommit": "77a40070cd1351a2c8f794d6b2d74dbd0eb428d9",
+      "target": "https://pixibun-git-codex-s4-artwork-proof-lxcarios-projects.vercel.app",
+      "reportedTargetUrl": "https://pixibun.vercel.app/",
+      "source": "cli",
+      "autoHeal": false,
+      "scope": "Strict controlled preview replay; full actual origin and manifest source asserted. Separate from automatic GitHub App execution. No per-assertion cloud stdout exposed."
+    },
+    {
+      "key": "erase-family",
+      "testId": "bde1ab4b-a6e2-47ae-ab33-00c8ee84c3cf",
+      "runId": "119f9d76-ee65-4da3-b4e0-659f95738162",
+      "status": "passed",
+      "finishedAt": "2026-10-18T13:04:11.036Z",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/68c07b0f-1698-48a0-a421-5be8bc966cdf",
+      "codeVersion": "v-e38c1780cedc",
+      "scriptSha256": "d2fbd6c8bb631978c393d4af7078ff359697ca9a43089c8a427fbee3af75d3f9",
+      "sourceCommit": "77a40070cd1351a2c8f794d6b2d74dbd0eb428d9",
+      "target": "https://pixibun-git-codex-s4-artwork-proof-lxcarios-projects.vercel.app",
+      "reportedTargetUrl": "https://pixibun.vercel.app/",
+      "source": "cli",
+      "autoHeal": false,
+      "scope": "Strict controlled preview replay; full actual origin and manifest source asserted. Separate from automatic GitHub App execution. No per-assertion cloud stdout exposed."
+    },
+    {
+      "observedUtc": "2026-10-18T13:13:20.416Z",
+      "key": "painted-lighting",
+      "testId": "fde7a312-bc33-4d07-bbde-6dd6d7e49972",
+      "runId": "6ce9abf2-c7fa-42dd-b636-6e93735aaf24",
+      "status": "passed",
+      "finishedAt": "2026-10-18T13:10:58.127Z",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/7ef7d3e8-0d73-48db-a6a3-07c5f53fe8aa",
+      "sourceCommit": "77a40070cd1351a2c8f794d6b2d74dbd0eb428d9",
+      "target": "https://pixibun-git-codex-s4-artwork-proof-lxcarios-projects.vercel.app",
+      "reportedTargetUrl": "https://pixibun.vercel.app/",
+      "codeVersion": "v-c2f858534e93",
+      "scriptSha256": "2f1234c6bd152d54296200541abbb7a46232a0f04a2ec3f04161bbb6b775423b",
+      "source": "cli",
+      "autoHeal": false,
+      "scope": "Same actual brush-painted heart, literal pixels/decoded PNG, silhouette alpha and exact lighting Undo/Redo/Undo. CSP-safe driver waits; controlled full-source-pinned preview, not automatic PR proof. No numeric cloud stdout claim."
     }
+  ],
+  "qualifiedSources": [
+    "37b37191550cd9e9dc1e724d5b912516b6e4a3d9",
+    "77a40070cd1351a2c8f794d6b2d74dbd0eb428d9"
   ]
 }

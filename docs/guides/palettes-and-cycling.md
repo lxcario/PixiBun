@@ -31,11 +31,11 @@ With **Studio → Labs → Paint pot palette** enabled on a scene theme, the Pal
 
 Use the palette preset list to choose a palette. Left-click a swatch for the primary drawing color; right-click for secondary. **Remove color** removes the selected swatch while retaining at least one color. It leaves painted pixels unchanged. Creating, removing or arranging swatches does not recolor existing RGBA artwork.
 
-**Scan Canvas** creates a palette of up to six representative colors from the visible artwork directly. **Create palette → From artwork** instead lets you review and edit a draft before creation. **+ Lospec** (palette import) accepts supported Lospec `.hex`, GIMP `.gpl`, text and JSON palettes; drop a palette file onto the palette panel as an alternative. It adds colors rather than importing a layered drawing. Malformed or oversized files can be refused.
+**Scan Canvas** creates a palette of up to six representative colors from the visible artwork directly. **Create palette → From artwork** instead lets you review and edit a draft before creation. **Import file** accepts supported Lospec `.hex`, GIMP `.gpl`, text and JSON palettes; drop a palette file onto the palette panel as an alternative. It adds colors rather than importing a layered drawing. Malformed or oversized files can be refused.
 
 ![A generated five-step OKLCH ramp in the actual palette panel; palette change only.](../assets/screenshots/2026-10-15-current-ui/palette-ramps.png)
 
-Choose your primary color, then **+ OKLCH Ramp** for a five-step highlight/shadow palette. This changes palette data, not your sprite's pixels. Paint with those swatches or use a separate [palette-snap action](pixitools-cleanup-and-tiles.md#color-moods-and-dithering) when you deliberately want to recolor artwork.
+Choose your primary color, then **Shade ramp** for a five-step OKLCH highlight/shadow palette. This changes palette data, not your sprite's pixels. Paint with those swatches or use a separate [palette-snap action](pixitools-cleanup-and-tiles.md#color-moods-and-dithering) when you deliberately want to recolor artwork.
 
 ## Choose which colors will move
 

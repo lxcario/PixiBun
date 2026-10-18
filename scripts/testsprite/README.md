@@ -1,6 +1,6 @@
 # The small promises journeys
 
-Ten standalone Python/Playwright scripts for the existing TestSprite Season 4 portal project. They refine its browser verification with independent literal-pixel and file oracles. They are supporting saved-script replays; the required GitHub App automatic suite remains a separate qualification.
+Twelve standalone Python/Playwright scripts for the existing TestSprite Season 4 portal project. They refine its browser verification with independent literal-pixel and file oracles. They are supporting saved-script replays; the required GitHub App automatic suite remains a separate qualification.
 
 | Script | Promise | Independent observation |
 | --- | --- | --- |
@@ -17,13 +17,16 @@ Ten standalone Python/Playwright scripts for the existing TestSprite Season 4 po
 | `pixibun-frame-keys-integrity.py` | Focused frame keys preserve identity | Distinct 100/200 ms holds, reorder/duplicate/Delete, useful focus, independent text-input Delete |
 | `pixibun-homepage-bench-integrity.py` | The bench keeps its own tiny world | Real canvas changes and decoded Hop GIF while a separate Studio drawing survives reload |
 
+| `pixibun-valid-surface-integrity.py` | A normal surface takes the mark while diffuse paint stays safe | Explicit surface tag, actual downloaded layer PNGs, ordinary-paint refusal and exact normal-layer Undo/Redo |
+| `pixibun-erase-family-integrity.py` | A neighboring color and the other frame survive erasure | Known admitted family/neighbor colors, explicit mode/scope, exact canvas and actual project downloads through Undo/Redo |
+
 Use disposable contexts and the fixtures created by the scripts. They never write application stores or application raster buffers. The explicit `showSaveFilePicker` capability fixture exercises the browser-download fallback, not the native OS picker. The readout recipe is not pointer painting. These bounded 16×16 examples do not certify arbitrary artwork, every encoder option or manual screen-reader usability.
 
 The lighting journey is the real pointer-drawing example: it starts blank and uses neither a template, import nor a recipe link. Its old portal failure counted decorative SVG rectangles on an empty canvas; retain that as an invalid oracle, not proof that product Undo failed.
 
 ## Before a cloud run
 
-For a controlled comparison, pin `EXPECTED_COMMIT` to the candidate's full SHA in the stored code. The reusable scripts default to `None` so future PRs do not inherit a stale preview or production pin. Save the plan before the code: changing a plan invalidates the stored definition stamp. The readout uses bounded driver-side attribute polling, preserving the app’s Content Security Policy and all pixel assertions. In that mode they require a full source identity in the actual origin's public manifest, record it and require it to remain stable across the journey. Compare that identity with the intended PR head before attributing a pass to the PR; this mode does not independently discover the triggering PR. The first controlled cloud passes pinned observed production `92de6c74b259eafcf73cc986b1def6c69f5566aa`. Provider target metadata alone is insufficient.
+For a controlled comparison, pin `EXPECTED_COMMIT` to the candidate's full SHA in the stored code. The reusable scripts default to `None` so future PRs do not inherit a stale preview or production pin. Save the plan before the code: changing a plan invalidates the stored definition stamp. The readout and lighting scripts use bounded driver-side polling, preserving the app’s Content Security Policy and all pixel assertions. In that mode they require a full source identity in the actual origin's public manifest, record it and require it to remain stable across the journey. Compare that identity with the intended PR head before attributing a pass to the PR; this mode does not independently discover the triggering PR. The first controlled cloud passes pinned observed production `92de6c74b259eafcf73cc986b1def6c69f5566aa`. Provider target metadata alone is insufficient.
 
 Review the portal case plan, save the exact script, retain its code version/hash and dispatch a controlled replay with autoHeal false when collecting a strict comparison. Preserve every original result. Once the App works, verify these meaningful assertions on the intended PR preview through the normal deployment-ready trigger too. Do not treat a manually dispatched replay as an automatic PR check.
 
@@ -38,3 +41,5 @@ Rotation commits run asynchronously: wait for the transform HUD to leave before 
 With Pillow installed, run `python scripts/testsprite/check_oracles.py` from the repository root to cross-check the GIF/APNG readers. The lightweight scripts are the shipped sources; screenshots, logs and generated receipts remain under ignored artifacts.
 
 The homepage journey’s independent GIF reader permits dimensions up to 256×256 for the bench’s 4× download (observed 80×96, four distinct poses). The original animation readers retain their smaller bounded fixtures. Stale angle text and a nonexistent frame-rename field are not test prerequisites: use the bench’s actual canvas/selected controls and the real workspace-name input. Initial template opening is asynchronous; establish a nonempty 16×16 Bun before taking a baseline.
+
+The source `77a40070` production qualification passed all four complete original journeys, twelve decoder fixture checks and the new Colors/surface/family journeys. The three new scenarios and the painted-lighting CSP-safe variant also passed strict source-pinned controlled cloud replays. Reusable scripts remove one-off target/source pins only after exact run/code proof has been retained; removing a pin is not another executed pass. Full source-labelled receipts are in [the dated cloud record](../../docs/testsprite/cloud-receipts-2026-10-18.json).

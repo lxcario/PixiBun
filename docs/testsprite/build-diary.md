@@ -60,3 +60,11 @@ The automatic PR check still stopped at the service’s billing gate. We have ke
 Another question came from the keyboard. After choosing colors, could an artist close the little palette and return to the button they came from? TestSprite found that the palette closed, but focus went elsewhere. Three doors shared one return address. We are giving each opening its own way back, with a regression for both color wells and the swatches button. The original cloud red stays beside the repair’s qualification record.
 
 While we followed that trail, the desk remembered a saved arrangement after a reload. Frame cards traveled left and right by keyboard, carrying their different pauses with them. On the homepage, the tiny bench made a real moving GIF while the artist’s Studio drawing stayed safe in the other tab. Those three controlled cloud journeys passed. The [Colors follow-up](../releases/2026-10-18-color-focus-return.md) and [dated receipts](cloud-receipts-2026-10-18.json) keep the exact sources and limits close to the story.
+
+## 18 October: the way back works
+
+The keyboard came back to the color well it had opened. The same cloud question that failed on the earlier preview now passes on the fixing one. We also checked all three ways into Colors in Chromium, Firefox and WebKit. The small return address mattered.
+
+We followed the surface question a little further, too. A color canvas cannot tell the whole story of a normal layer. This time TestSprite downloaded the actual project, checked the surface’s own pixels, undid the mark and brought it back. The paint underneath stayed exactly as it was. On a separate two-frame color fixture, the green family could leave while its red and blue neighbors—and the other frame—stayed. Undo brought the original pixels back.
+
+Those controlled cloud journeys passed on source `77a40070`. So did the brush-painted heart’s lighting check with waits that respect the app’s CSP. The [fixing record](../releases/2026-10-18-color-focus-return.md#qualified-fixing-preview--source-77a40070) and [versioned receipts](cloud-receipts-2026-10-18.json) carry the precise scope. The automatic PR gate is still waiting on service billing; its empty counter remains honest.

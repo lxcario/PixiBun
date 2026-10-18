@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "updated": "2026-10-18",
-  "automationNote": "The GitHub App is connected and merge protection is configured. PR #7's fresh preview deployment matched its head (37b37191), but the new TestSprite event was blocked by billing: no automatic tests ran. Four controlled candidate cloud replays passed separately. An executed automatic suite is still pending.",
+  "automationNote": "Observed on 18 October: matching preview events for PR #6 (26db4c5) and PR #7 (77a4007) were blocked by billing before any automatic tests ran. Required GitHub CI validation passed on PR #6. Controlled cloud replays are dated supporting evidence; the automatic PR ledger remains empty.",
   "stories": [
     {
       "id": "bun-keeps-its-colors",
@@ -38,15 +38,15 @@
       "title": "Every color has a way back.",
       "promise": "A keyboard user should come back to the control that welcomed them in.",
       "discovery": "The Colors journey moved among real palette swatches, chose foreground and background separately, then pressed Escape. The flyout closed, but focus went to a different swatches button. The same cloud check and local browser regressions reproduced it for the color wells.",
-      "repair": "The flyout had one fixed return address even though three controls could open it. The repair remembers the actual opening button. All three opener paths have real-browser regressions; the fixing-preview cloud replay is still pending.",
-      "status": "local-passed",
+      "repair": "The flyout had one fixed return address even though three controls could open it. It now remembers the actual opening button. All three opener regressions pass in Chromium, Firefox and WebKit; the same strict cloud scenario now passes on the fixing preview.",
+      "status": "preview-passed",
       "sourceCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9",
-      "fixCommit": null,
+      "fixCommit": "77a40070cd1351a2c8f794d6b2d74dbd0eb428d9",
       "prUrl": "https://github.com/lxcario/PixiBun/pull/7",
       "redUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/710237ce-f346-4d2b-9a05-a13dd4dbd7bb",
       "redRunId": "c6ce306c-caf8-4488-b1a2-904b2198397a",
-      "followUpUrl": null,
-      "scope": "Original failure on the source-pinned PR preview, after exact artwork and separate color-selection checks. Local repair qualification is separate from cloud and automatic PR execution."
+      "followUpUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/f10b4575-8258-4048-86ee-6fb0dd175928",
+      "scope": "The controlled cloud scenario opens from Primary, chooses both colors and checks exact focus return with protected artwork. Three-browser production cases separately cover Primary, Secondary and the dedicated swatches opener. Automatic PR execution and production release remain separate."
     }
   ],
   "checks": [
@@ -116,11 +116,11 @@
     {
       "id": "painted-lighting",
       "title": "First, paint something worth keeping.",
-      "scope": "From a blank canvas, 13 real red brush drags and three white clicks paint a literal heart. Actual PNG decoding and exact lighting Undo/Redo/Undo protect all 1,024 channels. The old SVG-counting failure is retained as a test defect.",
-      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/d9ca81b8-d9c6-4e2c-a269-a4853302f2bc",
-      "runId": "25f321b5-53af-43fd-ac2f-505743798f97",
-      "codeVersion": "v-f2f352efaa06",
-      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+      "scope": "From a blank canvas, 13 real red brush drags and three white clicks paint a literal heart. Actual PNG decoding and exact lighting Undo/Redo/Undo protect all 1,024 channels on the candidate. Driver-side waits retain CSP. Earlier production proof and invalid SVG-counting failure remain in history.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/7ef7d3e8-0d73-48db-a6a3-07c5f53fe8aa",
+      "runId": "6ce9abf2-c7fa-42dd-b636-6e93735aaf24",
+      "codeVersion": "v-c2f858534e93",
+      "sourceCommit": "77a40070cd1351a2c8f794d6b2d74dbd0eb428d9"
     },
     {
       "id": "readable-heart",
@@ -175,6 +175,24 @@
       "runId": "87a39028-f8bc-4b79-8757-0a329d11b177",
       "codeVersion": "v-55f7396c1362",
       "sourceCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9"
+    },
+    {
+      "id": "valid-surface",
+      "title": "A surface takes the mark. The paint stays safe.",
+      "scope": "A real Chisel drag commits to an explicit normal-tagged layer. Actual downloaded layer PNGs prove exact Undo/Redo while diffuse paint, frame identity and hold stay intact; ordinary-paint refusal is also checked. No vector-angle fidelity claim.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/8189dd16-5a40-4abd-a39e-03880bd46125",
+      "runId": "4abd2d98-cca6-4e2e-967d-df095b781a3f",
+      "codeVersion": "v-09eae17b70cc",
+      "sourceCommit": "77a40070cd1351a2c8f794d6b2d74dbd0eb428d9"
+    },
+    {
+      "id": "erase-family",
+      "title": "A neighbor keeps its color.",
+      "scope": "At tolerance 24 with family mode On and current-frame scope, three known green samples disappear. Red, blue, neutral neighbors and the other frame stay exact in canvas pixels and decoded backups, including Undo/Redo. Known imported fixture.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/68c07b0f-1698-48a0-a421-5be8bc966cdf",
+      "runId": "119f9d76-ee65-4da3-b4e0-659f95738162",
+      "codeVersion": "v-e38c1780cedc",
+      "sourceCommit": "77a40070cd1351a2c8f794d6b2d74dbd0eb428d9"
     }
   ]
 }

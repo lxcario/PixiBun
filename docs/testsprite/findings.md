@@ -48,3 +48,11 @@ PR #7’s new matching-head event also stopped at billing. That is the remaining
 The next strict Colors check found an application defect, not a provider blockage. Escape closed the palette, but both color-well openings returned keyboard focus to another button. The same failure ran in TestSprite on source `37b37191`; local production regressions distinguished the two broken well paths from the working dedicated opener. The [Colors repair record](../releases/2026-10-18-color-focus-return.md) preserves the red, the cause and the fixing-source qualification boundary.
 
 The saved-layout, focused frame-key and homepage bench checks all passed controlled cloud qualification on `37b37191`. Their [receipts](cloud-receipts-2026-10-18.json) include code versions and script hashes. They improve verification, and are not additional product bugs. The cloud color failure, three companion passes and earlier 97-case batch remain distinct observations.
+
+## The third controlled comparison is green
+
+Colors now returns to its actual opener on the fixing preview: the original source `37b37191` cloud red is paired with source `77a40070` cloud green. All three opener paths separately passed production-browser regressions in Chromium, Firefox and WebKit. See the [qualified fixing record](../releases/2026-10-18-color-focus-return.md#qualified-fixing-preview--source-77a40070).
+
+The supported Normal Chisel path now observes the actual downloaded normal-layer pixels, preserving diffuse paint through exact Undo/Redo. Erase Family now uses a known two-frame fixture, explicit modes/scope, fresh actual canvas bounds and decoded backups. Both passed controlled cloud qualification without needing another application repair. The real painted-heart/lighting test also passed on the candidate with CSP-safe waits and unchanged assertions.
+
+Latest recorded catalog: 121 cases, 64 Passed / 2 Failed / 55 Blocked (13:07 UTC). The stale-rig and surface/shadow-source plans still need qualified fixtures. The normal App trigger remains externally blocked and the automatic ledger stays empty; supporting passes never increment it.

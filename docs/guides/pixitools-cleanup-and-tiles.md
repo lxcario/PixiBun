@@ -6,9 +6,9 @@ For the tested revision and remaining accessibility, device and host checks, see
 
 ![All five current PixiTools task choices and Show every tool on one page.](../assets/screenshots/2026-10-15-current-ui/pixitools-chooser.png)
 
-Choose **Effects** (the PixiTools tab) in the right inspector, then choose a task. **Choose another task** brings you back; **Browse all tools** shows the sections together. The task choice is remembered for the browser session. The five current groups are **Add light and depth**, **Build tiles and patterns**, **Clean and refine**, **Review animation**, and **Try a new look**.
+Choose **Effects** (the PixiTools tab) in the right inspector, then choose a task. **Choose another task** brings you back; **Show every tool on one page** shows the sections together. The task choice is remembered for the browser session. The five current groups are **Add light and depth**, **Build tiles and patterns**, **Clean and refine**, **Review animation**, and **Try a new look**.
 
-These are local tools with bounded algorithms. A folder named `ai` in the source does not mean an AI image service or trained model is shipped. Some actions commit immediately; the guide calls those out below.
+These are local tools with bounded algorithms; no AI image service or trained model is shipped. Some actions commit immediately; the guide calls those out below.
 
 ## Quick magic
 
@@ -35,7 +35,7 @@ Protected rectangles from the active [animation review clip](animation-and-revie
 | Tool | Steps | When it changes artwork |
 | --- | --- | --- |
 | Rotate Cleanly (RotSprite) | Set Rotation Angle, then Rotate Cleanly; quick −90°, −45°, +45°, +90° buttons also run rotation | Immediately on action, on the selected layer; inspect clipping within the canvas and Undo if needed |
-| Smooth Jaggies | Open it, inspect Before / After and the changed-pixel count | **Apply to Layer** commits the preview |
+| Smooth Jaggies | Open it, inspect Before / After and the changed-pixel count. It fills the empty corner of each staircase step with a semi-transparent pixel (alpha 160) blended from its two neighbours: it softens steps, it does not remove pixels, so hard-edged pixel art may not want it | **Apply to Layer** commits the preview |
 | Thin to 1px | Preview a reduction of thick strokes | Apply commits; intentional thick features can be lost |
 | Erase Stray Pixels | Preview removal of isolated single-pixel dots | Apply commits; sparkles or detached details can be intentional |
 

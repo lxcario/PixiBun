@@ -290,12 +290,22 @@ HEART_BANDS = [(3, 3, 5), (3, 10, 12), (4, 2, 6), (4, 9, 13),
 
 
 async def wait_raster(page, expected):
-    await page.wait_for_function('''expected => {
-      const c = document.querySelector('[data-testid="main-composite-canvas"]');
-      if (!c) return false;
-      const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
-      return d.length === expected.length && expected.every((v, i) => d[i] === v);
-    }''', arg=expected)
+    canvas = page.get_by_test_id('main-composite-canvas')
+    deadline = asyncio.get_running_loop().time() + 15
+    while asyncio.get_running_loop().time() < deadline:
+        if await raster(canvas) == expected:
+            return
+        await asyncio.sleep(0.05)
+    assert await raster(canvas) == expected, 'Exact raster did not settle within 15 seconds'
+
+
+async def wait_changed(canvas, before):
+    deadline = asyncio.get_running_loop().time() + 15
+    while asyncio.get_running_loop().time() < deadline:
+        if await raster(canvas) != before:
+            return
+        await asyncio.sleep(0.05)
+    assert await raster(canvas) != before, 'Lighting did not change actual pixels within 15 seconds'
 
 
 async def save_artifact(page, name):
@@ -345,11 +355,7 @@ async def run_test():
             await page.get_by_test_id('pixitools-task-lighting').click()
             await page.get_by_role('button', name='Manual setup', exact=True).click()
             await page.get_by_role('button', name='Apply lighting', exact=True).click()
-            await page.wait_for_function('''before => {
-              const c = document.querySelector('[data-testid="main-composite-canvas"]');
-              const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
-              return d.some((v, i) => v !== before[i]);
-            }''', arg=before)
+            await wait_changed(canvas, before)
             after = await raster(canvas)
             changed = sum(a != b for a, b in zip(before, after))
             assert changed > 0 and after[3::4] == before[3::4], 'Lighting must change color while preserving silhouette alpha'
