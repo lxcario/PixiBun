@@ -10,8 +10,11 @@ What remains open, in one place:
 | --- | --- | --- |
 | Stroke loop out of React | Performance architecture, measure first | [Roadmap phase 1](plans/2026-10-14-strategy-roadmap.md) |
 | Typed-array pixel store, straight-alpha compositor (defect 5), format v5 | Planned after launch | [Roadmap phase 3](plans/2026-10-14-strategy-roadmap.md) |
-| 17 October audit fixes | Fixed and browser-verified on `fix/audit-2026-10-17-triage`, not merged here | [Record](releases/2026-10-18-open-issues.md#left-open-and-why) |
 | Physical devices, actual Safari, assistive technology, participant studies, real networks, host update/rollback, long sessions | Needs people, hardware or a deployed host | [Issue registry](research/issue-registry.md) |
+
+## 17 October audit triage — 18 October 2026
+
+The [audit triage record](releases/2026-10-18-audit-triage.md) gives a verdict on each finding of the local 17 October audit and fixes the real defects, on a review branch cut from `testsprite-s4`. Hidden and locked layers now refuse strokes, fills, curves and the selection's Cut, Delete, move and paste; locked layers were not protected from selection edits before. Ellipses span the dragged box at even and odd sizes, which changes four golden replay digests. Rectangle outlines list each pixel once, and quadratic Bézier curves no longer skip pixels. The colour-metric, `normalizeRect`, relay, co-draw and colour-dock findings are intended or already documented. The replay-link, selection, layer-protection and tool-preview e2e specs (19 tests) and the production drawing-consistency spec in three browsers (15 tests) pass on the branch; no TestSprite run is claimed.
 
 ## Final integration — 17 October 2026
 

@@ -38,16 +38,16 @@
         "frames": 3,
         "layer": "Base Layer",
         "layers": 1,
-        "pixels": 61,
+        "pixels": 79,
         "colors": 2,
-        "topColors": "#f4e6d0 59, #3a2e4c 2",
-        "digest": "6a67b496"
+        "topColors": "#f4e6d0 77, #3a2e4c 2",
+        "digest": "1862d21e"
       },
       "afterUndo": {
-        "pixels": 61,
+        "pixels": 79,
         "colors": 2,
-        "topColors": "#f4e6d0 60, #3a2e4c 1",
-        "digest": "b64dfb9c"
+        "topColors": "#f4e6d0 78, #3a2e4c 1",
+        "digest": "4a1069cc"
       }
     },
     {
@@ -64,14 +64,14 @@
         "layers": 2,
         "pixels": 256,
         "colors": 3,
-        "topColors": "#ffb36b 137, #2b4c7e 95, #ffe66d 24",
-        "digest": "9511f3a5"
+        "topColors": "#ffb36b 126, #2b4c7e 86, #ffe66d 44",
+        "digest": "ef9f655d"
       },
       "afterUndo": {
         "pixels": 256,
         "colors": 3,
-        "topColors": "#ffb36b 137, #2b4c7e 90, #ffe66d 29",
-        "digest": "5e3f3ca4"
+        "topColors": "#ffb36b 126, #2b4c7e 78, #ffe66d 52",
+        "digest": "a0c9eb4d"
       }
     },
     {
@@ -86,16 +86,16 @@
         "frames": 1,
         "layer": "Base Layer",
         "layers": 1,
-        "pixels": 317,
+        "pixels": 336,
         "colors": 3,
-        "topColors": "#ffd166 127, #3a2e4c 110, #7ec8e3 80",
-        "digest": "04609d7e"
+        "topColors": "#ffd166 146, #3a2e4c 110, #7ec8e3 80",
+        "digest": "67a657a9"
       },
       "afterUndo": {
-        "pixels": 297,
+        "pixels": 316,
         "colors": 3,
-        "topColors": "#ffd166 137, #3a2e4c 80, #7ec8e3 80",
-        "digest": "4af21a4e"
+        "topColors": "#ffd166 156, #3a2e4c 80, #7ec8e3 80",
+        "digest": "ede47e99"
       }
     },
     {
@@ -110,16 +110,16 @@
         "frames": 1,
         "layer": "Base Layer",
         "layers": 1,
-        "pixels": 129,
+        "pixels": 148,
         "colors": 2,
-        "topColors": "#ffd23f 85, #3a2e4c 44",
-        "digest": "c2a9a132"
+        "topColors": "#ffd23f 100, #3a2e4c 48",
+        "digest": "44f5ccdd"
       },
       "afterUndo": {
-        "pixels": 128,
+        "pixels": 147,
         "colors": 2,
-        "topColors": "#ffd23f 84, #3a2e4c 44",
-        "digest": "e514c2d1"
+        "topColors": "#ffd23f 99, #3a2e4c 48",
+        "digest": "b9133882"
       }
     }
   ]

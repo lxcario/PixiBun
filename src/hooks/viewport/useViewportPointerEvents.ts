@@ -8,6 +8,7 @@ import { Point } from '@/lib/canvas/rasterMath';
 import { performFloodFill, rgbaToHex, replaceLayerColor } from '@/lib/canvas/floodFill';
 import { resolveSelectionMask } from '@/lib/canvas/selectionMask';
 import { eraseMatchingColor } from '@/lib/canvas/eraseMatchingColor';
+import { HIDDEN_LAYER_MESSAGE } from '@/lib/canvas/layerEditGuard';
 import { touchBuffer } from '@/lib/engine/bufferRegistry';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 import { DEFAULT_HISTORY_MAX_BYTES } from '@/lib/engine/historyEngine';
@@ -262,6 +263,12 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       props.lockedWarningTimerRef.current = window.setTimeout(() => {
         props.setLockedWarning(false);
       }, 1600);
+      return;
+    }
+
+    // A hidden layer would take the edit and its Undo step with nothing on screen.
+    if (currentLayer && !currentLayer.visible && tools.activeTool !== 'eyedropper') {
+      studioEvents.emit('pixibun:toast', { type: 'error', message: HIDDEN_LAYER_MESSAGE });
       return;
     }
 
