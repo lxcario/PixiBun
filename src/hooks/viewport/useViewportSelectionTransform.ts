@@ -10,6 +10,7 @@ import { beginWorkspaceJob, type WorkspaceJob } from '@/lib/engine/workspaceJob'
 import { studioEvents } from '@/lib/events/studioEvents';
 import { useStudioStore } from '@/stores/studioStore';
 import { isNormalLayer } from '@/lib/export/normalLayers';
+import { confirmActiveLayerEditable } from '@/lib/canvas/layerEditGuard';
 import { getBufferGeneration, getBufferRevision, snapshotBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
 
 function transformSourceKey(layerId: string): string {
@@ -156,6 +157,7 @@ export function useViewportSelectionTransform({
   const ensureFloatingSelection = useCallback((): FloatingSelection | null => {
     if (floatingSelection) return floatingSelection;
     if (!selection) return null;
+    if (!confirmActiveLayerEditable()) return null;
 
     const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
     const backup = document.createElement('canvas');
@@ -231,7 +233,7 @@ export function useViewportSelectionTransform({
     ) => {
       // If not yet floating, lift active selection to floating buffer now
       if (!floatingSelection && selection) {
-        ensureFloatingSelection();
+        if (!ensureFloatingSelection()) return;
       } else if (floatingSelection && !originalSourceRef.current) {
         // A paste has not cut pixels from the layer and has no Undo baseline yet.
         captureSnapshot('Transform Pasted Selection');
@@ -796,7 +798,7 @@ export function useViewportSelectionTransform({
 
   // Quick Action: Rotate 90° CW
   const handleRotate90CW = useCallback(() => {
-    ensureFloatingSelection();
+    if (!ensureFloatingSelection()) return;
     setTransform((prev) => ({
       ...prev,
       rotation: prev.rotation + Math.PI / 2,
@@ -806,7 +808,7 @@ export function useViewportSelectionTransform({
 
   // Quick Action: Rotate 90° CCW
   const handleRotate90CCW = useCallback(() => {
-    ensureFloatingSelection();
+    if (!ensureFloatingSelection()) return;
     setTransform((prev) => ({
       ...prev,
       rotation: prev.rotation - Math.PI / 2,
