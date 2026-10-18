@@ -164,7 +164,13 @@ export function applyRiemersmaDither(
   const errB = new Array<number>(historyLength).fill(0);
   // A 16:1 newest-to-oldest weight ratio keeps recent quantization error
   // strong enough to dither while retaining spatial context along the curve.
+  // The weights are normalised to sum to 1 so each pixel's error is passed on
+  // once in total; unnormalised they summed to about 5.6, and the amplified error
+  // collapsed a black-to-white ramp to solid black.
   const decay = Math.pow(1 / 16, 1 / (historyLength - 1));
+  const weights = Array.from({ length: historyLength }, (_, i) => Math.pow(decay, historyLength - 1 - i));
+  const weightSum = weights.reduce((sum, weight) => sum + weight, 0);
+  for (let i = 0; i < historyLength; i++) weights[i] /= weightSum;
 
   for (let d = 0; d < numPoints; d++) {
     let rx: number, ry: number, s: number;
@@ -199,7 +205,7 @@ export function applyRiemersmaDither(
     let totalErrB = 0;
 
     for (let i = 0; i < historyLength; i++) {
-      const weight = Math.pow(decay, historyLength - 1 - i);
+      const weight = weights[i];
       totalErrR += errR[i] * weight;
       totalErrG += errG[i] * weight;
       totalErrB += errB[i] * weight;
