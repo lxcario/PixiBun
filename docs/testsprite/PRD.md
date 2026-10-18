@@ -165,8 +165,8 @@ Each case opens one path from a fresh browser, waits as described in [replay lin
 ```
 
 - `replay-status` `data-steps` is `17`; `canvas-readout-size` `16×16`, `canvas-readout-frame` `3 of 3`, `canvas-readout-layer` `Base Layer`, `canvas-readout-layers` `1`.
-- `canvas-readout-pixels` is `61`, `canvas-readout-colors` `2`, `canvas-readout-digest` `6a67b496`.
-- After one Undo: pixels `61`, colors `2`, digest `b64dfb9c`. After Redo: digest `6a67b496` again.
+- `canvas-readout-pixels` is `79`, `canvas-readout-colors` `2`, `canvas-readout-digest` `1862d21e`.
+- After one Undo: pixels `79`, colors `2`, digest `4a1069cc`. After Redo: digest `1862d21e` again.
 
 **13.3 Sunset on two layers.** Sky filled orange and a filled sea rectangle on the base layer; a sun on Layer 2, then the Eraser cuts the horizon row out of the sun so the sea shows through.
 
@@ -175,8 +175,8 @@ Each case opens one path from a fresh browser, waits as described in [replay lin
 ```
 
 - `replay-status` `data-steps` is `5`; `canvas-readout-size` `16×16`, `canvas-readout-frame` `1 of 1`, `canvas-readout-layer` `Layer 2`, `canvas-readout-layers` `2`.
-- `canvas-readout-pixels` is `256`, `canvas-readout-colors` `3`, `canvas-readout-digest` `9511f3a5`.
-- After one Undo: pixels `256`, colors `3`, digest `5e3f3ca4`. After Redo: digest `9511f3a5` again.
+- `canvas-readout-pixels` is `256`, `canvas-readout-colors` `3`, `canvas-readout-digest` `ef9f655d`.
+- After one Undo: pixels `256`, colors `3`, digest `a0c9eb4d`. After Redo: digest `ef9f655d` again.
 
 **13.4 Outlined shapes on a wide canvas.** A 32×20 canvas: a rectangle outline filled light blue, an ellipse outline filled yellow (the fill must stay inside), then a diagonal Line across both.
 
@@ -185,8 +185,8 @@ Each case opens one path from a fresh browser, waits as described in [replay lin
 ```
 
 - `replay-status` `data-steps` is `5`; `canvas-readout-size` `32×20`, `canvas-readout-frame` `1 of 1`, `canvas-readout-layer` `Base Layer`, `canvas-readout-layers` `1`.
-- `canvas-readout-pixels` is `317`, `canvas-readout-colors` `3`, `canvas-readout-digest` `04609d7e`.
-- After one Undo: pixels `297`, colors `3`, digest `4af21a4e`. After Redo: digest `04609d7e` again.
+- `canvas-readout-pixels` is `336`, `canvas-readout-colors` `3`, `canvas-readout-digest` `67a657a9`.
+- After one Undo: pixels `316`, colors `3`, digest `ede47e99`. After Redo: digest `67a657a9` again.
 
 **13.5 Winking face.** An ellipse outline filled yellow, Pen eyes and smile, the Eraser removes one eye, Pen draws the wink and a fill closes the erased pixel.
 
@@ -195,8 +195,8 @@ Each case opens one path from a fresh browser, waits as described in [replay lin
 ```
 
 - `replay-status` `data-steps` is `8`; `canvas-readout-size` `16×16`, `canvas-readout-frame` `1 of 1`, `canvas-readout-layer` `Base Layer`, `canvas-readout-layers` `1`.
-- `canvas-readout-pixels` is `129`, `canvas-readout-colors` `2`, `canvas-readout-digest` `c2a9a132`.
-- After one Undo: pixels `128`, colors `2`, digest `e514c2d1`. After Redo: digest `c2a9a132` again.
+- `canvas-readout-pixels` is `148`, `canvas-readout-colors` `2`, `canvas-readout-digest` `44f5ccdd`.
+- After one Undo: pixels `147`, colors `2`, digest `b9133882`. After Redo: digest `44f5ccdd` again.
 
 **13.6 A broken link explains itself.** Open `/studio?replay=1_16x16_ff0000_p5.1.1` in a fresh browser: `replay-error-message` says step 1 uses color 5 but the palette only has color 0, `replay-status` shows `data-state="error"`, and the readout still shows the untouched fresh canvas (`32×32`, `0` pixels, digest `8c00b365`). The dismiss button (`replay-error-dismiss`) removes the message.
 
