@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyRiemersmaDither } from '@/lib/ai/math/dithering';
+import { applyRiemersmaDither } from '@/lib/graphics/math/dithering';
 import { makeCanvas } from './helpers/mockCanvas';
 
 describe('Riemersma dither', () => {

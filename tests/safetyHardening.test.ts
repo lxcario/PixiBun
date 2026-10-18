@@ -4,6 +4,7 @@ import { SafeCanvas, CanvasHardwareLimits } from '@/lib/safety/safeCanvas';
 import { SafeJson, getUtf8ByteLength } from '@/lib/safety/safeJson';
 import { ImageHeaderProbe } from '@/lib/safety/imageHeaderProbe';
 import { StorageResilience } from '@/lib/safety/storageResilience';
+import { makeCanvas } from './helpers/mockCanvas';
 
 function createSyntheticJpeg(options: {
   width?: number;
@@ -79,6 +80,16 @@ describe('Defensive Hardening Suite', () => {
       const safeNorm = MathInvariants.normalizeRect(NaN, 10, 50, Infinity);
       expect(safeNorm.x).toBe(0);
       expect(safeNorm.y).toBe(0);
+    });
+
+    it('normalizeRect takes half-open edges, so x..x+w round-trips a width without +1', () => {
+      // Its caller, SafeCanvas.getImageData, passes (sx, sx + sw): an inclusive
+      // +1 here would read one extra column and row (17 October audit triage).
+      expect(MathInvariants.normalizeRect(2, 3, 2 + 4, 3 + 5)).toEqual({ x: 2, y: 3, w: 4, h: 5 });
+      expect(MathInvariants.normalizeRect(6, 8, 2, 3)).toEqual({ x: 2, y: 3, w: 4, h: 5 });
+      const ctx = makeCanvas(8, 8).getContext('2d')!;
+      const read = SafeCanvas.getImageData(ctx, 1, 1, 4, 3);
+      expect([read.width, read.height]).toEqual([4, 3]);
     });
 
     it('clipLineToCanvas correctly executes Cohen-Sutherland clipping', () => {

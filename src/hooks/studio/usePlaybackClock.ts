@@ -54,19 +54,21 @@ export function usePlaybackClock(isPlaying: boolean, previewSpeedRef: RefObject<
         const duration = state.frames[index]?.durationMs ?? Math.round(1000 / state.fps);
         stopped = accumulator >= duration / previewSpeedRef.current;
       }
-      // 250ms of catch-up is the most one RAF can contribute; even 1ms frames fit.
-      for (let steps = 0; steps < 256 && first < last; steps++) {
-        const duration = state.frames[index]?.durationMs ?? Math.round(1000 / state.fps);
-        const previewDuration = duration / previewSpeedRef.current;
-        if (accumulator < previewDuration) break;
-        accumulator -= previewDuration;
+      // At most one pose per animation frame. After a long gap between frames (a busy
+      // tab, a slow device) the clock used to catch up by consuming several poses in one
+      // frame, so they were never shown; now each is shown in order, and time owed beyond
+      // the next pose's hold is dropped rather than fast-forwarded through.
+      const hold = (frameIndex: number) => (state.frames[frameIndex]?.durationMs ?? Math.round(1000 / state.fps)) / previewSpeedRef.current;
+      if (first < last && accumulator >= hold(index)) {
+        accumulator -= hold(index);
         if (state.loopMode === 'once' && position === sequence.length - 1) {
           stopped = true;
           accumulator = 0;
-          break;
+        } else {
+          position = (position + 1) % sequence.length;
+          index = sequence[position];
+          accumulator = Math.min(accumulator, hold(index));
         }
-        position = (position + 1) % sequence.length;
-        index = sequence[position];
       }
       if (index !== publishedIndex) {
         publishedIndex = index;

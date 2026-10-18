@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { rotSprite, PixelBuffer } from '@/lib/canvas/rotSprite';
-import { rotateWithRotSprite } from '@/lib/ai/math/rotSprite';
+import { rotateWithRotSprite } from '@/lib/graphics/math/rotSprite';
 
 interface ImageDataShim {
   data: Uint8ClampedArray;

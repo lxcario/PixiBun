@@ -6,11 +6,11 @@ import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import PanelSection from '@/components/ui/PanelSection';
 import StudioSlider from '@/components/ui/StudioSlider';
-import { applyAtmosphericColorGrade, cleanJaggiesOnCanvas, cleanStrayPixelsOnCanvas, harmonizePaletteColors, quantizeToActivePalette } from '@/lib/ai/pixelAiEngine';
-import { applyAtkinsonDither, applyRiemersmaDither, applyZhangSuenThinning } from '@/lib/ai/smartMathEngine';
+import { applyAtmosphericColorGrade, cleanJaggiesOnCanvas, cleanStrayPixelsOnCanvas, harmonizePaletteColors, quantizeToActivePalette } from '@/lib/graphics/pixelRasterEngine';
+import { applyAtkinsonDither, applyRiemersmaDither, applyZhangSuenThinning } from '@/lib/graphics/smartMathEngine';
 import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
 import { studioEvents } from '@/lib/events/studioEvents';
-import type { SpriteCleanupOptions, SpriteCleanupStats } from '@/lib/ai/spriteCleanup';
+import type { SpriteCleanupOptions, SpriteCleanupStats } from '@/lib/graphics/spriteCleanup';
 
 type RasterAction = 'jaggies' | 'thin' | 'strays' | 'sunset' | 'moonlight' | 'neon' | 'atkinson' | 'riemersma' | 'palette';
 const RASTER_LABELS: Record<RasterAction, string> = {
@@ -30,7 +30,7 @@ function thumbnail(ctx: CanvasRenderingContext2D, width: number, height: number)
   return output.toDataURL('image/png');
 }
 
-export const PixiBudAssistanceSection: React.FC = () => {
+export const RasterActionsSection: React.FC = () => {
   const palettes = useStudioStore((s) => s.palettes);
   const currentPaletteId = useStudioStore((s) => s.currentPaletteId);
   const addCustomColorToPalette = useStudioStore((s) => s.addCustomColorToPalette);

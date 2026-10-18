@@ -2,7 +2,7 @@
  * @vitest-environment node
  */
 import { describe, it, expect } from 'vitest';
-import { inferRaymarchedShadowSettings } from '@/lib/ai/math/shadowAuto';
+import { inferRaymarchedShadowSettings } from '@/lib/graphics/math/shadowAuto';
 
 function makeData(
   width: number,

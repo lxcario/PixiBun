@@ -10,6 +10,7 @@ import { beginWorkspaceJob, type WorkspaceJob } from '@/lib/engine/workspaceJob'
 import { studioEvents } from '@/lib/events/studioEvents';
 import { useStudioStore } from '@/stores/studioStore';
 import { isNormalLayer } from '@/lib/export/normalLayers';
+import { confirmActiveLayerEditable } from '@/lib/canvas/layerEditGuard';
 import { getBufferGeneration, getBufferRevision, snapshotBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
 import { canEditSelectionLayer } from '@/lib/engine/selectionEdit';
 
@@ -158,6 +159,7 @@ export function useViewportSelectionTransform({
     if (!canEditSelectionLayer(activeLayerId)) return null;
     if (floatingSelection) return floatingSelection;
     if (!selection) return null;
+    if (!confirmActiveLayerEditable()) return null;
 
     const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
     const backup = document.createElement('canvas');
@@ -799,7 +801,7 @@ export function useViewportSelectionTransform({
 
   // Quick Action: Rotate 90° CW
   const handleRotate90CW = useCallback(() => {
-    ensureFloatingSelection();
+    if (!ensureFloatingSelection()) return;
     setTransform((prev) => ({
       ...prev,
       rotation: prev.rotation + Math.PI / 2,
@@ -809,7 +811,7 @@ export function useViewportSelectionTransform({
 
   // Quick Action: Rotate 90° CCW
   const handleRotate90CCW = useCallback(() => {
-    ensureFloatingSelection();
+    if (!ensureFloatingSelection()) return;
     setTransform((prev) => ({
       ...prev,
       rotation: prev.rotation - Math.PI / 2,

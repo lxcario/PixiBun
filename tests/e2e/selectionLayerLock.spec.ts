@@ -37,7 +37,7 @@ for (const action of ['Delete', 'Backspace', 'Control+x']) {
     await lock.click();
     await expect(page.getByRole('button', { name: 'Unlock layer Base Layer', exact: true })).toBeVisible();
     await page.locator('#main-content').focus(); await page.keyboard.press(action);
-    await expect(page.getByTestId('studio-toast')).toContainText('Select an unlocked layer');
+    await expect(page.getByTestId('studio-toast')).toContainText('The active layer is locked');
     expect(await pixels(page)).toEqual(before);
     await expect(page.locator('[data-frame-card]')).toHaveCount(1);
     // The refusal adds no edit: Undo returns directly to the unlocked state.

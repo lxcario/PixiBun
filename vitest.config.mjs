@@ -38,11 +38,13 @@ export default defineConfig({
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['src/types/**'],
       reporter: ['text', 'json', 'html'],
+      // About a point under measured coverage (18 October: 62.1 / 57.3 / 57.4 / 63.6), so
+      // coverage cannot quietly slide back. Raise these as coverage grows.
       thresholds: {
-        statements: 60,
-        branches: 50,
-        functions: 55,
-        lines: 60,
+        statements: 61,
+        branches: 56,
+        functions: 56,
+        lines: 62,
       },
     },
   },

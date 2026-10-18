@@ -18,8 +18,8 @@ import { useLab } from '@/experimental/labsStore';
 import { PaintPotPalette } from '@/experimental/palette/PaintPotPalette';
 import { LiquidTabs } from '@/experimental/liquid/LiquidTabs';
 
-const AiToolsPanel = lazyPanel(
-  () => import('./inspector/AiToolsPanel').then((m) => m.AiToolsPanel),
+const PixiToolsPanel = lazyPanel(
+  () => import('./inspector/PixiToolsPanel').then((m) => m.PixiToolsPanel),
   'PixiTools', 'inline'
 );
 
@@ -112,7 +112,7 @@ export const RightInspector = React.memo(function RightInspector() {
             {activeInspectorTab === 'tools' && <><MotionRigLibrary /><ToolSettingsPanel /></>}
             {activeInspectorTab === 'layers' && <LayersPanel />}
             {activeInspectorTab === 'palette' && (paintPot ? <PaintPotPalette /> : <PalettePanel />)}
-            {activeInspectorTab === 'ai' && <AiToolsPanel />}
+            {activeInspectorTab === 'ai' && <PixiToolsPanel />}
           </>
         )}
       </div>

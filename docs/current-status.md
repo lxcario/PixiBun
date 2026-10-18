@@ -8,6 +8,22 @@ The [Colors follow-up](releases/2026-10-18-color-focus-return.md) records a thir
 
 The [candidate record](releases/2026-10-18-artwork-safety-and-evidence.md) combines the separately prepared selection-layer-lock repair and expanded `/verified` page on integration source `d9065d5`, in an isolated branch. It adds the [findings register](testsprite/findings.md), [public build diary](testsprite/build-diary.md) and standalone pixel/file journeys. The combined source `37b37191` passed its full gate, 66 affected production-browser cases across three engines, four complete file/pixel journeys, twelve decoder fixtures and four strict controlled cloud replays on PR #7’s public preview. Earlier results retain their own source and scope. PR #7’s fresh matched App event still stopped at billing; the automatic ledger remains empty. See the candidate record for limits and retained attempts.
 
+## Documented open issues — 18 October 2026
+
+The [open-issues record](releases/2026-10-18-open-issues.md) fixes the issues the documentation still listed as open where they are code defects: Studio playback no longer consumes poses unseen after a stall (M3), MP4 export uses the software H.264 encoder so colours no longer depend on the machine's hardware encoder, preview deployments no longer expose the Vercel token to pull-request code, the source drops its leftover "AI" names (`src/lib/graphics`), coverage thresholds sit just under measured coverage, and the theme gallery shows all twelve themes. Results and what was not run are in the record.
+
+What remains open, in one place:
+
+| Open item | Kind | Where |
+| --- | --- | --- |
+| Stroke loop out of React | Performance architecture, measure first | [Roadmap phase 1](plans/2026-10-14-strategy-roadmap.md) |
+| Typed-array pixel store, straight-alpha compositor (defect 5), format v5 | Planned after launch | [Roadmap phase 3](plans/2026-10-14-strategy-roadmap.md) |
+| Physical devices, actual Safari, assistive technology, participant studies, real networks, host update/rollback, long sessions | Needs people, hardware or a deployed host | [Issue registry](research/issue-registry.md) |
+
+## 17 October audit triage — 18 October 2026
+
+The [audit triage record](releases/2026-10-18-audit-triage.md) gives a verdict on each finding of the local 17 October audit and fixes the real defects, on a review branch cut from `testsprite-s4`. Hidden and locked layers now refuse strokes, fills, curves and the selection's Cut, Delete, move and paste; locked layers were not protected from selection edits before. Ellipses span the dragged box at even and odd sizes, which changes four golden replay digests. Rectangle outlines list each pixel once, and quadratic Bézier curves no longer skip pixels. The colour-metric, `normalizeRect`, relay, co-draw and colour-dock findings are intended or already documented. The replay-link, selection, layer-protection and tool-preview e2e specs (19 tests) and the production drawing-consistency spec in three browsers (15 tests) pass on the branch; no TestSprite run is claimed.
+
 ## Final integration — 17 October 2026
 
 The [final integration record](releases/2026-10-17-final-integration.md) merges the pending agent branches (portal and publication docs, Chisel layer safety, canvas readout, replay links, `/verified`, the TestSprite autofix workflow) after review, and fixes what the first complete browser suites since 15 October found: Curve re-edit had been broken since the 16 October painting change, the tool shelf cut off the Eyedropper on small laptops, a hydration mismatch under reduced motion, Firefox offering MP4 it cannot encode, the light bar's trailing segment highlight (now a liquid lens with the rail's hold-and-slide gesture), Frames list ARIA, frame-card target sizes, Cocoa Day contrast, analytics outside Vercel, and receipt stroke miscounts. Tests that still described earlier interfaces were updated and listed. Chromium MP4 colour still fails on this machine (environment; the pre-merge commit fails identically). Results and what was not run are in the record.

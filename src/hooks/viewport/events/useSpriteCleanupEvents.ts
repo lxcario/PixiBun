@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { planSpriteCleanup, type SpriteCleanupOptions, type SpriteCleanupStats } from '@/lib/ai/spriteCleanup';
+import { planSpriteCleanup, type SpriteCleanupOptions, type SpriteCleanupStats } from '@/lib/graphics/spriteCleanup';
 import { touchBuffer } from '@/lib/engine/bufferRegistry';
 import { DEFAULT_HISTORY_MAX_BYTES } from '@/lib/engine/historyEngine';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';

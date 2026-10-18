@@ -8,7 +8,7 @@ import PanelSection from '@/components/ui/PanelSection';
 import StudioSlider from '@/components/ui/StudioSlider';
 import { LightGizmoOverlay } from '@/components/studio/LightGizmoOverlay';
 import { MaterialType } from '@/types/tools';
-import { MATERIAL_PROFILES } from '@/lib/ai/math/photometricLighting';
+import { MATERIAL_PROFILES } from '@/lib/graphics/math/photometricLighting';
 import { studioEvents } from '@/lib/events/studioEvents';
 
 interface MaterialChip {

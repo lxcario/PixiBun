@@ -352,9 +352,10 @@ export class PixiBunController {
   async previewSettings() {
     return this.action('preview-settings', { loop: 'repeat', speed: 1, onionSkin: false }, async () => {
       const timeline = this.page.getByTestId('bottom-timeline');
-      const loop = timeline.locator('button[title^="Loop Mode:"]');
-      for (let attempt = 0; attempt < 3 && await loop.getAttribute('title') !== 'Loop Mode: repeat'; attempt++) await loop.click();
-      await expect(loop).toHaveAttribute('title', 'Loop Mode: repeat');
+      // The loop button is named "Loop mode: Repeat" / "Ping-Pong" / "Once" (16 October timeline).
+      const loop = timeline.locator('button[aria-label^="Loop mode:"]');
+      for (let attempt = 0; attempt < 3 && await loop.getAttribute('aria-label') !== 'Loop mode: Repeat'; attempt++) await loop.click();
+      await expect(loop).toHaveAttribute('aria-label', 'Loop mode: Repeat');
       await timeline.getByRole('button', { name: /^Preview .* speed$/ }).click();
       await timeline.getByRole('button', { name: '1× preview speed', exact: true }).click();
       await expect(timeline.getByRole('button', { name: 'Preview 1× speed', exact: true })).toBeVisible();

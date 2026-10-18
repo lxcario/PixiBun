@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { analyzeAnimationStability, validateStabilitySize, type StabilityInput, type ReviewFrame } from '@/lib/animation/stabilityAnalysis';
 import { parseAnimationReview, restoreProtectedPixels, estimateClipBytes } from '@/lib/animation/reviewMetadata';
 import { runStabilityWorker } from '@/lib/animation/scanClip';
-import { planSpriteCleanup } from '@/lib/ai/spriteCleanup';
+import { planSpriteCleanup } from '@/lib/graphics/spriteCleanup';
 import { createBlankProjectFile } from '@/lib/storage/db';
 import { validateProjectFile } from '@/lib/project/schema';
 import type { ReviewRegion } from '@/types/animation';

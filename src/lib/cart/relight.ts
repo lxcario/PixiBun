@@ -37,7 +37,7 @@ export async function relight(frame: HTMLCanvasElement, lamp: Lamp): Promise<HTM
   const hit = byLamp.get(key);
   if (hit) return hit;
 
-  const { renderParametric2p5DLighting } = await import('@/lib/ai/math/photometricLighting');
+  const { renderParametric2p5DLighting } = await import('@/lib/graphics/math/photometricLighting');
   const lit = document.createElement('canvas');
   lit.width = frame.width; lit.height = frame.height;
   const ctx = lit.getContext('2d', { willReadFrequently: true })!;

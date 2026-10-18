@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { downsampleImage, extractOklabPalette, rgbToOklab } from '@/lib/ai/pixelizeEngine';
-import { morphInBetweenFrames } from '@/lib/ai/pixelAiEngine';
+import { downsampleImage, extractOklabPalette, rgbToOklab } from '@/lib/graphics/pixelizeEngine';
+import { morphInBetweenFrames } from '@/lib/graphics/pixelRasterEngine';
 import { rotateNearest, PixelBuffer } from '@/lib/canvas/rotSprite';
 import { updateLivePaletteLUT32, type PaletteCycleTrack } from '@/lib/color/paletteCycling';
 import { createHistoryEngine, type HistoryStep } from '@/lib/engine/historyEngine';

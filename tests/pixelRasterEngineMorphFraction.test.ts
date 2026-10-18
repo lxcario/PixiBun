@@ -3,7 +3,7 @@ import {
   morphInBetweenFrameAtFraction,
   morphInBetweenFramesSync,
   morphInBetweenFrames,
-} from '@/lib/ai/pixelAiEngine';
+} from '@/lib/graphics/pixelRasterEngine';
 
 interface ImageDataShim {
   data: Uint8ClampedArray;
