@@ -34,3 +34,17 @@ The GitHub App receives Vercel deployment-ready events. When a deployment finish
 The original 97-case expanded batch remains **34 Passed / 13 Failed / 50 Blocked**. The later recorded 120-case catalog has **54 Passed / 11 Failed / 55 Blocked**, reflecting different latest per-case runs rather than one complete passing batch. Important blocked assertions and unreviewed later cases remain work to do.
 
 Curve Re-edit, shelf overflow, receipt counting, contrast and accessibility repairs found by repository tests and other agents are credited in [their integration record](../releases/2026-10-17-final-integration.md). They are not presented as TestSprite discoveries. No first-place result, all-feature certification or completed automatic PR loop is claimed.
+
+## 18 October follow-up: the selected pixels stay put
+
+The selection repair is now deployed to [PR #7’s preview](https://github.com/lxcario/PixiBun/pull/7), source `37b37191`. The original strict cloud comparison passed there, with its unlocked sensitivity check, actual lock and every RGBA assertion retained. The [controlled follow-up](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/0a1d9522-9cea-410d-9988-7fa49c610016) closes this preview comparison; it does not imply a production release or automatic App pass.
+
+Heart/readout/PNG, the actual Animate end slot’s keyboard action, and Cocoa/Drizzle/Harvest/Harbor in both schemes also passed controlled source-pinned cloud qualification. The [dated candidate record](../releases/2026-10-18-artwork-safety-and-evidence.md#qualified-candidate-follow-up--source-37b37191) records the 2,876-test gate, 66 affected production-browser cases and complete journeys. The newer catalog is 121 cases, 58 Passed / 8 Failed / 55 Blocked, not a complete green batch. Earlier counts and failed attempts above remain historical.
+
+PR #7’s new matching-head event also stopped at billing. That is the remaining automatic-dispatch blocker; it did not prevent these repairs, stronger tests, public evidence or a recorded demo.
+
+## A keyboard way back
+
+The next strict Colors check found an application defect, not a provider blockage. Escape closed the palette, but both color-well openings returned keyboard focus to another button. The same failure ran in TestSprite on source `37b37191`; local production regressions distinguished the two broken well paths from the working dedicated opener. The [Colors repair record](../releases/2026-10-18-color-focus-return.md) preserves the red, the cause and the fixing-source qualification boundary.
+
+The saved-layout, focused frame-key and homepage bench checks all passed controlled cloud qualification on `37b37191`. Their [receipts](cloud-receipts-2026-10-18.json) include code versions and script hashes. They improve verification, and are not additional product bugs. The cloud color failure, three companion passes and earlier 97-case batch remain distinct observations.

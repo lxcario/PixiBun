@@ -5,11 +5,12 @@ import { parseVerificationStories, STORIES_PATH } from '../src/lib/verified/veri
 const actual = () => JSON.parse(fs.readFileSync(STORIES_PATH, 'utf8'));
 
 describe('supporting verification evidence', () => {
-  it('accepts the retained scoped evidence and preserves local-only disposition', () => {
+  it('accepts the retained scoped evidence and qualified preview follow-ups', () => {
     const evidence = parseVerificationStories(actual());
-    expect(evidence.stories).toHaveLength(2);
-    expect(evidence.checks).toHaveLength(8);
-    expect(evidence.stories.find(s => s.id === 'a-lock-keeps-its-promise')?.followUpUrl).toBeNull();
+    expect(evidence.stories).toHaveLength(3);
+    expect(evidence.checks).toHaveLength(14);
+    expect(evidence.stories.find(s => s.id === 'a-lock-keeps-its-promise')?.status).toBe('preview-passed');
+    expect(evidence.stories.find(s => s.id === 'colors-find-their-way-back')?.followUpUrl).toBeNull();
   });
 
   it('requires a different cloud follow-up and actual fix identity for a preview pass', () => {
@@ -21,6 +22,7 @@ describe('supporting verification evidence', () => {
 
   it('refuses to turn a local repair into cloud proof', () => {
     const evidence = actual();
+    evidence.stories[1].status = 'local-passed';
     evidence.stories[1].followUpUrl = evidence.stories[0].followUpUrl;
     expect(() => parseVerificationStories(evidence)).toThrow(/local-only repair cannot claim/);
   });

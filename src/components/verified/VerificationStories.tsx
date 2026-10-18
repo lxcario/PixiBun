@@ -25,7 +25,7 @@ export function VerificationStories({ evidence }: { evidence: Stories }) {
           <figcaption className="text-sm leading-relaxed text-[var(--text-body)]">Painted from a blank canvas by the browser: thirteen red brush drags and three white clicks. The cloud test checked the actual PNG, then lighting, Undo and Redo. One hundred painted pixels, each accounted for.</figcaption>
         </figure>
         <p className="text-base leading-relaxed text-[var(--text-body)]">A canvas can be difficult to read from the outside. Our Canvas readout gives a screen reader a quiet account of the frame: its size, layers, painted pixels and colors. It gives a browser test something precise to check, too.</p>
-        <p className="text-sm leading-relaxed text-[var(--text-body)]">A separate Heart recipe adds a pale pink background: 256 painted pixels in three colors. Our local replay compares the readout with a literal pixel design and the actual exported PNG, then checks Undo and Redo. That readout journey’s cloud qualification is still pending.</p>
+        <p className="text-sm leading-relaxed text-[var(--text-body)]">A separate Heart recipe adds a pale pink background: 256 painted pixels in three colors. A controlled cloud replay compares the readout with a literal pixel design and the actual exported PNG, then checks Undo and Redo. It passed on the fixing preview; its dated receipt is linked below.</p>
         <Link href={`/studio?replay=${heart.replay}`} className={`${LINK} font-mono text-sm self-start`}>Draw this little heart →</Link>
       </section>
 
@@ -52,7 +52,7 @@ export function VerificationStories({ evidence }: { evidence: Stories }) {
               {story.followUpUrl && <a href={story.followUpUrl} className={LINK}>Controlled preview replay</a>}
             </nav>
             <p className="text-xs font-mono text-[var(--text-body)] break-words">
-              Production tested: <a className={LINK} href={`${REPO}/commit/${story.sourceCommit}`}>{story.sourceCommit.slice(0, 8)}</a>
+              Original source tested: <a className={LINK} href={`${REPO}/commit/${story.sourceCommit}`}>{story.sourceCommit.slice(0, 8)}</a>
               {story.fixCommit && <> · Fix: <a className={LINK} href={`${REPO}/commit/${story.fixCommit}`}>{story.fixCommit.slice(0, 8)}</a></>}
             </p>
           </article>

@@ -50,21 +50,22 @@ export const LeftToolbar = React.memo(function LeftToolbar({ isPlaygroundMode = 
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false);
   const [activeFlyoutTarget, setActiveFlyoutTarget] = useState<ColorTarget>('primary');
   const wellsContainerRef = useRef<HTMLDivElement>(null);
-  const flyoutTriggerRef = useRef<HTMLButtonElement>(null);
+  const flyoutOpenerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
     loadRecentColors();
   }, [loadRecentColors]);
 
-  const openFlyout = useCallback((target: ColorTarget) => {
+  const openFlyout = useCallback((target: ColorTarget, opener: HTMLButtonElement) => {
+    flyoutOpenerRef.current = opener;
     setActiveFlyoutTarget(target);
     setIsFlyoutOpen(true);
   }, []);
 
   const closeFlyout = useCallback((restoreFocus: boolean) => {
     setIsFlyoutOpen(false);
-    if (restoreFocus) flyoutTriggerRef.current?.focus();
+    if (restoreFocus) flyoutOpenerRef.current?.focus();
   }, []);
 
   const openSpectrum = useCallback((target: ColorTarget) => {
@@ -213,7 +214,7 @@ export const LeftToolbar = React.memo(function LeftToolbar({ isPlaygroundMode = 
           {/* Secondary Color Well (Bottom-right) */}
           <button
             type="button"
-            onClick={() => openFlyout('secondary')}
+            onClick={(event) => openFlyout('secondary', event.currentTarget)}
             onDoubleClick={() => {
               setIsFlyoutOpen(false);
               setColorPickerTarget('secondary');
@@ -235,7 +236,7 @@ export const LeftToolbar = React.memo(function LeftToolbar({ isPlaygroundMode = 
           {/* Primary Color Well (Top-left) */}
           <button
             type="button"
-            onClick={() => openFlyout('primary')}
+            onClick={(event) => openFlyout('primary', event.currentTarget)}
             onDoubleClick={() => {
               setIsFlyoutOpen(false);
               setColorPickerTarget('primary');
@@ -276,9 +277,8 @@ export const LeftToolbar = React.memo(function LeftToolbar({ isPlaygroundMode = 
 
           {/* Opens the Colors flyout: palette, shades, recent colors and hex entry */}
           <button
-            ref={flyoutTriggerRef}
             type="button"
-            onClick={() => (isFlyoutOpen ? closeFlyout(false) : openFlyout('primary'))}
+            onClick={(event) => (isFlyoutOpen ? closeFlyout(false) : openFlyout('primary', event.currentTarget))}
             title="Colors: palette, shades, recent colors and hex"
             aria-label="Quick Swatches Flyout"
             aria-haspopup="dialog"

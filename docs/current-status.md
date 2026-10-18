@@ -1,8 +1,12 @@
 # Current project status
 
+## Colors keyboard return — 18 October 2026
+
+The [Colors follow-up](releases/2026-10-18-color-focus-return.md) records a third TestSprite-led product discovery: opening Colors from either color well and pressing Escape returned focus to the separate swatches button. The repair remembers the actual opener; three browser regressions cover all openings and preserved artwork. Fixing-source qualification is recorded separately from the original source `37b37191` red. Saved layouts, frame keys and the homepage bench also gained strict controlled cloud passes on `37b37191`.
+
 ## Artwork safety and TestSprite evidence candidate — 18 October 2026
 
-The [candidate record](releases/2026-10-18-artwork-safety-and-evidence.md) combines the separately prepared selection-layer-lock repair and expanded `/verified` page on integration source `d9065d5`, in an isolated branch. It adds the [findings register](testsprite/findings.md), [public build diary](testsprite/build-diary.md) and standalone pixel/file journeys. Earlier isolated results retain their own source and scope; the combined candidate needs its own gate, production/browser and cloud observations. The GitHub App's fresh PR #6 event still stopped at billing; this does not prevent local checks, preview deployments or controlled portal qualification.
+The [candidate record](releases/2026-10-18-artwork-safety-and-evidence.md) combines the separately prepared selection-layer-lock repair and expanded `/verified` page on integration source `d9065d5`, in an isolated branch. It adds the [findings register](testsprite/findings.md), [public build diary](testsprite/build-diary.md) and standalone pixel/file journeys. The combined source `37b37191` passed its full gate, 66 affected production-browser cases across three engines, four complete file/pixel journeys, twelve decoder fixtures and four strict controlled cloud replays on PR #7’s public preview. Earlier results retain their own source and scope. PR #7’s fresh matched App event still stopped at billing; the automatic ledger remains empty. See the candidate record for limits and retained attempts.
 
 ## Final integration — 17 October 2026
 

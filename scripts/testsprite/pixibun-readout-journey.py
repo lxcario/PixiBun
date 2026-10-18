@@ -260,7 +260,7 @@ def emit_evidence(kind, detail):
 
 
 
-EXPECTED_COMMIT = 'CANDIDATE_COMMIT_REQUIRED'
+EXPECTED_COMMIT = None
 
 def heart_raster(highlight=True):
     # Literal design specification, independent of the product's replay/raster code.
@@ -292,7 +292,12 @@ def summarize(rgba):
 async def check_readout(page, rgba, after_revision=None):
     root = page.get_by_test_id('canvas-readout')
     if after_revision is not None:
-        await page.wait_for_function('(n) => Number(document.querySelector("[data-testid=canvas-readout]")?.dataset.revision) > n', arg=after_revision)
+        # Poll the read-only attribute in the driver; do not evaluate a string
+        # inside the page, which a strict production CSP correctly refuses.
+        deadline = asyncio.get_running_loop().time() + 15
+        while int(await root.get_attribute('data-revision') or '0') <= after_revision:
+            assert asyncio.get_running_loop().time() < deadline, 'Readout revision did not advance after the real history action'
+            await asyncio.sleep(0.05)
     await expect(root).to_have_attribute('data-state', 'ready')
     fixed = {'size': '16×16', 'frame': '1 of 1', 'frames': '1', 'layer': 'Base Layer', 'layers': '1'}
     for key, value in {**fixed, **summarize(rgba)}.items():

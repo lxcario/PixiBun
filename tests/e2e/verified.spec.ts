@@ -17,8 +17,8 @@ test.describe('/verified', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'A little desk. Promises we can check.' })).toBeVisible();
     await expect(page.getByTestId('verified-loop-steps').getByRole('listitem')).toHaveCount(5);
     await expect(page.getByTestId('verified-prs-checked')).toContainText(String(ledger.entries.length));
-    await expect(page.getByTestId('verification-story')).toHaveCount(2);
-    await expect(page.getByTestId('verification-supporting-check')).toHaveCount(8);
+    await expect(page.getByTestId('verification-story')).toHaveCount(3);
+    await expect(page.getByTestId('verification-supporting-check')).toHaveCount(14);
     await expect(page.getByTestId('verification-automation-status')).toContainText('blocked by billing');
 
     if (ledger.entries.length === 0) await expect(page.getByTestId('loop-ledger-empty')).toBeVisible();

@@ -44,3 +44,19 @@ The [findings register](findings.md) separates genuine application defects, test
 - [Painted heart and lighting — corrected cloud pass](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/d9ca81b8-d9c6-4e2c-a269-a4853302f2bc), saved code `v-f2f352efaa06`; 13 real brush drags and three clicks, no admitted/imported artwork.
 
 The two new strict passes pinned production source `92de6c74b259eafcf73cc986b1def6c69f5566aa`, with autoHeal false. Reusable versions also passed; their scripts observe a stable actual origin/build and can be repinned for a controlled candidate comparison. The fixture is admitted by normal Import; it is not original pointer drawing. Native OS save pickers, arbitrary artwork/encoder settings and manual screen-reader studies remain outside these results. See the [journey guide](../../scripts/testsprite/README.md), [replay contracts](replays.md), [committed evidence data](verification-stories.json) and [automatic PR ledger](loop-ledger.md).
+
+## 18 October: a promise kept on the preview
+
+The padlock has its follow-up now. We brought the same question to the fixing preview: prove Delete works, Undo it, select again, lock the layer, and try once more. This time the selected pixels stayed exactly where the artist had left them. The strict cloud replay passed. The original red remains beside it, so the small repair has a trail someone else can follow.
+
+The heart has a voice now, too. A separate cloud journey checked its literal three-color recipe against the canvas, its quiet readout and the real PNG. Undo and Redo agreed. That recipe is a reproducible drawing; our row-by-row brush-painted heart remains the separate proof that actual pointer gestures work.
+
+We also asked the keyboard to give Bun a blank next frame, then bring the first one safely back. And we changed the desk through Cocoa, Drizzle, Harvest and Harbor, by night and by day. Each choice left the drawing’s pixels alone; a reload remembered Harbor Day. These controlled cloud checks passed on the same source `37b37191`.
+
+The automatic PR check still stopped at the service’s billing gate. We have kept its counter empty. While that door waits to open, there is still useful work we can finish: better questions, real files, a public account of each result, and a little film of the drawing making its way home. The [candidate record](../releases/2026-10-18-artwork-safety-and-evidence.md) and [evidence data](verification-stories.json) link the precise scope and receipts.
+
+## A small way back to the palette
+
+Another question came from the keyboard. After choosing colors, could an artist close the little palette and return to the button they came from? TestSprite found that the palette closed, but focus went elsewhere. Three doors shared one return address. We are giving each opening its own way back, with a regression for both color wells and the swatches button. The original cloud red stays beside the repair’s qualification record.
+
+While we followed that trail, the desk remembered a saved arrangement after a reload. Frame cards traveled left and right by keyboard, carrying their different pauses with them. On the homepage, the tiny bench made a real moving GIF while the artist’s Studio drawing stayed safe in the other tab. Those three controlled cloud journeys passed. The [Colors follow-up](../releases/2026-10-18-color-focus-return.md) and [dated receipts](cloud-receipts-2026-10-18.json) keep the exact sources and limits close to the story.

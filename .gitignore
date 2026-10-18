@@ -169,3 +169,5 @@ PIXIMOTION_ENGINE_MASTER_SPEC.md
 /docs/research/specular-glint-2026-10-01.md
 # Browser runtime log stays local.
 /debug.log
+# Generated Python journey bytecode stays local.
+__pycache__/

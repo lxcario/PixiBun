@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "updated": "2026-10-18",
-  "automationNote": "The GitHub App is connected and merge protection is configured. PR #6's fresh preview deployment matched its head, but the new TestSprite event was blocked by billing: no tests ran. An executed automatic suite is still pending. These dated cloud replays are supporting evidence.",
+  "automationNote": "The GitHub App is connected and merge protection is configured. PR #7's fresh preview deployment matched its head (37b37191), but the new TestSprite event was blocked by billing: no automatic tests ran. Four controlled candidate cloud replays passed separately. An executed automatic suite is still pending.",
   "stories": [
     {
       "id": "bun-keeps-its-colors",
@@ -23,15 +23,30 @@
       "title": "A lock should keep its promise.",
       "promise": "Some pixels are finished for today. The padlock should look after them.",
       "discovery": "We asked TestSprite to select part of Bun, prove Delete worked, and bring it back with Undo. Then it selected again and locked the layer. Delete still erased it: the cloud comparison found 768 changed RGBA channels after the lock was on.",
-      "repair": "Drawing tools checked the lock; selection edits had another route in. An isolated repair adds the check before destructive selection operations and keeps a refused floating paste available. It passes 114 focused tests and nine browser cases. Integration, deployment and the cloud rerun are still ahead.",
-      "status": "local-passed",
+      "repair": "Drawing tools checked the lock; selection edits had another route in. The repair checks the live layer before destructive selection operations and keeps a refused floating paste available. The same exact-pixel cloud assertion now passes on the fixing preview. Bun’s selected pixels stay put.",
+      "status": "preview-passed",
       "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa",
-      "fixCommit": null,
-      "prUrl": null,
+      "fixCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9",
+      "prUrl": "https://github.com/lxcario/PixiBun/pull/7",
       "redUrl": "https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/deb3794c-8831-4e5d-8720-8af739122e15",
       "redRunId": "092822f6-152c-44b2-9a18-a09a52a4a92e",
+      "followUpUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/0a1d9522-9cea-410d-9988-7fa49c610016",
+      "scope": "Real marquee and keyboard Delete, observed lock control, unlocked sensitivity and exact Undo restoration. Controlled replay pinned the actual preview origin and full fixing source; automatic PR execution and production release remain separate."
+    },
+    {
+      "id": "colors-find-their-way-back",
+      "title": "Every color has a way back.",
+      "promise": "A keyboard user should come back to the control that welcomed them in.",
+      "discovery": "The Colors journey moved among real palette swatches, chose foreground and background separately, then pressed Escape. The flyout closed, but focus went to a different swatches button. The same cloud check and local browser regressions reproduced it for the color wells.",
+      "repair": "The flyout had one fixed return address even though three controls could open it. The repair remembers the actual opening button. All three opener paths have real-browser regressions; the fixing-preview cloud replay is still pending.",
+      "status": "local-passed",
+      "sourceCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9",
+      "fixCommit": null,
+      "prUrl": "https://github.com/lxcario/PixiBun/pull/7",
+      "redUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/710237ce-f346-4d2b-9a05-a13dd4dbd7bb",
+      "redRunId": "c6ce306c-caf8-4488-b1a2-904b2198397a",
       "followUpUrl": null,
-      "scope": "Real marquee and keyboard Delete, observed lock control, unlocked sensitivity and exact Undo restoration. The local repair is not deployed."
+      "scope": "Original failure on the source-pinned PR preview, after exact artwork and separate color-selection checks. Local repair qualification is separate from cloud and automatic PR execution."
     }
   ],
   "checks": [
@@ -106,6 +121,60 @@
       "runId": "25f321b5-53af-43fd-ac2f-505743798f97",
       "codeVersion": "v-f2f352efaa06",
       "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+    },
+    {
+      "id": "readable-heart",
+      "title": "A heart, read back exactly.",
+      "scope": "The literal 256-pixel, three-color Heart recipe matches every readout field, independent canvas RGBA and an actual decoded PNG, including Undo/Redo. Recipe application is separate from pointer drawing.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/557111b1-8302-498c-8b71-48315a4e24d3",
+      "runId": "7ce2de6e-8527-478b-a9d9-32cb0645b211",
+      "codeVersion": "v-854e85da6da9",
+      "sourceCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9"
+    },
+    {
+      "id": "animate-slot",
+      "title": "A blank frame with room to begin.",
+      "scope": "Keyboard Enter activates the actual Animate end slot. Its new frame is entirely transparent; the original pixels and observed hold survive adding, Undo and Redo.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/bda6c47c-05cd-4ea7-8fe7-4be7d41629e3",
+      "runId": "40a6ba90-f882-40fc-a474-49736edd169e",
+      "codeVersion": "v-1b7a575c38ea",
+      "sourceCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9"
+    },
+    {
+      "id": "four-themes",
+      "title": "A different desk, the same drawing.",
+      "scope": "Cocoa, Drizzle, Harvest and Harbor are chosen through Studio controls in Night and Day. Exact artwork and frame/layer counts survive every choice and Harbor Day reload. This is not a contrast audit.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/00278cc8-4b69-4cd7-a097-fb310d8e8eaf",
+      "runId": "a6477e44-f710-4921-9eea-b7fd624744df",
+      "codeVersion": "v-d22e95767dae",
+      "sourceCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9"
+    },
+    {
+      "id": "saved-desk",
+      "title": "The shelves remember their places.",
+      "scope": "Actual saved layout fields return from a proven opposite arrangement: left inspector, 300 px, Navigator and Timeline. Reload and reapply preserve exact artwork and frame/layer counts.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/60475fe3-d9ca-4d33-bdfb-c72711b89be3",
+      "runId": "0dec4f21-5c2c-4dbd-9be3-34a8b7a933de",
+      "codeVersion": "v-c44169e2a72e",
+      "sourceCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9"
+    },
+    {
+      "id": "frame-keys",
+      "title": "A frame can travel by keyboard.",
+      "scope": "Focused-card duplicate, Alt+Left/Right reorder and Delete preserve exact artwork and distinguishable 100/200 ms holds. A real workspace-name input keeps Delete as a text edit.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/43b8e71b-3b77-4856-a9e2-c645994504fd",
+      "runId": "8ac13004-89b7-4d38-9128-bd47340cd8d1",
+      "codeVersion": "v-db6dbf45ca67",
+      "sourceCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9"
+    },
+    {
+      "id": "homepage-bench",
+      "title": "The bench keeps its own tiny world.",
+      "scope": "Real Draw, Light and Turn actions change the homepage canvas. The actual Hop GIF decodes to distinct poses with positive holds; the original Studio drawing survives a second tab and reload. Bounded independent GIF reader.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/85c9b9ed-a044-4305-bd7e-ff4f33410acb",
+      "runId": "87a39028-f8bc-4b79-8757-0a329d11b177",
+      "codeVersion": "v-55f7396c1362",
+      "sourceCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9"
     }
   ]
 }
