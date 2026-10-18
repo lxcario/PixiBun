@@ -7,6 +7,7 @@ import { workspaceJobKey } from '@/lib/engine/workspaceJob';
 import { getGlobalHistoryEngine } from '@/lib/engine/historyEngine';
 import { isWorkspaceControlTarget, shouldIgnoreWorkspaceKey } from '@/lib/input/workspaceKeyboard';
 import type { HistoryStep } from '@/types/canvas';
+import { isEditableLayer } from '@/lib/canvas/layerEditGuard';
 import {
   Point,
   getClippedLine,
@@ -329,7 +330,8 @@ export function useCurvePointerHandler({
 
     const currentFrame = frames[activeFrameIndex];
     const currentLayer = currentFrame?.layers.find((l) => l.id === activeLayerId);
-    if (!currentLayer || currentLayer.locked) {
+    // The general pointer path then explains a locked or hidden layer.
+    if (!isEditableLayer(currentLayer)) {
       return false;
     }
 

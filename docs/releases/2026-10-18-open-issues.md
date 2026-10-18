@@ -45,7 +45,7 @@ The [theme gallery](../guides/themes.md) said its 15 October pictures predated t
 | Stroke loop out of React | A Phase 1 performance architecture item, not a defect: the [roadmap](../plans/2026-10-14-strategy-roadmap.md) asks for a measurement with the existing response probe before pointer sampling changes, and the 16 October pan and stroke-cache work has not been measured against it. |
 | Typed-array pixel store and straight-alpha compositor (defect 5) | Phase 3, scheduled after launch together with format v5, linked cels, groups and a store split. Pixels live in canvases, which store premultiplied alpha; removing that rounding means replacing the pixel store, not a local fix. |
 | Dependency updates | Minor Next, React and Playwright releases have no advisories. Dependabot (added 16 October) proposes them weekly, each with its own CI run. |
-| `docs/audits/` findings (17 October) | Triaged and fixed on branch `fix/audit-2026-10-17-triage`, browser-verified on `claude/awesome-raman-f4078d`; not merged into this branch. |
+| `docs/audits/` findings (17 October) | Triaged and fixed on branch `fix/audit-2026-10-17-triage`, browser-verified on `claude/awesome-raman-f4078d`; not merged into this branch when this record was written. Merged on 18 October: see [the audit triage record](2026-10-18-audit-triage.md) and the merge note below. |
 | Physical devices, actual Safari, screen readers, participant studies, real collaboration networks, host update and rollback, long sessions on low-memory devices | Need people, hardware, networks or a deployed host ([issue registry](../research/issue-registry.md)). Local source and tests cannot close them. |
 
 ## Verification
@@ -61,3 +61,9 @@ Windows, production builds of this working tree served under Node **22.23.3**, b
 Not counted: several Nibbli and build attempts that failed instantly, with no output, because the portable Node 22 copy used for these checks had lost files from its temporary folder. It was re-extracted from the archive, which matched nodejs.org's SHA-256 list, and every result above comes from the fresh copy. Those attempts are kept under `artifacts/nibbli`.
 
 Not run: actual Safari, physical devices, a deployed host, a GitHub run of the preview workflow, the Firefox and WebKit halves of the production specs this round did not touch, and the 17 October audit branch together with these changes.
+
+## Merged with the audit triage
+
+On the user's request, `claude/awesome-raman-f4078d` (the [audit triage](2026-10-18-audit-triage.md) fixes and their browser record, on top of `fix/audit-2026-10-17-triage`) was merged after these commits. Git followed the graphics rename, so the Bézier fix landed in `src/lib/graphics/math/curvesAndLines.ts`; one new test still imported the old path and was updated. Only dated documentation and the generated inventory conflicted; both sides' entries are kept.
+
+On the merged tree: `npm run gate:full` passed all six stages with **2,889 tests / 267 files** (62.25 % statements, 57.5 % branches, 57.56 % functions, 63.72 % lines; largest p90 0.53 ms). In production builds, `drawingConsistency`, `playbackStall` and `animatedExportIntegrity` passed **24 of 24** across Chromium, Firefox and WebKit; in the development server, the triage's `replayLink`, `selectionSubtraction`, `artworkProtection` and `toolMotionPreview` specs passed **19 of 19** in Chromium.

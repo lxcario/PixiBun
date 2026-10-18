@@ -31,6 +31,16 @@ export function getQuadraticBezierPoints(
 
   const steps = customSteps ?? Math.max(16, Math.ceil(approxDist * 1.5));
 
+  const add = (x: number, y: number) => {
+    const key = `${x},${y}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      points.push({ x, y });
+    }
+  };
+
+  let prevX = 0;
+  let prevY = 0;
   for (let i = 0; i <= steps; i++) {
     const t = i / steps;
     const mt = 1 - t;
@@ -38,14 +48,42 @@ export function getQuadraticBezierPoints(
     const x = Math.round(mt * mt * p0.x + 2 * mt * t * p1.x + t * t * p2.x);
     const y = Math.round(mt * mt * p0.y + 2 * mt * t * p1.y + t * t * p2.y);
 
-    const key = `${x},${y}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      points.push({ x, y });
+    // Uniform t outruns one pixel per step where the curve is fast. Bridge
+    // consecutive samples (not deduplicated points, so a curve that doubles
+    // back never gains a chord) to keep the stroke 8-connected.
+    if (i > 0 && Math.max(Math.abs(x - prevX), Math.abs(y - prevY)) > 1) {
+      bridgeSamples(prevX, prevY, x, y, add);
     }
+    add(x, y);
+    prevX = x;
+    prevY = y;
   }
 
   return points;
+}
+
+/** Bresenham pixels strictly between two integer samples, in order. */
+function bridgeSamples(x0: number, y0: number, x1: number, y1: number, add: (x: number, y: number) => void): void {
+  const dx = Math.abs(x1 - x0);
+  const dy = Math.abs(y1 - y0);
+  const sx = x0 < x1 ? 1 : -1;
+  const sy = y0 < y1 ? 1 : -1;
+  let err = dx - dy;
+  let x = x0;
+  let y = y0;
+  for (;;) {
+    const e2 = 2 * err;
+    if (e2 > -dy) {
+      err -= dy;
+      x += sx;
+    }
+    if (e2 < dx) {
+      err += dx;
+      y += sy;
+    }
+    if (x === x1 && y === y1) return;
+    add(x, y);
+  }
 }
 
 /**

@@ -55,10 +55,10 @@ A bun crouching, in the air and landing squashed: filled ellipses, Line ears and
 | `canvas-readout-frame` | `3 of 3` | `3 of 3` |
 | `canvas-readout-layer` | `Base Layer` | `Base Layer` |
 | `canvas-readout-layers` | `1` | `1` |
-| `canvas-readout-pixels` | `61` | `61` |
+| `canvas-readout-pixels` | `79` | `79` |
 | `canvas-readout-colors` | `2` | `2` |
-| `canvas-readout-top-colors` | `#f4e6d0 59, #3a2e4c 2` | `#f4e6d0 60, #3a2e4c 1` |
-| `canvas-readout-digest` | `6a67b496` | `b64dfb9c` |
+| `canvas-readout-top-colors` | `#f4e6d0 77, #3a2e4c 2` | `#f4e6d0 78, #3a2e4c 1` |
+| `canvas-readout-digest` | `1862d21e` | `4a1069cc` |
 
 ### Sunset on two layers (`sunset`)
 
@@ -76,8 +76,8 @@ Sky filled orange and a filled sea rectangle on the base layer; a sun on Layer 2
 | `canvas-readout-layers` | `2` | `2` |
 | `canvas-readout-pixels` | `256` | `256` |
 | `canvas-readout-colors` | `3` | `3` |
-| `canvas-readout-top-colors` | `#ffb36b 137, #2b4c7e 95, #ffe66d 24` | `#ffb36b 137, #2b4c7e 90, #ffe66d 29` |
-| `canvas-readout-digest` | `9511f3a5` | `5e3f3ca4` |
+| `canvas-readout-top-colors` | `#ffb36b 126, #2b4c7e 86, #ffe66d 44` | `#ffb36b 126, #2b4c7e 78, #ffe66d 52` |
+| `canvas-readout-digest` | `ef9f655d` | `a0c9eb4d` |
 
 ### Outlined shapes on a wide canvas (`shapes`)
 
@@ -93,10 +93,10 @@ A 32×20 canvas: a rectangle outline filled light blue, an ellipse outline fille
 | `canvas-readout-frame` | `1 of 1` | `1 of 1` |
 | `canvas-readout-layer` | `Base Layer` | `Base Layer` |
 | `canvas-readout-layers` | `1` | `1` |
-| `canvas-readout-pixels` | `317` | `297` |
+| `canvas-readout-pixels` | `336` | `316` |
 | `canvas-readout-colors` | `3` | `3` |
-| `canvas-readout-top-colors` | `#ffd166 127, #3a2e4c 110, #7ec8e3 80` | `#ffd166 137, #3a2e4c 80, #7ec8e3 80` |
-| `canvas-readout-digest` | `04609d7e` | `4af21a4e` |
+| `canvas-readout-top-colors` | `#ffd166 146, #3a2e4c 110, #7ec8e3 80` | `#ffd166 156, #3a2e4c 80, #7ec8e3 80` |
+| `canvas-readout-digest` | `67a657a9` | `ede47e99` |
 
 ### Winking face (`wink`)
 
@@ -112,10 +112,10 @@ An ellipse outline filled yellow, Pen eyes and smile, the Eraser removes one eye
 | `canvas-readout-frame` | `1 of 1` | `1 of 1` |
 | `canvas-readout-layer` | `Base Layer` | `Base Layer` |
 | `canvas-readout-layers` | `1` | `1` |
-| `canvas-readout-pixels` | `129` | `128` |
+| `canvas-readout-pixels` | `148` | `147` |
 | `canvas-readout-colors` | `2` | `2` |
-| `canvas-readout-top-colors` | `#ffd23f 85, #3a2e4c 44` | `#ffd23f 84, #3a2e4c 44` |
-| `canvas-readout-digest` | `c2a9a132` | `e514c2d1` |
+| `canvas-readout-top-colors` | `#ffd23f 100, #3a2e4c 48` | `#ffd23f 99, #3a2e4c 48` |
+| `canvas-readout-digest` | `44f5ccdd` | `b9133882` |
 
 ## Format (version 1)
 
