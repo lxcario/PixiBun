@@ -66,23 +66,26 @@ describe('getEllipsePoints fills the dragged box at either parity', () => {
         const x0 = 3, y0 = 5, x1 = x0 + w - 1, y1 = y0 + h - 1;
         const outline = getEllipsePoints(x1, y1, x0, y0, false); // corner order must not matter
         const set = new Set(keys(outline));
-        expect(set.size).toBe(outline.length);
-        expect(span(outline)).toEqual({ minX: x0, maxX: x1, minY: y0, maxY: y1 });
-        expect(components8(outline)).toBe(1);
-        for (const p of outline) {
-          expect(set.has(`${x0 + x1 - p.x},${p.y}`)).toBe(true);
-          expect(set.has(`${p.x},${y0 + y1 - p.y}`)).toBe(true);
-        }
-
         const area = getEllipsePoints(x0, y0, x1, y1, true);
         const areaSet = new Set(keys(area));
-        expect(areaSet.size).toBe(area.length);
-        for (const key of set) expect(areaSet.has(key)).toBe(true);
-        // Every row of the fill is one unbroken span.
         const rows = new Map<number, number[]>();
         for (const p of area) rows.set(p.y, [...(rows.get(p.y) ?? []), p.x]);
-        expect(rows.size).toBe(h);
-        for (const xs of rows.values()) expect(Math.max(...xs) - Math.min(...xs) + 1).toBe(xs.length);
+        // One assertion per box keeps the 1,600-box sweep fast under coverage.
+        expect({
+          box: `${w}×${h}`,
+          duplicates: outline.length - set.size,
+          span: span(outline),
+          components: components8(outline),
+          asymmetric: outline.filter(p => !set.has(`${x0 + x1 - p.x},${p.y}`) || !set.has(`${p.x},${y0 + y1 - p.y}`)).length,
+          fillDuplicates: area.length - areaSet.size,
+          outlineOutsideFill: [...set].filter(key => !areaSet.has(key)).length,
+          rows: rows.size,
+          // Every row of the fill is one unbroken span.
+          brokenRows: [...rows.values()].filter(xs => Math.max(...xs) - Math.min(...xs) + 1 !== xs.length).length,
+        }).toEqual({
+          box: `${w}×${h}`, duplicates: 0, span: { minX: x0, maxX: x1, minY: y0, maxY: y1 }, components: 1,
+          asymmetric: 0, fillDuplicates: 0, outlineOutsideFill: 0, rows: h, brokenRows: 0,
+        });
       }
     }
   });

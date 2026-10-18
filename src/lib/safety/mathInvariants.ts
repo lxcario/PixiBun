@@ -73,6 +73,8 @@ export class MathInvariants {
   /**
    * Normalizes an arbitrary rectangle (supporting negative or inverted drag vectors)
    * into a canonical top-left origin coordinate with strictly positive integer width & height.
+   * The corners are half-open edges, so `w = |x2 - x1|`: SafeCanvas passes `(x, x + w)`.
+   * Inclusive pixel boxes (a marquee from pixel a to pixel b) add their own `+ 1`.
    */
   public static normalizeRect(
     x1: number,
