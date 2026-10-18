@@ -91,8 +91,26 @@ A temporary copy of `auditVerification.test.ts.txt` run against this branch (and
 - **Retained failed runs.**
   - The first gate run stopped at Stage 1: `docs/generated/test-inventory.json` was stale until `npm run docs:inventory` listed the two new test files.
   - The second stopped at Stage 4: the 40×40 ellipse sweep timed out at 5 s under coverage, with one assertion per pixel. It now asserts once per box (about 0.3 s) and checks the same properties.
-- **Not run:** Playwright and production browser suites, including `tests/e2e/replayLink.spec.ts`, which reads the same `replays.json`. No TestSprite run is claimed. The production build (`gate:full`) was not run.
+- **Not run in the first verification:** Playwright and production browser suites, including `tests/e2e/replayLink.spec.ts`, which reads the same `replays.json`. No TestSprite run is claimed. The production build (`gate:full`) was not run. The browser runs below were added afterwards; TestSprite and `gate:full` remain unrun.
 - Unit evidence uses the repository's byte-copy canvas fixture, which does not model source-over alpha. The double-alpha effect of duplicate points is inferred from the stamping code, not measured in a browser.
+
+### Browser suites, 18 October
+
+Run on source `925faa3d` (this branch's tip before this section was added), Node 22.23.3 from `artifacts/runtime/node-v22.23.3-win-x64`, Chromium build 1234. The worktree's `node_modules` is a junction to the main checkout's, which Turbopack refuses ("points out of the filesystem root"). Each server below therefore ran with a temporary, uncommitted `turbopack: { root: "D:/PixiBun" }` in `next.config.ts`, reverted afterwards. The development port 3000 belonged to another checkout, so the e2e specs ran through a temporary copy of `playwright.config.ts` pointing its web server and `baseURL` at port 3210, with the list reporter only; tests, timeouts and browser project were unchanged.
+
+| Suite | Server | Result |
+| --- | --- | --- |
+| `tests/e2e/replayLink.spec.ts` | `next dev --turbopack` | **6 passed**: heart, hop, sunset, shapes and wink with the regenerated digests, plus the broken-link case |
+| `tests/e2e/selectionSubtraction.spec.ts` | same | **3 passed** (Box, Lasso, Wand) |
+| `tests/e2e/artworkProtection.spec.ts` | same | **7 passed** |
+| `tests/e2e/toolMotionPreview.spec.ts` | same | **3 passed** |
+| `tests/production/drawingConsistency.spec.ts` | `next build` (with the precache manifest), then `next start -p 3211` | **15 passed**: 5 cases each in Chromium, Firefox and WebKit, including the thick Rectangle and Ellipse preview-equals-commit cases |
+
+- **Retained failed run.** The first e2e attempt did not start: its dev server stopped on the Turbopack junction error before any test ran. The temporary `turbopack.root` above was the only change before the passing run.
+- **Manual Studio checks** (development server on port 3212, 32×32 canvas, 1280×900 viewport; pixels read from `main-composite-canvas`):
+  - An Ellipse drag from pixel (2,2) to (9,9) drew an 8×8 circle: 20 pixels spanning x 2–9 and y 2–9, rows `4–7 / 3,8 / 2,9 ×4 / 3,8 / 4–7`.
+  - With the layer hidden, a Pen drag across row 15 showed the toast "The active layer is hidden. Show it in Layers before changing its pixels." After showing the layer again the composite matched its earlier pixels exactly, and Undo then held only the two visibility steps, not a stroke.
+  - With the layer locked, a Box selection over the circle and **Delete** showed the toast "The active layer is locked. Unlock it in Layers before changing its pixels." The selection stayed and all 20 pixels remained.
 
 ## Follow-ups
 
