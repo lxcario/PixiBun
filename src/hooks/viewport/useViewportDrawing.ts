@@ -16,6 +16,7 @@ import { estimatePaletteBytes } from '@/lib/color/paletteSemantics';
 import { commitWorkspace } from '@/lib/engine/workspaceTransaction';
 import { selectiveRestore } from '@/lib/engine/selectiveRestore';
 import { cropImageData, isPatchStep, stepRect, toPatchStep } from '@/lib/engine/pixelPatch';
+import { isEditableLayer } from '@/lib/canvas/layerEditGuard';
 
 interface UseViewportDrawingProps {
   canvasWidth: number;
@@ -623,7 +624,7 @@ export function useViewportDrawing({
     (points: Point[], color: string, isErase: boolean = false, refresh: boolean = true) => {
       const currentFrame = useStudioStore.getState().frames[activeFrameIndex] || frames[activeFrameIndex];
       const targetLayerId = useStudioStore.getState().activeLayerId || activeLayerId || currentFrame?.layers[0]?.id;
-      if (!targetLayerId || !currentFrame?.layers.some(layer => layer.id === targetLayerId && !layer.locked)) return;
+      if (!targetLayerId || !currentFrame?.layers.some(layer => layer.id === targetLayerId && isEditableLayer(layer))) return;
 
       const layerCanvas = getOrCreateLayerCanvas(targetLayerId);
       const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
@@ -693,7 +694,7 @@ export function useViewportDrawing({
   const drawProvisionalPoint = useCallback((point: Point, color: string, isErase: boolean) => {
     const frame = useStudioStore.getState().frames[activeFrameIndex];
     const layerId = activeLayerId || frame?.layers[0]?.id;
-    if (!layerId || !frame?.layers.some(layer => layer.id === layerId && !layer.locked)) return;
+    if (!layerId || !frame?.layers.some(layer => layer.id === layerId && isEditableLayer(layer))) return;
     const ctx = getOrCreateLayerCanvas(layerId).getContext('2d', { willReadFrequently: true });
     if (!ctx) return;
     const points = applySymmetry([point], canvasWidth, canvasHeight, tools.symmetryHorizontal, tools.symmetryVertical, tools.symmetryGroup);
