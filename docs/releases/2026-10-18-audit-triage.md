@@ -117,3 +117,33 @@ Run on source `925faa3d` (this branch's tip before this section was added), Node
 - **Colour tolerance labels.** Wand (4-channel max difference) and Color Replace (RGB distance) share the *Color tolerance* slider with different metrics. That suits their jobs, but the panel could say what each tolerance compares.
 - **Commit target.** A floating selection commits to whichever layer is active at commit time, not the layer it was lifted from. This behaviour is unchanged here.
 - **Ignore rule.** `docs/audits/` has no `.gitignore` rule, so the local audit could be added by accident.
+
+## Follow-ups resolved and the feature proposals — 18 October
+
+After the merge into `testsprite-s4`, the open items from this record and the audit's inventory were taken up:
+
+- **Ground shadow event without a sender.** `FEATURE_INVENTORY.md` was right that nothing emitted `pixibun:ground-shadow`, but the feature is not missing: **Add Floor Shadow** and **Cast Ground Shadow** in the shadow section use the ray-marched cast shadow, which replaced this older projected shadow. The dead event, its handler and `generateGroundShadowData` are removed rather than given a second button. The `ground-shadow` layer tag stays in the project schema so older files still open. The tool preview for those two buttons still drew the removed projection; its clip now runs the same EDT and `renderBoundedSpriteCastShadow` call, with the buttons' defaults.
+- **Commit target.** A moved or pasted selection now records its layer and drops back onto it, even if another layer is chosen before committing (`floatingSelectionTarget` in `src/lib/canvas/layerEditGuard.ts`). If that layer has been locked or hidden meanwhile, the selection stays floating and a message names the layer. When the layer is gone from the showing frame (deleted, or another frame selected), it falls back to the active layer as before. A free transform already refused to apply after a layer change, so it is unchanged. Two cases in `tests/layerEditBoundary.test.tsx` failed on the previous code.
+- **Colour tolerance labels.** Each tolerance slider in **Tools** now says what it compares, and is described by that line for screen readers: Fill (red, green, blue and alpha together), Color under the Magic Wand (largest single-channel difference, alpha included) and under Color Replace (red, green and blue; alpha kept), Erase (red, green and blue, or hue with Match color family). The drawing guide's Wand paragraph, which said it shared the *fill* tolerance, is corrected.
+- **Ignore rule.** `/docs/audits/` and `/.agents/teamwork/` are in `.gitignore`.
+
+`CREATIVE_OPPORTUNITIES.md` proposes twelve features. Checked against the code, before deciding any of them:
+
+| Proposal | Already in PixiBun | Missing |
+| --- | --- | --- |
+| 01 Pixel text tool | — | Everything: the 17 tools have no text tool |
+| 02 In-between morphing | **+ Generate In-Between Frame** under PixiTools | A timeline entry point, multi-step tweens, easing |
+| 03 Auto-sculpt inking | The Pen's **Clean corners**; Smooth Jaggies (which adds blended pixels, as the rendering contract says, so it cannot remove jaggies) | An after-stroke cleanup mode |
+| 04 47-tile autotile set | Blob contours in the tile tools | A full 47-tile sheet from nine tiles, a test pad, Godot/Unity terrain export |
+| 05 Lighting | The live light bar, materials, saved lighting effect layers | Several lights at once; baking to separate highlight and shadow layers |
+| 06 Radial symmetry | Five symmetry groups (`pm`, `p2`, `p4`, `p4m`, `p6m`) | A movable centre, arbitrary N-fold, on-canvas guides. `FEATURE_INVENTORY.md`'s "all 17 wallpaper groups" is wrong |
+| 07 Palette skins | Palette cycling, the Godot palette shader | Named colour skins and a lookup-texture export |
+| 08 Layer groups, clipping | **On artwork only** (clips against all artwork below, as the workspace guide says) | Groups and per-layer clipping masks; a data-model change (roadmap phase 3) |
+| 09 Curves | Gap-free curves (above) and **Re-edit Curve** | Cubic curves |
+| 10 Sprite-sheet preview | Packed sheets with padding and engine metadata | A visual preview; edge-pixel extrusion into the padding |
+| 11 Motion-path tracer | Onion skin | Arcs and spacing display |
+| 12 Audio track | — | Everything |
+
+The proposals' effort estimates and adoption figures are the audit's own, not measurements. Which features to build is a product decision; none is started here.
+
+**Checks.** `npm run gate:full` passed all six stages on Node 22.23.3 with **2,896 tests / 267 files**. In the development server, `toolMotionPreview`, `artworkProtection`, `selectionSubtraction`, `lassoTransformIntegrity` and `gameDelivery` gave 22 passed and 1 failed; the production `drawingConsistency` spec passed 15 of 15 in Chromium, Firefox and WebKit. The failure, `gameDelivery` "game-kit controls remain accessible", is an existing flake: it also failed two of three runs with these changes set aside. Its axe scan ran while the Godot tab's controls were still fading in and read their text as nearly the background colour (contrast 1.01–1.46). The test now waits for the dialog's animations to finish before scanning, as `backupTrust.spec.ts` does; the assertion is unchanged, and it passed 4 of 4, then the whole spec 7 of 7.
