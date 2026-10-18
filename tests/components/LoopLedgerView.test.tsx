@@ -6,6 +6,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import { LEDGER_MARKDOWN_URL, LoopLedgerView, README_SECTION_URL } from '@/components/verified/LoopLedgerView';
 import { REPO_URL, parseLoopLedger } from '@/lib/verified/loopLedger.mjs';
 import { sampleLedger } from '../fixtures/loopLedgerSample';
+import { parseVerificationStories } from '@/lib/verified/verificationStories.mjs';
 
 afterEach(cleanup);
 
@@ -14,7 +15,7 @@ const committed = parseLoopLedger(JSON.parse(fs.readFileSync('docs/testsprite/lo
 describe('LoopLedgerView', () => {
   it('explains the five-step loop', () => {
     render(<LoopLedgerView ledger={committed} />);
-    expect(screen.getByRole('heading', { level: 1, name: 'Tested on every pull request.' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: 'A little desk. Promises we can check.' })).toBeTruthy();
     const steps = within(screen.getByTestId('verified-loop-steps')).getAllByRole('heading', { level: 3 }).map(h => h.textContent);
     expect(steps).toEqual(['Pull request', 'Preview', 'TestSprite check', 'Fix', 'Green']);
   });
@@ -34,6 +35,20 @@ describe('LoopLedgerView', () => {
     expect(screen.getByTestId('verified-prs-checked').textContent).toContain(String(committed.entries.length));
     if (committed.entries.length === 0) expect(screen.getByTestId('loop-ledger-empty')).toBeTruthy();
     else expect(screen.getAllByTestId('loop-ledger-row')).toHaveLength(committed.entries.length);
+  });
+
+  it('keeps supporting cloud passes out of automatic PR counts and retains pending repairs', () => {
+    const evidence = parseVerificationStories(JSON.parse(fs.readFileSync('docs/testsprite/verification-stories.json', 'utf8')));
+    // Exercise a pending repair even after every committed story has a preview follow-up.
+    evidence.stories[0] = { ...evidence.stories[0], status: 'local-passed', followUpUrl: null };
+    render(<LoopLedgerView ledger={{ ...committed, entries: [] }} evidence={evidence} />);
+    expect(screen.getByTestId('verification-automation-status').textContent).toContain('blocked by billing');
+    expect(screen.getAllByTestId('verification-story')).toHaveLength(evidence.stories.length);
+    expect(screen.getAllByTestId('verification-supporting-check')).toHaveLength(evidence.checks.length);
+    expect(screen.getByRole('link', { name: 'Draw this little heart →' }).getAttribute('href')).toMatch(/^\/studio\?replay=1_16x16_/);
+    expect(screen.getByTestId('verified-prs-checked').textContent).toContain('0');
+    expect(screen.getAllByText('Local repair passed · deployment and cloud rerun pending').length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: 'Original cloud failure' })).toHaveLength(evidence.stories.length);
   });
 
   it('lists each PR newest first with its run, failures, fix and verdict', () => {

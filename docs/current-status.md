@@ -1,8 +1,24 @@
 # Current project status
 
+## Branch consolidation — 18 October 2026
+
+The [consolidation record](releases/2026-10-18-branch-consolidation.md) preserves the four unique artwork/evidence patches while reconciling equivalent rewritten histories. The persistent origin branches are `main` and `testsprite-s4`; older test cohorts retain their original source identities. This combined tree needs its own verification and does not bypass the automatic App or production-release gates. Other agents' checked-out local worktrees remain intact.
+
 ## Cleanup and the Day/Night switch — 18 October 2026
 
 The [cleanup record](releases/2026-10-18-cleanup-and-day-switch.md) removes dead code found by a last scan, puts the README's welcome first, corrects two handbook counts and fixes the homepage Day/Night switch (a stray flying sun and a 134 ms stall). Still open: homepage scenes recolour by reading their canvases back every frame outside Moonlit at night, and most handbook screenshots predate the 16–18 October interface.
+
+## TestSprite trust and blocked-case triage — 18 October 2026
+
+The [trust record](releases/2026-10-18-testsprite-trust-and-triage.md) adds five strict controlled cloud comparisons and fifteen local three-engine journeys on exact source `36ccc620`: saved-rig source refusal, explicit normal exports/Cancel, last-stroke save/reopening, invalid-import preservation and onion-guide export isolation. All 55 original Blocked reports are classified; latest case statuses are 69 Passed /0 Failed /52 Blocked across separate runs. The [evidence guide](testsprite/evidence-guide.md) separates three genuine product discoveries from verification improvements. Automatic App dispatch remains billing-blocked at the observation; the original publication preview retains its three Vercel-toolbar/CSP console failures. No production release or new app repair is claimed.
+
+## Colors keyboard return — 18 October 2026
+
+The [Colors follow-up](releases/2026-10-18-color-focus-return.md) records a third TestSprite-led product discovery: opening Colors from either color well and pressing Escape returned focus to the separate swatches button. The repair remembers the actual opener; three browser regressions cover all openings and preserved artwork. On fixing source `77a40070`, the same cloud scenario passed; 75 affected production-browser cases passed across three engines, including all opener paths. The original `37b37191` cloud red remains linked separately. Saved layouts, frame keys and the homepage bench also gained strict controlled cloud passes on `37b37191`.
+
+## Artwork safety and TestSprite evidence candidate — 18 October 2026
+
+The [candidate record](releases/2026-10-18-artwork-safety-and-evidence.md) combines the separately prepared selection-layer-lock repair and expanded `/verified` page on integration source `d9065d5`, in an isolated branch. It adds the [findings register](testsprite/findings.md), [public build diary](testsprite/build-diary.md) and standalone pixel/file journeys. The combined source `37b37191` passed its full gate, 66 affected production-browser cases across three engines, four complete file/pixel journeys, twelve decoder fixtures and four strict controlled cloud replays on PR #7’s public preview. Earlier results retain their own source and scope. PR #7’s fresh matched App event still stopped at billing; the automatic ledger remains empty. See the candidate record for limits and retained attempts.
 
 ## Documented open issues — 18 October 2026
 
@@ -240,3 +256,8 @@ The [issue registry](research/issue-registry.md), [artist study](guides/artist-s
 ## Repository retention
 
 Operating instructions, active plans, release records, source, tests and useful handbook images stay tracked. Completed audits, execution logs and raw browser evidence are preserved locally and ignored by Git. The [archive catalog](archives.md) records their original source revision, location and integrity receipt. This cleanup changes the current source snapshot; earlier Git history retains its original files.
+
+
+## TestSprite artist journeys — 17 October 2026
+
+The isolated verification follow-up is described in [the dated journey record](releases/2026-10-17-testsprite-artist-journeys.md). It adds a source-linked `/verified` story page and three standalone browser journeys with independent file/pixel observations. Two new portal cases have controlled strict and reusable cloud passes on production `92de6c74`; the accessible readout/Heart journey passes locally and waits for a candidate deployment before cloud qualification. The catalog snapshot is 120 cases, not a claim of 120 covered features or passing tests. Automatic GitHub App execution remains pending. The shared D: integration checkout has not received this isolated patch.

@@ -12,6 +12,7 @@ import { useStudioStore } from '@/stores/studioStore';
 import { isNormalLayer } from '@/lib/export/normalLayers';
 import { confirmActiveLayerEditable } from '@/lib/canvas/layerEditGuard';
 import { getBufferGeneration, getBufferRevision, snapshotBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
+import { canEditSelectionLayer } from '@/lib/engine/selectionEdit';
 
 function transformSourceKey(layerId: string): string {
   const state = useStudioStore.getState();
@@ -60,7 +61,7 @@ interface UseViewportSelectionTransformProps {
   captureSnapshot: (description: string) => void;
   commitSnapshot: () => void;
   bumpBufferVersion: () => void;
-  liftSelectionToFloating: () => void;
+  liftSelectionToFloating: () => boolean | void;
   commitFloatingSelection: () => void;
 }
 
@@ -155,6 +156,7 @@ export function useViewportSelectionTransform({
   }, [floatingSelection, selection, transform.isTransforming]);
 
   const ensureFloatingSelection = useCallback((): FloatingSelection | null => {
+    if (!canEditSelectionLayer(activeLayerId)) return null;
     if (floatingSelection) return floatingSelection;
     if (!selection) return null;
     if (!confirmActiveLayerEditable()) return null;
@@ -193,8 +195,8 @@ export function useViewportSelectionTransform({
       }
     }
 
+    if (liftSelectionToFloating() === false) return null;
     originalSourceRef.current?.ownership.dispose();
-    liftSelectionToFloating();
     originalSourceRef.current = {
       canvas: backup,
       x: selection.x,
@@ -231,6 +233,7 @@ export function useViewportSelectionTransform({
       clientPoint: Point,
       canvasPoint: Point
     ) => {
+      if (!canEditSelectionLayer(activeLayerId)) return;
       // If not yet floating, lift active selection to floating buffer now
       if (!floatingSelection && selection) {
         if (!ensureFloatingSelection()) return;

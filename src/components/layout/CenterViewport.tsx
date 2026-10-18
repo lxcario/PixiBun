@@ -677,7 +677,7 @@ export const CenterViewport = React.memo(function CenterViewport({
         ) {
           void commitGizmoTransform();
         } else {
-          commitFloatingSelection();
+          return commitFloatingSelection();
         }
       },
       createBoxMask,
