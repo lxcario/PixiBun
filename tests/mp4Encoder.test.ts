@@ -4,6 +4,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   exportAnimationToMp4Async,
+  h264FreezesThisBrowser,
   isMp4ExportSupported,
   probeMp4ExportSupport,
   resetMp4ProbeCache,
@@ -257,6 +258,31 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
   it('reports supported when MediaRecorder with video/mp4 MIME type and captureStream are present', () => {
     installMediaRecorderMock();
     expect(isMp4ExportSupported()).toBe(true);
+  });
+
+  it('leaves H.264 untouched in WebKit on Linux, where probing it froze the page', async () => {
+    const webkitLinux = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15';
+    expect(h264FreezesThisBrowser(webkitLinux)).toBe(true);
+    for (const ua of [
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15',
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Linux; Android 15) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36',
+      'Mozilla/5.0 (X11; Linux x86_64; rv:144.0) Gecko/20100101 Firefox/144.0',
+      navigator.userAgent, // happy-dom: "Linux … AppleWebKit", but not a Safari build
+    ]) expect(h264FreezesThisBrowser(ua)).toBe(false);
+
+    installMediaRecorderMock();
+    MockMediaRecorderInstance.isTypeSupported.mockClear();
+    const configProbe = vi.fn(async () => ({ supported: true }));
+    vi.stubGlobal('VideoEncoder', Object.assign(vi.fn(), { isConfigSupported: configProbe }));
+    vi.stubGlobal('VideoFrame', vi.fn());
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(webkitLinux);
+    expect(isMp4ExportSupported()).toBe(false);
+    await expect(probeMp4ExportSupport(32, 32)).resolves.toBe(false);
+    await expect(exportAnimationToMp4Async([createMockCanvas(4, 4)])).rejects.toThrow('MP4 recording is unsupported');
+    expect(configProbe).not.toHaveBeenCalled();
+    expect(MockMediaRecorderInstance.isTypeSupported).not.toHaveBeenCalled();
   });
 
   it('reports unsupported when MediaRecorder is present but canvas captureStream is missing', () => {

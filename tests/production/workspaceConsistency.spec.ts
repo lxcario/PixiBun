@@ -26,9 +26,12 @@ async function paint(page: Page, from: [number, number], to = from) {
   const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
   const point = (p: [number, number]) => page.mouse.move(box.x + (p[0] + 0.5) * box.width / 32, box.y + (p[1] + 0.5) * box.height / 32);
   await point(from);
-  const hit = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('#center-canvas-area')?.id,
-    { x: box.x + (from[0] + 0.5) * box.width / 32, y: box.y + (from[1] + 0.5) * box.height / 32 });
-  expect(hit, 'The real mouse start must reach the drawing surface').toBe('center-canvas-area');
+  // A surface that just closed may take a moment to leave; report what still covers the start if it never does.
+  await expect.poll(() => page.evaluate(({ x, y }) => {
+    const hit = document.elementFromPoint(x, y);
+    return hit?.closest('#center-canvas-area')?.id ?? `${hit?.tagName.toLowerCase()}.${hit?.className}`;
+  }, { x: box.x + (from[0] + 0.5) * box.width / 32, y: box.y + (from[1] + 0.5) * box.height / 32 }),
+  { message: 'The real mouse start must reach the drawing surface' }).toBe('center-canvas-area');
   await page.mouse.down(); await point(to); await page.mouse.up();
 }
 async function palette(page: Page, query: string) {

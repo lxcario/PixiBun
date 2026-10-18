@@ -53,7 +53,9 @@ test('actual GIF download preserves every moving pose, transparent clearing and 
 test('actual MP4 is playable with both painted poses, or its unsupported platform is explicitly refused', async ({ page, browserName }, info) => {
   const frames = await fixture(page, true); await page.getByTestId('export-button').click(); await page.getByTestId('export-tab-mp4').click();
   const dialog = page.getByRole('dialog'); await dialog.getByRole('button', { name: '1x', exact: true }).click();
-  const supported = await page.evaluate(async () => {
+  // WebKit on Linux: probing H.264 froze the page, so Studio refuses MP4 there without probing (mp4Encoder.ts).
+  const freezes = browserName === 'webkit' && process.platform === 'linux';
+  const supported = !freezes && await page.evaluate(async () => {
     if (typeof VideoEncoder !== 'undefined' && typeof VideoFrame !== 'undefined') {
       // A claimed configuration is not enough: some engines claim H.264 and fail every encode.
       try {
@@ -102,7 +104,8 @@ test('actual MP4 is playable with both painted poses, or its unsupported platfor
   await decoderPage.close();
   expect([observed.width, observed.height]).toEqual([32, 32]); expect(observed.duration).toBeGreaterThanOrEqual(.7); expect(observed.duration).toBeLessThanOrEqual(1.2);
   for (const [i, expected] of [[0, [255, 0, 0, 255]], [1, [0, 0, 255, 255]]] as const) {
-    expect(observed.samples[i].map((v, c) => Math.abs(v - expected[c])).every(error => error <= 12)).toBe(true);
+    expect(observed.samples[i].map((v, c) => Math.abs(v - expected[c])).every(error => error <= 12),
+      `pose ${i + 1} decoded as ${observed.samples[i].join(',')}, expected ${expected.join(',')}`).toBe(true);
   }
   await writeFile(info.outputPath('mp4-capability.json'), JSON.stringify({ browserName, status: 'decoded', expectedDuration: .8, timingTolerance: 'recording path .7–1.2 seconds; not exact-hold qualification', ...observed }));
   expect(await pixels(page)).toEqual(frames[1]);

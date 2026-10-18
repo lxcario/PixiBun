@@ -143,8 +143,11 @@ export async function verifyWelcomeBenchGif(page: Page, info: TestInfo, capture?
   page.off('console', recordConsoleError);
   const tools = page.getByRole('radiogroup', { name: 'Tool' });
   await expect(tools.getByRole('radio', { name: /^Draw/ })).toHaveAttribute('aria-checked', 'true');
-  await tools.getByRole('radio', { name: /^Hop/ }).click();
-  await expect(tools.getByRole('radio', { name: /^Hop/ })).toHaveAttribute('aria-checked', 'true');
+  // The bench is server-rendered: a click before hydration is lost, so repeat it until it takes.
+  await expect(async () => {
+    await tools.getByRole('radio', { name: /^Hop/ }).click();
+    await expect(tools.getByRole('radio', { name: /^Hop/ })).toHaveAttribute('aria-checked', 'true', { timeout: 1000 });
+  }).toPass({ timeout: 15_000 });
   await expect(stage).toHaveAccessibleName(/Hop tool/);
   if (capture) await capture('welcome-bench-hop.png');
   const next = page.waitForEvent('download'); await page.getByRole('button', { name: 'Save GIF', exact: true }).click();

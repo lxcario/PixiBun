@@ -41,11 +41,22 @@ interface WebCodecsWindow extends Window {
 }
 
 /**
+ * WebKit's Linux ports (WebKitGTK, WPE) encode H.264 through GStreamer. In CI's Linux
+ * WebKit, the MP4 support probe froze the page and saving a Light Sweep closed it, so
+ * PixiBun does not reach for H.264 there at all and offers WebM, GIF and APNG instead.
+ * Safari on macOS and iOS says "Macintosh", "iPhone" or "iPad", not Linux.
+ */
+export function h264FreezesThisBrowser(userAgent = typeof navigator === 'undefined' ? '' : navigator.userAgent): boolean {
+  return /AppleWebKit/.test(userAgent) && /Version\/[\d.]+.* Safari\//.test(userAgent) && /Linux|X11/.test(userAgent)
+    && !/Chrome|Chromium|CriOS|Edg|Firefox|FxiOS|Android/.test(userAgent);
+}
+
+/**
  * Checks if in-browser MP4 (H.264) video encoding is supported via WebCodecs VideoEncoder
  * or fallback MediaRecorder with Canvas captureStream.
  */
 export function isMp4ExportSupported(): boolean {
-  if (typeof window === 'undefined' || typeof document === 'undefined') {
+  if (typeof window === 'undefined' || typeof document === 'undefined' || h264FreezesThisBrowser()) {
     return false;
   }
   // Synchronous API-presence hint. UI/export must also probe the exact config.
@@ -107,7 +118,7 @@ function trialEncode(config: { width: number; height: number; framerate: number 
 
 /** Exact configuration probe for export controls; API presence alone is insufficient. */
 export async function probeMp4ExportSupport(width: number, height: number, fps = 30): Promise<boolean> {
-  if (typeof window === 'undefined') return false;
+  if (typeof window === 'undefined' || h264FreezesThisBrowser()) return false;
   const encoder = (window as WebCodecsWindow).VideoEncoder;
   if (encoder?.isConfigSupported && (window as WebCodecsWindow).VideoFrame) {
     try {
@@ -257,6 +268,9 @@ async function encodeMp4(
 
   if (options.signal?.aborted) {
     throw new DOMException('MP4 export aborted', 'AbortError');
+  }
+  if (h264FreezesThisBrowser()) {
+    throw new Error('MP4 recording is unsupported in this browser. Choose WebM, GIF / APNG instead.');
   }
 
   const fps = Math.max(1, Math.min(60, options.fps ?? 30));
