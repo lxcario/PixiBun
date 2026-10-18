@@ -9,7 +9,6 @@ import { makeCanvas, type MockCanvas } from './helpers/mockCanvas';
 const smartMathMocks = vi.hoisted(() => ({
   computePhotometricAnalysis: vi.fn(),
   executePhotometricPipeline: vi.fn(),
-  executeVolumetricOpticalPipeline: vi.fn(),
   detectMinecraftSkin: vi.fn(),
   renderParametric2p5DLighting: vi.fn(),
 }));

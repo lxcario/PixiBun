@@ -8,25 +8,6 @@ interface IconProps {
   'aria-hidden'?: boolean | 'true' | 'false';
 }
 
-/** Tiny Pixel Hint Icons for Scene Caption */
-export const IconHintLamp: React.FC<IconProps> = ({ size = 12, className = '' }) => (
-  <svg viewBox="0 0 12 12" width={size} height={size} shapeRendering="crispEdges" className={`inline-block pixelated ${className}`} aria-hidden="true">
-    <rect x="4" y="1" width="4" height="2" fill="var(--accent-wisteria)" />
-    <rect x="3" y="3" width="6" height="3" fill="var(--accent-wisteria)" />
-    <rect x="5" y="6" width="2" height="3" fill="var(--accent-wisteria)" />
-    <rect x="3" y="9" width="6" height="2" fill="var(--ink)" />
-  </svg>
-);
-
-export const IconHintPen: React.FC<IconProps> = ({ size = 12, className = '' }) => (
-  <svg viewBox="0 0 12 12" width={size} height={size} shapeRendering="crispEdges" className={`inline-block pixelated ${className}`} aria-hidden="true">
-    <rect x="8" y="1" width="3" height="3" fill="var(--accent-wisteria)" />
-    <rect x="5" y="4" width="4" height="4" fill="var(--accent-wisteria)" />
-    <rect x="3" y="7" width="3" height="3" fill="var(--accent-wisteria)" />
-    <rect x="1" y="10" width="2" height="2" fill="var(--ink)" />
-  </svg>
-);
-
 /** Potted Plant Sprite */
 export const IconPottedPlant: React.FC<IconProps> = ({ size = 64, className = '', 'aria-hidden': ariaHidden = true }) => (
   <svg

@@ -167,59 +167,6 @@ export function updateAutotileAt(
 }
 
 /**
- * Procedurally paints one 47-blob tile into a canvas 2D context.
- * Renders borders, inner/outer corners, or caps cleanly at any pixel size.
- */
-export function renderProceduralAutotileTile(
-  ctx: CanvasRenderingContext2D,
-  tileIndex: number,
-  px: number,
-  py: number,
-  tileSize: number,
-  strokeColor: string = '#1E1B4B',
-  fillColor: string = '#6366F1'
-): void {
-  const mask = CANONICAL_47_MASKS[tileIndex] ?? 0;
-
-  const hasN = (mask & 1) !== 0;
-  const hasNE = (mask & 2) !== 0;
-  const hasE = (mask & 4) !== 0;
-  const hasSE = (mask & 8) !== 0;
-  const hasS = (mask & 16) !== 0;
-  const hasSW = (mask & 32) !== 0;
-  const hasW = (mask & 64) !== 0;
-  const hasNW = (mask & 128) !== 0;
-
-  const inset = Math.max(1, Math.floor(tileSize / 4));
-
-  // Fill base body
-  ctx.fillStyle = fillColor;
-  ctx.fillRect(px, py, tileSize, tileSize);
-
-  ctx.fillStyle = strokeColor;
-
-  // Cardinal Borders (if no neighbor on that side)
-  if (!hasN) ctx.fillRect(px, py, tileSize, inset);
-  if (!hasS) ctx.fillRect(px, py + tileSize - inset, tileSize, inset);
-  if (!hasW) ctx.fillRect(px, py, inset, tileSize);
-  if (!hasE) ctx.fillRect(px + tileSize - inset, py, inset, tileSize);
-
-  // Inner Corners (when cardinal neighbors exist but diagonal does not)
-  if (hasN && hasE && !hasNE) {
-    ctx.fillRect(px + tileSize - inset, py, inset, inset);
-  }
-  if (hasS && hasE && !hasSE) {
-    ctx.fillRect(px + tileSize - inset, py + tileSize - inset, inset, inset);
-  }
-  if (hasS && hasW && !hasSW) {
-    ctx.fillRect(px, py + tileSize - inset, inset, inset);
-  }
-  if (hasN && hasW && !hasNW) {
-    ctx.fillRect(px, py, inset, inset);
-  }
-}
-
-/**
  * AutotileGrid manages a reactive 2D autotile layer.
  */
 export class AutotileGrid {

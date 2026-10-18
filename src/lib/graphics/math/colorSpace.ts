@@ -147,6 +147,5 @@ export function shiftHue(currentH: number, targetH: number, maxShiftDeg: number)
  */
 export const rgbToOklab = rgbToOKLab;
 export const deltaEOklab = deltaEOKLab;
-export const oklabDistance = deltaEOKLab;
 export const shiftHueToward = shiftHue;
 

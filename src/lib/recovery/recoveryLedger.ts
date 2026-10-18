@@ -222,23 +222,3 @@ export async function getRecoveryRecord(
   }
   return record;
 }
-
-/**
- * Deletes a recovery record from IndexedDB by project identifier.
- */
-export async function deleteRecoveryRecord(
-  projectId: string
-): Promise<void> {
-  if (
-    typeof projectId !== 'string' ||
-    projectId.trim().length === 0 ||
-    projectId.length > RECOVERY_INSPECTION_CEILINGS.MAX_IDENTIFIER_LENGTH
-  ) {
-    throw new TypeError('Invalid projectId: must be a non-empty string within bound.');
-  }
-
-  if (!db.isOpen()) {
-    await db.open();
-  }
-  await db.recoveryRecords.delete(projectId);
-}

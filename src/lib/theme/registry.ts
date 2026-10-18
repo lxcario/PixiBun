@@ -26,7 +26,6 @@ export interface StudioThemeDefinition {
 }
 
 export const STUDIO_THEMES: readonly StudioThemeDefinition[] = themeData.themes as StudioThemeDefinition[];
-export const THEME_IDS: readonly string[] = STUDIO_THEMES.map(theme => theme.id);
 export const DEFAULT_THEME_ID: string = themeData.defaultTheme;
 
 const BY_ID = new Map(STUDIO_THEMES.map(theme => [theme.id, theme]));
