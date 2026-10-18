@@ -32,7 +32,7 @@
       "sha256": "2cf881fb0130c601922201126201d45986db3347908fc6462ce41ee070118078"
     },
     {
-      "path": "src/components/layout/inspector/AiToolsPanel.tsx",
+      "path": "src/components/layout/inspector/PixiToolsPanel.tsx",
       "sha256": "ecc2daaee04f62fd21e00cf6f58f9a08b3d12b4d6d1853b7b445a634ed7bc8a1"
     },
     {

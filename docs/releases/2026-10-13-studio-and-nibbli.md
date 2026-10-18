@@ -108,7 +108,7 @@ Source inspection also found an open secondary-color Curve issue: a Shift gestur
 | [src/hooks/viewport/useViewportDrawing.ts](../../src/hooks/viewport/useViewportDrawing.ts) | Reads the current store target when painting, touches raster revisions and marks artwork dirty while preserving the existing history callbacks. |
 | [src/hooks/viewport/useViewportPointerEvents.ts](../../src/hooks/viewport/useViewportPointerEvents.ts) | Routes Curve pointer phases, cancellation and Undo to its handler; outside-canvas movement is clamped instead of jumping to (0,0). |
 | [src/hooks/viewport/useViewportSelectionTransform.ts](../../src/hooks/viewport/useViewportSelectionTransform.ts) | Initializes floating-paste gizmo bounds, captures pasted-copy Undo once and avoids restoring pasted pixels on Cancel. |
-| [src/lib/ai/math/photometricLighting.ts](../../src/lib/ai/math/photometricLighting.ts) | Requests read-oriented 2D context options for lighting pixel analysis. |
+| [src/lib/graphics/math/photometricLighting.ts](../../src/lib/graphics/math/photometricLighting.ts) | Requests read-oriented 2D context options for lighting pixel analysis. |
 | [src/lib/export/downloadAsset.ts](../../src/lib/export/downloadAsset.ts) | Creates hidden Blob-only companion download frames and removes their contexts after navigation starts. |
 | [tests/curveOwnership.test.tsx](../../tests/curveOwnership.test.tsx) | Adds source/frame/layer/project/lock/history/Undo-refusal and keyboard ownership regressions found during this publication review. |
 | [tests/curveSplineInteraction.test.tsx](../../tests/curveSplineInteraction.test.tsx) | Adds hook and rendered-viewport curve adjustment, handles, Apply/Cancel, keyboard and immediate re-edit tests. |

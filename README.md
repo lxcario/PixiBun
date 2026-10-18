@@ -118,7 +118,7 @@ For agent developers, **Nibbli** is a repository companion that uses the real St
 | Run agent-driven drawing, editing or verification | [Nibbli](docs/guides/nibbli.md), [agent contract](docs/guides/nibbli-agent.md) and [milestones](docs/plans/nibbli.md) |
 | Explore ideas for the future | [v2 vision](V2_VISION.md), a proposal for future work |
 
-These screenshots show the local production build on **15 October 2026**, using PixiBun's own artwork. Compare [the Studio themes in Day and Night](docs/guides/themes.md); those pictures predate the four themes added on 16 October. [About this version](docs/current-status.md) explains the scoped checks; [capture details](docs/assets/screenshots/2026-10-15-current-ui/run.json) record the build and images.
+These screenshots show the local production build on **15 October 2026**, using PixiBun's own artwork. Compare [all twelve Studio themes in Day and Night](docs/guides/themes.md), retaken on 18 October. [About this version](docs/current-status.md) explains the scoped checks; [capture details](docs/assets/screenshots/2026-10-15-current-ui/run.json) record the build and images.
 
 PixiBun is licensed under the [MIT License](LICENSE).
 

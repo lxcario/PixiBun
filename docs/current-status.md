@@ -1,5 +1,18 @@
 # Current project status
 
+## Documented open issues — 18 October 2026
+
+The [open-issues record](releases/2026-10-18-open-issues.md) fixes the issues the documentation still listed as open where they are code defects: Studio playback no longer consumes poses unseen after a stall (M3), MP4 export uses the software H.264 encoder so colours no longer depend on the machine's hardware encoder, preview deployments no longer expose the Vercel token to pull-request code, the source drops its leftover "AI" names (`src/lib/graphics`), coverage thresholds sit just under measured coverage, and the theme gallery shows all twelve themes. Results and what was not run are in the record.
+
+What remains open, in one place:
+
+| Open item | Kind | Where |
+| --- | --- | --- |
+| Stroke loop out of React | Performance architecture, measure first | [Roadmap phase 1](plans/2026-10-14-strategy-roadmap.md) |
+| Typed-array pixel store, straight-alpha compositor (defect 5), format v5 | Planned after launch | [Roadmap phase 3](plans/2026-10-14-strategy-roadmap.md) |
+| 17 October audit fixes | Fixed and browser-verified on `fix/audit-2026-10-17-triage`, not merged here | [Record](releases/2026-10-18-open-issues.md#left-open-and-why) |
+| Physical devices, actual Safari, assistive technology, participant studies, real networks, host update/rollback, long sessions | Needs people, hardware or a deployed host | [Issue registry](research/issue-registry.md) |
+
 ## Final integration — 17 October 2026
 
 The [final integration record](releases/2026-10-17-final-integration.md) merges the pending agent branches (portal and publication docs, Chisel layer safety, canvas readout, replay links, `/verified`, the TestSprite autofix workflow) after review, and fixes what the first complete browser suites since 15 October found: Curve re-edit had been broken since the 16 October painting change, the tool shelf cut off the Eyedropper on small laptops, a hydration mismatch under reduced motion, Firefox offering MP4 it cannot encode, the light bar's trailing segment highlight (now a liquid lens with the rail's hold-and-slide gesture), Frames list ARIA, frame-card target sizes, Cocoa Day contrast, analytics outside Vercel, and receipt stroke miscounts. Tests that still described earlier interfaces were updated and listed. Chromium MP4 colour still fails on this machine (environment; the pre-merge commit fails identically). Results and what was not run are in the record.

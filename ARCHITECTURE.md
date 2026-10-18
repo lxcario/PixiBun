@@ -98,13 +98,13 @@ This document describes subsystem ownership and integration. For artist workflow
 
 - [1. System Topology Overview](#1-system-topology-overview)
 - [2. Canvas & Rendering Pipeline](#2-canvas--rendering-pipeline)
-- [3. Deterministic Graphics Math Engine (`src/lib/ai/math/`)](#3-deterministic-graphics-math-engine-srclibaimath)
+- [3. Deterministic Graphics Math Engine (`src/lib/graphics/math/`)](#3-deterministic-graphics-math-engine-srclibgraphicsmath)
 - [4. State Management, Layer Security & Undo Architecture](#4-state-management-layer-security--undo-architecture)
 - [5. Local-First Storage & Multi-Project Lifecycle (`src/lib/storage/db.ts`, `src/lib/project/schema.ts`)](#5-local-first-storage--multi-project-lifecycle-srclibstoragedbts-srclibprojectschemats)
 - [6. Multi-Engine Export & Web Worker Pipeline (`src/lib/export/`)](#6-multi-engine-export--web-worker-pipeline-srclibexport)
-- [7. 3D Minecraft Skin Recognition & Domain Shading Engine (`src/lib/ai/math/minecraftSkin.ts`)](#7-3d-minecraft-skin-recognition--domain-shading-engine-srclibaimathminecraftskints)
-- [8. Signed Distance Field (SDF) In-Between Animation Morphing (`src/lib/ai/pixelAiEngine.ts`)](#8-signed-distance-field-sdf-in-between-animation-morphing-srclibaipixelaienginets)
-- [9. Image-to-Pixel-Art Conversion Pipeline (`src/lib/ai/pixelizeEngine.ts`)](#9-image-to-pixel-art-conversion-pipeline-srclibaipixelizeenginets)
+- [7. 3D Minecraft Skin Recognition & Domain Shading Engine (`src/lib/graphics/math/minecraftSkin.ts`)](#7-3d-minecraft-skin-recognition--domain-shading-engine-srclibgraphicsmathminecraftskints)
+- [8. Signed Distance Field (SDF) In-Between Animation Morphing (`src/lib/graphics/pixelRasterEngine.ts`)](#8-signed-distance-field-sdf-in-between-animation-morphing-srclibgraphicspixelrasterenginets)
+- [9. Image-to-Pixel-Art Conversion Pipeline (`src/lib/graphics/pixelizeEngine.ts`)](#9-image-to-pixel-art-conversion-pipeline-srclibgraphicspixelizeenginets)
 - [10. Theme Architecture (`src/stores/themeStore.ts`)](#10-theme-architecture-srcstoresthemestorets)
 - [11. Bounded Idle Buffer Pooling (`src/lib/engine/bufferPool.ts`)](#11-bounded-idle-buffer-pooling-srclibenginebufferpoolts)
 - [12. Multithreaded Worker & Deterministic CG Math Architecture](#12-multithreaded-worker--deterministic-cg-math-architecture)
@@ -232,11 +232,11 @@ The undo/redo ledger is independent of React rendering in `HistoryEngine`; its m
 
 ---
 
-## 3. Deterministic Graphics Math Engine (`src/lib/ai/math/`)
+## 3. Deterministic Graphics Math Engine (`src/lib/graphics/math/`)
 
 The `ai` folder name is historical; nothing in it is a generative or trained model. A rename to `src/lib/graphics` is planned.
 
-The graphics intelligence engine is decomposed into modular, deterministic mathematical modules under `src/lib/ai/math/` and `src/lib/ai/`:
+The graphics intelligence engine is decomposed into modular, deterministic mathematical modules under `src/lib/graphics/math/` and `src/lib/graphics/`:
 - `edtNormalMap.ts`: Felzenszwalb-Huttenlocher $O(N)$ EDT, non-linear dome inflation ($\gamma = 0.5$), bilateral smoothing, content-aware heightmaps, anatomical part segmentation, frontal face cushion plateau (level camera-facing plateau), independent ear cone ridges, and Sobel tangent normal vector fields.
 - `photometricLighting.ts`: Parametric 2.5D lighting, protected features/ink, stepped OKLCH diffuse shading and live tagged relighting. Explicit glint choices use the pixel reflection path; calls omitting the choice retain legacy renderer behavior.
 - `pixelGlint.ts`: Finite GGX-shaped reflection masks, painted-normal priority with OpenGL-up conversion, two flat core/shoulder coverage levels, bounded hue-related lightness lifts, and preserved source alpha. This is artist-directed pixel shading, not a full energy-conserving BRDF.
@@ -363,7 +363,7 @@ The schema validates dimensions, frame/layer counts, aggregate footprint, decode
 
 
 
-## 7. 3D Minecraft Skin Recognition & Domain Shading Engine (`src/lib/ai/math/minecraftSkin.ts`)
+## 7. 3D Minecraft Skin Recognition & Domain Shading Engine (`src/lib/graphics/math/minecraftSkin.ts`)
 
 When an imported or active sprite canvas has dimensions $64\times64$ or $64\times32$, the photometric lighting system distinguishes between authentic Minecraft 3D player skin texture atlases and single-character / object illustrations before routing normal generation:
 
@@ -407,7 +407,7 @@ graph TD
 
 ---
 
-## 8. Signed Distance Field (SDF) In-Between Animation Morphing (`src/lib/ai/pixelAiEngine.ts`)
+## 8. Signed Distance Field (SDF) In-Between Animation Morphing (`src/lib/graphics/pixelRasterEngine.ts`)
 
 The frame morphing engine generates smooth intermediate tween frames between keyframes via **Separable Euclidean Distance Transform (EDT) Signed Distance Fields (SDF)** combined with multi-source nearest-color sampling:
 
@@ -424,7 +424,7 @@ The frame morphing engine generates smooth intermediate tween frames between key
 
 ---
 
-## 9. Image-to-Pixel-Art Conversion Pipeline (`src/lib/ai/pixelizeEngine.ts`)
+## 9. Image-to-Pixel-Art Conversion Pipeline (`src/lib/graphics/pixelizeEngine.ts`)
 
 ```mermaid
 graph TD
@@ -475,7 +475,7 @@ The combined 512 MiB ledger estimates selected active and suspended rasters/hist
 
 Compute-bound tasks are balanced between background Web Workers and on-device TypedArray math:
 - **Web Worker GIF Encoding (`src/lib/export/gifEncoder.worker.ts`):** LZW compression and median-cut color quantization run off-thread with zero-copy transferable `ArrayBuffer` lists (`postMessage(payload, [buffer])`).
-- **Live photometric preview and Apply (`src/hooks/viewport/events/usePhotometricEvents.ts`, `src/lib/ai/math/`, `src/lib/ai/shadowRayMarcher.ts`):** Analysis, including its EDT/height/normal passes when required, photometric rendering and bounded sprite cast shadows execute synchronously on the main thread using reusable scratch buffers. The live session can reuse owned analysis; changing inference inputs can recompute it. This path is separate from normal-map baking. For audit finding H1 (resolved), `computeContentAwareHeightmap` records component membership in a linear pass, then visits each component's members and propagates distances through them using one shared canvas-sized `cDist` buffer. The component stage avoids repeated full-canvas scans and per-component distance-buffer allocations. For audit finding H6 (resolved), the affected photometric render path reuses one content-aware analysis instead of recomputing the same full analysis twice, while retaining the separate specular silhouette cushion: `renderParametric2p5DLighting` hoists geometric analysis via `computePhotometricAnalysis` and feeds `precomputedAnalysis` directly into `executePhotometricPipeline`.
+- **Live photometric preview and Apply (`src/hooks/viewport/events/usePhotometricEvents.ts`, `src/lib/graphics/math/`, `src/lib/graphics/shadowRayMarcher.ts`):** Analysis, including its EDT/height/normal passes when required, photometric rendering and bounded sprite cast shadows execute synchronously on the main thread using reusable scratch buffers. The live session can reuse owned analysis; changing inference inputs can recompute it. This path is separate from normal-map baking. For audit finding H1 (resolved), `computeContentAwareHeightmap` records component membership in a linear pass, then visits each component's members and propagates distances through them using one shared canvas-sized `cDist` buffer. The component stage avoids repeated full-canvas scans and per-component distance-buffer allocations. For audit finding H6 (resolved), the affected photometric render path reuses one content-aware analysis instead of recomputing the same full analysis twice, while retaining the separate specular silhouette cushion: `renderParametric2p5DLighting` hoists geometric analysis via `computePhotometricAnalysis` and feeds `precomputedAnalysis` directly into `executePhotometricPipeline`.
 
 - **Normal-map Bake:** The same viewport event owner calls `runEdtNormalMapInWorker()` for EDT, bilateral smoothing and normal-field output through `heavyCompute.worker.ts`. Source-bound jobs reject stale results before publication. Its bounded synchronous fallback is described in sections 22–23; moving this bake off-thread does not move the live photometric path off-thread.
 
@@ -638,7 +638,7 @@ The following describes the named browser-test fixture's database teardown, not 
   - Upgrades `HistoryEngine` to a hybrid Command Pattern (`HistoryStep = PixelHistoryStep | StructuralHistoryStep`).
   - Destructive structural operations (layer additions, deletions, reorderings, merge-downs, frame insertions, frame deletions) record a `StructuralHistoryStep` using a hybrid capture architecture: an authoritative full frame/layer metadata tree snapshot cloned via `structuredClone(state.frames)`, paired with targeted raster pixel buffer backups (`captureLayerBuffers`) strictly limited to affected layer IDs (rather than capturing the entire project's raster buffers).
   - Restores both layer/frame structures and targeted layer canvas pixel buffers into the live `bufferRegistry` upon undo and redo.
-* **Worker EDT Distance Transform & Normal Map Offloading (`src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `src/lib/ai/math/edtNormalMap.ts`):**
+* **Worker EDT Distance Transform & Normal Map Offloading (`src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `src/lib/graphics/math/edtNormalMap.ts`):**
   - Offloads CPU-intensive 2D Euclidean Distance Transform, bilateral Gaussian smoothing, and Sobel normal field baking to `heavyCompute.worker.ts`.
   - Copies the outgoing main-thread pixel buffer with `rgba.slice().buffer` to prevent live canvas detachment, then transfers the copy to the worker without another structured-clone copy.
   - Retains bounded synchronous fallback in `runEdtNormalMapInWorker` when a worker is unavailable in tests or restricted browsers. This describes normal-map Bake, not the main-thread live photometric analysis/Apply path.
@@ -646,7 +646,7 @@ The following describes the named browser-test fixture's database teardown, not 
   - Integrates W3C File System Access API (`window.showSaveFilePicker`, `window.showOpenFilePicker`, `FileSystemFileHandle`).
   - Binds `Ctrl+S` to instantaneous in-place disk overwriting without file picker prompts once a file handle is active, and `Ctrl+Shift+S` to explicit Save As dialogs.
   - Provides fallback to browser anchor downloads (`<a download>`) and file inputs in unsupported browsers.
-* **47-Blob Autotile Interactive Engine (`src/lib/ai/math/autotileEngine.ts`):**
+* **47-Blob Autotile Interactive Engine (`src/lib/graphics/math/autotileEngine.ts`):**
   - Implements canonical 8-neighbor Moore bitmasking with cardinal-corner dominance, collapsing $2^8 = 256$ neighborhood configurations into 47 Wang/Blob equivalence classes.
   - Utilizes a precomputed $O(1)$ 256-element bitmask lookup table (`BITMASK_TO_47_INDEX: Uint8Array`) and a reactive $3\times3$ Chebyshev dirty neighborhood updater (`updateAutotileAt`) that recalculates only affected adjacent tiles.
   - Includes a zero-dependency procedural 47-tile pixel renderer for instant terrain, wall, and platform synthesis.
@@ -711,19 +711,19 @@ The workstation implements dirty-state and focus behavior; WCAG targets still re
 
 To ensure that the 2.5D Photometric Studio delivers mathematically sound volumetric lighting across all canvas sizes ($16\times16$ through $128\times128$) and dark color palettes:
 
-* **Resolution-Aware Bevel Scaling (`src/lib/ai/math/edtNormalMap.ts`):**
+* **Resolution-Aware Bevel Scaling (`src/lib/graphics/math/edtNormalMap.ts`):**
   - Introduces a dimensionless scale factor $\text{scaleFactor} = \max\left(1.0, \frac{\min(W, H)}{32}\right)$.
   - Dynamically scales the anatomical character bevel radius $R_{\text{char}} = 2.8 \times \text{scaleFactor}$, dynamic bevel radius $R_{\text{bevel}} \in [2.5, 6.0 \times \text{scaleFactor}]$, and appendage width ceilings.
   - Addresses interior normal fields flattening to $N = [0, 0, 1]$ on larger canvases. Recorded byte-exact parity applies to the tested legacy $32\times32$ baseline fixtures, not every possible sprite.
-* **Boundary-Aware Ink Line & Crevice Classification (`src/lib/ai/math/edtNormalMap.ts`):**
+* **Boundary-Aware Ink Line & Crevice Classification (`src/lib/graphics/math/edtNormalMap.ts`):**
   - Replaces naive global luminance thresholds ($L < 0.22$) with contextual spatial heuristics:
     1. Dark boundary pixels touching transparent void ($L < 0.14$).
     2. High-contrast interior crevices ($\max_{q \in \mathcal{N}_4} L(q) - L(p) \ge 0.16$).
     3. Near-black true ink lines ($L < 0.035$).
   - Prevents dark body colors (crimson $L=0.18$, navy $L=0.06$) from being falsely classified as unshaded line art.
-* **Monotonic Cel-Shading Ramp Clamping (`src/lib/ai/math/photometricLighting.ts`):**
+* **Monotonic Cel-Shading Ramp Clamping (`src/lib/graphics/math/photometricLighting.ts`):**
   - Current mid/deep lightness uses factors 0.86/0.72 and minimum drops 0.025/0.05, with floors 0.04/0.02. Floors mean this is not a strict darker-than-base guarantee at every possible lightness. See the rendering contract.
-* **Dynamic Appendage Normal Stabilization & Drag Decoupling (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`):**
+* **Dynamic Appendage Normal Stabilization & Drag Decoupling (`src/lib/graphics/math/edtNormalMap.ts`, `src/lib/graphics/math/photometricLighting.ts`):**
   - Decouples static pixel geometry (EDT, part segmentation, composite heightmap, bilateral filter, Laplace AO) from light-direction-coupled appendage normal stabilization.
   - Appendage stabilization updates narrow-feature normals using base fields, candidate metadata and light azimuth. End-to-end drag latency is unmeasured.
   - Scheduled previews target responsive dragging; commit recomputes a fresh result. Recorded fixture parity does not guarantee every artwork/azimuth or 60 FPS.
@@ -810,11 +810,11 @@ The tool preview architecture (`src/components/ui/ToolMotionPreview.tsx`, `src/c
 1. **Interactive Pixel Previews:** Procedural 96×54 canvas scenes cycle through before, action, and result states for 43 drawing and PixiTools effects. The Lasso traces an irregular path; Magic Wand marks one connected color region. The preview card is 304px wide, and step labels render as crisp HTML over the canvas. Reduced-motion users see the result state. These demonstrations do not mutate artwork.
 2. **Dual-Layer Context Architecture:**
    - `DrawingToolsPreviewLayer`: Mounted around `LeftToolbar` to anchor previews to the right of drawing tool buttons.
-   - `PixiToolsPreviewLayer`: Mounted around `AiToolsPanel` to anchor previews to the left of photometric, procedural, and cleanup action controls.
+   - `PixiToolsPreviewLayer`: Mounted around `PixiToolsPanel` to anchor previews to the left of photometric, procedural, and cleanup action controls.
 3. **Motion Ergonomics & Gliding Transitions:** Hover transitions between adjacent controls glide smoothly (`0.18s` cubic bezier) with warmth tracking (`450ms` window) eliminating pop flicker. Re-anchors dynamically on container scroll and clamps safely within the viewport (`minY = 48px` to preserve header visibility).
 4. **User Preferences & Dismissal:** Provides an explicit "Don't show again" option and close button on each card, with a master toggle in `AppearancePopover`. Setting state persists in `localStorage` under `pixibun:tool-previews-disabled` with real-time cross-tab/window event synchronization (`pixibun:tool-previews-changed`).
 
-`AiToolsPanel.tsx` begins with lighting, tiles, and cleanup task choices, keeps Browse all available, and remembers the choice for the browser tab. `PhotometricLightingSection.tsx` exposes the primary lighting action before specialist settings.
+`PixiToolsPanel.tsx` begins with lighting, tiles, and cleanup task choices, keeps Browse all available, and remembers the choice for the browser tab. `PhotometricLightingSection.tsx` exposes the primary lighting action before specialist settings.
 
 ---
 
