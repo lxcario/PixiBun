@@ -15,8 +15,10 @@ test('drawing tools show a short visual preview on hover and keyboard focus', as
   await expect(preview).toBeVisible();
   await expect(preview.getByText('Draw crisp, pixel-perfect strokes and contours.')).toBeVisible();
   await expect(preview.locator('canvas')).toBeVisible();
-  await expect(preview).toHaveCSS('width', '304px');
-  await expect(preview.locator('p')).toHaveCSS('font-size', '13px');
+  await expect(preview).toHaveCSS('width', '246px');
+  await expect(preview.locator('p').first()).toHaveCSS('font-size', '12px');
+  // The clip plays at the stage's full 224×168, never squeezed.
+  await expect(preview.locator('canvas')).toHaveCSS('width', '224px');
   await page.waitForTimeout(600);
   await preview.screenshot({ path: testInfo.outputPath('pen-preview.png') });
   await page.keyboard.press('Escape');
@@ -96,7 +98,7 @@ test('drawing tools show a short visual preview on hover and keyboard focus', as
   await page.getByTestId('select-lasso-tool').hover();
   const lassoPreview = page.getByRole('group', { name: 'Lasso Select preview' });
   await expect(lassoPreview.locator('canvas[data-scene="select-lasso"]')).toBeVisible();
-  await expect(lassoPreview.locator('[data-step-label]')).toHaveAttribute('data-step-label', /TRACE ARTWORK|FREEFORM SELECTED/);
+  await expect(lassoPreview.locator('[data-step-label]')).toHaveAttribute('data-step-label', /lasso|trace freehand|freeform selection/);
   await expect(lassoPreview.locator('canvas')).toHaveAttribute('data-preview-phase', 'result', { timeout: 3000 });
   await lassoPreview.screenshot({ path: testInfo.outputPath('lasso-preview.png') });
 
