@@ -2,7 +2,7 @@
 
 ## Documented open issues — 18 October 2026
 
-The [open-issues record](releases/2026-10-18-open-issues.md) fixes the issues the documentation still listed as open where they are code defects: Studio playback no longer consumes poses unseen after a stall (M3), MP4 export uses the software H.264 encoder so colours no longer depend on the machine's hardware encoder, preview deployments no longer expose the Vercel token to pull-request code, the source drops its leftover "AI" names (`src/lib/graphics`), coverage thresholds sit just under measured coverage, and the theme gallery shows all twelve themes. Results and what was not run are in the record.
+The [open-issues record](releases/2026-10-18-open-issues.md) fixes the issues the documentation still listed as open where they are code defects: Studio playback no longer consumes poses unseen after a stall (M3), MP4 export uses the software H.264 encoder so colours no longer depend on the machine's hardware encoder, preview deployments no longer expose the Vercel token to pull-request code, the source drops its leftover "AI" names (`src/lib/graphics`), coverage thresholds sit just under measured coverage, and the theme gallery shows all twelve themes. Results and what was not run are in the record. A later [documentation sweep](releases/2026-10-18-open-issues.md#documentation-sweep) fixed Smooth Dithering and corrected the guides, contracts, ARCHITECTURE and DESIGN where they no longer matched the code.
 
 What remains open, in one place:
 

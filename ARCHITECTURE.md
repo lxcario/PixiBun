@@ -118,7 +118,7 @@ This document describes subsystem ownership and integration. For artist workflow
 - [20. Database & Canvas Teardown Lifecycle Invariants (`src/lib/storage/db.ts`, `tests/e2e/chiselAndPaletteLiveProof.spec.ts`)](#20-database--canvas-teardown-lifecycle-invariants-srclibstoragedbts-testse2echiselandpaletteliveproofspects)
 - [21. Bitwise Normalization, Hot-Path Viewport Decoupling & Export Pipeline Hardening](#21-bitwise-normalization-hot-path-viewport-decoupling--export-pipeline-hardening)
 - [22. Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine](#22-selection-free-transform-gizmo-sprite-sheet-slicer--web-worker-offloading-engine)
-- [23. Workstation Architectural Upgrades (`p2pHostAuthority`, `structuralHistory`, `desktopFS`, `47-blob`, `isobmffMuxer`)](#23-workstation-architectural-upgrades-p2p-host-authority-structural-history-desktop-fs-47-blob-autotile--pure-isobmff-muxer)
+- [23. Workstation Architectural Upgrades (P2P Host Authority, Structural History, Desktop FS, 47-Blob Autotile & Pure ISOBMFF Muxer)](#23-workstation-architectural-upgrades-p2p-host-authority-structural-history-desktop-fs-47-blob-autotile--pure-isobmff-muxer)
 - [24. Comprehensive Defensive Hardening & Invariant Architecture](#24-comprehensive-defensive-hardening--invariant-architecture)
 - [25. Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection](#25-autonomous-local-cicd-quality-gate--git-pre-push-protection)
 - [26. Studio Workstation Ergonomics, Focus Trapping & Unsaved Invariants](#26-studio-workstation-ergonomics-focus-trapping--unsaved-invariants)
@@ -234,7 +234,7 @@ The undo/redo ledger is independent of React rendering in `HistoryEngine`; its m
 
 ## 3. Deterministic Graphics Math Engine (`src/lib/graphics/math/`)
 
-The `ai` folder name is historical; nothing in it is a generative or trained model. A rename to `src/lib/graphics` is planned.
+Nothing in `src/lib/graphics` is a generative or trained model. The folder was named `ai` until 18 October.
 
 The graphics intelligence engine is decomposed into modular, deterministic mathematical modules under `src/lib/graphics/math/` and `src/lib/graphics/`:
 - `edtNormalMap.ts`: Felzenszwalb-Huttenlocher $O(N)$ EDT, non-linear dome inflation ($\gamma = 0.5$), bilateral smoothing, content-aware heightmaps, anatomical part segmentation, frontal face cushion plateau (level camera-facing plateau), independent ear cone ridges, and Sobel tangent normal vector fields.
@@ -806,15 +806,15 @@ Theme mutations apply synchronously via `applyThemeToDOM()`, which injects a tem
 The `AppearancePopover` (`src/components/ui/AppearancePopover.tsx`) provides a flyout UI for switching both axes with live preview swatches, focus trapping, and `Escape` dismiss handling.
 
 ### Contextual Tool Motion Previews & Tactile Affordances
-The tool preview architecture (`src/components/ui/ToolMotionPreview.tsx`, `src/components/ui/ToolPreviewCanvas.tsx`, `src/components/ui/ToolMotionPreview.module.css`) delivers instant visual affordances across the studio without mutating document state:
-1. **Interactive Pixel Previews:** Procedural 96×54 canvas scenes cycle through before, action, and result states for 43 drawing and PixiTools effects. The Lasso traces an irregular path; Magic Wand marks one connected color region. The preview card is 304px wide, and step labels render as crisp HTML over the canvas. Reduced-motion users see the result state. These demonstrations do not mutate artwork.
+The tool preview architecture (`src/components/ui/ToolMotionPreview.tsx`, `src/components/ui/toolPreview/`, `src/components/ui/ToolMotionPreview.module.css`) delivers instant visual affordances across the studio without mutating document state:
+1. **Clips that run the tools' own code:** each clip in `src/components/ui/toolPreview/clips.ts` calls the engine function its tool calls (rasterizers, flood fill, selections, RotSprite, 2.5D lighting, Sel-Out, cleanup, grades, dithers, the in-between morph) on a 32×24 copy of the canvas shown at 7× (224×168), with the studio checker, wooden frame, brush ghost and crosshair. A before / action / result rule and caption sit under the stage; hovering the stage scrubs the clip. The card is 246 px wide, blooms through `SpringSurface` and glides between tools on the `MORPH_W` spring. The clip engine loads lazily on the first hover intent. Reduced-motion users see the result state. These demonstrations do not mutate artwork ([record](docs/releases/2026-10-18-tool-previews.md)).
 2. **Dual-Layer Context Architecture:**
    - `DrawingToolsPreviewLayer`: Mounted around `LeftToolbar` to anchor previews to the right of drawing tool buttons.
    - `PixiToolsPreviewLayer`: Mounted around `PixiToolsPanel` to anchor previews to the left of photometric, procedural, and cleanup action controls.
 3. **Motion Ergonomics & Gliding Transitions:** Hover transitions between adjacent controls glide smoothly (`0.18s` cubic bezier) with warmth tracking (`450ms` window) eliminating pop flicker. Re-anchors dynamically on container scroll and clamps safely within the viewport (`minY = 48px` to preserve header visibility).
 4. **User Preferences & Dismissal:** Provides an explicit "Don't show again" option and close button on each card, with a master toggle in `AppearancePopover`. Setting state persists in `localStorage` under `pixibun:tool-previews-disabled` with real-time cross-tab/window event synchronization (`pixibun:tool-previews-changed`).
 
-`PixiToolsPanel.tsx` begins with lighting, tiles, and cleanup task choices, keeps Browse all available, and remembers the choice for the browser tab. `PhotometricLightingSection.tsx` exposes the primary lighting action before specialist settings.
+`PixiToolsPanel.tsx` begins with lighting, tiles, and cleanup task choices, keeps **Show every tool on one page** available, and remembers the choice for the browser tab. `PhotometricLightingSection.tsx` exposes the primary lighting action before specialist settings.
 
 ---
 
@@ -898,7 +898,7 @@ Phase 1A and Phase 1B establish defensive boundaries against runaway workspace c
 * **Responsive Cancellation:** Checks `signal?.aborted` immediately at function entry before preflight allocations; gives cancellation absolute priority over simultaneous probe failures during pending operations.
 * **Runtime Immutability:** Deep-freezes all candidate result trees, projects, and remap entries via `deepFreeze()`.
 ### 7. Trusted Recovery Orchestration & Atomic Recovered-Copy Persistence (Phase 1B.6)
-* **Trusted Plan Preparation (`src/lib/recovery/recoveryOrchestrator.ts`):** Evaluates authoritative IndexedDB snapshots (`acquireStoredProjectSnapshot`) in memory. Computes dual SHA-256 binary fingerprints: `sourceContentFingerprint` (covering stored project record, exact UTF-8 `dataJson`, complete ordered blob keyspace, metadata, and 32-byte blob digests) and `commitPreimageFingerprint` (chaining source-content fingerprint with existing `recoveryRecords` ledger state to compare the preimage atomically and refuse changed source/ledger state).
+* **Trusted Plan Preparation (`src/lib/recovery/recoveryOrchestrator.ts`):** Evaluates authoritative IndexedDB snapshots (`acquireStoredProjectSnapshot`) in memory. Computes dual SHA-256 binary fingerprints: `resolvedSourceFingerprint` (the source-content fingerprint, covering stored project record, exact UTF-8 `dataJson`, complete ordered blob keyspace, metadata, and 32-byte blob digests) and `commitPreimageFingerprint` (chaining source-content fingerprint with existing `recoveryRecords` ledger state to compare the preimage atomically and refuse changed source/ledger state).
 * **Token Branding & One-Use Semantics:** Protects candidate plans via module-private `WeakMap` token branding, enforcing one-use semantics (`TOKEN_ALREADY_CONSUMED`) and concurrent commit locking (`TOKEN_ALREADY_COMMITTING`).
 * **Atomic Persistence:** Re-evaluates exact source snapshot in-transaction with `Dexie.waitFor()` keepalive on asynchronous Web Crypto digests. Executes atomic persistence across `projects`, `layerBlobs`, and `recoveryRecords` in a single readwrite transaction, preserving the damaged source project untouched, persisting reconstructed data under a fresh collision-checked project ID (bounded retries $N=3$), remapping survivor blobs byte-for-byte, and appending resolution audit metadata. Rollback on mid-flight failure leaves zero partial destination state. Supports cooperative cancellation before, during, and after commit (`cancellationIgnoredPostCommit`).
 
