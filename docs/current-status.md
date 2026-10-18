@@ -1,5 +1,9 @@
 # Current project status
 
+## 17 October audit triage — 18 October 2026
+
+The [audit triage record](releases/2026-10-18-audit-triage.md) gives a verdict on each finding of the local 17 October audit and fixes the real defects, on a review branch cut from `testsprite-s4`. Hidden and locked layers now refuse strokes, fills, curves and the selection's Cut, Delete, move and paste; locked layers were not protected from selection edits before. Ellipses span the dragged box at even and odd sizes, which changes four golden replay digests. Rectangle outlines list each pixel once, and quadratic Bézier curves no longer skip pixels. The colour-metric, `normalizeRect`, relay, co-draw and colour-dock findings are intended or already documented. No browser suite or TestSprite run is claimed.
+
 ## Final integration — 17 October 2026
 
 The [final integration record](releases/2026-10-17-final-integration.md) merges the pending agent branches (portal and publication docs, Chisel layer safety, canvas readout, replay links, `/verified`, the TestSprite autofix workflow) after review, and fixes what the first complete browser suites since 15 October found: Curve re-edit had been broken since the 16 October painting change, the tool shelf cut off the Eyedropper on small laptops, a hydration mismatch under reduced motion, Firefox offering MP4 it cannot encode, the light bar's trailing segment highlight (now a liquid lens with the rail's hold-and-slide gesture), Frames list ARIA, frame-card target sizes, Cocoa Day contrast, analytics outside Vercel, and receipt stroke miscounts. Tests that still described earlier interfaces were updated and listed. Chromium MP4 colour still fails on this machine (environment; the pre-merge commit fails identically). Results and what was not run are in the record.

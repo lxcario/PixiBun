@@ -8,7 +8,7 @@ Animated tool previews appear on hover or focus. Activating a tool dismisses its
 
 Pick a tool from the left-hand toolbar. On shorter windows the toolbar folds related tools into one button (Lines and shapes first, then Selection, then Drawing); click the button for the tool it shows, or its corner arrow or right-click for the rest of the group. The button keeps the last tool you used there, and letter shortcuts always work. Its controls appear along the top; some open under **tool options**, while brush size has its own small menu. Click a color swatch for your primary color. Right-click a swatch for your secondary color, and press **X** to swap them.
 
-Work on the intended frame and an unlocked layer. Most drawing tools change that layer's pixels; selecting a tool alone changes no artwork. **Undo** or **Ctrl+Z** restores a committed drawing action while it remains in session history. A selected area can limit drawing. Clear it with **Esc** before painting elsewhere. [Shortcut details](../contracts/shortcuts.md) explain keyboard focus and selection exceptions.
+Work on the intended frame and a visible, unlocked layer. Most drawing tools change that layer's pixels; selecting a tool alone changes no artwork. On a hidden or locked layer, strokes, fills, shapes, curves and a selection's Cut, Delete, move or paste are refused with a message and change nothing; Eyedropper, Copy and making a selection still work. **Undo** or **Ctrl+Z** restores a committed drawing action while it remains in session history. A selected area can limit drawing. Clear it with **Esc** before painting elsewhere. [Shortcut details](../contracts/shortcuts.md) explain keyboard focus and selection exceptions.
 
 Letter shortcut labels name QWERTY key positions, so a different keyboard layout can use the same positions. Symbols such as brackets follow your keyboard. Workspace shortcuts pause while a dialog is open or you are typing. By default, hold Space to pan, Alt-click to pick a color, Shift-click to draw a straight line from the last pixel and right-click to paint the secondary color; **Guide & Shortcuts** (`?`) can switch to the PixiBun classic keys. [Both keymaps](../contracts/shortcuts.md). On a landscape tablet wide enough for Studio (1024px+), one finger draws; extra fingers do not join that stroke. Use the zoom controls for the canvas. Browser gestures outside the drawing viewport keep their existing behavior.
 
@@ -125,7 +125,7 @@ Press **U**, choose **Outline** or **Filled**, then drag opposite corners. Brush
 
 ![Ellipse selected; actual available tool settings, original three-frame artwork.](../assets/screenshots/2026-10-15-current-ui/tool-ellipse.png)
 
-Press **O**, choose **Outline** or **Filled**, and drag its bounding rectangle. The result is a pixel ellipse on the active layer. At small sizes, inspect the staircase of pixels and touch it up with Pen if you want a particular silhouette.
+Press **O**, choose **Outline** or **Filled**, and drag its bounding rectangle. The result is a pixel ellipse on the active layer that touches all four sides of the dragged box, like the Rectangle tool's box: an 8×8 drag draws an 8×8 circle around a 2×2 centre, and a 9×9 drag a 9×9 circle around one centre pixel. At small sizes, inspect the staircase of pixels and touch it up with Pen if you want a particular silhouette.
 
 ## Normal Chisel
 
