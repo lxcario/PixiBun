@@ -14,8 +14,9 @@ const STARS = [
 
 /**
  * The landing's Day/Night switch: a little window onto the sky. At night the
- * moon rests on the left among twinkling stars; by day the sun rolls to the
- * right past a drifting cloud. Pressing it spreads the new sky out of the switch.
+ * moon rests on the left among twinkling stars; by day the knob slides right and
+ * the moon fades into the sun, past a drifting cloud. Pressing it spreads the new
+ * sky out of the switch.
  */
 export const DayNightSwitch: React.FC = () => {
   const colorScheme = useThemeStore((s) => s.colorScheme);
@@ -72,36 +73,36 @@ export const DayNightSwitch: React.FC = () => {
       />
       {/* Ground line */}
       <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-[3px] bg-[color-mix(in_srgb,var(--ink)_55%,transparent)]" />
-      {/* Knob: moon at night, sun by day */}
+      {/* Knob: the moon at night becomes the sun by day as it slides across. */}
       <motion.span
         aria-hidden="true"
         className="absolute top-[3px] left-[3px] w-[18px] h-[18px]"
         initial={false}
-        animate={{ x: day ? 24 : 0, rotate: day ? 180 : 0 }}
+        animate={{ x: day ? 24 : 0 }}
         transition={spring}
       >
-        <svg viewBox="0 0 18 18" width="18" height="18" shapeRendering="crispEdges" className="block">
-          {day ? (
-            <g fill="#ffd285">
-              <rect x="5" y="3" width="8" height="12" />
-              <rect x="3" y="5" width="12" height="8" />
-              <rect x="8" y="0" width="2" height="2" />
-              <rect x="8" y="16" width="2" height="2" />
-              <rect x="0" y="8" width="2" height="2" />
-              <rect x="16" y="8" width="2" height="2" />
-              <rect x="6" y="5" width="3" height="2" fill="#fff3c4" />
-            </g>
-          ) : (
-            <g>
-              <rect x="5" y="2" width="8" height="14" fill="#f4ecdc" />
-              <rect x="3" y="4" width="12" height="10" fill="#f4ecdc" />
-              <rect x="2" y="6" width="14" height="6" fill="#f4ecdc" />
-              <rect x="6" y="5" width="2" height="2" fill="#cfc2a8" />
-              <rect x="10" y="9" width="3" height="2" fill="#cfc2a8" />
-              <rect x="6" y="11" width="2" height="1" fill="#cfc2a8" />
-            </g>
-          )}
-        </svg>
+        <motion.svg viewBox="0 0 18 18" width="18" height="18" shapeRendering="crispEdges" className="absolute inset-0 block"
+          initial={false} animate={{ opacity: day ? 0 : 1, scale: day ? 0.6 : 1 }} transition={{ duration: reduceMotion ? 0 : 0.22 }}>
+          <rect x="5" y="2" width="8" height="14" fill="#f4ecdc" />
+          <rect x="3" y="4" width="12" height="10" fill="#f4ecdc" />
+          <rect x="2" y="6" width="14" height="6" fill="#f4ecdc" />
+          <rect x="6" y="5" width="2" height="2" fill="#cfc2a8" />
+          <rect x="10" y="9" width="3" height="2" fill="#cfc2a8" />
+          <rect x="6" y="11" width="2" height="1" fill="#cfc2a8" />
+        </motion.svg>
+        <motion.svg viewBox="0 0 18 18" width="18" height="18" shapeRendering="crispEdges" className="absolute inset-0 block"
+          initial={false} animate={{ opacity: day ? 1 : 0, scale: day ? 1 : 0.6, rotate: day ? 0 : -45 }}
+          transition={{ duration: reduceMotion ? 0 : 0.28, delay: reduceMotion || !day ? 0 : 0.08 }}>
+          <g fill="#ffd285">
+            <rect x="5" y="3" width="8" height="12" />
+            <rect x="3" y="5" width="12" height="8" />
+            <rect x="8" y="0" width="2" height="2" />
+            <rect x="8" y="16" width="2" height="2" />
+            <rect x="0" y="8" width="2" height="2" />
+            <rect x="16" y="8" width="2" height="2" />
+            <rect x="6" y="5" width="3" height="2" fill="#fff3c4" />
+          </g>
+        </motion.svg>
       </motion.span>
     </button>
   );

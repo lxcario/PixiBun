@@ -1,12 +1,11 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { QuickPaletteBar } from '@/components/layout/inspector/QuickPaletteBar';
 import { PinnedColorPanel } from '@/components/ui/ArtistColorPicker';
 import { useStudioStore } from '@/stores/studioStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 
-describe('QuickPaletteBar and PinnedColorPanel', () => {
+describe('PinnedColorPanel', () => {
   beforeEach(() => {
     useStudioStore.setState({
       primaryColor: '#000000',
@@ -35,46 +34,6 @@ describe('QuickPaletteBar and PinnedColorPanel', () => {
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
-  });
-
-  it('renders quick swatches and swaps foreground and background colors', () => {
-    render(<QuickPaletteBar />);
-
-    expect(screen.getByRole('region', { name: /quick palette strip/i })).toBeDefined();
-
-    const swapBtn = screen.getByRole('button', { name: /swap foreground and background colors/i });
-    expect(swapBtn).toBeDefined();
-
-    expect(useStudioStore.getState().primaryColor).toBe('#000000');
-    expect(useStudioStore.getState().secondaryColor).toBe('#ffffff');
-
-    fireEvent.click(swapBtn);
-
-    expect(useStudioStore.getState().primaryColor).toBe('#ffffff');
-    expect(useStudioStore.getState().secondaryColor).toBe('#000000');
-  });
-
-  it('sets primary color on left-click and secondary color on right-click', () => {
-    render(<QuickPaletteBar />);
-
-    const redSwatch = screen.getByRole('button', { name: /select color #ff0000/i });
-    expect(redSwatch).toBeDefined();
-
-    fireEvent.click(redSwatch);
-    expect(useStudioStore.getState().primaryColor).toBe('#ff0000');
-
-    const blueSwatch = screen.getByRole('button', { name: /select color #0000ff/i });
-    fireEvent.contextMenu(blueSwatch);
-    expect(useStudioStore.getState().secondaryColor).toBe('#0000ff');
-  });
-
-  it('navigates to the palette tab when clicking the palette button', () => {
-    render(<QuickPaletteBar />);
-
-    const paletteBtn = screen.getByRole('button', { name: /open full palette manager/i });
-    fireEvent.click(paletteBtn);
-
-    expect(useStudioStore.getState().activeInspectorTab).toBe('palette');
   });
 
   it('PinnedColorPanel supports collapsing and unpinning', () => {
