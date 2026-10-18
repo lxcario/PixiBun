@@ -98,4 +98,4 @@ Choose **Preview 47-blob Contours** to inspect highlighted/shaded contours deriv
 
 The name refers to the contour rules. It does not mean the panel exports a complete 47-tile autotile atlas or a general world generator. For a small rule-based layout with pins and walkability, use [Try a new look → Tiles](variations-and-scenes.md#small-tile-scenes).
 
-Sources: [task navigation](../../src/components/layout/inspector/AiToolsPanel.tsx), [cleanup and raster previews](../../src/components/layout/inspector/PixiBudAssistanceSection.tsx), [tile previews and bundles](../../src/components/layout/inspector/TilesetDecomposerSection.tsx), [exact tile bundle](../../src/lib/export/tilesetBundle.ts).
+Sources: [task navigation](../../src/components/layout/inspector/PixiToolsPanel.tsx), [cleanup and raster previews](../../src/components/layout/inspector/RasterActionsSection.tsx), [tile previews and bundles](../../src/components/layout/inspector/TilesetDecomposerSection.tsx), [exact tile bundle](../../src/lib/export/tilesetBundle.ts).

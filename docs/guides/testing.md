@@ -15,7 +15,7 @@ Production and development Chromium qualification use the full browser through `
 | Editor workflows | `npm run test:e2e` | Chromium configured Turbopack development server on 3000; some tests use development-only store/database handles. Qualification and CI explicitly use one worker and zero retries |
 | Production workflows | `npm run test:e2e:production` | Separate compiled server in Chromium/Firefox/WebKit; counts in generated inventory; one worker, zero retries |
 | Nibbli pilot | `npm run nibbli:test` | Separate build/server and scripted UI journeys in three browsers; independent pixels and actual downloaded files; source/build guards, zero retries, explicit browser-download capability profile; OS-native picker excluded |
-| Coverage | `npm run test:coverage` | All application `.ts`/`.tsx` sources, excluding `src/types`; thresholds 60% statements/lines, 50% branches, 55% functions; enforced by both gates and CI |
+| Coverage | `npm run test:coverage` | All application `.ts`/`.tsx` sources, excluding `src/types`; thresholds 61% statements, 56% branches, 56% functions, 62% lines (about a point under measured coverage); enforced by both gates and CI |
 | Lighthouse | `npx @lhci/cli@0.15.1 autorun` | Separate configured budgets and fixture/routes; dated environment evidence |
 
 GitHub CI runs gate/build, Chromium editor checks, three-engine production checks and Lighthouse. GitLab runs the standard gate plus its main-branch build; it does not provide the same browser/Lighthouse matrix. Do not equate configured thresholds with executed coverage. The pre-push hook is a bypassable convenience check of the working tree, which can differ from the commits pushed.

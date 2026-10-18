@@ -49,7 +49,7 @@ The [storage contract](docs/contracts/storage.md#admission-and-optional-metadata
 | Interface | Tailwind CSS v4 and Motion | Shared visual tokens and interaction feedback |
 | Background work | Web Workers with operation-specific fallbacks | Bounded heavy processing and owned result publication |
 
-`src/lib/ai/` is a legacy directory name for predominantly deterministic graphics code. It does not establish a shipped learned model. Detailed algorithms belong in [the deep dive (local archive)](docs/archives.md#record-pixibun-deep-dive-md); ownership and integration belong in [architecture](ARCHITECTURE.md).
+`src/lib/graphics/` is a legacy directory name for predominantly deterministic graphics code. It does not establish a shipped learned model. Detailed algorithms belong in [the deep dive (local archive)](docs/archives.md#record-pixibun-deep-dive-md); ownership and integration belong in [architecture](ARCHITECTURE.md).
 
 ## Repo & Environments
 

@@ -80,7 +80,7 @@ The content-aware base combines macro-form and material-scale height; appendage 
 
 `buildCelRamp()` retains its input OKLCH hue/chroma coordinates while changing lightness; RGB gamut conversion can alter realized coordinates. Optional source-shading normalization and subsequent material/glint operations are separate. Do not generalize this ramp property to every output pixel. Normal-map Bake uses the worker dispatcher; live photometric analysis and Apply remain synchronous main-thread operations in [usePhotometricEvents](../../src/hooks/viewport/events/usePhotometricEvents.ts).
 
-The chisel encodes normalized tangent vectors using `round((N+1)*127.5)`. OpenGL convention is +Y up; light direction math uses screen +Y down where appropriate. See [normalSculptor.ts](../../src/lib/art/normalSculptor.ts) and [photometricLighting.ts](../../src/lib/ai/math/photometricLighting.ts). Minecraft topology rejects void pollution at 25%; this is PixiBun's heuristic, not a Mojang validity rule.
+The chisel encodes normalized tangent vectors using `round((N+1)*127.5)`. OpenGL convention is +Y up; light direction math uses screen +Y down where appropriate. See [normalSculptor.ts](../../src/lib/art/normalSculptor.ts) and [photometricLighting.ts](../../src/lib/graphics/math/photometricLighting.ts). Minecraft topology rejects void pollution at 25%; this is PixiBun's heuristic, not a Mojang validity rule.
 
 ## Color, lenses and conversion
 

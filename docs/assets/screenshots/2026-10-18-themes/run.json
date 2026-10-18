@@ -1,0 +1,185 @@
+{
+  "scope": "Studio theme gallery illustrations; not a device, contrast, participant or deployment qualification",
+  "date": "2026-10-18",
+  "sourceRevision": "b17513dfd3f69d4f13da99c5956da2204bc68a50 plus the uncommitted 18 October open-issues changes",
+  "buildId": "trFgkKTc_4x1tvGThyIEo",
+  "runtime": "v22.23.3",
+  "browser": "Chromium (Playwright 1.62.1)",
+  "viewport": "1280x900",
+  "deviceScaleFactor": 1,
+  "reducedMotion": "reduce",
+  "themes": 12,
+  "appearances": 24,
+  "artwork": "The Mochi starter, opened with /studio?template=mochi",
+  "procedure": "Production build served locally. One disposable browser context per picture; the saved theme and colour scheme were set through the same localStorage keys the Studio reads before paint, and the page waited for the starter to open and the theme attributes to apply. The pointer was moved to the window corner before each capture.",
+  "images": [
+    {
+      "path": "studio-moonlit-dark.png",
+      "theme": "Moonlit",
+      "scheme": "Night",
+      "bytes": 141026,
+      "sha256": "3698dd7c807863fdbe4d0caa2b9bf0beb996f5cb0fbf62c26097917a14f11381"
+    },
+    {
+      "path": "studio-moonlit-light.png",
+      "theme": "Moonlit",
+      "scheme": "Day",
+      "bytes": 143336,
+      "sha256": "49667b1d2f5ee5cfc64201858fa8bec57c89bc5defb92687b4f5ae6d5441f9f7"
+    },
+    {
+      "path": "studio-sakura-dark.png",
+      "theme": "Sakura",
+      "scheme": "Night",
+      "bytes": 156647,
+      "sha256": "bd0b59546238e40aad2c21e2361a26e42d5c0ba56b1b5536d862c33a94765495"
+    },
+    {
+      "path": "studio-sakura-light.png",
+      "theme": "Sakura",
+      "scheme": "Day",
+      "bytes": 145736,
+      "sha256": "514f5022bfaccacb604dc8a0ff8433e6ecb3dc2d4343623439d4c69c5c4e8d00"
+    },
+    {
+      "path": "studio-tidepool-dark.png",
+      "theme": "Tidepool",
+      "scheme": "Night",
+      "bytes": 144473,
+      "sha256": "2ce32f51e742bbfafc79b2d3b58e6507c10de04e2576d6b55375644bc693818a"
+    },
+    {
+      "path": "studio-tidepool-light.png",
+      "theme": "Tidepool",
+      "scheme": "Day",
+      "bytes": 148249,
+      "sha256": "9a73e527066fdcc0fc867cdc6e7554fb4dc0a8d14ecb4f60587713381258a1d0"
+    },
+    {
+      "path": "studio-ember-dark.png",
+      "theme": "Ember",
+      "scheme": "Night",
+      "bytes": 133075,
+      "sha256": "64510c00fe8595aae25db5906c5ceee8fcbbbe6486ea7e9fc79a4a0ca3706b46"
+    },
+    {
+      "path": "studio-ember-light.png",
+      "theme": "Ember",
+      "scheme": "Day",
+      "bytes": 143115,
+      "sha256": "b38f6b7dd263ee47ed43c1f659a7d313b30ca3d944e59665b38e80a78ec60bcd"
+    },
+    {
+      "path": "studio-moss-dark.png",
+      "theme": "Moss",
+      "scheme": "Night",
+      "bytes": 134835,
+      "sha256": "47316c547e58baf3f6e546e34c3301f649578b390452804543cda4396db8e053"
+    },
+    {
+      "path": "studio-moss-light.png",
+      "theme": "Moss",
+      "scheme": "Day",
+      "bytes": 154469,
+      "sha256": "de3a273aa168b5a4d2ee87e8a3d0b1264c4c19f69ddb7e21e8bfbd1dcbcea656"
+    },
+    {
+      "path": "studio-arcade-dark.png",
+      "theme": "Arcade",
+      "scheme": "Night",
+      "bytes": 135782,
+      "sha256": "d1ed560a7600ff1c62577921c7fb6c7b76dd376734c3cc9db680e74cbba87440"
+    },
+    {
+      "path": "studio-arcade-light.png",
+      "theme": "Arcade",
+      "scheme": "Day",
+      "bytes": 140490,
+      "sha256": "3bfd8910af7891f62f4cc67380f672b3b40b017c10fa70a87a498763398ff953"
+    },
+    {
+      "path": "studio-cocoa-dark.png",
+      "theme": "Cocoa",
+      "scheme": "Night",
+      "bytes": 151876,
+      "sha256": "723c63f31c409867f4dbe1cc62d3041cc35307b8b02f15a9ec573cb57587094f"
+    },
+    {
+      "path": "studio-cocoa-light.png",
+      "theme": "Cocoa",
+      "scheme": "Day",
+      "bytes": 149416,
+      "sha256": "d5dc3633f796738d5ce8c97133f76aed6329d43ec42c9b07bd895904f4c9ab44"
+    },
+    {
+      "path": "studio-drizzle-dark.png",
+      "theme": "Drizzle",
+      "scheme": "Night",
+      "bytes": 142316,
+      "sha256": "2a6c4645f0b588fab8b5129f57fc017890a83dba349e068aebfe9d32e73c805a"
+    },
+    {
+      "path": "studio-drizzle-light.png",
+      "theme": "Drizzle",
+      "scheme": "Day",
+      "bytes": 149376,
+      "sha256": "38d2fc73ba079fa2083419243ec06bef148596882c17cb38bcdff51e1716f6e6"
+    },
+    {
+      "path": "studio-harvest-dark.png",
+      "theme": "Harvest",
+      "scheme": "Night",
+      "bytes": 143503,
+      "sha256": "216201f4869b1d8890be736982130eeb72a02fcd076615e647fd3f86c9349775"
+    },
+    {
+      "path": "studio-harvest-light.png",
+      "theme": "Harvest",
+      "scheme": "Day",
+      "bytes": 145429,
+      "sha256": "c552b19c5d6be4fde257e7acff7b4ef2dabf4da2d07873f43d5ce37132d38929"
+    },
+    {
+      "path": "studio-harbor-dark.png",
+      "theme": "Harbor",
+      "scheme": "Night",
+      "bytes": 142653,
+      "sha256": "845cdf1fb41927f8302976bdd95bb5971bd02926a09b10c31677dcf907039f9d"
+    },
+    {
+      "path": "studio-harbor-light.png",
+      "theme": "Harbor",
+      "scheme": "Day",
+      "bytes": 149277,
+      "sha256": "dd3aa16e47d4bd0477051f28a822804fe98253c3a26130a7e018646362c707c9"
+    },
+    {
+      "path": "studio-atelier-dark.png",
+      "theme": "Graphite",
+      "scheme": "Night",
+      "bytes": 60678,
+      "sha256": "1f6f790f9af231da315d055ed5f9faaa239582f985dc6f798d4a2d4684c99f7e"
+    },
+    {
+      "path": "studio-atelier-light.png",
+      "theme": "Graphite",
+      "scheme": "Day",
+      "bytes": 60657,
+      "sha256": "0bbb706740d69322dc90a92bae1057e19fe1084d68099bbeb01def698c3a23a3"
+    },
+    {
+      "path": "studio-cozy-classic-dark.png",
+      "theme": "Plum",
+      "scheme": "Night",
+      "bytes": 60617,
+      "sha256": "8a79c7beda8e6f19327d48b6caa86eb0c9d2b74eb5b0b824eb1c487933638a59"
+    },
+    {
+      "path": "studio-cozy-classic-light.png",
+      "theme": "Plum",
+      "scheme": "Day",
+      "bytes": 60812,
+      "sha256": "0d9875ae183294c02a6781d03d9d09888f3be681f0cca870efba8054ea002225"
+    }
+  ]
+}
