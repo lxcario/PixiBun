@@ -26,7 +26,7 @@ During Co-Draw, [selectiveRestore](../../src/lib/engine/selectiveRestore.ts) cha
 
 The [selection mask](../../src/lib/canvas/selectionMask.ts) remains active across tool changes and constrains Pen, Eraser, Dither, shapes, Curve, Fill/Color Replace and Normal Chisel. Transparent display uses an art-grid checkerboard when enabled, with blocks bounded to readable screen size; practice uses plain paper without changing that saved preference. Display chrome is excluded from exports.
 
-Studio and desktop practice mount [usePlaybackClock](../../src/hooks/studio/usePlaybackClock.ts) once per workspace. It accumulates elapsed time across frame changes, applies authored holds/clip order and preview speed, caps each rAF contribution at 250 ms and suspends hidden-tab elapsed time. Catch-up may skip an intermediate displayed pose. This is separate from encoded timing and does not close M3 native scheduling qualification.
+Studio and desktop practice mount [usePlaybackClock](../../src/hooks/studio/usePlaybackClock.ts) once per workspace. It accumulates elapsed time across frame changes, applies authored holds/clip order and preview speed, caps each rAF contribution at 250 ms and suspends hidden-tab elapsed time. It advances at most one pose per animation frame, so after a long gap every pose is still shown in order; time owed beyond the next pose's hold is dropped, and holds shorter than a display frame play one pose per frame. This is separate from encoded timing, which keeps the stored durations ([18 October record](../releases/2026-10-18-open-issues.md#playback-skipped-poses-after-a-stall-m3)).
 
 ## Pixel-art rotation: RotSprite v3
 

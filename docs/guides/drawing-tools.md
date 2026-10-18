@@ -6,7 +6,7 @@ Animated tool previews appear on hover or focus. Activating a tool dismisses its
 
 [Handbook](README.md) · [Workspace and layers](studio-workspace.md) · [All features](../features.md)
 
-Pick a tool from the left-hand toolbar. On shorter windows the toolbar folds related tools into one button (Lines and shapes first, then Selection, then Drawing); click the button for the tool it shows, or its corner arrow or right-click for the rest of the group. The button keeps the last tool you used there, and letter shortcuts always work. Its controls appear along the top; some open under **tool options**, while brush size has its own small menu. Click a color swatch for your primary color. Right-click a swatch for your secondary color, and press **X** to swap them.
+Pick a tool from the left-hand toolbar. On shorter windows the toolbar folds related tools into one button (Lines and shapes first, then Selection, then Drawing; if that still does not fit, the buttons shrink from 40 to 36 px); click the button for the tool it shows, or its corner arrow or right-click for the rest of the group. The button keeps the last tool you used there, and letter shortcuts always work. Its controls appear along the top; some open under **tool options**, while brush size has its own small menu. Click a color swatch for your primary color. Right-click a swatch for your secondary color, and press **X** to swap them.
 
 Work on the intended frame and a visible, unlocked layer. Most drawing tools change that layer's pixels; selecting a tool alone changes no artwork. On a hidden or locked layer, strokes, fills, shapes, curves and a selection's Cut, Delete, move or paste are refused with a message and change nothing; Eyedropper, Copy and making a selection still work. **Undo** or **Ctrl+Z** restores a committed drawing action while it remains in session history. A selected area can limit drawing. Clear it with **Esc** before painting elsewhere. [Shortcut details](../contracts/shortcuts.md) explain keyboard focus and selection exceptions.
 
@@ -109,7 +109,7 @@ Press **J**, then open the **Isometric-line** tool-options button in the header.
 1. Leave **ON** for the familiar two-across, one-down diagonal. The endpoint is projected onto that slope, so it may finish beside your pointer. Pure horizontal and vertical drags stay straight.
 2. Choose **FREE** for a line that follows your chosen endpoints, including shallow and steep slopes. It uses the same line path as **Line**.
 3. Choose a brush size if you want a thicker stroke. Mirror H/V can draw a matching reflected stroke. Drag, release, and use **Ctrl+Z** or **Ctrl+Shift+Z** to Undo/Redo the finished pixels.
-4. Turn on **View → 2:1 Iso Grid** if you would like a guide behind the artwork. The grid is only a viewing aid and is not included in exports.
+4. Turn on **View → Iso grid** (2:1 guides) if you would like a guide behind the artwork. The grid is only a viewing aid and is not included in exports.
 
 ![Current unsnapped Iso Line and drawing-mirror settings.](../assets/screenshots/2026-10-15-current-ui/iso-free-thick-mirrored.png)
 
