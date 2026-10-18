@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-10-18",
+  "automationNote": "The GitHub App is connected and merge protection is configured. PR #6's fresh preview deployment matched its head, but the new TestSprite event was blocked by billing: no tests ran. An executed automatic suite is still pending. These dated cloud replays are supporting evidence.",
+  "stories": [
+    {
+      "id": "bun-keeps-its-colors",
+      "title": "Bun gets to keep its colors.",
+      "promise": "A tool for shaping light should leave an artist’s paint alone.",
+      "discovery": "A TestSprite journey sent us to the Normal Chisel. Its setup had the wrong kind of layer. Trying the toolbar on Bun’s ordinary drawing revealed a green patch where the coat had been: surface-map colors had reached the paint.",
+      "repair": "The surface panel already knew that boundary. The canvas now checks it before a stroke touches pixels or history, and offers a small instruction. The corrected cloud test failed on production; a controlled replay on the fixing preview preserved the artwork and passed.",
+      "status": "preview-passed",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa",
+      "fixCommit": "aab9da89559ebe5ac395e49258419c494e1c6280",
+      "prUrl": "https://github.com/lxcario/PixiBun/pull/5",
+      "redUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/216f659a-4736-4e92-93e7-5d525d33bddf",
+      "redRunId": "e8e80ba7-7e08-4644-a0c7-40df6c0daa09",
+      "followUpUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/19a2bcb6-3cf3-4f41-a3dc-3e52bfd7179f",
+      "scope": "Exact artwork, history and refusal assertions on an explicitly checked preview origin. The automatic PR suite remains pending."
+    },
+    {
+      "id": "a-lock-keeps-its-promise",
+      "title": "A lock should keep its promise.",
+      "promise": "Some pixels are finished for today. The padlock should look after them.",
+      "discovery": "We asked TestSprite to select part of Bun, prove Delete worked, and bring it back with Undo. Then it selected again and locked the layer. Delete still erased it: the cloud comparison found 768 changed RGBA channels after the lock was on.",
+      "repair": "Drawing tools checked the lock; selection edits had another route in. An isolated repair adds the check before destructive selection operations and keeps a refused floating paste available. It passes 114 focused tests and nine browser cases. Integration, deployment and the cloud rerun are still ahead.",
+      "status": "local-passed",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa",
+      "fixCommit": null,
+      "prUrl": null,
+      "redUrl": "https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/deb3794c-8831-4e5d-8720-8af739122e15",
+      "redRunId": "092822f6-152c-44b2-9a18-a09a52a4a92e",
+      "followUpUrl": null,
+      "scope": "Real marquee and keyboard Delete, observed lock control, unlocked sensitivity and exact Undo restoration. The local repair is not deployed."
+    }
+  ],
+  "checks": [
+    {
+      "id": "png",
+      "title": "A drawing that really leaves the desk.",
+      "scope": "A real native-scale PNG download decoded independently and matched all 1,024 canvas channels.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/00a633fe-5731-44f7-8676-7c9299764e74",
+      "runId": "d0b63477-6adb-4f00-8c34-4ca58b23dd8e",
+      "codeVersion": "v-afa1b62983af",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+    },
+    {
+      "id": "timeline",
+      "title": "A little pause, kept.",
+      "scope": "Two frame holds, a change to 150 ms, Undo to 100 and Redo to 150, with exact artwork preserved.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/980d6012-88f0-456b-9015-f105c6774341",
+      "runId": "500a7b0f-8825-4a3e-ba89-0cc78381bdba",
+      "codeVersion": "v-6e218f037ed0",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+    },
+    {
+      "id": "backup",
+      "title": "The parcel opens somewhere new.",
+      "scope": "A downloaded two-frame, two-layer backup reopened in a fresh browser; layers, holds, palette and clip checked, then edited and undone. Browser download fallback only.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/26c4ff80-6bd7-4f5a-9c5d-4606576f41e2",
+      "runId": "ecc08821-fa84-4669-9b97-c41e2ee63564",
+      "codeVersion": "v-b20bf08e43d6",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+    },
+    {
+      "id": "palette",
+      "title": "A palette is an invitation.",
+      "scope": "All 12 ordered Sakura Night colors checked; browsing preserves the foreground, an explicit swatch chooses it, and the drawing stays unchanged.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/6b208e87-bf11-4ea1-be00-c9448f1b3fec",
+      "runId": "07108812-10d2-4d2b-896d-0b543907dfbb",
+      "codeVersion": "v-478c1fe74b04",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+    },
+    {
+      "id": "clips",
+      "title": "This pause belongs to this clip.",
+      "scope": "Actual project archives establish inclusive clip bounds and refusal of a backward range while frame identities, holds and decoded pixels stay unchanged. Playback/export ranges remain separate.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/392eb050-0927-40d3-8000-8207deb037b4",
+      "runId": "f5226127-54e7-4195-9b12-3d0beb6e22aa",
+      "codeVersion": "v-f0db4915b998",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+    },
+    {
+      "id": "journey",
+      "title": "A little animation comes safely home.",
+      "scope": "Actual PNG, GIF and APNG downloads decoded against two known poses and 100/200 ms holds; actual layered backup reopened in a fresh browser, edited and undone. Known imported 16×16 fixture and download fallback.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/ba62e217-35cf-4cbf-a78a-4740e3e200ce",
+      "runId": "25db8bf3-1f17-4464-a0bf-1a733ee1ae29",
+      "codeVersion": "v-2497e01ad86f",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+    },
+    {
+      "id": "relations",
+      "title": "Turn it around, and bring it back.",
+      "scope": "Real selection/HUD actions: two mirrors and four quarter-turns restore exact artwork. Intermediate pixels match independent permutations; downloaded layers, frames and holds stay intact.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/3dfee777-d654-4f35-b1ab-f61432b5c537",
+      "runId": "2b5daf60-f4ff-4641-b4fa-a364964b5063",
+      "codeVersion": "v-55d860ff165f",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+    },
+    {
+      "id": "painted-lighting",
+      "title": "First, paint something worth keeping.",
+      "scope": "From a blank canvas, 13 real red brush drags and three white clicks paint a literal heart. Actual PNG decoding and exact lighting Undo/Redo/Undo protect all 1,024 channels. The old SVG-counting failure is retained as a test defect.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/d9ca81b8-d9c6-4e2c-a269-a4853302f2bc",
+      "runId": "25f321b5-53af-43fd-ac2f-505743798f97",
+      "codeVersion": "v-f2f352efaa06",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+    }
+  ]
+}

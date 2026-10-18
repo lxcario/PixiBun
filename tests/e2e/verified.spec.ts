@@ -14,9 +14,12 @@ test.describe('/verified', () => {
 
     await page.goto('/verified');
     await expect(page).toHaveTitle(/How PixiBun is tested/);
-    await expect(page.getByRole('heading', { level: 1, name: 'Tested on every pull request.' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'A little desk. Promises we can check.' })).toBeVisible();
     await expect(page.getByTestId('verified-loop-steps').getByRole('listitem')).toHaveCount(5);
     await expect(page.getByTestId('verified-prs-checked')).toContainText(String(ledger.entries.length));
+    await expect(page.getByTestId('verification-story')).toHaveCount(2);
+    await expect(page.getByTestId('verification-supporting-check')).toHaveCount(8);
+    await expect(page.getByTestId('verification-automation-status')).toContainText('blocked by billing');
 
     if (ledger.entries.length === 0) await expect(page.getByTestId('loop-ledger-empty')).toBeVisible();
     else await expect(page.getByTestId('loop-ledger-row')).toHaveCount(ledger.entries.length);
@@ -36,6 +39,17 @@ test.describe('/verified', () => {
     await page.goto('/verified');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  });
+
+  test('opens the heart recipe from the evidence page with its exact readout', async ({ page }) => {
+    await page.goto('/verified');
+    await page.getByRole('link', { name: 'Draw this little heart →' }).click();
+    await expect(page.getByTestId('replay-status')).toHaveAttribute('data-state', 'applied');
+    await expect(page.getByTestId('canvas-readout')).toHaveAttribute('data-state', 'ready');
+    await expect(page.getByTestId('canvas-readout-pixels')).toHaveText('256');
+    await expect(page.getByTestId('canvas-readout-colors')).toHaveText('3');
+    await expect(page.getByTestId('canvas-readout-digest')).toHaveText('57feec3e');
+    expect(new URL(page.url()).searchParams.has('replay')).toBe(false);
   });
 
   for (const theme of STUDIO_THEMES) {

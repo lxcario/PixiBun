@@ -1,5 +1,9 @@
 # Current project status
 
+## Artwork safety and TestSprite evidence candidate — 18 October 2026
+
+The [candidate record](releases/2026-10-18-artwork-safety-and-evidence.md) combines the separately prepared selection-layer-lock repair and expanded `/verified` page on integration source `d9065d5`, in an isolated branch. It adds the [findings register](testsprite/findings.md), [public build diary](testsprite/build-diary.md) and standalone pixel/file journeys. Earlier isolated results retain their own source and scope; the combined candidate needs its own gate, production/browser and cloud observations. The GitHub App's fresh PR #6 event still stopped at billing; this does not prevent local checks, preview deployments or controlled portal qualification.
+
 ## Final integration — 17 October 2026
 
 The [final integration record](releases/2026-10-17-final-integration.md) merges the pending agent branches (portal and publication docs, Chisel layer safety, canvas readout, replay links, `/verified`, the TestSprite autofix workflow) after review, and fixes what the first complete browser suites since 15 October found: Curve re-edit had been broken since the 16 October painting change, the tool shelf cut off the Eyedropper on small laptops, a hydration mismatch under reduced motion, Firefox offering MP4 it cannot encode, the light bar's trailing segment highlight (now a liquid lens with the rail's hold-and-slide gesture), Frames list ARIA, frame-card target sizes, Cocoa Day contrast, analytics outside Vercel, and receipt stroke miscounts. Tests that still described earlier interfaces were updated and listed. Chromium MP4 colour still fails on this machine (environment; the pre-merge commit fails identically). Results and what was not run are in the record.
@@ -218,3 +222,8 @@ The [issue registry](research/issue-registry.md), [artist study](guides/artist-s
 ## Repository retention
 
 Operating instructions, active plans, release records, source, tests and useful handbook images stay tracked. Completed audits, execution logs and raw browser evidence are preserved locally and ignored by Git. The [archive catalog](archives.md) records their original source revision, location and integrity receipt. This cleanup changes the current source snapshot; earlier Git history retains its original files.
+
+
+## TestSprite artist journeys — 17 October 2026
+
+The isolated verification follow-up is described in [the dated journey record](releases/2026-10-17-testsprite-artist-journeys.md). It adds a source-linked `/verified` story page and three standalone browser journeys with independent file/pixel observations. Two new portal cases have controlled strict and reusable cloud passes on production `92de6c74`; the accessible readout/Heart journey passes locally and waits for a candidate deployment before cloud qualification. The catalog snapshot is 120 cases, not a claim of 120 covered features or passing tests. Automatic GitHub App execution remains pending. The shared D: integration checkout has not received this isolated patch.

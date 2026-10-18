@@ -5,6 +5,7 @@ import { useStudioStore } from '@/stores/studioStore';
 import { SafeCanvas } from '@/lib/safety/safeCanvas';
 import { FloatingSelection } from './useViewportOverlays';
 import { isWorkspaceControlTarget, shouldIgnoreWorkspaceKey, workspaceShortcutKey } from '@/lib/input/workspaceKeyboard';
+import { canEditSelectionLayer } from '@/lib/engine/selectionEdit';
 
 interface UseViewportSelectionProps {
   canvasWidth: number;
@@ -86,19 +87,19 @@ export function useViewportSelection({
 
   // Lift selected pixels from active layer into floating selection
   const liftSelectionToFloating = useCallback(() => {
-    if (!selection) return;
+    if (!selection || !canEditSelectionLayer(activeLayerId)) return false;
 
     captureSnapshot('Lift Selection');
 
     const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
     const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return;
+    if (!ctx) return false;
 
     const floatCanvas = document.createElement('canvas');
     floatCanvas.width = selection.w;
     floatCanvas.height = selection.h;
     const fCtx = floatCanvas.getContext('2d', { willReadFrequently: true });
-    if (!fCtx) return;
+    if (!fCtx) return false;
 
     if (selectionMask) {
       const srcData = SafeCanvas.getImageData(ctx, selection.x, selection.y, selection.w, selection.h);
@@ -150,6 +151,7 @@ export function useViewportSelection({
 
     renderComposite();
     bumpBufferVersion();
+    return true;
   }, [
     activeLayerId,
     bumpBufferVersion,
@@ -163,20 +165,20 @@ export function useViewportSelection({
 
   // Commit floating selection buffer back to active layer
   const commitFloatingSelection = useCallback(() => {
-    if (!floatingSelection) return;
-
-    captureSnapshot('Commit Selection');
+    if (!floatingSelection) return true;
+    if (!canEditSelectionLayer(activeLayerId)) return false;
     const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
     const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
-    if (ctx) {
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(floatingSelection.canvas, floatingSelection.x, floatingSelection.y);
-    }
+    if (!ctx) return false;
+    captureSnapshot('Commit Selection');
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(floatingSelection.canvas, floatingSelection.x, floatingSelection.y);
     setFloatingSelection(null);
     setSelection(null);
     commitSnapshot();
     renderComposite();
     bumpBufferVersion();
+    return true;
   }, [
     activeLayerId,
     bumpBufferVersion,
@@ -253,6 +255,7 @@ export function useViewportSelection({
   }, [activeLayerId, canvasWidth, floatingSelection, getOrCreateLayerCanvas, selection, selectionMask]);
 
   const handleCut = useCallback(() => {
+    if ((selection || floatingSelection) && !canEditSelectionLayer(activeLayerId)) return;
     handleCopy();
     clearPreview();
     if (floatingSelection) {
@@ -270,6 +273,7 @@ export function useViewportSelection({
       bumpBufferVersion();
     }
   }, [
+    activeLayerId,
     bumpBufferVersion,
     captureSnapshot,
     clearPreview,
@@ -284,9 +288,10 @@ export function useViewportSelection({
 
   const handlePaste = useCallback(() => {
     if (!clipboardRef.current) return;
+    if (!canEditSelectionLayer(activeLayerId)) return;
 
     if (floatingSelection) {
-      commitFloatingSelection();
+      if (!commitFloatingSelection()) return;
     }
 
     const { canvas, w, h } = clipboardRef.current;
@@ -308,9 +313,10 @@ export function useViewportSelection({
     });
     setSelection({ x: px, y: py, w, h });
     renderComposite();
-  }, [canvasHeight, canvasWidth, commitFloatingSelection, floatingSelection, renderComposite, setSelection]);
+  }, [activeLayerId, canvasHeight, canvasWidth, commitFloatingSelection, floatingSelection, renderComposite, setSelection]);
 
   const handleDeleteSelection = useCallback(() => {
+    if ((selection || floatingSelection) && !canEditSelectionLayer(activeLayerId)) return;
     clearPreview();
     if (floatingSelection) {
       setFloatingSelection(null);
@@ -327,6 +333,7 @@ export function useViewportSelection({
       bumpBufferVersion();
     }
   }, [
+    activeLayerId,
     bumpBufferVersion,
     captureSnapshot,
     clearPreview,
@@ -339,6 +346,7 @@ export function useViewportSelection({
   ]);
 
   const handleFlipHorizontal = useCallback(() => {
+    if ((selection || floatingSelection) && !canEditSelectionLayer(activeLayerId)) return;
     const active = floatingSelection;
     if (!active) {
       liftSelectionToFloating();
@@ -360,9 +368,10 @@ export function useViewportSelection({
       canvas: flippedCanvas,
     });
     renderComposite();
-  }, [floatingSelection, liftSelectionToFloating, renderComposite]);
+  }, [activeLayerId, selection, floatingSelection, liftSelectionToFloating, renderComposite]);
 
   const handleFlipVertical = useCallback(() => {
+    if ((selection || floatingSelection) && !canEditSelectionLayer(activeLayerId)) return;
     const active = floatingSelection;
     if (!active) {
       liftSelectionToFloating();
@@ -384,7 +393,7 @@ export function useViewportSelection({
       canvas: flippedCanvas,
     });
     renderComposite();
-  }, [floatingSelection, liftSelectionToFloating, renderComposite]);
+  }, [activeLayerId, selection, floatingSelection, liftSelectionToFloating, renderComposite]);
 
   // Global Keyboard Shortcuts for Selection
   useEffect(() => {
@@ -407,13 +416,13 @@ export function useViewportSelection({
         handlePaste();
       } else if ((e.ctrlKey || e.metaKey) && key === 'd') {
         e.preventDefault();
-        commitFloatingSelection();
+        if (!commitFloatingSelection()) return;
         setSelection(null);
       } else if (e.ctrlKey || e.metaKey) {
         return;
       } else if (e.key === 'Escape') {
         e.preventDefault();
-        commitFloatingSelection();
+        if (!commitFloatingSelection()) return;
         setSelection(null);
         clearPreview();
       } else if (e.key === 'Delete' || e.key === 'Backspace') {

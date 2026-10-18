@@ -8,6 +8,8 @@ import {
   summarizeLoopLedger,
 } from '@/lib/verified/loopLedger.mjs';
 import type { LedgerEntry, LoopLedger, Verdict } from '@/lib/verified/loopLedger.mjs';
+import type { VerificationStories as Stories } from '@/lib/verified/verificationStories.mjs';
+import { VerificationStories } from './VerificationStories';
 
 export const README_SECTION_URL = `${REPO_URL}#tested-on-every-pull-request`;
 export const LEDGER_MARKDOWN_URL = `${REPO_URL}/blob/main/${LEDGER_MARKDOWN_PATH}`;
@@ -86,7 +88,7 @@ function LedgerRow({ entry }: { entry: LedgerEntry }) {
 }
 
 /** The /verified page body, given an already-validated ledger. */
-export function LoopLedgerView({ ledger }: { ledger: LoopLedger }) {
+export function LoopLedgerView({ ledger, evidence }: { ledger: LoopLedger; evidence?: Stories }) {
   const summary = summarizeLoopLedger(ledger);
   const entries = orderedEntries(ledger);
 
@@ -98,18 +100,21 @@ export function LoopLedgerView({ ledger }: { ledger: LoopLedger }) {
         </Link>
 
         <header className="flex flex-col gap-3">
-          <h1 className="font-display text-3xl sm:text-4xl leading-tight">Tested on every pull request.</h1>
+          <h1 className="font-display text-3xl sm:text-4xl leading-tight">A little desk. Promises we can check.</h1>
           <p className="text-base leading-relaxed text-[var(--text-body)] max-w-2xl">
-            Before a change reaches pixibun.vercel.app, TestSprite drives a real browser through the app the way an artist would.
-            Our own Vitest and Playwright suites run alongside it; TestSprite is the independent, black-box checker.
+            We want artists to spend their attention on a bunny’s next expression.
+            Ours goes into the changes that bring it safely home. TestSprite explores the live app;
+            our own browser and file checks help us read the evidence closely.
           </p>
           <p className="font-mono text-sm text-[var(--accent-gold)]">
             Ledger updated <time dateTime={ledger.updated}>{formatDate(ledger.updated)}</time>
           </p>
         </header>
 
+        {evidence && <VerificationStories evidence={evidence} />}
+
         <section aria-labelledby="verified-loop" className="flex flex-col gap-4">
-          <h2 id="verified-loop" className="font-display text-xl text-[var(--accent-plum)]">The loop</h2>
+          <h2 id="verified-loop" className="font-display text-xl text-[var(--accent-plum)]">The loop we are connecting</h2>
           <ol className="grid grid-cols-1 sm:grid-cols-5 gap-3 list-none p-0 m-0" data-testid="verified-loop-steps">
             {LOOP_STEPS.map((step, index) => (
               <li key={step.title} className={`${CARD} p-4 flex flex-col gap-2`}>
@@ -128,20 +133,20 @@ export function LoopLedgerView({ ledger }: { ledger: LoopLedger }) {
               testId="verified-suite-cases"
               label="Cases in the suite"
               value={summary.suiteCases === null ? '—' : String(summary.suiteCases)}
-              hint={summary.suiteCases === null ? 'Not counted yet.' : 'Browser cases TestSprite runs on each PR.'}
+              hint={summary.suiteCases === null ? 'Not counted yet.' : 'Cases in the catalog at the recorded date; not a coverage or pass count.'}
             />
-            <Stat testId="verified-prs-checked" label="PRs checked" value={String(summary.prsChecked)} hint="Pull requests in the ledger below." />
+            <Stat testId="verified-prs-checked" label="PRs with executed runs" value={String(summary.prsChecked)} hint="Automatic executions in the ledger below. Billing-blocked events are excluded." />
             <Stat
               testId="verified-bugs-caught"
-              label="Bugs caught"
+              label="Bugs in the PR ledger"
               value={String(summary.bugsCaught)}
-              hint="Product bugs only. Test fixes are listed but not counted."
+              hint="Product bugs from executed PR runs. Supporting replay discoveries are recorded separately above."
             />
           </dl>
         </section>
 
         <section aria-labelledby="verified-ledger" className="flex flex-col gap-4">
-          <h2 id="verified-ledger" className="font-display text-xl text-[var(--accent-plum)]">The ledger</h2>
+          <h2 id="verified-ledger" className="font-display text-xl text-[var(--accent-plum)]">The automatic PR ledger</h2>
           {entries.length ? (
             <div role="region" aria-labelledby="verified-ledger" tabIndex={0} className={`${CARD} overflow-x-auto`}>
               <table className="w-full min-w-[40rem] text-sm border-collapse" data-testid="loop-ledger-table">
@@ -162,15 +167,15 @@ export function LoopLedgerView({ ledger }: { ledger: LoopLedger }) {
             </div>
           ) : (
             <div className={`${CARD} p-6 flex flex-col gap-2`} data-testid="loop-ledger-empty">
-              <p className="font-display text-lg text-[var(--text-heading)]">The desk is set, the ledger is still blank.</p>
+              <p className="font-display text-lg text-[var(--text-heading)]">The first executed PR run belongs here.</p>
               <p className="text-base leading-relaxed text-[var(--text-body)]">
-                The first pull request TestSprite checks lands here with its run, what failed and the commit that turned it green.
-                Rows are added only for real runs, each with its run link.
+                The App has received our deployment events. An event stopped by billing has not tested a drawing.
+                Rows are added only for real runs, each with its run link, result and fixing commit when there is one.
               </p>
             </div>
           )}
           <p className="text-sm leading-relaxed text-[var(--text-body)]">
-            The ledger is a committed, schema-checked file, so this page makes no live calls and cannot show a run that did not happen.
+            This ledger is committed and schema-checked. It records reviewed evidence at the stated date; follow each run link for its original result.
           </p>
         </section>
 

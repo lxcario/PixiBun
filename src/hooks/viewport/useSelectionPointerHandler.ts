@@ -17,8 +17,8 @@ interface SelectionHandlerProps {
   setLassoPoints: React.Dispatch<React.SetStateAction<Point[]>>;
   selectionModifierRef: React.MutableRefObject<'replace' | 'union' | 'subtract'>;
   baseSelectionMaskRef: React.MutableRefObject<Uint8Array | null>;
-  liftSelectionToFloating: () => void;
-  commitFloatingSelection: () => void;
+  liftSelectionToFloating: () => boolean | void;
+  commitFloatingSelection: () => boolean | void;
   createBoxMask: (box: { x: number; y: number; w: number; h: number }) => Uint8Array;
   mergeSelectionMask: (
     base: Uint8Array | null,
@@ -81,7 +81,7 @@ export function useSelectionPointerHandler({
         coords.y < activeBox.y + activeBox.h
       ) {
         if (!floatingSelection) {
-          liftSelectionToFloating();
+          if (liftSelectionToFloating() === false) return true;
         }
         setIsDraggingSelection(true);
         setDragOffset({
@@ -93,7 +93,7 @@ export function useSelectionPointerHandler({
     }
 
     if (tools.activeTool === 'select-box') {
-      if (floatingSelection) commitFloatingSelection();
+      if (floatingSelection && commitFloatingSelection() === false) return true;
 
       const mode = e.shiftKey ? 'union' : e.altKey ? 'subtract' : 'replace';
       selectionModifierRef.current = mode;
@@ -114,7 +114,7 @@ export function useSelectionPointerHandler({
     }
 
     if (tools.activeTool === 'select-lasso') {
-      if (floatingSelection) commitFloatingSelection();
+      if (floatingSelection && commitFloatingSelection() === false) return true;
 
       const mode = e.shiftKey ? 'union' : e.altKey ? 'subtract' : 'replace';
       selectionModifierRef.current = mode;
@@ -135,7 +135,7 @@ export function useSelectionPointerHandler({
     }
 
     if (tools.activeTool === 'select-wand') {
-      if (floatingSelection) commitFloatingSelection();
+      if (floatingSelection && commitFloatingSelection() === false) return true;
 
       const mode = e.shiftKey ? 'union' : e.altKey ? 'subtract' : 'replace';
       const baseMask = selectionMask

@@ -16,16 +16,17 @@ beforeEach(() => {
 afterEach(() => { cleanup(); document.body.replaceChildren(); vi.restoreAllMocks(); });
 
 function setup() {
+  const layerId = useStudioStore.getState().activeLayerId;
   const canvas = makeCanvas(32, 32); const capture = vi.fn(); const commit = vi.fn(); const render = vi.fn();
   const { result } = renderHook(() => {
     const selection = useStudioStore(state => state.selection);
     const selected = useViewportSelection({
-      canvasWidth: 32, canvasHeight: 32, activeLayerId: 'test-layer',
+      canvasWidth: 32, canvasHeight: 32, activeLayerId: layerId,
       previewCanvasRef: { current: canvas }, getOrCreateLayerCanvas: () => canvas,
       renderComposite: render, captureSnapshot: capture, commitSnapshot: commit, ownsTransformShortcuts: false,
     });
     const transformed = useViewportSelectionTransform({
-      canvasWidth: 32, canvasHeight: 32, activeLayerId: 'test-layer', selection, selectionMask: null,
+      canvasWidth: 32, canvasHeight: 32, activeLayerId: layerId, selection, selectionMask: null,
       floatingSelection: selected.floatingSelection, setFloatingSelection: selected.setFloatingSelection,
       setSelection: useStudioStore.getState().setSelection, getOrCreateLayerCanvas: () => canvas,
       renderComposite: render, captureSnapshot: capture, commitSnapshot: commit, bumpBufferVersion: vi.fn(),
