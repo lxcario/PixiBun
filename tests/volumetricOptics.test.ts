@@ -7,7 +7,7 @@ import {
   computeTangentNormalField,
   snapToGemstoneFacets,
   cleanOrphanPixelConfetti,
-} from '@/lib/ai/smartMathEngine';
+} from '@/lib/graphics/smartMathEngine';
 import { VolumetricOpticsParams } from '@/types/tools';
 
 interface ImageDataShim {
@@ -70,7 +70,7 @@ function makeMockCanvas(width: number, height: number) {
   return { canvas, ctx, _imageData };
 }
 
-describe('PixiBud AI 2D Volumetric Optics Engine', () => {
+describe('2D volumetric optics engine', () => {
   beforeEach(() => {
     // Install global document mock for canvas creation
     (globalThis as unknown as { document: unknown }).document = {

@@ -11,7 +11,7 @@ import type { Scene } from '../ToolMotionPreview';
 import {
   filterPixelPerfect, getBresenhamLine, getEllipsePoints, getRectanglePoints,
 } from '@/lib/canvas/rasterMath';
-import { getIsometric2p1Line, getQuadraticBezierPoints } from '@/lib/ai/math/curvesAndLines';
+import { getIsometric2p1Line, getQuadraticBezierPoints } from '@/lib/graphics/math/curvesAndLines';
 import { performFloodFill, replaceLayerColor } from '@/lib/canvas/floodFill';
 import { eraseMatchingColor } from '@/lib/canvas/eraseMatchingColor';
 import { shouldDitherPixel } from '@/lib/canvas/ditherMatrix';
@@ -19,18 +19,18 @@ import { pixelGradient } from '@/lib/canvas/pixelGradient';
 import { createBoxMask } from '@/lib/canvas/selectionUtils';
 import { planLayerRotation } from '@/lib/canvas/rotSpriteLayer';
 import { rotSprite } from '@/lib/canvas/rotSprite';
-import { renderParametric2p5DLighting } from '@/lib/ai/math/photometricLighting';
+import { renderParametric2p5DLighting } from '@/lib/graphics/math/photometricLighting';
 import {
   computeSeparableEDT, generateInflatedHeightmap, computeTangentNormalField, bakeNormalMapToRgba,
-} from '@/lib/ai/math/edtNormalMap';
-import { applyAtkinsonDither, applyRiemersmaDither } from '@/lib/ai/math/dithering';
-import { applyZhangSuenThinning } from '@/lib/ai/math/morphology';
+} from '@/lib/graphics/math/edtNormalMap';
+import { applyAtkinsonDither, applyRiemersmaDither } from '@/lib/graphics/math/dithering';
+import { applyZhangSuenThinning } from '@/lib/graphics/math/morphology';
 import {
   applyAtmosphericColorGrade, cleanJaggiesOnCanvas, cleanStrayPixelsOnCanvas, generate47BlobEdgeData,
   generateGroundShadowData, generateSelOutDataSync, harmonizePaletteColors, morphInBetweenFrameAtFraction,
   quantizeToActivePalette,
-} from '@/lib/ai/pixelAiEngine';
-import { planSpriteCleanup } from '@/lib/ai/spriteCleanup';
+} from '@/lib/graphics/pixelRasterEngine';
+import { planSpriteCleanup } from '@/lib/graphics/spriteCleanup';
 import { generateOklchRamp } from '@/lib/color/rampGenerator';
 import { lampFromPointer, snapLamp } from '@/lib/cart/relight';
 import { BUN_INK, bunPixels } from '@/lib/art/bunSprite';

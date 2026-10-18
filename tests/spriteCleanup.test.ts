@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { planSpriteCleanup, type SpriteCleanupOptions } from '@/lib/ai/spriteCleanup';
+import { planSpriteCleanup, type SpriteCleanupOptions } from '@/lib/graphics/spriteCleanup';
 
 const options: SpriteCleanupOptions = {
   alphaCutoff: 96, maxSpeckPixels: 2, paletteSize: 24,

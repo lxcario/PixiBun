@@ -2,14 +2,14 @@
  * @vitest-environment node
  */
 import { describe, expect, it, vi } from 'vitest';
-import * as edtNormalMap from '@/lib/ai/math/edtNormalMap';
+import * as edtNormalMap from '@/lib/graphics/math/edtNormalMap';
 import {
   computePhotometricAnalysis,
   executePhotometricPipeline,
   renderParametric2p5DLighting,
   type LightParameters,
-} from '@/lib/ai/math/photometricLighting';
-import { inferPhotometricSettings } from '@/lib/ai/math/photometricAuto';
+} from '@/lib/graphics/math/photometricLighting';
+import { inferPhotometricSettings } from '@/lib/graphics/math/photometricAuto';
 import type { MaterialType } from '@/types/tools';
 
 class MockImageData {
@@ -48,8 +48,8 @@ if (typeof (globalThis as unknown as { document?: unknown }).document === 'undef
   };
 }
 
-vi.mock('@/lib/ai/math/edtNormalMap', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/lib/ai/math/edtNormalMap')>();
+vi.mock('@/lib/graphics/math/edtNormalMap', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/graphics/math/edtNormalMap')>();
   return {
     ...actual,
     computeContentAwareHeightmap: vi.fn(actual.computeContentAwareHeightmap),

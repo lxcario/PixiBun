@@ -1,5 +1,5 @@
-import { computeSeparableEDT, executePhotometricPipeline } from '@/lib/ai/smartMathEngine';
-import { renderBoundedSpriteCastShadow } from '@/lib/ai/shadowRayMarcher';
+import { computeSeparableEDT, executePhotometricPipeline } from '@/lib/graphics/smartMathEngine';
+import { renderBoundedSpriteCastShadow } from '@/lib/graphics/shadowRayMarcher';
 import { rotSprite, rotateNearest, type PixelBuffer } from '@/lib/canvas/rotSprite';
 import { coordsToLightAngles, lightAnglesToCoords } from '@/lib/canvas/lightGizmoMath';
 import { getBresenhamLine } from '@/lib/canvas/rasterMath';

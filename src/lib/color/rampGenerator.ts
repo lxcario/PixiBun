@@ -5,7 +5,7 @@
  * - Shadows shift toward Cool Sky / Indigo Ambience (OKLCH Hue 285°)
  */
 
-import { rgbToOklch, oklchToRgb, shiftHueToward } from '@/lib/ai/math/colorSpace';
+import { rgbToOklch, oklchToRgb, shiftHueToward } from '@/lib/graphics/math/colorSpace';
 import { rgbaToHex } from '@/lib/canvas/floodFill';
 
 export interface ColorRampStep {

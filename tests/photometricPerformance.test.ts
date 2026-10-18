@@ -4,8 +4,8 @@ import { makeCanvas } from './helpers/mockCanvas';
 import {
   executePhotometricPipeline,
   computePhotometricAnalysis,
-} from '@/lib/ai/math/photometricLighting';
-import { inferPhotometricSettings } from '@/lib/ai/math/photometricAuto';
+} from '@/lib/graphics/math/photometricLighting';
+import { inferPhotometricSettings } from '@/lib/graphics/math/photometricAuto';
 
 describe('Photometric large-canvas execution timing benchmark (B18)', () => {
   beforeEach(() => {

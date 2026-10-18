@@ -121,9 +121,7 @@ describe('BottomTimeline Drag & Drop Frame Reordering', () => {
     expect(useStudioStore.getState().activeFrameIndex).toBe(0);
   });
 
-  it('keeps fractional elapsed time across frame transitions', () => {
-    const state = useStudioStore.getState();
-    state.frames.forEach((frame) => { frame.durationMs = 10; });
+  const driveFrames = () => {
     const callbacks = new Map<number, FrameRequestCallback>();
     let nextId = 0;
     vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
@@ -132,21 +130,35 @@ describe('BottomTimeline Drag & Drop Frame Reordering', () => {
       return id;
     });
     vi.stubGlobal('cancelAnimationFrame', (id: number) => callbacks.delete(id));
-    const advance = (time: number) => {
+    return (time: number) => {
       const entry = callbacks.entries().next().value;
       expect(entry).toBeDefined();
       callbacks.delete(entry![0]);
       act(() => entry![1](time));
+      return useStudioStore.getState().activeFrameIndex;
     };
+  };
+
+  it('keeps fractional elapsed time across frame transitions', () => {
+    useStudioStore.getState().frames.forEach((frame) => { frame.durationMs = 20; });
+    const advance = driveFrames();
     render(<BottomTimeline />);
     act(() => useStudioStore.getState().setIsPlaying(true));
     advance(1000);
-    advance(1016);
-    expect(useStudioStore.getState().activeFrameIndex).toBe(1);
-    advance(1032);
-    expect(useStudioStore.getState().activeFrameIndex).toBe(0);
-    advance(1048);
-    expect(useStudioStore.getState().activeFrameIndex).toBe(1);
+    // 16 ms frames against 20 ms holds: the 12, 8, 4 and 0 ms left over carry into each next hold.
+    expect([1016, 1032, 1048, 1064, 1080, 1096].map(advance)).toEqual([0, 1, 2, 0, 1, 1]);
+    act(() => useStudioStore.getState().setIsPlaying(false));
+    vi.unstubAllGlobals();
+  });
+
+  it('shows every frame in order when holds are shorter than a display frame', () => {
+    // 10 ms holds at 16 ms frames used to consume frame 2 unseen; each frame now shows once.
+    useStudioStore.getState().frames.forEach((frame) => { frame.durationMs = 10; });
+    const advance = driveFrames();
+    render(<BottomTimeline />);
+    act(() => useStudioStore.getState().setIsPlaying(true));
+    advance(1000);
+    expect([1016, 1032, 1048, 1064].map(advance)).toEqual([1, 2, 0, 1]);
     act(() => useStudioStore.getState().setIsPlaying(false));
     vi.unstubAllGlobals();
   });

@@ -5,13 +5,13 @@ import {
   generateSelOutData,
   generateOuterStrokeData,
   generateGroundShadowData,
-} from '@/lib/ai/pixelAiEngine';
+} from '@/lib/graphics/pixelRasterEngine';
 import {
   renderParametric2p5DLighting,
   computeSeparableEDT,
   renderBoundedSpriteCastShadow,
-} from '@/lib/ai/smartMathEngine';
-import { inferRaymarchedShadowSettings } from '@/lib/ai/math/shadowAuto';
+} from '@/lib/graphics/smartMathEngine';
+import { inferRaymarchedShadowSettings } from '@/lib/graphics/math/shadowAuto';
 import type { ViewportEventContext } from './types';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 import { planLayerRotation } from '@/lib/canvas/rotSpriteLayer';

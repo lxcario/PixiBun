@@ -1,5 +1,5 @@
 /**
- * PixiBud Smart Math & Computer Graphics Engine (Barrel Module).
+ * PixiBun Smart Math & Computer Graphics Engine (Barrel Module).
  *
  * Modularized architecture (Phase 33.3) organizing mathematically rigorous algorithms:
  * 1. Linear-Time O(W*H) Exact 2D Euclidean Distance Transform (Felzenszwalb & Huttenlocher 2012, Theory of Computing; orig. Cornell TR 2004)

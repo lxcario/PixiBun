@@ -8,7 +8,7 @@
 // - 47-Tile Wang / Blob Autotiling Bitmask Analysis
 // -----------------------------------------------------------------------------
 
-import { ShadedPixel } from '@/lib/ai/smartMathEngine';
+import { ShadedPixel } from '@/lib/graphics/smartMathEngine';
 import {
   rgbToOKLab,
   okLabToRGB,
@@ -18,7 +18,7 @@ import {
   oklchToRgb,
   shiftHueToward,
   calculate47TileBitmask,
-} from '@/lib/ai/smartMathEngine';
+} from '@/lib/graphics/smartMathEngine';
 import { hexToRgba } from '@/lib/canvas/floodFill';
 
 export { rgbToOklch, oklchToRgb, shiftHueToward, calculate47TileBitmask };

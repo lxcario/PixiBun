@@ -6,16 +6,16 @@ import {
   executePhotometricPipeline,
   computePhotometricAnalysis,
   detectMinecraftSkin,
-} from '@/lib/ai/smartMathEngine';
+} from '@/lib/graphics/smartMathEngine';
 import { runEdtNormalMapInWorker } from '@/lib/engine/workerDispatcher';
-import { inferPhotometricSettings, RecognizedFormType } from '@/lib/ai/math/photometricAuto';
+import { inferPhotometricSettings, RecognizedFormType } from '@/lib/graphics/math/photometricAuto';
 import { computeArtworkCentroid } from '@/lib/canvas/lightGizmoMath';
 import { useLightLook } from '@/lib/canvas/lightLook';
 import { createId } from '@/lib/engine/id';
 import type { ViewportPhotometricContext } from './types';
 import type { LayerEffectRecipe } from '@/types/canvas';
 import { deleteBuffers } from '@/lib/engine/bufferRegistry';
-import { renderPixelGlints } from '@/lib/ai/math/pixelGlint';
+import { renderPixelGlints } from '@/lib/graphics/math/pixelGlint';
 import { canAddLayersToFrame } from '@/lib/project/workspaceEnvelopeGuard';
 import { beginWorkspaceJob, type WorkspaceJob } from '@/lib/engine/workspaceJob';
 

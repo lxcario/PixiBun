@@ -1,4 +1,4 @@
-import { rgbToOKLab } from '@/lib/ai/math/colorSpace';
+import { rgbToOKLab } from '@/lib/graphics/math/colorSpace';
 
 /** Bounded, alpha-weighted palette summaries. Returned colors are actual source
  * samples, not averaged paint; nearby raster variations share an OKLab cluster. */

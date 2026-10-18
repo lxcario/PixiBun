@@ -6,7 +6,7 @@
  */
 
 import { bunOutline, bunPixels, BUN_INK, type BunPose } from '@/lib/art/bunSprite';
-import type { ShadedPixel } from '@/lib/ai/math/curvesAndLines';
+import type { ShadedPixel } from '@/lib/graphics/math/curvesAndLines';
 
 export const ART_W = 32;
 export const ART_H = 24;
@@ -89,7 +89,7 @@ export function applyShaded(r: Raster, pixels: readonly ShadedPixel[]): Raster {
 
 /**
  * A stand-in 2D context over a raster, enough for the engine functions
- * (floodFill, pixelAiEngine, photometric lighting, dithering, thinning).
+ * (floodFill, pixelRasterEngine, photometric lighting, dithering, thinning).
  */
 export function rasterContext(r: Raster): CanvasRenderingContext2D {
   return {

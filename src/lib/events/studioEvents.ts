@@ -6,7 +6,7 @@
  */
 import type { MaterialType, ShadingBandMode } from '@/types/tools';
 import type { P2PConnectionState, RemoteCursor } from '@/lib/sync/p2pSync';
-import type { SpriteCleanupOptions, SpriteCleanupStats } from '@/lib/ai/spriteCleanup';
+import type { SpriteCleanupOptions, SpriteCleanupStats } from '@/lib/graphics/spriteCleanup';
 
 export type StudioEventMap = {
   'pixibun:undo': void;
