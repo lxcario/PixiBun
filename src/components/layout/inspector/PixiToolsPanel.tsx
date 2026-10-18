@@ -7,7 +7,7 @@ import { NormalSculptorSection } from './NormalSculptorSection';
 import { PhotometricLightingSection } from './PhotometricLightingSection';
 import { RaymarchedShadowSection } from './RaymarchedShadowSection';
 import { TilesetDecomposerSection } from './TilesetDecomposerSection';
-import { PixiBudAssistanceSection } from './PixiBudAssistanceSection';
+import { RasterActionsSection } from './RasterActionsSection';
 import { AnimationReviewSection } from './AnimationReviewSection';
 import { ResearchWorkbenchSection } from './ResearchWorkbenchSection';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
@@ -47,7 +47,7 @@ function initialDomain(): DomainKey {
   return 'start';
 }
 
-export const AiToolsPanel: React.FC = () => {
+export const PixiToolsPanel: React.FC = () => {
   const [activeDomain, setActiveDomain] = useState<DomainKey>(initialDomain);
   const panelRef = useRef<HTMLDivElement>(null);
   const quickMagic = useLab('quickMagic');
@@ -172,7 +172,7 @@ export const AiToolsPanel: React.FC = () => {
               {(activeDomain === 'all' || activeDomain === 'polish') && (
                 <div className="flex flex-col gap-2">
                   {activeDomain === 'all' && <div className="w-full h-px bg-[var(--desk-border)] my-1" />}
-                  <PixiBudAssistanceSection />
+                  <RasterActionsSection />
                 </div>
               )}
             </div>

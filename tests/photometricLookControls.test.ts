@@ -2,7 +2,7 @@
  * @vitest-environment node
  */
 import { describe, it, expect } from 'vitest';
-import { executePhotometricPipeline } from '@/lib/ai/math/photometricLighting';
+import { executePhotometricPipeline } from '@/lib/graphics/math/photometricLighting';
 import type { PhotometricLightingParams } from '@/types/tools';
 
 // The light bar's Tint, Fill, Material and Edges controls must change the cel-shaded

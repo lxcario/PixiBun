@@ -191,7 +191,7 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
     vi.stubGlobal('VideoFrame', class {});
     HTMLCanvasElement.prototype.getContext = vi.fn(() => mockCtx) as unknown as typeof HTMLCanvasElement.prototype.getContext;
     expect(await probeMp4ExportSupport(15, 33)).toBe(false);
-    expect(probe).toHaveBeenCalledWith(expect.objectContaining({ width: 16, height: 34, codec: 'avc1.42001f' }));
+    expect(probe).toHaveBeenCalledWith(expect.objectContaining({ width: 16, height: 34, codec: 'avc1.42001f', hardwareAcceleration: 'prefer-software' }));
     await expect(exportAnimationToMp4Async([createMockCanvas(16, 16)])).rejects.toThrow('unsupported');
     expect(configure).not.toHaveBeenCalled(); expect(close).toHaveBeenCalledOnce();
   });

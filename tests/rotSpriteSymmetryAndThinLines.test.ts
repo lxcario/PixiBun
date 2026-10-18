@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rotateWithRotSprite } from '@/lib/ai/math/rotSprite';
+import { rotateWithRotSprite } from '@/lib/graphics/math/rotSprite';
 
 /** The 16×16 blade the homepage rotation demo used: thin diagonal lines that plain rotation breaks. */
 const SWORD_ROWS = [

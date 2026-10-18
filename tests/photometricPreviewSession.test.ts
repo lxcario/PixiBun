@@ -14,7 +14,7 @@ const smartMathMocks = vi.hoisted(() => ({
   renderParametric2p5DLighting: vi.fn(),
 }));
 
-vi.mock('@/lib/ai/smartMathEngine', () => smartMathMocks);
+vi.mock('@/lib/graphics/smartMathEngine', () => smartMathMocks);
 
 function fillPixel(canvas: MockCanvas, x: number, y: number, rgba: [number, number, number, number]) {
   const ctx = canvas.getContext('2d')!;

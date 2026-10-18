@@ -1,7 +1,7 @@
 /** @vitest-environment happy-dom */
 import { describe, it, expect, beforeEach } from 'vitest';
-import { renderParametric2p5DLighting } from '@/lib/ai/math/photometricLighting';
-import { rotateWithRotSprite } from '@/lib/ai/math/rotSprite';
+import { renderParametric2p5DLighting } from '@/lib/graphics/math/photometricLighting';
+import { rotateWithRotSprite } from '@/lib/graphics/math/rotSprite';
 
 interface ImageDataShim {
   data: Uint8ClampedArray;
@@ -130,7 +130,7 @@ function makeCanvas(initialWidth: number, initialHeight: number): HTMLCanvasElem
   return canvas;
 }
 
-describe('PixiBud AI Math & Rendering Engines', () => {
+describe('Graphics math and rendering engines', () => {
   beforeEach(() => {
     document.createElement = ((orig) => (tagName: string) => {
       if (tagName === 'canvas') {

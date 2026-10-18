@@ -8,15 +8,15 @@ import { rotSprite } from '@/lib/canvas/rotSprite';
 import { paethRotate } from '@/lib/canvas/paethRotation';
 import { rotateNormalVectors } from '@/lib/canvas/normalMapRotation';
 import { synthesizeWfc, WfcInput, WfcOptions, WfcResult } from '@/lib/procedural/waveFunctionCollapse';
-import { morphInBetweenFramesSync, morphInBetweenFrameAtFraction } from '@/lib/ai/pixelAiEngine';
+import { morphInBetweenFramesSync, morphInBetweenFrameAtFraction } from '@/lib/graphics/pixelRasterEngine';
 import {
   computeSeparableEDT,
   generateInflatedHeightmap,
   applyBilateralFilter,
   computeTangentNormalField,
   bakeNormalMapToRgba,
-} from '@/lib/ai/math/edtNormalMap';
-import { computeMinecraftSkinNormalField } from '@/lib/ai/math/minecraftSkin';
+} from '@/lib/graphics/math/edtNormalMap';
+import { computeMinecraftSkinNormalField } from '@/lib/graphics/math/minecraftSkin';
 
 // This entrypoint runs in a worker; DOM typings expose the Window overload for self.
 const postWorkerMessage = self.postMessage.bind(self) as (message: unknown, transfer?: ArrayBufferLike[]) => void;

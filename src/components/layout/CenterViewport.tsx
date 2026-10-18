@@ -22,7 +22,7 @@ import {
   applyBilateralFilter,
   computeTangentNormalField,
   bakeNormalMapToCanvas,
-} from '@/lib/ai/smartMathEngine';
+} from '@/lib/graphics/smartMathEngine';
 import { decodeNormalRGB, blendNormalsRNM } from '@/lib/art/normalSculptor';
 import { buildCycleRegisterMask, updateLivePaletteLUT32 } from '@/lib/color/paletteCycling';
 import { buildCanvasPaletteIndexMap } from '@/lib/export/shaderExporter';

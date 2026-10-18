@@ -7,7 +7,7 @@ import {
   calculateRawNeighborBitmask,
   updateAutotileAt,
   AutotileGrid,
-} from '@/lib/ai/math/autotileEngine';
+} from '@/lib/graphics/math/autotileEngine';
 
 describe('47-Blob Autotile Mathematical Specification', () => {
   it('has exactly 47 canonical masks without duplicates', () => {

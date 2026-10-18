@@ -6,7 +6,7 @@ import {
   executeRaymarchedCastShadowPipeline,
   renderBoundedSpriteCastShadow,
   RaymarchedShadowParams,
-} from '@/lib/ai/shadowRayMarcher';
+} from '@/lib/graphics/shadowRayMarcher';
 import { releaseFloat32Buffer } from '@/lib/engine/bufferPool';
 
 describe('PixiBun 2D Ray Marcher & Soft Shadow Engine', () => {
@@ -183,7 +183,7 @@ describe('PixiBun 2D Ray Marcher & Soft Shadow Engine', () => {
       const height = 16;
       // 4x4 sprite from (6, 6) to (9, 9)
       const isOpaque = (x: number, y: number) => x >= 6 && x <= 9 && y >= 6 && y <= 9;
-      const { computeSeparableEDT } = await import('@/lib/ai/math/edtNormalMap');
+      const { computeSeparableEDT } = await import('@/lib/graphics/math/edtNormalMap');
       const edt = computeSeparableEDT((x, y) => !isOpaque(x, y), width, height);
 
       const params: RaymarchedShadowParams = {
@@ -217,7 +217,7 @@ describe('PixiBun 2D Ray Marcher & Soft Shadow Engine', () => {
       const height = 32;
       // Sprite centered at rows 10 to 20, cols 4 to 28
       const isOpaque = (x: number, y: number) => x >= 4 && x <= 28 && y >= 10 && y <= 20;
-      const { computeSeparableEDT } = await import('@/lib/ai/math/edtNormalMap');
+      const { computeSeparableEDT } = await import('@/lib/graphics/math/edtNormalMap');
       const edt = computeSeparableEDT((x, y) => !isOpaque(x, y), width, height);
 
       // Light from top-left (315° key light)
@@ -267,7 +267,7 @@ describe('PixiBun 2D Ray Marcher & Soft Shadow Engine', () => {
       const height = 16;
       // Sprite from y = 4 to y = 10, x = 6 to 10
       const isOpaque = (x: number, y: number) => x >= 6 && x <= 10 && y >= 4 && y <= 10;
-      const { computeSeparableEDT } = await import('@/lib/ai/math/edtNormalMap');
+      const { computeSeparableEDT } = await import('@/lib/graphics/math/edtNormalMap');
       const edt = computeSeparableEDT((x, y) => !isOpaque(x, y), width, height);
 
       const params: RaymarchedShadowParams = {
@@ -294,7 +294,7 @@ describe('PixiBun 2D Ray Marcher & Soft Shadow Engine', () => {
       const width = 24;
       const height = 24;
       const isOpaque = (x: number, y: number) => x >= 8 && x <= 16 && y >= 6 && y <= 14;
-      const { computeSeparableEDT } = await import('@/lib/ai/math/edtNormalMap');
+      const { computeSeparableEDT } = await import('@/lib/graphics/math/edtNormalMap');
       const edt = computeSeparableEDT((x, y) => !isOpaque(x, y), width, height);
 
       const params: RaymarchedShadowParams = {
@@ -319,7 +319,7 @@ describe('PixiBun 2D Ray Marcher & Soft Shadow Engine', () => {
       const width = 24;
       const height = 24;
       const isOpaque = (x: number, y: number) => x >= 8 && x <= 16 && y >= 6 && y <= 14;
-      const { computeSeparableEDT } = await import('@/lib/ai/math/edtNormalMap');
+      const { computeSeparableEDT } = await import('@/lib/graphics/math/edtNormalMap');
       const edt = computeSeparableEDT((x, y) => !isOpaque(x, y), width, height);
 
       const params: RaymarchedShadowParams = {
@@ -354,7 +354,7 @@ describe('PixiBun 2D Ray Marcher & Soft Shadow Engine', () => {
         return true;
       };
 
-      const { computeSeparableEDT } = await import('@/lib/ai/math/edtNormalMap');
+      const { computeSeparableEDT } = await import('@/lib/graphics/math/edtNormalMap');
       const edt = computeSeparableEDT((x, y) => !isOpaque(x, y), width, height);
 
       const params: RaymarchedShadowParams = {
@@ -378,7 +378,7 @@ describe('PixiBun 2D Ray Marcher & Soft Shadow Engine', () => {
       const width = 32;
       const height = 32;
       const isOpaque = (x: number, y: number) => x >= 10 && x <= 22 && y >= 10 && y <= 22;
-      const { computeSeparableEDT } = await import('@/lib/ai/math/edtNormalMap');
+      const { computeSeparableEDT } = await import('@/lib/graphics/math/edtNormalMap');
       const edt = computeSeparableEDT((x, y) => !isOpaque(x, y), width, height);
 
       const params: RaymarchedShadowParams = {

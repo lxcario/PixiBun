@@ -2,7 +2,7 @@
  * @vitest-environment node
  */
 import { describe, it, expect } from 'vitest';
-import { inferPhotometricSettings } from '@/lib/ai/math/photometricAuto';
+import { inferPhotometricSettings } from '@/lib/graphics/math/photometricAuto';
 
 class MockImageData {
   data: Uint8ClampedArray;
@@ -155,7 +155,7 @@ describe('Photometric Auto-Analysis Engine', () => {
 
 describe('Content-Aware Heightmap & Part Segmentation', () => {
   it('detects line art contours, isolates facial features, and segments anatomical parts', async () => {
-    const { computeContentAwareHeightmap } = await import('@/lib/ai/math/edtNormalMap');
+    const { computeContentAwareHeightmap } = await import('@/lib/graphics/math/edtNormalMap');
 
     // Create a 32x32 character sprite with black outline (0,0,0), purple body (150, 90, 190),
     // two ears at the top, and two black eye pixels inside the face.
@@ -215,8 +215,8 @@ describe('Content-Aware Heightmap & Part Segmentation', () => {
   });
 
   it('classifies drawn cat character, protects eyes/mouth from diffuse crush, and applies cel-shading', async () => {
-    const { computeContentAwareHeightmap } = await import('@/lib/ai/math/edtNormalMap');
-    const { executePhotometricPipeline } = await import('@/lib/ai/math/photometricLighting');
+    const { computeContentAwareHeightmap } = await import('@/lib/graphics/math/edtNormalMap');
+    const { executePhotometricPipeline } = await import('@/lib/graphics/math/photometricLighting');
 
     // Construct a 32x32 cat sprite matching media_1788546468414.png
     // Cream body: [255, 245, 230, 255]
@@ -357,8 +357,8 @@ describe('Content-Aware Heightmap & Part Segmentation', () => {
   });
 
   it('correctly classifies and cel-shades 128x128 character with asymmetrical ears and whiskers', async () => {
-    const { computeContentAwareHeightmap } = await import('@/lib/ai/math/edtNormalMap');
-    const { executePhotometricPipeline } = await import('@/lib/ai/math/photometricLighting');
+    const { computeContentAwareHeightmap } = await import('@/lib/graphics/math/edtNormalMap');
+    const { executePhotometricPipeline } = await import('@/lib/graphics/math/photometricLighting');
 
     const w = 128;
     const h = 128;
@@ -463,8 +463,8 @@ describe('Content-Aware Heightmap & Part Segmentation', () => {
   });
 
   it('correctly shades characters with dark body palettes (crimson and navy) on 128x128 without line-art false positives', async () => {
-    const { computeContentAwareHeightmap } = await import('@/lib/ai/math/edtNormalMap');
-    const { executePhotometricPipeline } = await import('@/lib/ai/math/photometricLighting');
+    const { computeContentAwareHeightmap } = await import('@/lib/graphics/math/edtNormalMap');
+    const { executePhotometricPipeline } = await import('@/lib/graphics/math/photometricLighting');
     const w = 128;
     const h = 128;
     const catData = new Uint8ClampedArray(w * h * 4);
@@ -557,8 +557,8 @@ describe('Content-Aware Heightmap & Part Segmentation', () => {
   });
 
   it('auto-scales cavityStrength down on complex hair-spike / multi-appendage character silhouettes, preventing deep-crevice engulfment', async () => {
-    const { inferPhotometricSettings } = await import('@/lib/ai/math/photometricAuto');
-    const { executePhotometricPipeline } = await import('@/lib/ai/math/photometricLighting');
+    const { inferPhotometricSettings } = await import('@/lib/graphics/math/photometricAuto');
+    const { executePhotometricPipeline } = await import('@/lib/graphics/math/photometricLighting');
 
     // Construct a 64x64 character sprite with multiple hair spikes/tufts on top and a character torso below
     const w = 64;
@@ -650,7 +650,7 @@ describe('Content-Aware Heightmap & Part Segmentation', () => {
     );
     const autoData = shadedAuto.getContext('2d')!.getImageData(0, 0, w, h).data;
 
-    const { buildCelRamp } = await import('@/lib/ai/math/photometricLighting');
+    const { buildCelRamp } = await import('@/lib/graphics/math/photometricLighting');
     const ramp = buildCelRamp(blueColor[0], blueColor[1], blueColor[2]);
 
     // Count tone distribution on hair spike pixels (y: 6..20)

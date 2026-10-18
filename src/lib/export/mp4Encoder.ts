@@ -59,6 +59,15 @@ export function isMp4ExportSupported(): boolean {
   return getVideoRecordingMimeType('mp4') !== null;
 }
 
+/**
+ * The H.264 configuration every MP4 path uses, so the support probe, the trial encode
+ * and the export test the same encoder. Software encoding: on one Windows machine the
+ * hardware encoder began writing limited-range colour that decoded red as 233,0,2, with
+ * no change in PixiBun. Pixel-art videos are small enough that the software encoder is
+ * quick, and it gives the same colours on every machine.
+ */
+const H264 = { codec: 'avc1.42001f', bitrate: 2_000_000, avc: { format: 'avc' }, hardwareAcceleration: 'prefer-software' } as const;
+
 const trialEncodes = new Map<string, Promise<boolean>>();
 
 /**
@@ -102,8 +111,7 @@ export async function probeMp4ExportSupport(width: number, height: number, fps =
   const encoder = (window as WebCodecsWindow).VideoEncoder;
   if (encoder?.isConfigSupported && (window as WebCodecsWindow).VideoFrame) {
     try {
-      const config = { codec: 'avc1.42001f', width: (width + 1) & ~1, height: (height + 1) & ~1,
-        bitrate: 2_000_000, framerate: fps, avc: { format: 'avc' } };
+      const config = { ...H264, width: (width + 1) & ~1, height: (height + 1) & ~1, framerate: fps };
       if ((await awaitVideoOperation(encoder.isConfigSupported(config))).supported
         && await trialEncode({ ...config, width: 16, height: 16 })) return true;
     } catch { /* Check recording fallback independently. */ }
@@ -164,14 +172,7 @@ async function exportAnimationWithWebCodecsAsync(
   });
 
   try {
-    const config = {
-      codec: 'avc1.42001f',
-      width,
-      height,
-      bitrate: 2_000_000,
-      framerate: fps,
-      avc: { format: 'avc' },
-    };
+    const config = { ...H264, width, height, framerate: fps };
     if (!VideoEncoderClass.isConfigSupported || !(await awaitVideoOperation(VideoEncoderClass.isConfigSupported(config), options.signal)).supported) {
       throw new Error('The requested H.264 configuration is unsupported.');
     }
