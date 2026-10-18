@@ -346,7 +346,7 @@ describe('autofix commit message', () => {
     expect(message).toBe([
       'Keep empty frames out of GIF export', '', 'Root cause: nulls reached the encoder.', '',
       'Failing TestSprite run: https://www.testsprite.com/runs/r1', 'Failed TestSprite tests: tst_1, tst_2',
-      'TestSprite-Autofix-Attempt: 1/2', 'Co-Authored-By: Claude <noreply@anthropic.com>', '',
+      'TestSprite-Autofix-Attempt: 1/2',
     ].join('\n'));
     expect(countAutofixAttempts([{ commit: { message } }])).toBe(1);
   });

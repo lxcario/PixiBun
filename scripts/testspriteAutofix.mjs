@@ -117,7 +117,6 @@ export function composeCommitMessage({ summary, runUrl, failedTests, attempt }) 
     `Failing TestSprite run: ${safeUrl(runUrl) || 'unavailable'}`,
     ...(tests.length ? [`Failed TestSprite tests: ${tests.join(', ')}`] : []),
     `${ATTEMPT_TRAILER}: ${attempt}/${MAX_AUTOFIX_ATTEMPTS}`,
-    'Co-Authored-By: Claude <noreply@anthropic.com>', '',
   ].join('\n');
 }
 
