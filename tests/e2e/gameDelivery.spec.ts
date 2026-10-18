@@ -4,6 +4,7 @@ import { importGameDeliveryFixture } from '../helpers/gameDeliveryFixture';
 import AxeBuilder from '@axe-core/playwright';
 import { verifyAnimatedDownloadOrder } from '../helpers/gameAnimationDownload';
 import { chooseTool } from '../helpers/tools';
+import { settleAnimations } from '../helpers/settle';
 const pixels = (page: Page) => page.getByTestId('main-composite-canvas').evaluate((c: HTMLCanvasElement) => Array.from(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data));
 test('animated downloads preserve reverse and bounce pose holds and play-once settings', async ({ page }) => {
   test.setTimeout(60_000);
@@ -109,8 +110,6 @@ test('new palette roles and game-kit controls remain accessible without inspecto
   // Scan at rest: the dialog blooms and the Godot tab's controls fade in, and a
   // contrast check mid-fade reads their text as nearly the background colour.
   await expect(kit.getByRole('combobox', { name: 'Godot sprite anchor' })).toBeVisible();
-  await kit.evaluate(element => Promise.all(element.getAnimations({ subtree: true })
-    .filter(animation => animation.effect?.getComputedTiming().endTime !== Infinity)
-    .map(animation => animation.finished.catch(() => undefined))));
+  await settleAnimations(kit);
   expect((await new AxeBuilder({ page }).include('dialog').analyze()).violations).toEqual([]);
 });
