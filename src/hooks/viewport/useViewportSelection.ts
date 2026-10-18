@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect, type RefObject } from 'react';
 import { Point } from '@/lib/canvas/rasterMath';
 import { createBoxMask, mergeSelectionMask } from '@/lib/canvas/selectionUtils';
-import { confirmActiveLayerEditable } from '@/lib/canvas/layerEditGuard';
+import { confirmActiveLayerEditable, confirmLayerEditable, floatingSelectionTarget } from '@/lib/canvas/layerEditGuard';
 import { useStudioStore } from '@/stores/studioStore';
 import { SafeCanvas } from '@/lib/safety/safeCanvas';
 import { FloatingSelection } from './useViewportOverlays';
@@ -14,7 +14,7 @@ interface UseViewportSelectionProps {
   previewCanvasRef: RefObject<HTMLCanvasElement | null>;
   getOrCreateLayerCanvas: (layerId: string) => HTMLCanvasElement;
   renderComposite: () => void;
-  captureSnapshot: (description: string) => void;
+  captureSnapshot: (description: string, layerId?: string) => void;
   commitSnapshot: () => void;
   ownsTransformShortcuts?: boolean;
 }
@@ -149,6 +149,7 @@ export function useViewportSelection({
       y: selection.y,
       w: selection.w,
       h: selection.h,
+      layerId: activeLayerId,
     });
 
     renderComposite();
@@ -165,14 +166,16 @@ export function useViewportSelection({
     selectionMask,
   ]);
 
-  // Commit floating selection buffer back to active layer. False when the
-  // layer became locked or hidden: the pixels stay floating until it is editable.
+  // Commit the floating selection back to the layer it came from (see
+  // floatingSelectionTarget). False when that layer became locked or hidden: the
+  // pixels stay floating until it is editable.
   const commitFloatingSelection = useCallback((): boolean => {
     if (!floatingSelection) return true;
-    if (!confirmActiveLayerEditable()) return false;
+    const target = floatingSelectionTarget(floatingSelection.layerId);
+    if (!target || !confirmLayerEditable(target)) return false;
 
-    captureSnapshot('Commit Selection');
-    const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
+    captureSnapshot('Commit Selection', target.id);
+    const layerCanvas = getOrCreateLayerCanvas(target.id);
     const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
     if (ctx) {
       ctx.imageSmoothingEnabled = false;
@@ -185,7 +188,6 @@ export function useViewportSelection({
     bumpBufferVersion();
     return true;
   }, [
-    activeLayerId,
     bumpBufferVersion,
     captureSnapshot,
     commitSnapshot,
@@ -313,10 +315,11 @@ export function useViewportSelection({
       y: py,
       w,
       h,
+      layerId: activeLayerId,
     });
     setSelection({ x: px, y: py, w, h });
     renderComposite();
-  }, [canvasHeight, canvasWidth, commitFloatingSelection, floatingSelection, renderComposite, setSelection]);
+  }, [activeLayerId, canvasHeight, canvasWidth, commitFloatingSelection, floatingSelection, renderComposite, setSelection]);
 
   const handleDeleteSelection = useCallback(() => {
     if (!floatingSelection && selection && !confirmActiveLayerEditable()) return;

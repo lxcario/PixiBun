@@ -105,5 +105,12 @@ test('new palette roles and game-kit controls remain accessible without inspecto
   await page.getByRole('textbox', { name: 'Palette role name' }).fill('a'.repeat(64)); await page.getByRole('button', { name: 'Save palette role' }).click();
   expect(await page.getByTestId('right-inspector').evaluate(e => e.scrollWidth > e.clientWidth + 1)).toBe(false);
   expect((await new AxeBuilder({ page }).include('[data-testid="right-inspector"]').analyze()).violations).toEqual([]);
-  await openKit(page); expect((await new AxeBuilder({ page }).include('dialog').analyze()).violations).toEqual([]);
+  const kit = await openKit(page);
+  // Scan at rest: the dialog blooms and the Godot tab's controls fade in, and a
+  // contrast check mid-fade reads their text as nearly the background colour.
+  await expect(kit.getByRole('combobox', { name: 'Godot sprite anchor' })).toBeVisible();
+  await kit.evaluate(element => Promise.all(element.getAnimations({ subtree: true })
+    .filter(animation => animation.effect?.getComputedTiming().endTime !== Infinity)
+    .map(animation => animation.finished.catch(() => undefined))));
+  expect((await new AxeBuilder({ page }).include('dialog').analyze()).violations).toEqual([]);
 });

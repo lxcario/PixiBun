@@ -4,7 +4,6 @@ import { studioEvents } from '@/lib/events/studioEvents';
 import {
   generateSelOutData,
   generateOuterStrokeData,
-  generateGroundShadowData,
 } from '@/lib/graphics/pixelRasterEngine';
 import {
   renderParametric2p5DLighting,
@@ -118,24 +117,6 @@ export function useGeometricEvents({
         version: 1,
         sourceMode: 'composite-excluding-self',
         params: { color: strokeColor, thickness },
-      });
-    };
-
-    const handleGroundShadowEvent = () => {
-      const srcCtx = compositeSourceSnapshot('ground-shadow');
-      if (!srcCtx) return;
-
-      const { shadowPixels } = generateGroundShadowData(srcCtx, canvasWidth, canvasHeight);
-      updateTaggedLayer('Ground Shadow', 'ground-shadow', (outCtx) => {
-        shadowPixels.forEach((p) => {
-          outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
-          outCtx.fillRect(p.x, p.y, 1, 1);
-        });
-      }, {
-        kind: 'ground-shadow',
-        version: 1,
-        sourceMode: 'composite-excluding-self',
-        params: {},
       });
     };
 
@@ -358,7 +339,6 @@ export function useGeometricEvents({
       studioEvents.on('pixibun:auto-outline', (detail) =>
         handleAutoOutlineEvent({ detail } as CustomEvent)
       ),
-      studioEvents.on('pixibun:ground-shadow', handleGroundShadowEvent),
       studioEvents.on('pixibun:render-cast-shadow', (detail) =>
         handleRenderCastShadowEvent({ detail } as CustomEvent)
       ),

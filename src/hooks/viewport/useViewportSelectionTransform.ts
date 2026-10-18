@@ -527,13 +527,14 @@ export function useViewportSelectionTransform({
         if (pCtx) {
           pCtx.imageSmoothingEnabled = false;
           pCtx.drawImage(source, 0, 0, previewCanvas.width, previewCanvas.height);
-          setFloatingSelection({
+          setFloatingSelection((prev) => ({
             canvas: previewCanvas,
             x: Math.round(newX),
             y: Math.round(newY),
             w: previewCanvas.width,
             h: previewCanvas.height,
-          });
+            layerId: prev?.layerId,
+          }));
           renderComposite();
         }
       }

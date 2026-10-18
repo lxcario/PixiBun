@@ -169,3 +169,6 @@ PIXIMOTION_ENGINE_MASTER_SPEC.md
 /docs/research/specular-glint-2026-10-01.md
 # Browser runtime log stays local.
 /debug.log
+# Completed audits and agent coordination notes stay local (docs/archives.md).
+/docs/audits/
+/.agents/teamwork/

@@ -83,7 +83,8 @@ export function ToolSettingsPanel() {
         return (
           <>
             <ToggleRow label="Connected pixels only" checked={t.bucketContiguous} onChange={state.setBucketContiguous} hint="Off fills every matching pixel on the layer." />
-            <RangeRow label="Fill tolerance" value={t.fillTolerance} min={0} max={255} step={1} onChange={state.setFillTolerance} />
+            <RangeRow label="Fill tolerance" value={t.fillTolerance} min={0} max={255} step={1} onChange={state.setFillTolerance}
+              hint="Red, green, blue and alpha measured together. 0 fills only the exact color." />
             {t.bucketContiguous && <ToggleRow label="Fill enclosed specks" checked={t.fillEnclosedSpecks} onChange={state.setFillEnclosedSpecks} hint="Also replaces enclosed islands up to 8 pixels." />}
           </>
         );
@@ -91,14 +92,18 @@ export function ToolSettingsPanel() {
       case 'select-wand':
         return (
           <>
-            <RangeRow label="Color tolerance" value={t.bucketTolerance} min={0} max={255} step={1} onChange={state.setBucketTolerance} />
+            <RangeRow label="Color tolerance" value={t.bucketTolerance} min={0} max={255} step={1} onChange={state.setBucketTolerance}
+              hint={t.activeTool === 'select-wand'
+                ? 'The largest difference in any one channel, alpha included. Shared with Color Replace, which compares red, green and blue only.'
+                : 'Red, green and blue measured together; each pixel keeps its own alpha. Shared with the Magic Wand, which also compares alpha.'} />
             {t.activeTool === 'select-wand' && <ToggleRow label="Connected pixels only" checked={t.bucketContiguous} onChange={state.setBucketContiguous} />}
           </>
         );
       case 'erase-color':
         return (
           <>
-            <RangeRow label="Erase tolerance" value={t.eraseColorTolerance} min={0} max={255} step={1} onChange={state.setEraseColorTolerance} />
+            <RangeRow label="Erase tolerance" value={t.eraseColorTolerance} min={0} max={255} step={1} onChange={state.setEraseColorTolerance}
+              hint="Red, green and blue measured together. With Match color family on, it widens the range of hues instead." />
             <ToggleRow label="Connected pixels only" checked={t.eraseColorContiguous} onChange={state.setEraseColorContiguous} />
             <ToggleRow label="Match color family" checked={t.eraseColorFamily} onChange={state.setEraseColorFamily} />
             <ToggleRow label="Across all frames" checked={t.eraseColorAllFrames} onChange={state.setEraseColorAllFrames} hint="Uses the same layer in each frame and skips locked layers." />

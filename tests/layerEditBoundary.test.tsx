@@ -160,4 +160,40 @@ describe('canvas edits respect hidden and locked layers', () => {
     expect(view.toast).not.toHaveBeenCalled();
     view.unsubscribe();
   });
+
+  it('drops a moved selection back on the layer it came from after another layer is chosen', () => {
+    const view = mount('select-box', {});
+    const source = useStudioStore.getState().activeLayerId;
+    view.selectAll();
+    view.pointer('pointerdown', 'pointermove', 'pointerup');
+    expect(useStudioStore.getState().hasFloatingSelection).toBe(true);
+
+    act(() => { useStudioStore.getState().addLayer('Above'); });
+    const other = useStudioStore.getState().activeLayerId;
+    expect(other).not.toBe(source);
+    view.key('d', { ctrlKey: true });
+
+    // The pixels return to their own layer; the layer chosen meanwhile stays empty.
+    expect(useStudioStore.getState().hasFloatingSelection).toBe(false);
+    expect(view.read()).toEqual(view.before);
+    const { canvas, ctx } = getOrCreateBuffer(other, 32, 32);
+    expect(ctx.getImageData(0, 0, canvas.width, canvas.height).data.every(value => value === 0)).toBe(true);
+    expect(view.toast).not.toHaveBeenCalled();
+    view.unsubscribe();
+  });
+
+  it('keeps the selection floating when the layer it came from is locked meanwhile', () => {
+    const view = mount('select-box', {});
+    const source = useStudioStore.getState().activeLayerId;
+    view.selectAll();
+    view.pointer('pointerdown', 'pointermove', 'pointerup');
+    act(() => {
+      useStudioStore.getState().addLayer('Above');
+      useStudioStore.getState().toggleLayerLock(source);
+    });
+    view.key('d', { ctrlKey: true });
+    expect(useStudioStore.getState().hasFloatingSelection).toBe(true);
+    expect(view.toast).toHaveBeenCalledWith(expect.objectContaining({ type: 'error', message: expect.stringMatching(/is locked/) }));
+    view.unsubscribe();
+  });
 });

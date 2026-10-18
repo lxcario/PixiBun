@@ -115,4 +115,16 @@ describe('ToolSettingsPanel and Dither on New Layer', () => {
     expect(useStudioStore.getState().activeLayerId).toBe(newLayers[0].id);
     expect(renderComp).toHaveBeenCalled();
   });
+
+  it.each([
+    ['bucket', 'Tool panel fill tolerance', /Red, green, blue and alpha measured together/],
+    ['select-wand', 'Tool panel color tolerance', /largest difference in any one channel, alpha included/],
+    ['color-replace', 'Tool panel color tolerance', /each pixel keeps its own alpha/],
+    ['erase-color', 'Tool panel erase tolerance', /Match color family/],
+  ] as const)('%s tolerance says what it compares', (tool, label, hint) => {
+    act(() => { useStudioStore.setState({ tools: { ...useStudioStore.getState().tools, activeTool: tool } }); });
+    render(<ToolSettingsPanel />);
+    const slider = screen.getByRole('slider', { name: label });
+    expect(document.getElementById(slider.getAttribute('aria-describedby')!)?.textContent).toMatch(hint);
+  });
 });

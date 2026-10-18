@@ -92,6 +92,7 @@ export function RangeRow({
   unit = '',
   ariaLabel,
   format,
+  hint,
 }: {
   label: string;
   value: number;
@@ -102,15 +103,20 @@ export function RangeRow({
   unit?: string;
   ariaLabel?: string;
   format?: (value: number) => string;
+  /** One line under the label, also read as the slider's description. */
+  hint?: string;
 }) {
+  const hintId = useId();
   return (
     <div className="py-1">
       <div className="flex justify-between items-center gap-2">
         <span className="text-xs font-medium text-[var(--text-body)]">{label}</span>
         <output className="insp-readout">{format ? format(value) : value}{unit}</output>
       </div>
+      {hint && <span id={hintId} className="block mb-0.5 text-[11px] leading-4 text-[var(--text-muted)]">{hint}</span>}
       <input
         aria-label={ariaLabel ?? `Tool panel ${label.toLowerCase()}`}
+        aria-describedby={hint ? hintId : undefined}
         type="range"
         min={min}
         max={max}

@@ -15,6 +15,8 @@ export interface FloatingSelection {
   y: number;
   w: number;
   h: number;
+  /** The layer the pixels were lifted from, or pasted onto. Committing puts them back there. */
+  layerId?: string;
 }
 
 interface UseViewportOverlaysProps {

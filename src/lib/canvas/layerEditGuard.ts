@@ -23,6 +23,30 @@ export function layerEditRefusal(layer: Pick<Layer, 'locked' | 'visible'> | unde
 }
 
 /**
+ * The layer a floating selection drops into: the layer it was lifted from or pasted
+ * onto, while that layer is still in the active frame. Choosing another layer in the
+ * meantime does not move the pixels there. Falls back to the active layer when the
+ * source is gone (deleted, or another frame is showing).
+ */
+export function floatingSelectionTarget(sourceLayerId: string | undefined): Layer | undefined {
+  const state = useStudioStore.getState();
+  const layers = state.frames[state.activeFrameIndex]?.layers ?? [];
+  return (sourceLayerId && layers.find(layer => layer.id === sourceLayerId))
+    || layers.find(layer => layer.id === state.activeLayerId);
+}
+
+/** Like {@link confirmActiveLayerEditable}, for a named layer that need not be active. */
+export function confirmLayerEditable(layer: Layer | undefined): boolean {
+  const refusal = layerEditRefusal(layer);
+  if (!refusal) return true;
+  const named = layer && layer.id !== useStudioStore.getState().activeLayerId
+    ? refusal.replace('The active layer', `The selection's layer “${layer.name}”`)
+    : refusal;
+  studioEvents.emit('pixibun:toast', { type: 'error', message: named });
+  return false;
+}
+
+/**
  * Checks the store's active layer for a selection edit. When it may not change,
  * tells the artist why and returns false; nothing has been touched.
  */

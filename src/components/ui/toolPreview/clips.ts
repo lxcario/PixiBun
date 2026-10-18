@@ -24,10 +24,11 @@ import {
   computeSeparableEDT, generateInflatedHeightmap, computeTangentNormalField, bakeNormalMapToRgba,
 } from '@/lib/graphics/math/edtNormalMap';
 import { applyAtkinsonDither, applyRiemersmaDither } from '@/lib/graphics/math/dithering';
+import { renderBoundedSpriteCastShadow } from '@/lib/graphics/shadowRayMarcher';
 import { applyZhangSuenThinning } from '@/lib/graphics/math/morphology';
 import {
   applyAtmosphericColorGrade, cleanJaggiesOnCanvas, cleanStrayPixelsOnCanvas, generate47BlobEdgeData,
-  generateGroundShadowData, generateSelOutDataSync, harmonizePaletteColors, morphInBetweenFrameAtFraction,
+  generateSelOutDataSync, harmonizePaletteColors, morphInBetweenFrameAtFraction,
   quantizeToActivePalette,
 } from '@/lib/graphics/pixelRasterEngine';
 import { planSpriteCleanup } from '@/lib/graphics/spriteCleanup';
@@ -633,10 +634,15 @@ function selOutClip(): Clip {
   });
 }
 
+/** Add Floor Shadow and Cast Ground Shadow: the same EDT and ray-marched cast shadow, with their defaults. */
 function shadowClip(): Clip {
   const sprite = bun('idle', 2, 2);
-  const { shadowPixels } = generateGroundShadowData(ctxOf(sprite), ART_W, ART_H);
-  const after = over(applyShaded(blank(), shadowPixels), sprite);
+  const edt = computeSeparableEDT((x, y) => !opaque(sprite, x, y), ART_W, ART_H);
+  const shadow = renderBoundedSpriteCastShadow(edt, ART_W, ART_H, {
+    lightX: Math.round(ART_W / 2), lightY: Math.round(ART_H / 4), lightRadius: 16,
+    shadowOpacity: 0.65, shadowColor: '#180B26', ditherMode: 'none', shadowStyle: 'cast', mode: 'bounded-2.5d',
+  });
+  const after = over({ width: ART_W, height: ART_H, data: new Uint8ClampedArray(shadow.data) }, sprite);
   return reveal(sprite, after, revealOrder(sprite, after, (x, y) => Math.abs(x - 10.5) + Math.abs(y - 20) * 2), {
     kind: 'run', labels: ['floating sprite', 'casting on the floor', 'grounded'],
   });

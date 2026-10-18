@@ -20,7 +20,6 @@ export type StudioEventMap = {
   'pixibun:highlight': { lightAzimuth?: number; lightElevation?: number; highlightColor?: string };
   'pixibun:sel-out': { lightAzimuth?: number; lightElevation?: number } | void;
   'pixibun:auto-outline': { color?: string; thickness?: number };
-  'pixibun:ground-shadow': void;
   'pixibun:render-cast-shadow': {
     lightX?: number;
     lightY?: number;
