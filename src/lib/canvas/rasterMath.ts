@@ -228,7 +228,7 @@ export function getEllipsePoints(x0: number, y0: number, x1: number, y1: number,
   return points;
 }
 
-// Rectangle Points
+/** Rectangle outline or fill over the inclusive box; each pixel is listed once. */
 export function getRectanglePoints(x0: number, y0: number, x1: number, y1: number, filled: boolean): Point[] {
   const points: Point[] = [];
   const minX = Math.min(x0, x1);
@@ -243,13 +243,15 @@ export function getRectanglePoints(x0: number, y0: number, x1: number, y1: numbe
       }
     }
   } else {
+    // A one-pixel-high or -wide box has a single edge; stamping it twice
+    // would double translucent paint.
     for (let x = minX; x <= maxX; x++) {
       points.push({ x, y: minY });
-      points.push({ x, y: maxY });
+      if (maxY !== minY) points.push({ x, y: maxY });
     }
     for (let y = minY + 1; y < maxY; y++) {
       points.push({ x: minX, y });
-      points.push({ x: maxX, y });
+      if (maxX !== minX) points.push({ x: maxX, y });
     }
   }
 
