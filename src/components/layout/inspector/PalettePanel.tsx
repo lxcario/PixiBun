@@ -428,6 +428,7 @@ export const PalettePanel: React.FC<{ basics?: boolean }> = ({ basics = true }) 
                         min={0.1}
                         max={60}
                         step={0.5}
+                        inputStep="any"
                         onChange={(val) => updatePaletteCycleTrack(currentPalette.id, track.id, { rate: val })}
                       />
                       <StudioSelect

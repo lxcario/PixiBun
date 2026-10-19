@@ -113,3 +113,30 @@ test('PNG scale admission distinguishes a safe 512px output from a refused 16384
   await expect(frame(page, 0)).toHaveAttribute('aria-current', 'true');
   expect(downloads).toBe(0);
 });
+
+test('cycle rate accepts its default and fractional Hz without a native step mismatch', async ({ page }, info) => {
+  const before = await openBun(page);
+  await page.getByRole('button', { name: 'Palette', exact: true }).click();
+  const engine = page.getByRole('button', { name: 'Cycle Engine', exact: true });
+  if (await engine.getAttribute('aria-expanded') === 'false') await engine.click();
+  await page.getByRole('button', { name: 'Add Color Range Track', exact: true }).click();
+  const track = page.getByRole('button', { name: 'Cycle 1', exact: true });
+  if (await track.getAttribute('aria-expanded') === 'false') await track.click();
+  const rate = page.getByRole('spinbutton', { name: 'Rate (Hz)', exact: true });
+  await expect(rate).toHaveValue('6');
+  const observed = [];
+  for (const value of ['6', '5.5', '5.6']) {
+    await rate.fill(value); await rate.press('Tab'); await expect(rate).toHaveValue(value);
+    observed.push(await rate.evaluate((input: HTMLInputElement) => ({ value: input.value, valid: input.validity.valid, stepMismatch: input.validity.stepMismatch })));
+  }
+  await info.attach('actual-rate-validity.json', { body: Buffer.from(JSON.stringify({ browser: info.project.name, observations: observed })), contentType: 'application/json' });
+  // Keep custom +/- at half a Hz while allowing typed fractional rates.
+  await rate.fill('6'); await rate.press('Tab');
+  await rate.locator('..').locator('..').getByRole('button', { name: 'Increase value', exact: true }).click();
+  await expect(rate).toHaveValue('6.5');
+  await rate.fill('100'); await rate.press('Tab'); await expect(rate).toHaveValue('60');
+  await rate.fill('0'); await rate.press('Tab'); await expect(rate).toHaveValue('0.1');
+  await page.getByRole('button', { name: 'Delete track', exact: true }).click();
+  await expect.poll(() => pixels(page)).toEqual(before);
+  expect(observed).toEqual(['6', '5.5', '5.6'].map(value => ({ value, valid: true, stepMismatch: false })));
+});
