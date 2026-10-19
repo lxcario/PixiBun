@@ -1,5 +1,13 @@
 # A little drawing, a long way home
 
+## 20 October: the number already on the desk
+
+This time TestSprite noticed something small enough to walk past: the cycle track's own 6 Hz default was invalid. We brought the same number to the real browser, then tried 5.5 and 5.6. The browser agreed with the failure. The half-Hz step had started from 0.1, leaving the default between its permitted steps.
+
+We kept the little half-Hz buttons and the safe bounds, and let typed rates follow the range they were meant to have. All three browsers now accept those values, honor the bounds, and leave Bun's pixels unchanged when the track goes away. The [targeted record](../releases/2026-10-20-targeted-repairs.md) keeps the original cloud red beside this local green. The automatic batch still finished 37 passed, 9 failed and 75 blocked; this repair has not borrowed a cloud pass it has not earned.
+
+The MP4 trail belongs to a different notebook: native GitHub CI found the shifted red, and the downloaded file helped us follow the color conversion. Our targeted Windows rerun passes, including the real red, blue, gray and green frames. Linux Firefox still has to answer on the fixing source. Keeping that distinction is part of keeping the drawing safe.
+
 Build diary, 17 October 2026. These are dated results. Automatic PR execution is still pending; the linked cloud journeys are controlled supporting replays.
 
 PixiBun is a quiet place to make a little thing move.

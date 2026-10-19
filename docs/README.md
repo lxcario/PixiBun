@@ -16,6 +16,8 @@ Start with [current status](current-status.md) for scoped engineering results an
 
 ## Latest reconciliation
 
+The [20 October targeted repairs](releases/2026-10-20-targeted-repairs.md) preserve the palette-rate product discovery, MP4 color/memory fixes, nine targeted browser passes, fifty affected unit passes and the separate terminal 37/9/75 automatic App cohort. Local proof and unresolved Linux/cloud gates remain explicitly separated.
+
 The [19 October PR triage](releases/2026-10-19-pr-verification-triage.md) and [complete TestSprite register](testsprite/pr6-triage-2026-10-19.md) preserve the first executed App cohort and distinguish actual product findings, corrected plans/scripts, independent checks and unsupported assertions.
 
 [15 October source and documentation review](releases/2026-10-15-codebase-and-documentation.md) records the corpus review and per-file Markdown dispositions. The subsequent [four-phase audit follow-up](plans/2026-10-15-audit-follow-up.md) records the latest corrections, integrated checks and complete handbook-picture refresh. Current guidance follows the integrated source; archived audits, release receipts and original capture manifests retain their dated scope.

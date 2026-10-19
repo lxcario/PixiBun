@@ -1,5 +1,11 @@
 # Small promises, followed carefully
 
+## 20 October: even the default rate deserved a valid answer
+
+The automatic App found that a new cycle track's 6 Hz default and a typed 5.5 Hz were invalid. Independent browser checks traced this to a native step grid starting at 0.1 rather than 0. A focused repair keeps the bounds and half-Hz buttons while permitting valid typed fractions. The rate regression now passes in Chromium, Firefox and WebKit, including exact artwork preservation. This is a fourth genuine product finding, **locally qualified**, with its original automatic failure retained. Inclusive-range output/history and a fixing-preview App pass remain open. The [repair record](../releases/2026-10-20-targeted-repairs.md) and [hashed receipt](targeted-repairs-2026-10-20.json) separate those limits from the result.
+
+The same automatic cohort finished **37 Passed /9 Failed /75 Blocked**; its [121-case receipt](automatic-followup-2026-10-20.json) is separate from all earlier catalogs. Native MP4 color and Linux WebKit findings came from GitHub CI and retain that attribution. The original three cloud-qualified discoveries below keep their original evidence.
+
 TestSprite findings register, 18 October 2026. Read this alongside the [build diary](build-diary.md), [source-labelled cloud evidence](verification-stories.json) and [automatic PR ledger](loop-ledger.md). The portal may require the owning account to open execution links. A linked controlled replay is not an automatic GitHub App check.
 
 19 October follow-up: the first executed PR App cohort is **32 Passed /13 Failed /76 Blocked**. The [new complete triage](pr6-triage-2026-10-19.md) preserves all cases, corrects thirteen plans, identifies plan/saved-code drift and qualifies the intended operations independently. Dither received a copy/specification correction; this follow-up does not invent additional raster defects. The three genuine product findings below retain their original sources and red → green trails.

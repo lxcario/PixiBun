@@ -1,8 +1,16 @@
 # Current project status
 
+## Targeted fixing candidate — 20 October 2026, Istanbul
+
+The [targeted repair record](releases/2026-10-20-targeted-repairs.md) documents a fourth genuine TestSprite-led product finding: a cycle track's default 6 Hz and entered 5.5 Hz violated its native step grid. Fix `f2f13f3c` preserves rate bounds and half-Hz buttons while accepting valid typed fractions. Independent production red → green is locally qualified; inclusive-range output/history and a fixing-preview App green are not implied.
+
+The combined color/rate candidate passed **50 focused unit tests** and **9 targeted Windows production-browser checks** across Chromium, Firefox and WebKit, with zero retries/skips and all 432 compiled files unchanged. The [receipt](testsprite/targeted-repairs-2026-10-20.json) preserves exact source/build hashes and native observations. MP4 color fix `4510bba6` produces correct actual-file red/blue/gray/green samples in Chromium; Linux Firefox remains an explicit qualification gate. Windows Firefox/WebKit passes exercise codec refusal rather than encoding. Three conditional workflow skips are intentional and unchanged.
+
+The `2d27b262` [automatic cohort](testsprite/automatic-followup-2026-10-20.json) is now terminal: **37 Passed /9 Failed /75 Blocked**. The preview remained fixed through completion. Its nine failures remain recorded, including the locally repaired rate defect; a local pass never replaces an App verdict. Production remains on old `main`, and no complete green automatic loop or release is claimed.
+
 ## Linux follow-up — 20 October 2026, Istanbul
 
-Published PR #6 head `2d27b262` passed all five local pre-push gates, including **2,902 unit tests /268 files** and unchanged coverage/performance thresholds. Vercel became Ready on that exact source and a fresh App execution started automatically. Its verdict remains pending; the branch preview stays fixed while it runs.
+Published PR #6 head `2d27b262` passed all five local pre-push gates, including **2,902 unit tests /268 files** and unchanged coverage/performance thresholds. Vercel became Ready on that exact source and a fresh App execution started automatically. At the initial observation its verdict was pending; the terminal follow-up above preserves the final outcome.
 
 The [native Linux follow-up](releases/2026-10-19-native-codec-ci.md#linux-follow-up-on-2d27b262--20-october-istanbul) completed **14 Passed /1 Failed**, improving the earlier 11/4 cohort: all three WebKit cases now pass. Firefox's actual MP4 color remains the one failure. Independent artifact retrieval matched all 15 indexed files. Container-only BT.601/BT.709 tagging did not correct Firefox; the [receipt](testsprite/native-codec-followup-2026-10-20.json) retains the unchanged original verdict, encoder metadata and native decoded samples. This is GitHub CI evidence, separate from TestSprite. No universal matrix fix or production release is claimed.
 

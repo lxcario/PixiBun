@@ -1,0 +1,214 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-19T21:46:58.424Z",
+  "prUrl": "https://github.com/lxcario/PixiBun/pull/6",
+  "productFixes": {
+    "color": "4510bba62072c417ec9346b05e17f678f5953a15",
+    "cycleRate": "f2f13f3caa255228c0d6b89e8dd4e09f9fc9f845"
+  },
+  "source": {
+    "baseCommit": "4510bba62072c417ec9346b05e17f678f5953a15",
+    "workingTreeSha256": "56d215b0678b0c11992f8a6aa333fc4fe1a0b7be6b45f770477ef077bdd69795",
+    "scope": "Published-source file manifest plus retained working-tree patch and untracked source; not a clean-commit build.",
+    "buildId": "7qcEYZ86PHparloiquBkz",
+    "frozenFiles": 432,
+    "buildUnchanged": true
+  },
+  "originalPaletteFailure": {
+    "sourceCommit": "2d27b262239fcf86aa1dc2ec9f13b42301319e4c",
+    "testId": "3de75df2-12d6-451d-99e8-23af772c3063",
+    "runId": "43dbf725-da8f-4777-b38a-24fadfdb7786",
+    "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80",
+    "verdict": "failed",
+    "localReportSha256": "97b7820a6778c17ba420fe757050234926b048ab43bd2d90dbb838940f77d5da",
+    "independentRed": "Chromium and Firefox reached the exact validity assertion: 6 and 5.5 have stepMismatch=true; 5.6 is valid. WebKit error context contains the same assertion but its worker stalled during reporting/teardown and was terminated; terminal worker-exit verdict remains inconclusive.",
+    "sourceScope": "Frozen build over c3414b5e plus the retained color patch. PalettePanel and StudioNumberInput were unchanged between the published 2d27b262 and the pre-palette-fix 4510bba6; this is not a clean full-2d27b262 build.",
+    "limits": "Local green covers rate validity, +/- increment, min/max clamping and complete canvas preservation after track deletion. Inclusive palette-range output and history isolation remain unverified by this bounded regression. No automatic cloud green claimed."
+  },
+  "targetedBrowser": {
+    "platform": "Windows",
+    "node": "22.23.3",
+    "command": "node node_modules/@playwright/test/cli.js test --config playwright.production.config.ts animatedExportIntegrity lightSweep testspriteBatchFollowup --grep \"cycle rate accepts|actual MP4 preserves|Light Sweep saves\" --workers=1 --retries=0 --global-timeout=420000 --reporter=list,json",
+    "stats": {
+      "startTime": "2026-10-19T21:43:26.988Z",
+      "duration": 149541.339,
+      "expected": 9,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "reportSha256": "7ec82166229daa4624f9e801e8eb8b1b70e46fbe0b71f204e96c270a6db870c1",
+    "tests": [
+      {
+        "title": "actual MP4 preserves painted primary and neutral colors, or its unsupported platform is explicitly refused",
+        "project": "chromium",
+        "status": "expected"
+      },
+      {
+        "title": "actual MP4 preserves painted primary and neutral colors, or its unsupported platform is explicitly refused",
+        "project": "firefox",
+        "status": "expected"
+      },
+      {
+        "title": "actual MP4 preserves painted primary and neutral colors, or its unsupported platform is explicitly refused",
+        "project": "webkit",
+        "status": "expected"
+      },
+      {
+        "title": "Light Sweep saves a tall video of the lamp drifting over the drawing",
+        "project": "chromium",
+        "status": "expected"
+      },
+      {
+        "title": "Light Sweep saves a tall video of the lamp drifting over the drawing",
+        "project": "firefox",
+        "status": "expected"
+      },
+      {
+        "title": "Light Sweep saves a tall video of the lamp drifting over the drawing",
+        "project": "webkit",
+        "status": "expected"
+      },
+      {
+        "title": "cycle rate accepts its default and fractional Hz without a native step mismatch",
+        "project": "chromium",
+        "status": "expected"
+      },
+      {
+        "title": "cycle rate accepts its default and fractional Hz without a native step mismatch",
+        "project": "firefox",
+        "status": "expected"
+      },
+      {
+        "title": "cycle rate accepts its default and fractional Hz without a native step mismatch",
+        "project": "webkit",
+        "status": "expected"
+      }
+    ],
+    "nativeValidity": [
+      {
+        "browser": "chromium",
+        "observations": [
+          {
+            "value": "6",
+            "valid": true,
+            "stepMismatch": false
+          },
+          {
+            "value": "5.5",
+            "valid": true,
+            "stepMismatch": false
+          },
+          {
+            "value": "5.6",
+            "valid": true,
+            "stepMismatch": false
+          }
+        ]
+      },
+      {
+        "browser": "firefox",
+        "observations": [
+          {
+            "value": "6",
+            "valid": true,
+            "stepMismatch": false
+          },
+          {
+            "value": "5.5",
+            "valid": true,
+            "stepMismatch": false
+          },
+          {
+            "value": "5.6",
+            "valid": true,
+            "stepMismatch": false
+          }
+        ]
+      },
+      {
+        "browser": "webkit",
+        "observations": [
+          {
+            "value": "6",
+            "valid": true,
+            "stepMismatch": false
+          },
+          {
+            "value": "5.5",
+            "valid": true,
+            "stepMismatch": false
+          },
+          {
+            "value": "5.6",
+            "valid": true,
+            "stepMismatch": false
+          }
+        ]
+      }
+    ],
+    "mp4": [
+      {
+        "browserName": "chromium",
+        "status": "decoded",
+        "expectedDuration": 1.6,
+        "timingTolerance": "recording path 1.5–2.0 seconds; not exact-hold qualification",
+        "width": 32,
+        "height": 32,
+        "duration": 1.6,
+        "samples": [
+          [
+            255,
+            1,
+            0,
+            255
+          ],
+          [
+            1,
+            0,
+            255,
+            255
+          ],
+          [
+            128,
+            128,
+            128,
+            255
+          ],
+          [
+            0,
+            255,
+            1,
+            255
+          ]
+        ]
+      },
+      {
+        "browserName": "firefox",
+        "status": "unsupported",
+        "decoded": false
+      },
+      {
+        "browserName": "webkit",
+        "status": "unsupported",
+        "decoded": false
+      }
+    ]
+  },
+  "focusedUnit": {
+    "passed": 50,
+    "files": [
+      "tests/i420Color.test.ts",
+      "tests/mp4Encoder.test.ts",
+      "tests/isobmffWriter.test.ts",
+      "tests/productionOperation.test.ts"
+    ],
+    "logSha256": "0f103965dd5e2886fe71cda6ba8a71d04d95ff5ea5463170f8b4595dfc6ce1d8"
+  },
+  "qualificationLimits": [
+    "Linux Firefox actual color decode remains pending on the fixing source.",
+    "Windows Firefox and WebKit MP4 passes are unsupported/refusal checks, not successful encoding.",
+    "No broad browser suite rerun or production release is implied.",
+    "Manual/local evidence never replaces the automatic TestSprite verdict."
+  ]
+}

@@ -1,5 +1,7 @@
 # A little drawing, and the promises around it
 
+20 October follow-up: a fourth TestSprite-led product defect, cycle-rate native validity, now has independent local red → green qualification. It has **no fixing-preview cloud green yet**. The [targeted repair record](../releases/2026-10-20-targeted-repairs.md) preserves that boundary, the original App failure and actual three-engine observations. The three cloud-qualified stories below remain distinct. The [latest complete automatic cohort](automatic-followup-2026-10-20.json) is 37 Passed /9 Failed /75 Blocked, rather than a complete green suite.
+
 PixiBun is a small pixel-art and animation desk. An artist should be able to trust a lock, return to a palette with the keyboard, and find their drawing inside the file they take home.
 
 For Season 4, TestSprite helped us turn those promises into questions we could actually check. This guide starts with the genuine defects, then shows how we made the questions more precise. Results are dated and source-labelled. The [PR ledger](loop-ledger.md) now records the first executed App check, retried manually on 19 October: **32 Passed /13 Failed /76 Blocked**. The [19 October register](pr6-triage-2026-10-19.md) separates that cohort from older catalogs, plan/script repairs and supporting replays. The unattended fixing-commit loop remains unproven.
