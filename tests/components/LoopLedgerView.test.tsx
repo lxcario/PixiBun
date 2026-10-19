@@ -41,8 +41,9 @@ describe('LoopLedgerView', () => {
     const evidence = parseVerificationStories(JSON.parse(fs.readFileSync('docs/testsprite/verification-stories.json', 'utf8')));
     // Exercise a pending repair even after every committed story has a preview follow-up.
     evidence.stories[0] = { ...evidence.stories[0], status: 'local-passed', followUpUrl: null };
+    evidence.automationNote = 'This fixture has supporting passes and no executed automatic PR loop.';
     render(<LoopLedgerView ledger={{ ...committed, entries: [] }} evidence={evidence} />);
-    expect(screen.getByTestId('verification-automation-status').textContent).toContain('blocked by billing');
+    expect(screen.getByTestId('verification-automation-status').textContent).toContain(evidence.automationNote);
     expect(screen.getAllByTestId('verification-story')).toHaveLength(evidence.stories.length);
     expect(screen.getAllByTestId('verification-supporting-check')).toHaveLength(evidence.checks.length);
     expect(screen.getByRole('link', { name: 'Draw this little heart →' }).getAttribute('href')).toMatch(/^\/studio\?replay=1_16x16_/);

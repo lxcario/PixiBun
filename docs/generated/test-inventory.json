@@ -1,7 +1,7 @@
 {
   "kind": "runner-enumeration-not-execution",
   "unit": {
-    "tests": 2898,
+    "tests": 2902,
     "suites": 268
   },
   "editor": {
@@ -9,7 +9,7 @@
     "files": 54
   },
   "production": {
-    "tests": 519,
-    "files": 52
+    "tests": 546,
+    "files": 53
   }
 }

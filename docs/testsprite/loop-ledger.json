@@ -1,7 +1,29 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-10-18",
+  "updated": "2026-10-19",
   "testspriteProjectUrl": "https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/test-cases",
   "suiteCases": 121,
-  "entries": []
+  "entries": [
+    {
+      "pr": 6,
+      "title": "Matched deployment retried manually: 32 passed, 13 failed, 76 blocked",
+      "prUrl": "https://github.com/lxcario/PixiBun/pull/6",
+      "checkedOn": "2026-10-19",
+      "testspriteRunUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/1023cedd-f23b-4b96-897e-43ff22a428e0",
+      "failures": [
+        {
+          "case": "Outline Undo and frame recovery",
+          "cause": "test-fix",
+          "note": "The action logs omitted actual Undo clicks. Corrected plans retain exact artwork requirements; the complete 121-case disposition is in pr6-triage-2026-10-19.md. These are representative confirmed causes, not a claim that every non-pass is diagnosed."
+        },
+        {
+          "case": "File fixtures and independent pixel observations",
+          "cause": "environment",
+          "note": "Several App cases cannot establish required files, real gestures or native pixels. Free-plan fixture access was requested. Supporting manual/local passes do not replace this failed check or prove an unattended fixing-commit loop."
+        }
+      ],
+      "fixCommit": null,
+      "verdict": "failed"
+    }
+  ]
 }

@@ -184,6 +184,31 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
     expect(isMp4ExportSupported()).toBe(false);
   });
 
+  it('muxes actual keyframe parameter sets instead of the duplicate-header Firefox decoder description', async () => {
+    installMediaRecorderMock();
+    const sample = Uint8Array.from(Buffer.from('000000146742c01fd9096840000003004007a12003c60c920000000468cb8cb2000000026588', 'hex'));
+    const malformed = Uint8Array.from(Buffer.from('0142c01f03010015676742c01fd9096840000003004007a12003c60c920100056868cb8cb2', 'hex'));
+    vi.stubGlobal('VideoEncoder', class {
+      static isConfigSupported = async () => ({ supported: true });
+      constructor(private init: { output: (chunk: unknown, metadata: unknown) => void }) {}
+      configure() {}
+      encode() {
+        this.init.output({ type: 'key', duration: 100_000, byteLength: sample.length, copyTo: (out: Uint8Array) => out.set(sample) }, { decoderConfig: { description: malformed } });
+      }
+      async flush() {}
+      close() {}
+    });
+    vi.stubGlobal('VideoFrame', class { close() {} });
+    const blob = await exportAnimationToMp4Async([createMockCanvas(32, 32)], { loopCount: 1, durationsMs: [100] });
+    const bytes = Buffer.from(await blob.arrayBuffer()), position = bytes.indexOf(Buffer.from('avcC'));
+    expect(position).toBeGreaterThan(0);
+    const size = bytes.readUInt32BE(position - 4);
+    expect(bytes.subarray(position + 4, position - 4 + size).toString('hex')).toBe('0142c01fffe100146742c01fd9096840000003004007a12003c60c9201000468cb8cb2');
+    const media = bytes.indexOf(Buffer.from('mdat'));
+    expect(bytes.subarray(media + 4)).toEqual(Buffer.from(sample));
+    expect(MockMediaRecorderInstance.lastInstance).toBeNull();
+  });
+
   it('probes the actual H.264 configuration and rejects it without an independent recorder fallback', async () => {
     uninstallMediaRecorderMock();
     const configure = vi.fn(); const close = vi.fn();

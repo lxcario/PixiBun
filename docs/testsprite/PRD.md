@@ -9,11 +9,13 @@ PixiBun is a browser studio for hand-made pixel art and animation. There is no a
 ## Ground rules for tests
 
 - **No sign-in.** Choose "No sign-in required".
-- **Fresh-browser defaults.** Automated browsers (`navigator.webdriver`) skip the first-run welcome and start with the classic studio (Studio Labs off). Use `?welcome=1` to test the welcome journey on purpose.
+- **Fresh-browser defaults.** Recognized automated browsers (`navigator.webdriver`) skip the first-run welcome and start with Studio Labs off. Other cloud configurations may show it: dismiss Skip setup only when it is actually present. Use `?welcome=1` to test welcome on purpose.
 - **Deep links create known state.** `/studio?width=32&height=32` opens a blank 32×32 drawing. `/studio?template=bun` (also `mochi`, `sprout`, `teacup-frog`) opens a starter sprite. `/studio?replay=…` opens a new drawing and redraws a recipe step by step, so its pixels are known exactly ([replay links](#replay-links-exact-drawings-to-assert)).
 - **Prefer stable hooks.** Interactive parts carry `data-testid` attributes (listed per area below). Assert on them and on visible text, not on CSS classes or pixel positions of decorations.
 - **The canvas is a `<canvas>`.** Assert what was drawn through the [canvas readout](#canvas-readout-assert-what-was-drawn) below, and the rest through visible state: Undo/Redo availability, layer and frame counts, the save badge, status bar text, export results. Do not assert on decorative animation or on screenshot pixels.
-- **Downloads are real files.** An export test passes when a download with the right extension starts, and fails on an error toast.
+- **Downloads are real files.** Starting a correctly named download establishes delivery only. A file-integrity assertion also requires retrieving the actual bytes and independently decoding the promised content, dimensions, transparency, poses and holds. Missing picker/download/re-upload access is Blocked, not a successful round trip. The native save cancellation message is not a server fault.
+- **Starter admission finishes before editing.** For Bun, wait for the template query to be consumed, restoration active, the real 16×16 artwork nonempty and the project named Bun before recording the baseline or changing a hold. Canvas visibility alone can precede admission.
+- **Exact means an independent observation.** A readout/digest corroborates behavior. It cannot replace all-channel RGBA or independently decoded-file assertions when a plan requires them. Keep that scope Blocked if the runner cannot make those observations; do not substitute decorative SVG, a filename or a broad screenshot.
 
 ## Canvas readout: assert what was drawn
 

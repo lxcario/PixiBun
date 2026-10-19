@@ -2,7 +2,7 @@
 
 PixiBun is a small pixel-art and animation desk. An artist should be able to trust a lock, return to a palette with the keyboard, and find their drawing inside the file they take home.
 
-For Season 4, TestSprite helped us turn those promises into questions we could actually check. This guide starts with the genuine defects, then shows how we made the questions more precise. Results are dated and source-labelled. The [automatic PR ledger](loop-ledger.md) is still empty because the service stopped matching App events at billing; controlled cloud replays are supporting evidence.
+For Season 4, TestSprite helped us turn those promises into questions we could actually check. This guide starts with the genuine defects, then shows how we made the questions more precise. Results are dated and source-labelled. The [PR ledger](loop-ledger.md) now records the first executed App check, retried manually on 19 October: **32 Passed /13 Failed /76 Blocked**. The [19 October register](pr6-triage-2026-10-19.md) separates that cohort from older catalogs, plan/script repairs and supporting replays. The unattended fixing-commit loop remains unproven.
 
 ## Three real findings, with a trail back to the pixels
 
@@ -30,6 +30,6 @@ The next three questions were about coming back safely. A last brush mark and di
 
 We read all 55 original Blocked plans/results. Most stopped at a missing pixel/file observation or an unestablished edit; others lacked a fixture, a current control path or a real browser/network prerequisite. Their generated hosting explanations are leads, not diagnoses. The [complete triage register](blocked-triage-2026-10-18.md) preserves every original case and its next boundary.
 
-At the latest recorded snapshot there are 121 cases: **69 Passed / 0 Failed / 52 Blocked**, across different latest case runs. That is not one all-green batch. The final publication preview also retains three no-console-error failures caused by Vercel's injected feedback toolbar conflicting with CSP. The automatic App execution, production release and remaining coverage still need completion. This guide is a dated record, not a live status monitor.
+At the 18 October snapshot there were 121 cases: **69 Passed /0 Failed /52 Blocked**, across different latest case runs. The 19 October App batch is separate. Neither is an all-green automatic loop. The original publication preview retains three no-console-error failures caused by Vercel's injected feedback toolbar conflicting with CSP. Production release, the unattended fixing-commit loop and remaining coverage still need completion. This guide is a dated record, not a live status monitor.
 
 What TestSprite gave us was a useful way to question our own assumptions: follow the actual gesture, read the file, keep the first failure, and show what changed. The little drawing gets a clearer trail home.

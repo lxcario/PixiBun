@@ -16,7 +16,7 @@
 
 import { getVideoRecordingMimeType, recordCanvasVideo } from './videoRecorder';
 import { awaitVideoOperation } from './videoOperation';
-import { muxToMp4Blob, Mp4MuxerSample } from './isobmffWriter';
+import { avcCFromEncodedSample, muxToMp4Blob, Mp4MuxerSample } from './isobmffWriter';
 import { validateExportGeometry } from './exportGeometryValidation';
 import { withExportMemory } from './exportMemory';
 
@@ -75,7 +75,8 @@ export function isMp4ExportSupported(): boolean {
  * and the export test the same encoder. Software encoding: on one Windows machine the
  * hardware encoder began writing limited-range colour that decoded red as 233,0,2, with
  * no change in PixiBun. Pixel-art videos are small enough that the software encoder is
- * quick, and it gives the same colours on every machine.
+ * quick and avoids that observed hardware conversion. Actual decoded colors and
+ * parameter-set metadata still require separate browser/file verification.
  */
 const H264 = { codec: 'avc1.42001f', bitrate: 2_000_000, avc: { format: 'avc' }, hardwareAcceleration: 'prefer-software' } as const;
 
@@ -166,11 +167,12 @@ async function exportAnimationWithWebCodecsAsync(
       const chunk = rawChunk as { byteLength: number; duration?: number; type: string; copyTo: (dest: Uint8Array) => void };
       const metadata = rawMeta as { decoderConfig?: { description?: ArrayBuffer | Uint8Array } } | undefined;
 
-      if (metadata?.decoderConfig?.description) {
+      if (!avcCData && metadata?.decoderConfig?.description) {
         avcCData = new Uint8Array(metadata.decoderConfig.description);
       }
       const data = new Uint8Array(chunk.byteLength);
       chunk.copyTo(data);
+      if (chunk.type === 'key') avcCData = avcCFromEncodedSample(data) ?? avcCData;
       samples.push({
         data,
         durationMs: Math.max(1, Math.round((chunk.duration || 0) / 1000)),

@@ -2,6 +2,8 @@
 
 TestSprite findings register, 18 October 2026. Read this alongside the [build diary](build-diary.md), [source-labelled cloud evidence](verification-stories.json) and [automatic PR ledger](loop-ledger.md). The portal may require the owning account to open execution links. A linked controlled replay is not an automatic GitHub App check.
 
+19 October follow-up: the first executed PR App cohort is **32 Passed /13 Failed /76 Blocked**. The [new complete triage](pr6-triage-2026-10-19.md) preserves all cases, corrects thirteen plans, identifies plan/saved-code drift and qualifies the intended operations independently. Dither received a copy/specification correction; this follow-up does not invent additional raster defects. The three genuine product findings below retain their original sources and red → green trails.
+
 ## Two artwork-protection defects
 
 **Bun gets to keep its colors.** A Normal Chisel scenario had created the wrong kind of layer. Following it led to a real application defect: choosing the tool from the toolbar could write normal-map colors into ordinary paint. The canvas now rejects the stroke before changing pixels or history and explains how to choose a surface. Production failed the exact pixel comparison; a controlled fixing-preview replay passed. [Fix PR #5](https://github.com/lxcario/PixiBun/pull/5) and [the dated Chisel record](../releases/2026-10-17-chisel-layer-safety.md) retain the scope. Automatic verification and the production release remain separate.

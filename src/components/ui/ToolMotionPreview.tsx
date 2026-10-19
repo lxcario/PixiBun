@@ -108,8 +108,8 @@ export const DRAWING_PREVIEWS: Record<string, ToolPreviewDefinition> = {
   dither: {
     title: 'Dither Brush',
     group: 'Drawing',
-    description: 'Blend shades smoothly with retro checkerboard stippling.',
-    proTip: 'Eliminates banding between two tones without adding new palette entries.',
+    description: 'Paint the active color in an ordered pattern, leaving gaps untouched.',
+    proTip: 'Layer a patterned stroke over existing paint to blend two tones. Density controls the gaps.',
     scene: 'dither',
     shortcut: 'D',
     icon: 'dither',

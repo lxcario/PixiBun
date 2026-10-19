@@ -50,7 +50,18 @@ test('actual GIF download preserves every moving pose, transparent clearing and 
   expect(decoded.frames.map(frame => frame.delayMs)).toEqual([160, 240]); expect(decoded.frames.map(frame => frame.data)).toEqual(frames);
   await expect(dialog).toBeHidden(); expect(await pixels(page)).toEqual(frames[1]);
 });
-test('actual MP4 is playable with both painted poses, or its unsupported platform is explicitly refused', async ({ page, browserName }, info) => {
+test('actual MP4 is playable with both painted poses, or its unsupported platform is explicitly refused', async ({ page, browser, browserName }, info) => {
+  // Independent native context: a desktop device preset must not disguise Linux
+  // WebKit as macOS and thereby bypass the app's platform-specific codec guard.
+  // Explicitly clear any runner defaults inherited by browser.newContext().
+  const nativeContext = await browser.newContext({ userAgent: undefined });
+  try {
+    const nativePage = await nativeContext.newPage();
+    const nativeUserAgent = await nativePage.evaluate(() => navigator.userAgent);
+    const testedUserAgent = await page.evaluate(() => navigator.userAgent);
+    await info.attach('actual-browser-platform.json', { body: Buffer.from(JSON.stringify({ browserName, hostPlatform: process.platform, nativeUserAgent, testedUserAgent })), contentType: 'application/json' });
+    expect(testedUserAgent).toBe(nativeUserAgent);
+  } finally { await nativeContext.close(); }
   const frames = await fixture(page, true); await page.getByTestId('export-button').click(); await page.getByTestId('export-tab-mp4').click();
   const dialog = page.getByRole('dialog'); await dialog.getByRole('button', { name: '1x', exact: true }).click();
   // WebKit on Linux: probing H.264 froze the page, so Studio refuses MP4 there without probing (mp4Encoder.ts).

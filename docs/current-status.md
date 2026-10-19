@@ -1,5 +1,11 @@
 # Current project status
 
+## First executed PR App check — 19 October 2026
+
+The [native codec follow-up](releases/2026-10-19-native-codec-ci.md) records the completed GitHub browser job: 364 development passes; production 511 Passed /4 Failed /4 Skipped. Fixes address device-preset OS masking and malformed AVC metadata. Their Linux fixing-source playback qualification remains a release gate; this is separate from TestSprite's results.
+
+The [19 October triage record](releases/2026-10-19-pr-verification-triage.md) supersedes the earlier billing-blocked observation: a manual retry of PR #6's matched event executed 121 cases, **32 Passed /13 Failed /76 Blocked**. The [complete register](testsprite/pr6-triage-2026-10-19.md) preserves the original cases, all 89 non-pass reports, thirteen plan corrections and separate follow-ups. Independent targeted checks on frozen combined source `749fc828` pass across Chromium, Firefox and WebKit. Unsupported cloud pixel/file assertions and the automatic fixing-commit loop remain open. Fixture access was requested; production remains on old `main` pending a separately verified release.
+
 ## Branch consolidation — 18 October 2026
 
 The [consolidation record](releases/2026-10-18-branch-consolidation.md) preserves the four unique artwork/evidence patches while reconciling equivalent rewritten histories. The persistent origin branches are `main` and `testsprite-s4`; older test cohorts retain their original source identities. This combined tree needs its own verification and does not bypass the automatic App or production-release gates. Other agents' checked-out local worktrees remain intact.

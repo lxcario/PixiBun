@@ -76,3 +76,15 @@ We gave the first frame one last little red mark, and the second a different pau
 Next we brought the desk two broken files. It told us why they could not come in, let us Cancel, and left the original drawing alone. We could still make a mark and undo it. The onion ghost was gentler still: visible while we drew, absent from the file we took home. Those three controlled cloud checks passed, alongside the saved-rig and normal-source comparisons. The [trust record](../releases/2026-10-18-testsprite-trust-and-triage.md) keeps their exact source and limits.
 
 These questions did not need new repairs. They made the evidence better. We want the account of TestSprite helping PixiBun to be as careful as the small drawing itself: a real failure where one happened, a repair with its proof, and a promise already kept where the stronger check found it. The [evidence guide](evidence-guide.md) brings those threads together.
+
+## 19 October: the check finally reaches the desk
+
+The billing door opened, and the PR check finally visited the drawing. Its first full answer was untidy: 32 passed, 13 failed, 76 blocked. We kept that answer. It is more useful to us than a tidy number without a trail.
+
+Some questions needed a small correction. Before asking whether Undo brought Bun back, the browser needed to press Undo. Before asking what a lesson was missing, it needed a half-finished pose. And before looking for a saved variation, it needed to apply one deliberately, keep its original layer and come back to the layer carrying the recipe. Three browsers followed those paths independently, with the pixels beside the controls.
+
+Dither asked us to be more careful with our words. It lays the chosen color into a pattern and leaves little gaps alone. The hint had promised two colors at once. We corrected the hint, then checked every cell of a small blue stroke and its Undo. The drawing did not need a new engine; the promise needed to describe the one we had.
+
+We also found a green check that was answering yesterday's question: its saved script had not changed with the plan. We kept that pass in history and wrote a replay that really visits the incomplete pose. A script that did not even reach a page stays a failed attempt, too. The [19 October record](../releases/2026-10-19-pr-verification-triage.md) keeps those limits, original failures and follow-ups together.
+
+Some questions still need tools the cloud browser does not have: a real drag, a file it can open, or an independent view of every pixel. We have asked for the supported fixture path. Until those observations exist, the honest answer stays Blocked. Bun deserves a dependable way home, and so does the evidence we submit with it.

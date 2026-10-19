@@ -58,7 +58,7 @@ See [the gradient workflow](artist-workspace.md#draw-a-pixel-gradient) for ramp 
 
 ![Dither Brush selected; actual available tool settings, original three-frame artwork.](../assets/screenshots/2026-10-15-current-ui/tool-dither.png)
 
-Press **D**, set your two colors and drag a patterned stroke. Choose **Bayer 2×2, 4×4 or 8×8**, **Blue Noise**, or **Atkinson** in the pattern menu; adjust **Density** and brush size to make the texture gentler or stronger. This paints a brush pattern. Whole-layer Atkinson and Smooth Dither previews live separately in [Clean and refine](pixitools-cleanup-and-tiles.md#color-moods-and-dithering).
+Press **D**, choose your active drawing color and drag a patterned stroke. Choose **Bayer 2×2, 4×4 or 8×8**, **Blue Noise**, or **Atkinson** in the pattern menu; adjust **Density** and brush size to make the texture gentler or stronger. The brush paints the active color at admitted pattern positions and leaves skipped pixels unchanged; on an empty layer those gaps remain transparent. Paint over an existing color to blend two tones, or use the current keymap's secondary-color gesture for a separate stroke. One stroke does not automatically alternate foreground and background colors. Whole-layer Atkinson and Smooth Dither previews live separately in [Clean and refine](pixitools-cleanup-and-tiles.md#color-moods-and-dithering).
 
 Fast drags interpolate brush centers between received points instead of stamping only their endpoints. The pattern tests canvas coordinates, so a one-pixel brush keeps its pattern anchored as you draw. Larger sizes retain square stamp footprints.
 

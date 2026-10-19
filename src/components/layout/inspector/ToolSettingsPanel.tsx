@@ -364,7 +364,7 @@ const TOOL_HINTS: Partial<Record<string, string>> = {
   eraser: 'Clear pixels back to transparency.',
   bucket: 'Fill an area of matching color.',
   gradient: 'Drag across the art to lay down a stepped color blend.',
-  dither: 'Paint an ordered pattern between two colors.',
+  dither: 'Paint a pattern with the active color; skipped pixels stay unchanged.',
   'color-replace': 'Swap one color for the foreground color where you paint.',
   'erase-color': 'Erase only the pixels that match the color you click.',
   'select-box': 'Drag a rectangle to select it. Drag inside to move.',

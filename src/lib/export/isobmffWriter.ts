@@ -134,6 +134,27 @@ export function createAvcCRecord(sps: Uint8Array, pps: Uint8Array): Uint8Array {
   return writer.finish();
 }
 
+/**
+ * Some encoders include parameter sets in their four-byte-length AVCC keyframe.
+ * Use those actual NAL units rather than a malformed decoder description: the
+ * Linux Firefox CI sample duplicated the 0x67/0x68 headers in its description.
+ * Out-of-band-only encoders return null and retain their supplied description.
+ */
+export function avcCFromEncodedSample(sample: Uint8Array): Uint8Array | null {
+  const view = new DataView(sample.buffer, sample.byteOffset, sample.byteLength);
+  let offset = 0, sps: Uint8Array | undefined, pps: Uint8Array | undefined;
+  while (offset + 4 <= sample.length) {
+    const length = view.getUint32(offset, false); offset += 4;
+    if (length === 0 || length > sample.length - offset) return null;
+    const kind = sample[offset] & 0x1f;
+    if (kind === 7 && length >= 4) sps ??= sample.subarray(offset, offset + length);
+    if (kind === 8) pps ??= sample.subarray(offset, offset + length);
+    if (sps && pps) return createAvcCRecord(sps, pps);
+    offset += length;
+  }
+  return null;
+}
+
 export interface Mp4MuxerSample {
   data: Uint8Array; // AVCC format sample payload (4-byte Big-Endian length prefixed NALUs)
   durationMs: number;

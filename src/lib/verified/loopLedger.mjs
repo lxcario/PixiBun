@@ -210,7 +210,7 @@ export function renderLoopLedgerMarkdown(ledger) {
     '',
     '<!-- Generated from loop-ledger.json by `npm run ledger:md`. Edit the JSON, then regenerate. -->',
     '',
-    `Every pull request TestSprite checked, what failed on its first run and the commit that turned it green. Source: [loop-ledger.json](loop-ledger.json), validated by \`src/lib/verified/loopLedger.mjs\`; shown live at [pixibun.vercel.app/verified](https://pixibun.vercel.app/verified). Last updated ${ledger.updated}.`,
+    `Every pull request TestSprite checked, what failed on its first run and the commit that turned it green. Source: [loop-ledger.json](loop-ledger.json), validated by \`src/lib/verified/loopLedger.mjs\`. The application renders this data at \`/verified\`; production availability is tracked in [current status](../current-status.md). Last updated ${ledger.updated}.`,
     '',
     `- TestSprite project: ${ledger.testspriteProjectUrl ? `<${ledger.testspriteProjectUrl}>` : 'not linked yet'}`,
     `- Cases in the suite: ${summary.suiteCases === null ? 'not counted yet' : summary.suiteCases}`,

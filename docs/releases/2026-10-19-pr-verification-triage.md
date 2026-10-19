@@ -1,0 +1,43 @@
+# The PR check reaches the drawing — 19 October 2026
+
+## Original execution
+
+After Free-plan CI became available, **Run Now** retried PR #6's already-matched Vercel deployment event. Its [actual App execution](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/1023cedd-f23b-4b96-897e-43ff22a428e0) completed **32 Passed /13 Failed /76 Blocked**, 121 cases. This real PR App run was initiated by manual retry; it does not complete the unattended fixing-commit loop.
+
+The integration preview served `749fc828a710d0420b1c2f5f83a05dbe9b09524d`. Recorded navigation steps used that preview, but each individual UI case did not independently read the full SHA. Production remained at `92de6c74b259eafcf73cc986b1def6c69f5566aa`. The list API still returned the older 69/0/52 catalog; this record uses the executed cohort, not that stale catalog.
+
+The [complete register](../testsprite/pr6-triage-2026-10-19.md) and [JSON receipt](../testsprite/pr6-triage-2026-10-19.json) retain all 121 original IDs/run IDs, all 89 non-pass reports and hashes, thirteen plan changes and separately labelled follow-ups. Original verdicts remain unchanged; raw artifacts and signed links stay local.
+
+## Repairing the questions
+
+Outline and frame recovery asserted restoration without clicking Undo. Clip validation checked temporary feedback after later valid edits. Cycle controls were behind a disclosure. Motion capture lives in **Tools → Animate artwork**, separately from Effects animation review. Recipes persist on explicitly applied output layers; select one and use **Use saved settings** after saving/reloading. The coach offers **What's missing?** for an incomplete pose, not after tracing has matched it. The erase report checked the erased-state assertion after Undo and used checkerboard-gray paint. Corrected plans retain the real pixel/file requirements.
+
+These are verification repairs, not additional product defects. Native-save cancellation in two backup reports is not evidence of a server outage. Complete the actual picker and retrieve the bytes before claiming a round trip.
+
+Dither did have a misleading hint: the existing brush stamps the active color at admitted pattern cells; it does not alternate two colors. Inspector, tool-preview and guide text now say skipped pixels retain their earlier values. A literal Bayer 2×2/50% one-pixel stroke changes exactly eight even cells of a 16-cell row and undoes exactly. The painting algorithm was not changed.
+
+## Independent qualification
+
+On the frozen compiled `749fc828` build, six new production regressions passed across Chromium, Firefox and WebKit: exact Outline Undo/Redo, deleted-frame recovery with 100/200/300 ms holds, immediate invalid-clip refusal, cycle-editor discovery/create/delete, literal Dither pixels, and a downloaded backup independently decoded and re-imported. **18 passed**, zero unexpected/skipped/flaky results. Actual Shift+F10/focus, selective erase/Undo/Redo and partial lesson/ghost separation added **9 passes**, without retries.
+
+The existing recipe provenance/application/reload/stale-source regression passed in all three engines (**3 passes**). The saved-rig script passed three complete journeys: actual capture, decoded downloaded source hash, unchanged reopen, real source edit, save/reload and refusal without changing admitted project pixels/metadata. Local manifest observation confirmed the frozen source; the older script's local mode itself makes no deployed-SHA claim.
+
+The standalone [UI-report replay](../../scripts/testsprite/pixibun-ui-reports-integrity.py) was qualified separately before controlled cloud dispatch. Cycle discovery is not full cycle-boundary/timing proof. Backup qualification explicitly covers browser-download fallback, not native-picker success. Earlier setup/selector mistakes remain in local attempts. Starter visibility precedes admission: wait for the consumed template query and actual nonempty fixture before editing or taking a baseline.
+
+## A plan is not necessarily the script that ran
+
+A follow-up returned Passed on an old lesson script after its plan was corrected; it did not exercise partial-pose gaps. That status is retained but is not accepted as proof of the revised contract. Another stored replay formed `...vercel.appstudio?template=bun`, missing a slash. Its URL failure is retained separately.
+
+Replacement scripts use actual actions, read-only native RGBA, explicit incomplete-pose checks and stable origin/build assertions. Controlled comparisons pin the full source, retain exact code hashes/versions and disable auto-heal. Reusable restoration is recorded separately. Neither kind of manual replay is an automatic GitHub App result.
+
+## Remaining boundaries
+
+Eight source-pinned controlled cloud companions passed after saved-code repairs: Outline, frame recovery, clip validation, Dither, selective erase, partial lesson/ghost separation, quick tools and saved-rig refusal. The later frame/clip/Dither passes additionally compare actual downloaded project pixels/metadata; clip playback/export ordering remains outside that bounded checkpoint. Versions, hashes, source pins, disabled auto-heal, failed launch attempts, earlier narrower passes and reusable restoration are retained in the JSON. These manual passes do not replace the original App batch.
+
+Some fresh UI-agent follow-ups reach the correct controls but explicitly lack continuous gestures, native pixels, history observations or downloaded-file access. A visible digest corroborates behavior; it is not an independent all-channel oracle. Unsupported assertions stay Blocked.
+
+The empty shared fixture pool cannot accept Free-plan uploads. Hackathon access or a supported delivery method was requested from support, together with clarification of App plan-versus-saved-Python execution. No purchase or bypass was performed.
+
+Actions attempt 2 passed validate, rollback compatibility and Lighthouse, plus 364 development-browser cases. Production finished 511 Passed /4 Failed /4 Skipped. The [native codec follow-up](2026-10-19-native-codec-ci.md) preserves the failures and investigates the Linux WebKit identity mismatch and malformed Firefox AVC description. Those findings are attributed to GitHub CI. This record's changes need their own gate and fixing-source Linux qualification. Production merge/deployment and an unattended automatic red → green loop remain pending.
+
+Publish reviewed changes through `testsprite-s4`, preserve PR #6's original check, then observe a fresh fixing-commit deployment and automatic App result. Verify actual preview origin/full SHA and executed assertions. Keep merge protection enforced; release production only after its gates pass. Supporting manual passes cannot substitute for a passing required PR check.

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-10-18",
-  "automationNote": "Observed on 18 October: matching preview events for PR #6 (26db4c5) and PR #7 (77a4007) were blocked by billing before any automatic tests ran. Required GitHub CI validation passed on PR #6. Controlled cloud replays are dated supporting evidence; the automatic PR ledger remains empty.",
+  "updated": "2026-10-19",
+  "automationNote": "On 19 October a manual Run Now retry of PR #6’s matched deployment event executed the App suite on the integration preview: 32 Passed /13 Failed /76 Blocked. The ledger records this real failed PR check. Thirteen plans were corrected and independent follow-ups remain separately source-labelled in the dated triage. A fresh unattended fixing-commit → passing required check loop and production release remain unproven; the three genuine product stories retain their original sources.",
   "stories": [
     {
       "id": "bun-keeps-its-colors",

@@ -1,0 +1,78 @@
+name: Native codec regressions
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/codec-regressions.yml'
+      - 'playwright.production.config.ts'
+      - 'src/lib/export/**'
+      - 'src/components/modals/export/**'
+      - 'tests/production/animatedExportIntegrity.spec.ts'
+      - 'tests/production/lightSweep.spec.ts'
+      - 'tests/production/offlinePanels.spec.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: native-codecs-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-codecs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Build and seal the candidate
+        run: |
+          npm run build
+          node scripts/checkProductionBuild.mjs --seal artifacts/native-codecs/frozen-build.json
+      - name: Actual downloads, native codec refusal and offline panels in three engines
+        run: |
+          set -o pipefail
+          PLAYWRIGHT_JSON_OUTPUT_FILE=artifacts/native-codecs/results.json npm run test:e2e:production -- animatedExportIntegrity lightSweep offlinePanels --workers=1 --retries=0 --reporter=list,json 2>&1 | tee artifacts/native-codecs/run.log
+      - name: Verify the build remained frozen
+        if: always()
+        run: node scripts/checkProductionBuild.mjs --verify artifacts/native-codecs/frozen-build.json --receipt artifacts/native-codecs/build-after.json
+      - name: Index the original evidence
+        if: always()
+        run: node scripts/indexVerificationEvidence.mjs --source artifacts/native-codecs --source test-results --output artifacts/native-codecs-index.json
+      - name: Preserve codec evidence
+        id: evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-codecs-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/native-codecs/
+            artifacts/native-codecs-index.json
+            test-results/production/
+          include-hidden-files: true
+          retention-days: 90
+      - name: Independently retrieve codec evidence
+        if: ${{ always() && steps.evidence.outputs.artifact-id != '' }}
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          artifact-ids: ${{ steps.evidence.outputs.artifact-id }}
+          path: artifacts/native-codecs-download
+          merge-multiple: true
+      - name: Verify retrieved bytes
+        if: ${{ always() && steps.evidence.outputs.artifact-id != '' }}
+        run: node scripts/verifyEvidenceDownload.mjs --index artifacts/native-codecs-index.json --download artifacts/native-codecs-download --downloaded-index artifacts/native-codecs-index.json --receipt artifacts/native-codecs-retrieval.json
+      - name: Preserve retrieval verdict
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-codecs-custody-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/native-codecs-retrieval.json
+          retention-days: 90
