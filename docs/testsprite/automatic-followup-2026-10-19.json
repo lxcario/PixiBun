@@ -1,0 +1,448 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "a5caa2cb3e824c123ff43adea2309ff636be36e4",
+  "executionId": "145919a4-44b9-4e5c-b34e-975c9fe39c86",
+  "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/145919a4-44b9-4e5c-b34e-975c9fe39c86",
+  "source": "automatic GitHub App after the a5caa2cb Vercel ready event",
+  "observedAt": "2026-10-19T14:56:14.388Z",
+  "terminal": false,
+  "interimCounts": {
+    "passed": 19,
+    "failed": 3,
+    "blocked": 39,
+    "queuedOrRunning": 60
+  },
+  "cohortCaveat": "Interim observation, not a completed App result. The API legacy running field includes queued cases. Original run IDs/verdicts remain retained. A passing manual/local reproduction never changes its App verdict.",
+  "localQualifications": [
+    {
+      "path": "artifacts/s4-remediation/a5caa2cb-local/browser-results.json",
+      "sha256": "f7efd70c036798ca168020f5078c745784f02132d1466dad148d79fa7d2b0400",
+      "scope": "Affected codec/offline checks; Windows, 15 passed. Does not qualify Linux.",
+      "stats": {
+        "startTime": "2026-10-19T14:39:55.871Z",
+        "duration": 202083.913,
+        "expected": 15,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "artifacts/s4-remediation/a5caa2cb-local/workflow-results.json",
+      "sha256": "86554dbdd72801aa4ce1a18ffbd8d3676cc8a2988c85f2baa330900d21faa18c",
+      "scope": "Nine earlier corrected UI/pixel/file journeys × three Windows engines; 27 passed.",
+      "stats": {
+        "startTime": "2026-10-19T14:55:24.603Z",
+        "duration": 135952.89800000002,
+        "expected": 27,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "artifacts/s4-remediation/a5caa2cb-local/batch-followup-results.json",
+      "sha256": "0ac8ba0228b61dba607c744bd7dd821af67b219649453bf486163864507464ba",
+      "scope": "Three new execution/precondition reproductions × three Windows engines; 9 passed. Test source is the working tree; compiled application remains a5caa2cb.",
+      "stats": {
+        "startTime": "2026-10-19T14:59:19.600Z",
+        "duration": 64987.411,
+        "expected": 9,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    }
+  ],
+  "repairs": [
+    {
+      "testId": "acc0d53a-3bfd-455f-938a-27c91a99882c",
+      "name": "S4-NEW-01 — A tiny loop keeps its place.",
+      "runId": "ba22b914-e786-400b-af48-c1a9cc7b2b1c",
+      "originalStatus": "failed",
+      "originalError": "TEST FAILURE\n\nThe frame duplication, hold settings, and final frame selection were verified, but Undo and Redo did not restore the expected frame 1 durations.\n\nObservations:\n- The final timeline shows two frames: frame 1 at 100 ms and frame 2 at 200 ms; frame 2 is selected and the readout shows Frame 2 / 2.\n- After the Undo sequence, frame 1 was reported at 125 ms rather than the expected 100 ms.\n- After Redo, frame 1 remained at 100 ms rather than returning to 150 ms.",
+      "reportSha256": "5171d8ea9e263a06aa665ffbedc612da2dcdbfffdc603a36dce3407a7942374f",
+      "originalSteps": [
+        {
+          "type": "action",
+          "description": "Navigate to /studio?template=bun on the selected TestSprite environment, at a supported desktop viewport unless this case explicitly tests Pocket.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Dismiss first-run welcome with Skip setup if it appears; otherwise continue without inventing a welcome step.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Duplicate the selected frame using the timeline toolbar.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The timeline has exactly two frames; the duplicate is selected and visibly contains the same Bun artwork.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Set the selected second frame hold to 200 ms.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Select the first frame card.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Set its hold to 100 ms.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Select the second frame card.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The second hold is 200 ms; the first card shows 100 ms; the selected frame readout identifies frame 2 of 2 at this wide viewport.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Select the first frame card.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Set the active frame hold to 150 ms and blur the input.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The first card and active hold input show 150 ms; frame count remains two.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Click Undo last action exactly once.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The first frame hold returns to 100 ms; the second card still shows 200 ms and there are two frames.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Click Redo last action exactly once.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The first frame hold returns to 150 ms; the second card still shows 200 ms and there are two frames.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Select the second frame card.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The readout shows Frame 2 / 2 and its active hold remains 200 ms. All prior assertions must have been checked. Unsupported assertions are Blocked, not inferred passes.",
+          "structured": false
+        }
+      ],
+      "clarifiedSteps": [
+        {
+          "type": "action",
+          "description": "Navigate to /studio?template=bun on the selected TestSprite environment, at a supported desktop viewport unless this case explicitly tests Pocket.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Dismiss first-run welcome with Skip setup if it appears; otherwise continue without inventing a welcome step.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Duplicate the selected frame using the timeline toolbar.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The timeline has exactly two frames; the duplicate is selected and visibly contains the same Bun artwork.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Set the selected second frame hold to 200 ms. Commit the value with an actual Tab key, then observe the active input AND its frame card at this value before continuing.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Select the first frame card.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Set its hold to 100 ms. Commit the value with an actual Tab key, then observe the active input AND its frame card at this value before continuing.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Select the second frame card.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The second hold is 200 ms; the first card shows 100 ms; the selected frame readout identifies frame 2 of 2 at this wide viewport.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Select the first frame card.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Set the active frame hold to 150 ms and blur the input. Commit the value with an actual Tab key, then observe the active input AND its frame card at this value before continuing.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The first card and active hold input show 150 ms; frame count remains two.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Click Undo last action exactly once. Do not click a second time. The original 19 October automatic trace clicked Undo twice although this plan already required exactly once. Two Undos followed by one Redo cannot restore the latest edit. If the runner cannot execute/count the requested action, record that missing execution capability as Blocked, not a history defect.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The first frame hold returns to 100 ms; the second card still shows 200 ms and there are two frames.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Click Redo last action exactly once. Observe the corresponding frame card immediately; do not replace this checkpoint with the later selected second frame.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The first frame hold returns to 150 ms; the second card still shows 200 ms and there are two frames.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Select the second frame card.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The readout shows Frame 2 / 2 and its active hold remains 200 ms. All prior assertions must have been checked. Unsupported assertions are Blocked, not inferred passes.",
+          "structured": false
+        }
+      ],
+      "scope": "Execution/precondition clarification; original verdict retained. Independent matching UI/pixel/file journeys passed in Chromium, Firefox and WebKit. No new product defect or cloud rerun pass claimed."
+    },
+    {
+      "testId": "31ecb05a-6b76-42fd-bd87-a3525b49ff6c",
+      "name": "S4-NEW-11 — A swatch knows which pot.",
+      "runId": "2c76b2f3-5b45-43fa-99fd-0fceaaddb33f",
+      "originalStatus": "failed",
+      "originalError": "TEST FAILURE\n\nShift-clicking a different palette swatch did not change the secondary color while preserving the primary color.\n\nObservations:\n- The primary was initially set to #EDE8F4.\n- After the Shift-key attempt and selecting the #FFFFFF swatch, the primary displayed #FFFFFF and the secondary remained #C792DF.\n- The canvas summary continued to show digest 6af29269. The right-click context-menu behavior was not tested.",
+      "reportSha256": "70fd9b4489bb5c3ed4f485f4c1b97c164815f9197a3db9d47be497659d9e4517",
+      "originalSteps": [
+        {
+          "type": "action",
+          "description": "Navigate to /studio?template=bun on the selected TestSprite environment, at a supported desktop viewport unless this case explicitly tests Pocket.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Dismiss first-run welcome with Skip setup if it appears; otherwise continue without inventing a welcome step.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Open Colors from the primary well.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Select a visible palette swatch and record its hex.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The edited primary pot matches that swatch.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Shift-click a different swatch and record its hex.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The other pot matches the second swatch while the primary keeps the first value; the canvas is unchanged.",
+          "structured": false
+        }
+      ],
+      "clarifiedSteps": [
+        {
+          "type": "action",
+          "description": "Navigate to /studio?template=bun on the selected TestSprite environment, at a supported desktop viewport unless this case explicitly tests Pocket.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Dismiss first-run welcome with Skip setup if it appears; otherwise continue without inventing a welcome step.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Open Colors from the primary well.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Select a visible palette swatch and record its hex.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The edited primary pot matches that swatch.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Perform one actual pointer click on a different visible palette swatch while Shift is HELD throughout that click, then release Shift. Pressing and releasing Shift before an ordinary click does not qualify. Record both the first primary and second target hex. If a held-modifier pointer action is unavailable, mark that capability Blocked; do not execute a plain click and call its primary-color behavior a product failure.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The other pot matches the second swatch while the primary keeps the first value; the canvas is unchanged.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "While Colors still edits Primary, perform an actual right-click on a third palette swatch. If right-click cannot be issued, retain that scope as Blocked.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "The primary remains the original first swatch, the secondary changes to the third swatch, and no canvas tools context menu opens. Confirm exact artwork preservation with the retained independent oracle; unavailable pixel observations remain Blocked.",
+          "structured": false
+        }
+      ],
+      "scope": "Execution/precondition clarification; original verdict retained. Independent matching UI/pixel/file journeys passed in Chromium, Firefox and WebKit. No new product defect or cloud rerun pass claimed."
+    },
+    {
+      "testId": "c5377b6e-0321-4426-8e41-2da4c98a34cf",
+      "name": "Save a drawing and reload the project in the same browser context",
+      "runId": "13de4936-2caa-4ea6-b5c3-78b58f10a54b",
+      "originalStatus": "failed",
+      "originalError": "TEST FAILURE\n\nThe reopened project retained the first frame’s red mark and both frame durations, but the required two-layer structure was not present in the verified state. Only “Base Layer” appeared in the Layers panel.\n\nObservations:\n- Frame 1 showed one red pixel on the transparent checkerboard; the page reported one painted pixel in #ff0000.\n- The timeline showed frame 1 at 100 ms and frame 2 at 200 ms.\n- The Layers panel showed only “Base Layer.”",
+      "reportSha256": "2610bb6b1d31a565eaae01709d81bdede06a3fce6e7e5828139a8123d01f43f9",
+      "originalSteps": [
+        {
+          "type": "action",
+          "description": "Navigate to the studio",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Use the welcome controls to enter the editor",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Create a new drawing canvas",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Name the project S4 Save Roundtrip; create two distinguishable frames with red and blue marks, holds of 100ms and 200ms, and two named layers.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Save the project",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Reload the page in the same browser context",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Reopen the saved project",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "Verify the same named project, two frames, two layer names and both 100/200ms holds survive the same-context reload. Persistent Undo is not required.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "Verify each frame retains its own exact marked pixels and transparency after reloading, using rendered/raster observations or independently decoded exports.",
+          "structured": false
+        }
+      ],
+      "clarifiedSteps": [
+        {
+          "type": "action",
+          "description": "Navigate to the studio",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Dismiss first-run setup only if it appears. Wait for restoration to be active before editing.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Create a new drawing canvas",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Name the project S4 Save Roundtrip. In frame 1 retain its Base Layer and create a real red mark; commit its hold to 100 ms with Tab. Add a blank frame 2, commit its hold to 200 ms with Tab, add a second layer named Blue Mark in THAT frame and paint a real blue mark on it. Record each frame’s own layer identities/names/pixels: frame 1 has one Base Layer; frame 2 has Base Layer plus Blue Mark. Layers are per-frame, not a global list. Keep all baseline artwork and exact file/raster expectations.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Click Save now and wait for the actual Changes saved confirmation before leaving or reloading. Commit any layer-name input with Enter first.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Actually reload this same browser page/context, using the supported reload operation or Control+R. Merely reopening the current Projects row is not a reload. If reload or required observations are unavailable, keep that checkpoint Blocked.",
+          "structured": false
+        },
+        {
+          "type": "action",
+          "description": "Reopen the saved project",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "Select frame 1 explicitly: require its 100 ms hold, original Base Layer and original red mark. Then select frame 2 explicitly: require its 200 ms hold, BOTH Base Layer and Blue Mark, with the actual blue mark on Blue Mark. Compare each frame with its own original layer identities/names; do not search frame 1 for a layer created only in frame 2. Persistent Undo is not required.",
+          "structured": false
+        },
+        {
+          "type": "assertion",
+          "description": "Verify each frame retains its own exact marked pixels and transparency after reloading, using rendered/raster observations or independently decoded exports.",
+          "structured": false
+        }
+      ],
+      "scope": "Execution/precondition clarification; original verdict retained. Independent matching UI/pixel/file journeys passed in Chromium, Firefox and WebKit. No new product defect or cloud rerun pass claimed."
+    }
+  ]
+}

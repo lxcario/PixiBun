@@ -113,6 +113,12 @@ PixiBun is licensed under the [MIT License](LICENSE).
 
 Current engineering verification and remaining release checks are recorded in the [current status](docs/current-status.md).
 
+### Current Season 4 status — 19 October 2026
+
+The repository is public. Free-plan GitHub CI now executes: a manual retry of a matched PR #6 deployment produced **32 Passed /13 Failed /76 Blocked**. A later fixing push, `a5caa2cb`, automatically started a [fresh GitHub App run](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/145919a4-44b9-4e5c-b34e-975c9fe39c86), with recorded navigation reaching its preview and a real pending required check. That run remains in progress at this observation; a completed passing automatic loop is still required. Production remains on older `main` pending a qualified release.
+
+The [evidence guide](docs/testsprite/evidence-guide.md) links three genuine TestSprite-led product findings and their source-labelled repairs. The [19 October register](docs/testsprite/pr6-triage-2026-10-19.md) and [automatic follow-up](docs/testsprite/automatic-followup-2026-10-19.json) separate original App failures, clarified test execution and independent pixel/file checks. Eight strict manual cloud companions support the evidence; they do not replace the required App result. Linux MP4/color qualification and shared fixture access remain open. Original failures are retained, and merge protection stays enforced.
+
 ### Season 4 verification — 17 October 2026
 
 Our TestSprite 3.0 portal project spans the Studio, drawing and selections, layers, frames and timing, colors and palettes, themes, lighting, Labs motion, lessons, saving/recovery, accessibility and all 14 export destinations. The same account connects the GitHub App. After opening, we authored 97 detailed scenarios and generated/ran them in the portal. The [first expanded run](https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/0f149888-7b3a-4f54-b5f4-319c09943f86) finished **34 Passed, 13 Failed and 50 Blocked** (workspace access may be required). These are provider verdicts, not certification that every planned assertion executed.
@@ -121,6 +127,6 @@ The 18-case preparation run finished with **10 Passed, 1 Failed and 7 Blocked**.
 
 Investigating the expanded Normal Chisel result led to a separately reproduced product defect: toolbar selection could paint normal-map colors onto an ordinary color layer. [PR #5](https://github.com/lxcario/PixiBun/pull/5) adds the missing layer guard with exact native RGBA/history regressions. Its local six-stage gate passed, including 2,626 tests and a production build; preview/cloud verification and merge remain separate.
 
-[PR #4](https://github.com/lxcario/PixiBun/pull/4) and PR #5 automatically matched their Vercel deployment events, but TestSprite reported **“GitHub CI runs not on the Free plan. No tests were run.”** Human support confirms a Free-plan CI rollout is in development and says no upgrade is needed. Actual PR activity still shows the entitlement block. GitHub now requires TestSprite V3 and validate on main, with bypass disabled. The automatic testing loop remains incomplete until an actual latest-commit suite executes and its assertions are audited. Native repository tests and TestSprite evidence are reported separately.
+At the 17 October observation, [PR #4](https://github.com/lxcario/PixiBun/pull/4) and PR #5 automatically matched their Vercel deployment events, but TestSprite reported **“GitHub CI runs not on the Free plan. No tests were run.”** Human support confirmed a planned Free-plan rollout without an upgrade. That historical billing block was cleared by the 19 October executions above. GitHub requires TestSprite V3 and validate on main, with bypass disabled. Native repository tests and TestSprite evidence are reported separately.
 
 Application source is MIT-licensed. The bundled fonts retain their [SIL Open Font License and copyright notices](src/app/fonts/OFL.txt).

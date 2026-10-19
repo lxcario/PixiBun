@@ -8,6 +8,7 @@ on:
       - 'playwright.production.config.ts'
       - 'src/lib/export/**'
       - 'src/components/modals/export/**'
+      - 'scripts/diagnoseMp4Colour.mjs'
       - 'tests/production/animatedExportIntegrity.spec.ts'
       - 'tests/production/lightSweep.spec.ts'
       - 'tests/production/offlinePanels.spec.ts'
@@ -38,12 +39,18 @@ jobs:
           npm run build
           node scripts/checkProductionBuild.mjs --seal artifacts/native-codecs/frozen-build.json
       - name: Actual downloads, native codec refusal and offline panels in three engines
+        id: browser-tests
         run: |
           set -o pipefail
           PLAYWRIGHT_JSON_OUTPUT_FILE=artifacts/native-codecs/results.json npm run test:e2e:production -- animatedExportIntegrity lightSweep offlinePanels --workers=1 --retries=0 --reporter=list,json 2>&1 | tee artifacts/native-codecs/run.log
       - name: Verify the build remained frozen
         if: always()
         run: node scripts/checkProductionBuild.mjs --verify artifacts/native-codecs/frozen-build.json --receipt artifacts/native-codecs/build-after.json
+      - name: Retain color diagnostics after a failed codec assertion
+        if: ${{ failure() && steps.browser-tests.outcome == 'failure' }}
+        run: |
+          sudo apt-get install -y ffmpeg
+          node scripts/diagnoseMp4Colour.mjs artifacts/native-codecs/results.json artifacts/native-codecs/color-diagnostics
       - name: Index the original evidence
         if: always()
         run: node scripts/indexVerificationEvidence.mjs --source artifacts/native-codecs --source test-results --output artifacts/native-codecs-index.json

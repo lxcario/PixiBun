@@ -51,16 +51,20 @@ test('actual GIF download preserves every moving pose, transparent clearing and 
   await expect(dialog).toBeHidden(); expect(await pixels(page)).toEqual(frames[1]);
 });
 test('actual MP4 is playable with both painted poses, or its unsupported platform is explicitly refused', async ({ page, browser, browserName }, info) => {
-  // Independent native context: a desktop device preset must not disguise Linux
-  // WebKit as macOS and thereby bypass the app's platform-specific codec guard.
-  // Explicitly clear any runner defaults inherited by browser.newContext().
+  // Retain the unmodified launcher identity separately: Playwright itself uses
+  // a macOS UA for Linux WebKit. The tested context must identify its real host
+  // so it exercises the product's existing Linux refusal rather than freezing.
   const nativeContext = await browser.newContext({ userAgent: undefined });
   try {
     const nativePage = await nativeContext.newPage();
-    const nativeUserAgent = await nativePage.evaluate(() => navigator.userAgent);
+    const unmodifiedContextUserAgent = await nativePage.evaluate(() => navigator.userAgent);
     const testedUserAgent = await page.evaluate(() => navigator.userAgent);
-    await info.attach('actual-browser-platform.json', { body: Buffer.from(JSON.stringify({ browserName, hostPlatform: process.platform, nativeUserAgent, testedUserAgent })), contentType: 'application/json' });
-    expect(testedUserAgent).toBe(nativeUserAgent);
+    await info.attach('actual-browser-platform.json', { body: Buffer.from(JSON.stringify({ browserName, hostPlatform: process.platform, unmodifiedContextUserAgent, testedUserAgent })), contentType: 'application/json' });
+    if (browserName === 'webkit' && process.platform === 'linux') {
+      expect(testedUserAgent).toMatch(/X11; Linux x86_64/);
+      expect(testedUserAgent).not.toContain('Macintosh');
+      expect(testedUserAgent.match(/Version\/[\d.]+/)?.[0]).toBe(unmodifiedContextUserAgent.match(/Version\/[\d.]+/)?.[0]);
+    } else expect(testedUserAgent).toBe(unmodifiedContextUserAgent);
   } finally { await nativeContext.close(); }
   const frames = await fixture(page, true); await page.getByTestId('export-button').click(); await page.getByTestId('export-tab-mp4').click();
   const dialog = page.getByRole('dialog'); await dialog.getByRole('button', { name: '1x', exact: true }).click();
