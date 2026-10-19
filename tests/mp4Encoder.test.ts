@@ -198,14 +198,25 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
       async flush() {}
       close() {}
     });
-    vi.stubGlobal('VideoFrame', class { close() {} });
-    const blob = await exportAnimationToMp4Async([createMockCanvas(32, 32)], { loopCount: 1, durationsMs: [100] });
+    const frames: { bytes: number[]; init: unknown }[] = [];
+    vi.stubGlobal('VideoFrame', class {
+      constructor(bytes: Uint8Array, init: unknown) { frames.push({ bytes: [...bytes], init }); }
+      close() {}
+    });
+    mockCtx.getImageData.mockImplementationOnce(() => ({ width: 32, height: 32, data: Uint8ClampedArray.from(Array.from({ length: 1024 }, () => [255, 0, 0, 255]).flat()) }));
+    const blob = await exportAnimationToMp4Async([createMockCanvas(32, 32)], { scale: 1, loopCount: 1, durationsMs: [100] });
     const bytes = Buffer.from(await blob.arrayBuffer()), position = bytes.indexOf(Buffer.from('avcC'));
     expect(position).toBeGreaterThan(0);
     const size = bytes.readUInt32BE(position - 4);
     expect(bytes.subarray(position + 4, position - 4 + size).toString('hex')).toBe('0142c01fffe100146742c01fd9096840000003004007a12003c60c9201000468cb8cb2');
     const media = bytes.indexOf(Buffer.from('mdat'));
     expect(bytes.subarray(media + 4)).toEqual(Buffer.from(sample));
+    expect(frames).toHaveLength(1);
+    expect(frames[0].bytes).toEqual([...new Array(1024).fill(63), ...new Array(256).fill(102), ...new Array(256).fill(240)]);
+    expect(frames[0].init).toMatchObject({ format: 'I420', codedWidth: 32, codedHeight: 32, colorSpace: { primaries: 'bt709', transfer: 'iec61966-2-1', matrix: 'bt709', fullRange: false } });
+    const colr = bytes.indexOf(Buffer.from('colr'));
+    expect(colr).toBeGreaterThan(0);
+    expect(bytes.subarray(colr + 4, colr + 15).toString('hex')).toBe('6e636c780001000d000100');
     expect(MockMediaRecorderInstance.lastInstance).toBeNull();
   });
 

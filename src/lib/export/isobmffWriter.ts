@@ -167,6 +167,7 @@ export interface Mp4MuxerTrack {
   timescale?: number; // default: 1000
   avcCData: Uint8Array; // Raw AVCDecoderConfigurationRecord
   samples: Mp4MuxerSample[];
+  color?: { primaries: number; transfer: number; matrix: number; fullRange: boolean };
 }
 
 /**
@@ -182,6 +183,8 @@ export function muxToMp4Blob(track: Mp4MuxerTrack): Blob {
   if (!track.avcCData || track.avcCData.length === 0) {
     throw new Error('[muxToMp4Blob] Missing AVC configuration record (avcCData)');
   }
+  if (track.color && (![track.color.primaries, track.color.transfer, track.color.matrix].every(v => Number.isInteger(v) && v >= 0 && v <= 65535)
+    || typeof track.color.fullRange !== 'boolean')) throw new RangeError('Invalid MP4 color description.');
 
   const timescale = track.timescale ?? 1000;
   const totalDuration = track.samples.reduce((acc, s) => acc + s.durationMs, 0);
@@ -312,6 +315,11 @@ export function muxToMp4Blob(track: Mp4MuxerTrack): Blob {
                 // avcC: AVC Configuration Box
                 moovWriter.box('avcC', () => {
                   moovWriter.bytes(track.avcCData);
+                });
+                if (track.color) moovWriter.box('colr', () => {
+                  moovWriter.str('nclx');
+                  moovWriter.u16(track.color!.primaries); moovWriter.u16(track.color!.transfer); moovWriter.u16(track.color!.matrix);
+                  moovWriter.u8(track.color!.fullRange ? 0x80 : 0);
                 });
               });
             });

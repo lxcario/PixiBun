@@ -19,6 +19,7 @@ import { awaitVideoOperation } from './videoOperation';
 import { avcCFromEncodedSample, muxToMp4Blob, Mp4MuxerSample } from './isobmffWriter';
 import { validateExportGeometry } from './exportGeometryValidation';
 import { withExportMemory } from './exportMemory';
+import { I420_COLOR_SPACE, rgbaToI420Bt709 } from './i420Color';
 
 export interface Mp4ExportOptions {
   fps?: number; // Target video frame rate (default: 30)
@@ -37,7 +38,7 @@ interface WebCodecsWindow extends Window {
     flush: () => Promise<void>;
     close: () => void;
   }; };
-  VideoFrame?: new (source: CanvasImageSource, init: { timestamp: number; duration: number }) => { close: () => void };
+  VideoFrame?: new (source: Uint8Array<ArrayBuffer>, init: { timestamp: number; duration: number; format: 'I420'; codedWidth: number; codedHeight: number; colorSpace: typeof I420_COLOR_SPACE }) => { close: () => void };
 }
 
 /**
@@ -99,9 +100,8 @@ function trialEncode(config: { width: number; height: number; framerate: number 
     let frame: { close: () => void } | undefined;
     try {
       encoder.configure(config);
-      const canvas = document.createElement('canvas');
-      canvas.width = config.width; canvas.height = config.height;
-      frame = new Frame(canvas, { timestamp: 0, duration: 33_333 });
+      const planes = rgbaToI420Bt709(new Uint8ClampedArray(config.width * config.height * 4), config.width, config.height);
+      frame = new Frame(planes, { timestamp: 0, duration: 33_333, format: 'I420', codedWidth: config.width, codedHeight: config.height, colorSpace: I420_COLOR_SPACE });
       encoder.encode(frame, { keyFrame: true });
       frame.close(); frame = undefined;
       await awaitVideoOperation(encoder.flush());
@@ -209,9 +209,11 @@ async function exportAnimationWithWebCodecsAsync(
         ctx.clearRect(0, 0, width, height);
         ctx.drawImage(frameCanvases[f], 0, 0, drawWidth, drawHeight);
 
-        const videoFrame = new VideoFrameClass(exportCanvas, {
+        const planes = rgbaToI420Bt709(ctx.getImageData(0, 0, width, height).data, width, height);
+        const videoFrame = new VideoFrameClass(planes, {
           timestamp: currentTimestampUs,
           duration: durationUs,
+          format: 'I420', codedWidth: width, codedHeight: height, colorSpace: I420_COLOR_SPACE,
         });
 
         const isKey = loop === 0 && f === 0;
@@ -243,6 +245,7 @@ async function exportAnimationWithWebCodecsAsync(
       timescale: 1000,
       avcCData,
       samples,
+      color: { primaries: 1, transfer: 13, matrix: 1, fullRange: false },
     });
   } finally {
     try { encoder.close(); } catch { /* A failed encoder may already be closed. */ }
@@ -257,7 +260,13 @@ async function exportAnimationWithWebCodecsAsync(
  * @returns Promise resolving to an MP4 video Blob (MIME type: 'video/mp4')
  */
 export async function exportAnimationToMp4Async(...args: Parameters<typeof encodeMp4>): Promise<Blob> {
-  return withExportMemory(args[0], Math.max(1, Math.min(16, args[1]?.scale ?? 4)), () => encodeMp4(...args), undefined, 'MP4');
+  const scale = Math.max(1, Math.min(16, args[1]?.scale ?? 4)), frame = args[0]?.[0];
+  // Conversion scratch is reused one frame at a time. Reserve an additional
+  // RGBA-sized workspace, including even padding, alongside the existing
+  // aggregate source/scaled/codec estimate; do not multiply it by every cel.
+  const width = frame ? (frame.width * scale + 1) & ~1 : 0;
+  const height = frame ? (frame.height * scale + 1) & ~1 : 0;
+  return withExportMemory(args[0], scale, () => encodeMp4(...args), undefined, 'MP4', width * height * 4);
 }
 
 async function encodeMp4(

@@ -78,6 +78,17 @@ describe('Atomic storage version admission', () => {
 });
 
 describe('Combined memory admission', () => {
+  it('reserves one conversion workspace for a 60-cel Light Sweep without raising the shared limit', async () => {
+    const cel = { width: 270, height: 480 } as HTMLCanvasElement;
+    await withExportMemory(Array.from({ length: 60 }, () => cel), 2, async () => {
+      expect(getMemoryBudgetUsage().reservedBytes).toBe(406_425_600);
+      expect(getMemoryBudgetUsage().limitBytes).toBe(512 * 1024 * 1024);
+    }, undefined, 'MP4', 540 * 960 * 4);
+    expect(getMemoryBudgetUsage().reservedBytes).toBe(0);
+    const work = vi.fn();
+    await expect(withExportMemory([cel], 2, work, undefined, 'MP4', -1)).rejects.toThrow(/Invalid export workspace/);
+    expect(work).not.toHaveBeenCalled();
+  });
   it('counts live rasters, history including baseline, replicas and simultaneous reservations', () => {
     registerMemoryUsage('rasters', () => 200 * 1024 * 1024);
     registerMemoryUsage('history', () => 100 * 1024 * 1024);
