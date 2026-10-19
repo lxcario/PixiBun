@@ -78,3 +78,38 @@ test('save and reload preserve each frame’s own layers rather than copying fra
   expect(readNativePng(Buffer.from(blue!.pngBase64!, 'base64')).data).toEqual(second);
   expect(readNativePng(Buffer.from(project.frames[0].layers[0].pngBase64!, 'base64')).data).toEqual(first);
 });
+
+test('PNG scale admission distinguishes a safe 512px output from a refused 16384px output without changing artwork', async ({ page }) => {
+  const original = await openBun(page);
+  let downloads = 0; page.on('download', () => downloads++);
+  await page.getByTestId('export-button').click();
+  const panel = page.getByRole('dialog');
+  await panel.getByRole('button', { name: '32x', exact: true }).click();
+  await expect(panel).toContainText('512 × 512 px');
+  await expect(panel.getByText('Canvas Safety Limit:', { exact: true })).toHaveCount(0);
+  await panel.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect.poll(() => pixels(page)).toEqual(original);
+
+  await page.getByTestId('file-menu-button').click(); await page.getByTestId('resize-canvas-button').click();
+  const resize = page.getByRole('dialog', { name: 'Resize Canvas & Frame Bounds' });
+  await resize.getByRole('spinbutton').first().fill('512');
+  await expect(resize.getByRole('spinbutton').nth(1)).toHaveValue('512');
+  await resize.getByRole('button', { name: 'Apply Resize', exact: true }).click();
+  const canvas = page.getByTestId('main-composite-canvas');
+  await expect(canvas).toHaveAttribute('width', '512'); await expect(canvas).toHaveAttribute('height', '512');
+  const digest = () => canvas.evaluate(async (c: HTMLCanvasElement) => {
+    const rgba = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+    return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', rgba)), b => b.toString(16).padStart(2, '0')).join('');
+  });
+  const before = await digest();
+  await page.getByTestId('export-button').click();
+  await expect(panel.getByRole('button', { name: '32x', exact: true })).toBeDisabled();
+  await expect(panel.getByRole('button', { name: '32x', exact: true })).toHaveAttribute('title', /16384×16384px/);
+  await expect(panel.getByRole('button', { name: '16x', exact: true })).toBeDisabled();
+  await expect(panel.getByRole('button', { name: '8x', exact: true })).toBeEnabled();
+  await expect(panel.getByText('Canvas Safety Limit:', { exact: true })).toBeVisible();
+  await panel.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect.poll(digest).toBe(before); await expect(canvas).toHaveAttribute('width', '512');
+  await expect(frame(page, 0)).toHaveAttribute('aria-current', 'true');
+  expect(downloads).toBe(0);
+});

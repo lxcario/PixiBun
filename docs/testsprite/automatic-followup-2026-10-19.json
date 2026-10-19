@@ -4,15 +4,15 @@
   "executionId": "145919a4-44b9-4e5c-b34e-975c9fe39c86",
   "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/145919a4-44b9-4e5c-b34e-975c9fe39c86",
   "source": "automatic GitHub App after the a5caa2cb Vercel ready event",
-  "observedAt": "2026-10-19T14:56:14.388Z",
-  "terminal": false,
+  "observedAt": "2026-10-19T20:49:10.145Z",
+  "terminal": true,
   "interimCounts": {
     "passed": 19,
     "failed": 3,
     "blocked": 39,
     "queuedOrRunning": 60
   },
-  "cohortCaveat": "Interim observation, not a completed App result. The API legacy running field includes queued cases. Original run IDs/verdicts remain retained. A passing manual/local reproduction never changes its App verdict.",
+  "cohortCaveat": "Completed automatic GitHub App cohort. The earlier interim counts below remain historical. Original verdicts are retained; separate manual/local reproductions do not replace them. Preview manifest identifies the candidate, but not every case independently reads its full SHA.",
   "localQualifications": [
     {
       "path": "artifacts/s4-remediation/a5caa2cb-local/browser-results.json",
@@ -48,6 +48,19 @@
         "startTime": "2026-10-19T14:59:19.600Z",
         "duration": 64987.411,
         "expected": 9,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "artifacts/s4-remediation/a5caa2cb-local/scale-boundary-results.json",
+      "sha256": "e11c8b1b79f17d4b45259eaf45e089b7a218b6b7d2af2d7bfb61d74642b996bb",
+      "scope": "Safe/unsafe PNG scale boundary; three Windows engines; independent native RGBA hash; no download. Compiled application remains a5caa2cb.",
+      "stats": {
+        "startTime": "2026-10-19T20:50:39.939Z",
+        "duration": 72461.289,
+        "expected": 3,
         "skipped": 0,
         "unexpected": 0,
         "flaky": 0
@@ -443,6 +456,971 @@
         }
       ],
       "scope": "Execution/precondition clarification; original verdict retained. Independent matching UI/pixel/file journeys passed in Chromium, Firefox and WebKit. No new product defect or cloud rerun pass claimed."
+    },
+    {
+      "testId": "dcf76735-5c13-437a-8f98-45fb2ff95a19",
+      "name": "S4-EXPORT-12 — Unsafe scale is refused kindly.",
+      "runId": "285f8f41-754d-4cfd-a8db-152d7eb8f50e",
+      "originalStatus": "failed",
+      "before": [
+        {
+          "type": "action",
+          "description": "Navigate to /studio?template=bun on the selected TestSprite environment, at a supported desktop viewport unless this case explicitly tests Pocket."
+        },
+        {
+          "type": "action",
+          "description": "Dismiss first-run welcome with Skip setup if it appears; otherwise continue without inventing a welcome step."
+        },
+        {
+          "type": "action",
+          "description": "Open PNG export for a safely created canvas whose highest scale exceeds admission, without allocating a giant output."
+        },
+        {
+          "type": "assertion",
+          "description": "Unsafe scale choices are disabled or clearly refused before allocation; the page remains usable."
+        },
+        {
+          "type": "action",
+          "description": "Cancel export."
+        },
+        {
+          "type": "assertion",
+          "description": "No file is downloaded and project artwork/history remain unchanged."
+        }
+      ],
+      "after": [
+        {
+          "type": "action",
+          "description": "Navigate to /studio?template=bun on the selected TestSprite environment, at a supported desktop viewport unless this case explicitly tests Pocket."
+        },
+        {
+          "type": "action",
+          "description": "Dismiss first-run welcome with Skip setup if it appears; otherwise continue without inventing a welcome step. Wait for starter admission/restoration and retain its real artwork baseline before editing."
+        },
+        {
+          "type": "action",
+          "description": "Use an explicit two-size boundary fixture through real controls. First open PNG export on the admitted 16×16 Bun, select 32x and verify 512×512 is enabled with no safety-limit refusal: that output is safe. Cancel. Then use File → Canvas size… (Resize Canvas & Frame Bounds), retain Lock Aspect Ratio and no resampling, set Width to 512 and Apply Resize. Verify the actual canvas is 512×512 and still contains the artwork. Retain an independent native RGBA baseline and frame/layer/hold/history observations for THIS resized project. Open PNG export again. Never allocate or download a giant image. If real resize or independent observations are unavailable, keep that scope Blocked rather than substituting the safe small fixture."
+        },
+        {
+          "type": "assertion",
+          "description": "On the 512×512 canvas, 32x would produce 16384×16384 and 16x would produce 8192×8192: both choices must be disabled/refused before allocation. The 8x choice (4096×4096) remains enabled, and Canvas Safety Limit explains the ceiling. The page stays usable. A safe 512×512 output is not evidence of admission failure."
+        },
+        {
+          "type": "action",
+          "description": "Cancel export."
+        },
+        {
+          "type": "assertion",
+          "description": "No file is downloaded and project artwork/history remain unchanged. Compare with the resized-project baseline, not the original 16×16 dimensions. Require exact native RGBA preservation; a product readout alone cannot replace that independent oracle. Do not invent successful file/pixel observations when the runner cannot obtain them."
+        }
+      ],
+      "assessment": "Test fixture clarification, not a new product bug. Original Failed verdict retained; no cloud rerun claimed."
     }
-  ]
+  ],
+  "firstObservedAt": "2026-10-19T14:56:14.388Z",
+  "finalCounts": {
+    "passed": 33,
+    "blocked": 78,
+    "failed": 10
+  },
+  "terminalSnapshot": {
+    "path": "artifacts/s4-remediation/app-a5-2026-10-19T20-49-10.145Z/snapshot.json",
+    "sha256": "8875b9c3018c0f26753eb8c7cfe89a4a22387da81f25d6d9a2c16739cd61b664"
+  },
+  "finalCases": [
+    {
+      "testId": "421a951f-7f1a-42de-8f0a-1070b479fea3",
+      "name": "Cancel a lighting adjustment without changing pixels",
+      "runId": "f8ebbd7c-7142-4cf9-8d8c-ea5b50d6d412",
+      "status": "passed"
+    },
+    {
+      "testId": "64210b64-e030-4fda-856e-1956e73e6928",
+      "name": "Create two frames with distinct artwork and timing",
+      "runId": "313363e4-cfd5-4c13-9ce5-68c91eaa9980",
+      "status": "passed"
+    },
+    {
+      "testId": "f9fbb1e0-03fb-4d5a-90a0-4ab44ccfa8a6",
+      "name": "Draw on an unlocked layer, lock it, and verify drawing is blocked until unlocked",
+      "runId": "cc6df108-ae5a-4925-a6e1-1035494c6da7",
+      "status": "blocked",
+      "reportSha256": "f2b45ff837357012916e43ab902c033aecd57e15536a8e15d74ef3a681584357"
+    },
+    {
+      "testId": "d2dcb17d-7df0-40ad-ba4a-078e2b661065",
+      "name": "Enter shortcut characters while editing text without switching tools",
+      "runId": "3e0bab9f-0cb5-427c-9d05-f968fe6a8fd4",
+      "status": "passed"
+    },
+    {
+      "testId": "0aa9fcd9-0c73-4973-a819-e6891b25d1cd",
+      "name": "Erase part of a drawing and undo the erase",
+      "runId": "63b95169-87d1-4e76-8508-3666ec600c55",
+      "status": "blocked",
+      "reportSha256": "67454d477dfb7dbff1dde5acd8eb647a8bd162228864f2ecdc439d472810967b"
+    },
+    {
+      "testId": "a6c571af-6e7d-4a40-bbdf-2d0f196bd9be",
+      "name": "Draw distinct pixels, then undo and redo",
+      "runId": "e2c59758-ef05-45a3-bafa-9b773968bb69",
+      "status": "blocked",
+      "reportSha256": "e082b92dc4e7ab463d5aa52e139161bf7769f3c5c35a917e0686ea35e967e4cb"
+    },
+    {
+      "testId": "fde7a312-bc33-4d07-bbde-6dd6d7e49972",
+      "name": "EXP-003 — Paint a little heart, light it, and bring it back.",
+      "runId": "63f0d13b-83b5-4384-8eab-4e097980d87e",
+      "status": "blocked",
+      "reportSha256": "49b7463d589cd56e57d0a199b07cf341f42a6d641e4b996ea4e06c59d7fbc690"
+    },
+    {
+      "testId": "2c762ddc-9921-415d-bc62-0f49b0b4a30d",
+      "name": "Export a two-frame animation as GIF with distinct frame content",
+      "runId": "7cc2fb87-8e50-4cb1-a3e1-db99f0b0636e",
+      "status": "blocked",
+      "reportSha256": "a01e0ba7ef29e8992c37e520b4f468fa4f58a2bce826c2e70674fde660de06ea"
+    },
+    {
+      "testId": "9300184d-ab5e-4851-ac8f-58fe8b364e8b",
+      "name": "Keep practice in Studio from Playground",
+      "runId": "0f792686-9183-4191-8897-8b80d700207b",
+      "status": "passed"
+    },
+    {
+      "testId": "8ba9f1eb-92b7-4d26-bf19-2ce9e9b92273",
+      "name": "Export the current drawing as PNG and verify the decoded image matches",
+      "runId": "7c3eba4f-b84d-41f4-a529-e6da917a9ae4",
+      "status": "blocked",
+      "reportSha256": "39a23834ec172f80a8a03de0c7fff31f9331fbd046dc8dbe3203375213e63fac"
+    },
+    {
+      "testId": "dd5ae5f3-02e6-47a9-8b8c-fb05a96b25c9",
+      "name": "Export an editable backup and reopen it through the supported import flow",
+      "runId": "005400ed-3703-4464-85d4-8298213e052f",
+      "status": "blocked",
+      "reportSha256": "a26258915b68a7f905e47fb62f1a1f5b244f089610045fe69a65d9959314afce"
+    },
+    {
+      "testId": "99a52012-60cf-4042-a0b3-96a70b39fb63",
+      "name": "Open command palette and select a tool",
+      "runId": "61f60ef9-3df0-4da6-8e49-d19d5a07ea30",
+      "status": "passed"
+    },
+    {
+      "testId": "3028ec4f-6802-43b9-82f4-37f1bb927d69",
+      "name": "Persist desk theme after reloading the studio",
+      "runId": "ad1ecbee-47c7-4175-836d-01d0aa7443fd",
+      "status": "passed"
+    },
+    {
+      "testId": "71cc3067-44fb-4a52-8469-88468e42d1c9",
+      "name": "Reject invalid canvas size before starting a new drawing",
+      "runId": "4a3e1c2f-13c9-4fff-a95d-591ce0658bc3",
+      "status": "passed"
+    },
+    {
+      "testId": "3c65e1d1-03c9-4bf5-92f4-ad82e0f2ba2b",
+      "name": "Return to drawing from Playground",
+      "runId": "c73cfd61-20e3-4bfc-8d03-db4dc8693801",
+      "status": "passed"
+    },
+    {
+      "testId": "e4f6a0ae-6028-4035-9e59-a42ad5a88e46",
+      "name": "Reject or clamp invalid canvas sizes through the real resize controls",
+      "runId": "1f6c9f7e-c859-4885-beea-778cbba5bcf5",
+      "status": "passed"
+    },
+    {
+      "testId": "69f584fe-836d-49a2-b91d-0ad7a857affa",
+      "name": "S4-ANIM-01 — Onion skin is only a guide.",
+      "runId": "e690e582-3979-4bcf-ae95-f24e8becf711",
+      "status": "blocked",
+      "reportSha256": "57e0a4c616d9b2561cdd91682310e48c9c18b8dab2e7668faba8bca0cbdbf0e2"
+    },
+    {
+      "testId": "ac3e0785-bcf6-445d-a2a9-8ccef1464bec",
+      "name": "S4-ANIM-02 — Holds and playback remain editable.",
+      "runId": "707887be-5fd5-4465-b2e9-de8c30b2a9c5",
+      "status": "failed",
+      "reportSha256": "ff9310080626a4113b540dcf587686e993f5a76639b49de2347f3a3991efd16c"
+    },
+    {
+      "testId": "5197eb3b-9b2a-43ca-8371-5fb0ed29d7ae",
+      "name": "S4-ANIM-03 — Clips use inclusive endpoints.",
+      "runId": "5d738ce7-d620-4807-89e0-8bc1f39e8906",
+      "status": "failed",
+      "reportSha256": "353945381d10af0e12767fbc2c7c036c9a7f8abdd9251e50dc47dc780a19b1ae"
+    },
+    {
+      "testId": "e3dedfcc-3074-4425-a274-6b3d9fc81674",
+      "name": "S4-ANIM-04 — Review explains a difference.",
+      "runId": "3d3f7a99-6657-418d-b999-6f87cf9dc75e",
+      "status": "blocked",
+      "reportSha256": "553edb4ffc18ff9a386b6d743186c4129ba1b4f6d707ebaf493868cd1abbd0be"
+    },
+    {
+      "testId": "da6a67a2-4780-4761-98e9-5f9b33e07566",
+      "name": "S4-CART-02 — A broken postcard is not a lost drawing.",
+      "runId": "69b0253e-1c97-437f-99ff-b1aa281458bc",
+      "status": "blocked",
+      "reportSha256": "809a7b6fbde0035a247d715e1f0fd29bbeb81cc432f450f3537d45239334d642"
+    },
+    {
+      "testId": "1165bc74-c877-4d9f-a3ad-ad58dd3f6729",
+      "name": "S4-CART-01 — A living postcard brings the drawing back.",
+      "runId": "544f9d39-d9b9-4080-a1f3-fb169f8d869e",
+      "status": "blocked",
+      "reportSha256": "cecf719f188c69789056b3f1dd8f8a24cffaa6fa1318e4ffb3df380368b2f361"
+    },
+    {
+      "testId": "6b85de97-1585-4bda-a830-b9b23fb83901",
+      "name": "S4-DRAW-01 — Pen and erase return exact pixels.",
+      "runId": "27492a6e-ea15-4991-a5b3-9c5baa8238f3",
+      "status": "blocked",
+      "reportSha256": "64976b3414a8c26c96e1010f3f2b6805d4c80c379cc3b59b35e12bdcb138860a"
+    },
+    {
+      "testId": "61070835-b7f7-480e-9506-352f6c13b36f",
+      "name": "S4-DRAW-02 — The curve can be reconsidered.",
+      "runId": "652a22d0-906c-49ae-8a4a-9cd2fd397bd2",
+      "status": "blocked",
+      "reportSha256": "b91208264992f07b95ff70d4cbc096628743cdf3796a48f9d94df90a29dfde48"
+    },
+    {
+      "testId": "7e243cd0-2e2f-45e2-a6ae-a2c9e6c0c2c6",
+      "name": "S4-DRAW-03 — A bucket respects its boundary.",
+      "runId": "b0a2e1f0-6b31-42a2-8963-2dfa2cc9c5bd",
+      "status": "blocked",
+      "reportSha256": "81ed9de4710db6375c4603c389c0209cbfbcd17b87dffa6e674cc307c2f0aa0f"
+    },
+    {
+      "testId": "07d954a4-7605-43c9-af85-207d06a8b18a",
+      "name": "S4-DRAW-04 — A gradient stays in its selection.",
+      "runId": "9d7c60d9-7fa5-41cd-a152-a2a7af337944",
+      "status": "blocked",
+      "reportSha256": "0f5620ff4d6d3d6043729abf8cc23506c103bcb3a8f65840c08871ae3a8efd11"
+    },
+    {
+      "testId": "5185d7a0-c55b-4bd4-bdac-87ccd1daef0b",
+      "name": "S4-DRAW-05 — Dither uses both chosen colors.",
+      "runId": "9dd3fe32-3efd-4f51-a060-a7a0e9722361",
+      "status": "blocked",
+      "reportSha256": "b4c7bc93b975590d1e2c3efbd20c1184e110c0b9c9c92999c5f84cb30f3b79ed"
+    },
+    {
+      "testId": "5ccfecc6-b4bc-4017-9184-6e76f51b4e98",
+      "name": "S4-DRAW-06 — Replace only the requested color.",
+      "runId": "576174af-bcb0-4286-b6a2-9aa9856f322e",
+      "status": "blocked",
+      "reportSha256": "c9dcbf0bc5f9f871689d70d53edc656c7c82c4149ab1fc390b500db0f1bb766b"
+    },
+    {
+      "testId": "c84e8e84-b8ea-48a9-9a45-cbdcb7304c59",
+      "name": "S4-DRAW-09 — A transformed detail can come back.",
+      "runId": "60a60bdc-d502-42bf-b625-b29d3ff5bf2a",
+      "status": "passed"
+    },
+    {
+      "testId": "8e9da616-47f1-4cd9-ae9a-163ef2190f12",
+      "name": "S4-DRAW-08 — Three ways to select.",
+      "runId": "0a788948-178a-4952-9168-c95cda7376de",
+      "status": "blocked",
+      "reportSha256": "01ff082a52352ae23b55df60aabef9a414321385a198c1fcbeb5f15070748cf3"
+    },
+    {
+      "testId": "bde1ab4b-a6e2-47ae-ab33-00c8ee84c3cf",
+      "name": "S4-DRAW-07 — Erase a family, keep a neighbor.",
+      "runId": "5ebbad95-5c6d-4140-ba2e-d49b69569d09",
+      "status": "blocked",
+      "reportSha256": "0418abeb2c6ea14053ed371581e895c55e638c2068e75318d4bc4b4a5a3556fe"
+    },
+    {
+      "testId": "b14b8600-0dd8-4837-bd4c-59f027f8fa4d",
+      "name": "S4-DRAW-13 — Eyedropper samples the art.",
+      "runId": "27a84eb9-7baf-4425-be2b-a2d6274debae",
+      "status": "passed"
+    },
+    {
+      "testId": "0f7b89d1-67d1-4337-8b4c-ee09195f9c10",
+      "name": "S4-DRAW-10 — Straight and isometric agree with their previews.",
+      "runId": "4cb621af-57a9-464c-bcfb-f3bf77f6ac12",
+      "status": "blocked",
+      "reportSha256": "0097e3b6efb456c364e9c190b041dba87c1486894467d27ad9d3ff27534364da"
+    },
+    {
+      "testId": "dc365ace-40a4-4567-a6c5-7d199b58658c",
+      "name": "S4-DRAW-11 — Rectangles and ellipses keep their promises.",
+      "runId": "9c1d5435-d194-457d-af0b-82ee84e06c39",
+      "status": "blocked",
+      "reportSha256": "baa82e6da008b204f8c47ee2475d7016a08f35535af9e79d542c8038a84d1859"
+    },
+    {
+      "testId": "055924c4-9b9d-4a1f-9215-2685358f3896",
+      "name": "S4-DRAW-12 — A normal is a surface, not paint.",
+      "runId": "f9b5379b-6071-4761-9088-1fb7af3eef0d",
+      "status": "blocked",
+      "reportSha256": "d36c5e48ace8c1fa1dfa285cc527190f14c74b77df6a6ba6e99b39b2aff4bcce"
+    },
+    {
+      "testId": "df2541b1-1b7c-4ea9-a018-d7fe083b5f2a",
+      "name": "S4-DRAW-14 — Seventeen tools have reachable controls.",
+      "runId": "32809af8-8d98-4af2-a98b-bfeb5e4b8f39",
+      "status": "failed",
+      "reportSha256": "b8909e6bee0dc5e778fd8f5645f3ac167671309a9c4cbcd58b3f284029045810"
+    },
+    {
+      "testId": "9d8df519-fd82-44cc-95dd-ba29fec74e73",
+      "name": "S4-EXPORT-02 — A GIF keeps the beat.",
+      "runId": "26b061a0-4f8e-407f-bd62-657910ec5aef",
+      "status": "blocked",
+      "reportSha256": "cc7572d21a80cf14d6d8288fb6df49b500b0a0fcbb1b39fca55dc314259915ca"
+    },
+    {
+      "testId": "1d9dc104-94e9-4eb1-ac2c-406a3003da92",
+      "name": "S4-EXPORT-01 — PNG takes the active pose home.",
+      "runId": "ba65a60d-48f0-43fd-a954-d95c517d4dd5",
+      "status": "blocked",
+      "reportSha256": "6b9cc788d3fe2fd9e70b9b0cbf7c5f292f2df8098559023cfb29330495a1bb9d"
+    },
+    {
+      "testId": "6c9b8100-1170-433a-890b-7477303e6181",
+      "name": "S4-EXPORT-03 — APNG preserves admitted RGBA.",
+      "runId": "3dc73088-a5b6-4a61-9ee0-0f236ab54f55",
+      "status": "blocked",
+      "reportSha256": "1930193a527a6a1ae72210b0ea8c7043c42634a3b9b484b3fccaec4dcf3dc7a6"
+    },
+    {
+      "testId": "1acf9570-11e0-44c8-bdc9-b0bf3c0ab39a",
+      "name": "S4-EXPORT-04 — A sheet and its map agree.",
+      "runId": "66376dba-fcb4-4f0a-b454-1efeddd54ba2",
+      "status": "blocked",
+      "reportSha256": "0c1464da6553a001af26100526c168669dd1487fab07039b067f1360cbf31b94"
+    },
+    {
+      "testId": "87220cbb-74de-4287-8bc4-f5b34179289c",
+      "name": "S4-EXPORT-05 — A Godot kit opens as a bundle.",
+      "runId": "afb9f4be-085b-475d-919e-970b30910347",
+      "status": "blocked",
+      "reportSha256": "36b0bdfba4c8e858ac60c6eb9a4f7d4fe4db3000c39c28c8b1a28d3da80acf46"
+    },
+    {
+      "testId": "064e9c2c-3eef-42a9-a6f6-d6d9ae5db343",
+      "name": "S4-EXPORT-06 — A replay remembers the latest stroke.",
+      "runId": "782aa6f4-a613-4e0e-93a1-8c9ce42636e7",
+      "status": "blocked",
+      "reportSha256": "06002759881d6a9ee9b2eaf8688c2293287209c8582edef22b80a973a5586c84"
+    },
+    {
+      "testId": "df8bdde4-3afe-4f0d-8d06-eecc3a00e058",
+      "name": "S4-EXPORT-07 — SVG explains its approximation.",
+      "runId": "187e41a3-33cd-4934-abdc-e5e97fff6552",
+      "status": "blocked",
+      "reportSha256": "99d190d4b1e823ae2732b262aee72d4384e2ec992cd7b8ef196de5c35d328404"
+    },
+    {
+      "testId": "6e22e00c-53b8-4a8c-b762-0859b83b8702",
+      "name": "S4-EXPORT-08 — Shader code travels with its context.",
+      "runId": "4b3b738f-f4fc-48fa-b5dc-c4cb11bbef22",
+      "status": "blocked",
+      "reportSha256": "45048528057664840765a599790c0e5d31315773cf95290168dd82e10ba04de2"
+    },
+    {
+      "testId": "7113128a-96dd-40fe-8c3d-79608d16fbc4",
+      "name": "S4-EXPORT-09 — Palette motion becomes a loop.",
+      "runId": "9db2682b-f072-44c7-93eb-0e5ff9b3870e",
+      "status": "blocked",
+      "reportSha256": "40b8da52e17f4a5dcc9b664743489e5218abe0fdfafff1646d7d1a6501586a39"
+    },
+    {
+      "testId": "f736d94f-04d6-4e9c-9d50-e3f286076e34",
+      "name": "S4-EXPORT-10 — An editable backup really reopens.",
+      "runId": "8c634621-7b5b-4921-bb9e-724e6ddfcc97",
+      "status": "blocked",
+      "reportSha256": "1789148452d3de38e35d7cb7644ccc1c503f77a6de6e22749b94e11c6b23e49f"
+    },
+    {
+      "testId": "1bffe460-3740-40d7-acfc-f59d73cbc55a",
+      "name": "S4-EXPORT-11 — Video reports its real capability.",
+      "runId": "3fd06c13-99df-4626-a50a-e9f8d3481bb9",
+      "status": "blocked",
+      "reportSha256": "9fcb2a0c51251635088b52f85b0b13661cfbcb16fcaf60720fef4ade6c7cd1be"
+    },
+    {
+      "testId": "dcf76735-5c13-437a-8f98-45fb2ff95a19",
+      "name": "S4-EXPORT-12 — Unsafe scale is refused kindly.",
+      "runId": "285f8f41-754d-4cfd-a8db-152d7eb8f50e",
+      "status": "failed",
+      "reportSha256": "54bcbfcd54b57d564ecd89917c4cfb027b0da88da926c177da83da37ebf8b1c1"
+    },
+    {
+      "testId": "76bbe317-2ce3-4643-b8a9-6649e732c91f",
+      "name": "S4-FX-02 — Cancel leaves the lamp unlit.",
+      "runId": "30d3937d-dbf5-4528-a012-127706738225",
+      "status": "passed"
+    },
+    {
+      "testId": "a0974817-fb8c-45ff-94cd-4223f9071a01",
+      "name": "S4-EXPORT-13 — A lighthouse for a pocket-sized drawing.",
+      "runId": "fcf15cd9-7a7d-458f-981f-a78d93536769",
+      "status": "blocked",
+      "reportSha256": "d1869f5dc9e97d2465cc323e76df7f937471c8dcf2846c8d199478774e1205e0"
+    },
+    {
+      "testId": "ab425882-1179-4999-a003-1b0e0f434388",
+      "name": "S4-FX-01 — The Lamp can be put back.",
+      "runId": "c790925f-76ff-448c-85ee-ba923f076518",
+      "status": "blocked",
+      "reportSha256": "a11187972fda63ff3b576e46484406896d96c563142d5a7c7adc1db8a78cc5c5"
+    },
+    {
+      "testId": "8b27171a-6d28-442e-8df6-b9d50e53c57a",
+      "name": "S4-FX-03 — Quick magic has a way home.",
+      "runId": "c4dfe4bf-08ca-4750-b1d1-204707828af8",
+      "status": "failed",
+      "reportSha256": "c974b20060df599440045b3a34c3d2e2a192782e1b96d0cf9441c312373ea272"
+    },
+    {
+      "testId": "cab0a484-4493-495d-99c0-687662d1ce3d",
+      "name": "S4-FX-04 — One normal exports; two refuse; lighting Cancel preserves layers.",
+      "runId": "aaeb5c37-ffc3-453e-acbc-95e136a43d00",
+      "status": "blocked",
+      "reportSha256": "177d2e6690efb9268c0e236456b17c318b34552084508d1c8d9d626b8aaa2c33"
+    },
+    {
+      "testId": "1c1f254a-e25d-422f-9bc9-62c35f7127e0",
+      "name": "S4-FX-05 — Cleanup keeps protected details.",
+      "runId": "9bdea1fa-7a92-4146-883f-fd5977a32a74",
+      "status": "blocked",
+      "reportSha256": "422306b31601f4001928b79de6c291e909006d93a95f0667af8b79d94c7c7531"
+    },
+    {
+      "testId": "4b519c7e-d4e0-4db7-87d3-d0a8dee71f17",
+      "name": "S4-FX-06 — Tiles agree with their map.",
+      "runId": "c4c65e74-1a68-456a-b256-40602578d643",
+      "status": "blocked",
+      "reportSha256": "a465fb7f7d2b29bfbe00a53b3a826a684ddf00d45603dae0ad29ed4607500d35"
+    },
+    {
+      "testId": "3645e185-6ffd-4ac9-a3ca-f14259d187e9",
+      "name": "S4-HIST-01 — View actions do not steal Undo.",
+      "runId": "b4286e2e-ac0f-49e2-9aea-cff8fa56c3b2",
+      "status": "passed"
+    },
+    {
+      "testId": "86b8b3e8-6a09-471c-a23d-a3319137c078",
+      "name": "S4-HIST-03 — Resize can be cancelled.",
+      "runId": "c8998c2b-c8f1-4403-a9b5-7130beb18e4e",
+      "status": "passed"
+    },
+    {
+      "testId": "fb1facc7-97dd-4f27-a7fe-c80787ee9859",
+      "name": "S4-FX-07 — Variations stay tied to their source.",
+      "runId": "fa11f72a-2bbc-400a-b310-d42edb27abe2",
+      "status": "blocked",
+      "reportSha256": "55254a044040466656a4baf26f556166cc8185c8fc7917e7d82933a18acbed1c"
+    },
+    {
+      "testId": "3795f720-7b78-431f-9764-a388a2f51294",
+      "name": "S4-HIST-04 — Resize bounds are real.",
+      "runId": "8e552bb0-a5c9-457f-85d8-7b766385b5c5",
+      "status": "passed"
+    },
+    {
+      "testId": "6c4c3552-16b8-441f-a51b-9732ae33da1f",
+      "name": "S4-HIST-02 — An empty history stays calm.",
+      "runId": "b0c9d364-39fe-47dd-934d-6732b254c694",
+      "status": "blocked",
+      "reportSha256": "3ead5ad413da68523553b513e7b16e4fc01d33c77000c1415a3e74c18fbb2b9a"
+    },
+    {
+      "testId": "86e87409-b0d0-4575-aca7-881510dca77a",
+      "name": "S4-IMPORT-01 — Image import is explicit.",
+      "runId": "5d67cf84-53e0-41af-b3cf-7728bf7d2718",
+      "status": "blocked",
+      "reportSha256": "82b1a24d34c413863ddf7b29072fd267ee3a6eb25d17c5f537c2a16d92363705"
+    },
+    {
+      "testId": "6054b7b4-74c8-4c69-8285-9b9568558043",
+      "name": "S4-HOME-01 — The bench keeps its own tiny world.",
+      "runId": "456f7959-3e63-4f42-b7fe-8d11aa62c623",
+      "status": "blocked",
+      "reportSha256": "f05229590e9bd9dccca5c656217bcdd22a7154bd80b051987fe53fcac68ea00e"
+    },
+    {
+      "testId": "270fa57f-a5d9-4b0e-aa99-c4158133a420",
+      "name": "S4-IMPORT-02 — A sheet becomes the right poses.",
+      "runId": "a2ebe11a-9881-45d2-aaa4-9fffc2fff719",
+      "status": "blocked",
+      "reportSha256": "3360b94e75293fee6a8943c404e48b9ef9e14baf6226ced4df09d7751606906b"
+    },
+    {
+      "testId": "afc0b83b-d6df-4b48-8341-bb2cf962f3fc",
+      "name": "S4-JOURNEY-01 — A little animation comes safely home.",
+      "runId": "7457aa9a-457b-4a49-b0c7-c1ee449d67e9",
+      "status": "blocked",
+      "reportSha256": "6f77b7140617a6ad22cd7412bcc0a3beb6efbeadb73ef143c0860926eba13f52"
+    },
+    {
+      "testId": "bbb8f684-adbc-43aa-87f0-6a41913bda05",
+      "name": "S4-LAYER-01 — Layer structure is reversible.",
+      "runId": "17002d13-e48a-4f7a-85d8-e153aa379227",
+      "status": "passed"
+    },
+    {
+      "testId": "4efa7cc4-49d7-43a1-887a-0d5148376376",
+      "name": "S4-LEARN-02 — Practice returns to the original.",
+      "runId": "93eaf640-435f-4a8d-aa04-68259724f336",
+      "status": "passed"
+    },
+    {
+      "testId": "fd3da2e3-9a59-46e0-b591-df9d18fe2703",
+      "name": "S4-LAYER-02 — Hidden and locked mean different things.",
+      "runId": "072e1810-6c8c-4cd6-b0b7-48cf8156df04",
+      "status": "blocked",
+      "reportSha256": "54f3becce2ccbeb20fb68473ddd6065995cf593251bf0ad65101e0904ac439a1"
+    },
+    {
+      "testId": "8f4458ff-2a3b-415c-b99c-bc3a0fb42843",
+      "name": "S4-LAYER-03 — Blend and opacity keep their neighbors.",
+      "runId": "6e8e98a6-8d2f-4cb3-bf23-9fab0a2920ad",
+      "status": "blocked",
+      "reportSha256": "1b1c783bd0c597d3207680707d6e810ea21f7abc4be168336aa47303c5057867"
+    },
+    {
+      "testId": "2533dba8-1cfd-47e4-a42f-77e396cb56d0",
+      "name": "S4-LEARN-01 — Every lesson has a first page.",
+      "runId": "8a875090-c811-4d69-bd64-53ecb66a912c",
+      "status": "blocked",
+      "reportSha256": "bb8a0a954c1ab20f81e12ffcd7f496e30569d21c2b1f76d2fd3e46ab37a4fb7a"
+    },
+    {
+      "testId": "4a6bfdd0-5829-4661-ae5a-06f170218af8",
+      "name": "S4-LEARN-03 — Keep means a new project.",
+      "runId": "aed5e900-4304-4a5f-abb4-1b03e57f98ab",
+      "status": "blocked",
+      "reportSha256": "4a7151481fb9c2b77cc7e288475585b1c8f65d1cb6b62fee7eae0eef73cf512f"
+    },
+    {
+      "testId": "b914aaa8-21d5-4906-ab63-6e39bd356301",
+      "name": "S4-LEARN-04 — A coach teaches one pose at a time.",
+      "runId": "fca233ef-aabe-495e-8c42-540bceb680fd",
+      "status": "blocked",
+      "reportSha256": "a0a3eb9e459b145f0e148658a0e41843fb80781519b186cf2c61b6f7f8588f66"
+    },
+    {
+      "testId": "1ab5748d-2918-4ee6-9992-12d01a3cdd1b",
+      "name": "S4-LEARN-05 — The teaching board is an example.",
+      "runId": "3adf8806-fd9e-4a13-99cf-61a8a05a4fcd",
+      "status": "blocked",
+      "reportSha256": "07dac9f2e0d1093f47e75aba693b0509f750cf075852958d055821900baeb892"
+    },
+    {
+      "testId": "161d6301-2b6b-4c53-aa18-b396f848bd60",
+      "name": "S4-LEARN-06 — Pocket has a desk of its own.",
+      "runId": "971b883d-2340-4734-aed3-637810bdf0f1",
+      "status": "blocked",
+      "reportSha256": "f29298c92455d2698ed71d61b654571af5b89e17f4c3228ed5840a2100b5e123"
+    },
+    {
+      "testId": "f06ef9db-6227-43e0-815e-72bf8fd2166a",
+      "name": "S4-MOTION-02 — A saved rig refuses its genuinely changed source after reload.",
+      "runId": "54763754-d5fe-4ccf-9e4d-5aea502f88a7",
+      "status": "blocked",
+      "reportSha256": "213a4242f0aa635e9c2cf177837045c0c81c9fec03e33a3f271bd2a041cca2af"
+    },
+    {
+      "testId": "acc0d53a-3bfd-455f-938a-27c91a99882c",
+      "name": "S4-NEW-01 — A tiny loop keeps its place.",
+      "runId": "ba22b914-e786-400b-af48-c1a9cc7b2b1c",
+      "status": "failed",
+      "reportSha256": "bb3b21e7cc3287a256bed417c28fa6df4fa1863ae4a9c77d82087ba23e401101"
+    },
+    {
+      "testId": "59fc51e1-ce16-4ad1-9ea4-392dcca93fd7",
+      "name": "S4-NEW-02 — Delete, then bring the pose home.",
+      "runId": "1862c3e4-302c-4ebb-a789-7ff3359ce19f",
+      "status": "blocked",
+      "reportSha256": "677d120f8e52cd6552d61c11d79cae5e236663ec82f1710405c12309ee62d535"
+    },
+    {
+      "testId": "e603c521-4772-4767-b258-2ec4e0e6973b",
+      "name": "S4-NEW-03 — The last frame stays.",
+      "runId": "f6958b81-cd6c-470b-a074-2a8b74bcba88",
+      "status": "passed"
+    },
+    {
+      "testId": "4fdbc1b5-3baa-4fc0-bcf9-1d3bdc501e30",
+      "name": "S4-NEW-04 — Earlier and later respect the ends.",
+      "runId": "d8abb82c-42c3-47e5-b1b8-dff803f95ee1",
+      "status": "passed"
+    },
+    {
+      "testId": "4cd53bc1-ed07-4e21-bfe8-0a3566035797",
+      "name": "S4-NEW-06 — A frame menu finds its way back.",
+      "runId": "c5fae699-60cd-47d4-bf88-c696833aaad9",
+      "status": "passed"
+    },
+    {
+      "testId": "e6d22c7e-0756-4ee6-8edd-d8aeb2e8b757",
+      "name": "S4-NEW-05 — Frame keys belong to the focused frame.",
+      "runId": "844211f2-36ac-4344-a665-d8a19902fca9",
+      "status": "blocked",
+      "reportSha256": "e5a58c3efa625aa4b26d4df39c36cee84c7a2a8d96006d99632b3a6c44690d70"
+    },
+    {
+      "testId": "b5cab687-77f4-4ba1-8df6-5def1766b4f4",
+      "name": "S4-MOTION-01 — A rigid part takes two poses.",
+      "runId": "3f82801e-02b8-4f62-b295-f9465d01379e",
+      "status": "failed",
+      "reportSha256": "d3fbb722e4aa6e59d5243377a7bfb179d8cca74d63378e1fde2110a757993285"
+    },
+    {
+      "testId": "f10cb6c5-a9fa-4223-b3b8-45eb48d6481e",
+      "name": "S4-NEW-07 — Animate means add a blank frame.",
+      "runId": "5c45fde0-ff4f-4bba-986f-90b76e0d6038",
+      "status": "blocked",
+      "reportSha256": "090766479eb166efde3ded542cda96a2258b85e31fa73f9b8dae943a5733dd28"
+    },
+    {
+      "testId": "e871e984-5663-481a-a4f7-4797c95faab5",
+      "name": "S4-NEW-09 — Two paint pots, no surprises.",
+      "runId": "1821f8d7-a3cc-456f-bc22-d710f8328761",
+      "status": "passed"
+    },
+    {
+      "testId": "fd0f5e17-76da-47d0-942b-ddd752997e9c",
+      "name": "S4-NEW-08 — The timeline fits the desk.",
+      "runId": "0aa1c823-514a-49de-bf06-88aa0eb8202d",
+      "status": "blocked",
+      "reportSha256": "2711d93bcf3a0881f0feea9c09ccfbb4dec12bdd6693fc311466072127b2cb17"
+    },
+    {
+      "testId": "a3ffdffc-17ef-43b3-8df8-feeebb00d513",
+      "name": "S4-NEW-10 — A typo stays in the paint pot.",
+      "runId": "004d27f6-2ee7-4c97-8e42-698a2c2bc5e2",
+      "status": "passed"
+    },
+    {
+      "testId": "53f05468-e8ac-46de-941b-353e4ab51b6f",
+      "name": "S4-NEW-13 — Recent colors remember settled choices.",
+      "runId": "b60ebaa1-73a6-415e-a7a5-c984892e1234",
+      "status": "passed"
+    },
+    {
+      "testId": "48fad655-2a7c-49e7-9bb8-c58f74e0f5eb",
+      "name": "S4-NEW-12 — Colors by keyboard.",
+      "runId": "89df3b6d-c004-4c1d-8b16-9a53438abb17",
+      "status": "blocked",
+      "reportSha256": "6c50387ea98682bfb2bc912888c3b1a6fcb125698990aad18adc76dfec8b7dc5"
+    },
+    {
+      "testId": "31ecb05a-6b76-42fd-bd87-a3525b49ff6c",
+      "name": "S4-NEW-11 — A swatch knows which pot.",
+      "runId": "2c76b2f3-5b45-43fa-99fd-0fceaaddb33f",
+      "status": "failed",
+      "reportSha256": "5c0c284d3acd4c8bcc0b98864cacb1e4c3c0110790f9fcc4bb33729dba4e0b9e"
+    },
+    {
+      "testId": "f3933f1b-661a-41f6-8297-9a9bfbb58f84",
+      "name": "S4-NEW-14 — Preview is a window, not a paintbrush.",
+      "runId": "0eb72b47-86e2-4c9b-8aa3-09c74f3729d5",
+      "status": "blocked",
+      "reportSha256": "5889ac61448210bd937af6a52d6af88e2afcb394350512656a2497f691b639d3"
+    },
+    {
+      "testId": "306a7b5a-9435-4506-9be2-eaf7dd9f607f",
+      "name": "S4-NEW-15 — Preview stays on the desk.",
+      "runId": "c1a7b280-fd04-45a1-9fa5-4351fe4a7cf0",
+      "status": "blocked",
+      "reportSha256": "01c85e4a7d8fd8028e41df3bdf0cc122cc1312fb2bcf5ed5b6e959af5e8174a3"
+    },
+    {
+      "testId": "9e95f9a5-6af7-402f-80d8-0fd14784b17f",
+      "name": "S4-NEW-16 — A pan is never a stroke.",
+      "runId": "1e78e690-1c0a-450f-b7d6-d17658622a71",
+      "status": "blocked",
+      "reportSha256": "88103bdbf97b32ed3b70585f24b3f294d191161f25fa33de0bb939eb789e6a70"
+    },
+    {
+      "testId": "17a18f9f-1336-47db-abf7-e50fa5ab5427",
+      "name": "S4-NEW-17 — A layered stroke tells the truth.",
+      "runId": "402930cd-46ec-451f-accd-9ad243e4f05c",
+      "status": "blocked",
+      "reportSha256": "6025c63cfdc74145972ae5e91cc1c01a2261e7446c974b338818abcf003e04a4"
+    },
+    {
+      "testId": "b8cf6346-268e-4131-8936-a699c4974816",
+      "name": "S4-NEW-19 — All twelve rooms keep the drawing.",
+      "runId": "098f197e-4e91-4ff9-b42f-66294770f387",
+      "status": "passed"
+    },
+    {
+      "testId": "8454253c-80b9-4da4-b9c8-548776bb4298",
+      "name": "S4-NEW-18 — The four new cozy rooms.",
+      "runId": "e753d6a4-5184-4174-9931-7087bf7c2556",
+      "status": "blocked",
+      "reportSha256": "aaeb2b97bbe8dc549bccea92d474608d9c7a5a57fc01815f1673823b1ed11d79"
+    },
+    {
+      "testId": "e36de20f-0c53-4e83-98d4-1a537be622a1",
+      "name": "S4-NEW-21 — Every Lab can come home.",
+      "runId": "626905b5-c19d-453f-a1c0-79950ca131b1",
+      "status": "passed"
+    },
+    {
+      "testId": "e16f11fa-19e9-4617-bfaf-3811b9e2d9fc",
+      "name": "S4-NEW-22 — The command palette really opens.",
+      "runId": "e76cf410-719b-41b7-9070-c6548d9af714",
+      "status": "passed"
+    },
+    {
+      "testId": "d175b106-aba4-40a9-a5c3-12c035d7b76b",
+      "name": "S4-NEW-20 — Quiet motion, complete controls.",
+      "runId": "4ee31a49-52b7-4796-b2cd-59798edf91db",
+      "status": "blocked",
+      "reportSha256": "08993217b0cddbc8253c83489fcf8f89824096197ea4565dd058a062d3fd321e"
+    },
+    {
+      "testId": "1c218262-aac8-4a1d-b6ba-fb7785bce98f",
+      "name": "S4-PAL-03 — Five shades from one seed.",
+      "runId": "a4895333-506f-4c48-8ef0-1c1d6343458c",
+      "status": "passed"
+    },
+    {
+      "testId": "ffedf7d1-5b19-4552-993a-fe63e56e9f19",
+      "name": "S4-PAL-01 — A named palette is a keepsake.",
+      "runId": "25051ffb-03a3-4440-a85c-1151c627926f",
+      "status": "blocked",
+      "reportSha256": "064a2a254c534a2e60a21d3a522900567e7b832c50a8172dff43bd11f46370ca"
+    },
+    {
+      "testId": "c9688b8d-3ebc-4fe3-b10d-ad7d49f546bf",
+      "name": "S4-PAL-02 — A library choice is explicit.",
+      "runId": "e70cdea7-6e75-4409-a92a-9b03b3c209da",
+      "status": "blocked",
+      "reportSha256": "df0d81c1b520e37947a66feaa4a302bed8d5bdbefd5d98fa3cdafa29e5632078"
+    },
+    {
+      "testId": "3de75df2-12d6-451d-99e8-23af772c3063",
+      "name": "S4-PAL-04 — Cycle tracks keep their range.",
+      "runId": "29fe5453-0ed2-45cd-ab4b-841ffb43112f",
+      "status": "blocked",
+      "reportSha256": "bbb32ef3d71f87cb474d5ace667e243bafb57db600c050aa4239038ea9611dea"
+    },
+    {
+      "testId": "90c317f8-81f2-489e-8d74-459e5e50c755",
+      "name": "S4-READOUT-01 — A heart in pixels, words and a real PNG.",
+      "runId": "9f77d199-1d4a-48ce-9ed0-d9ef3a3842fa",
+      "status": "blocked",
+      "reportSha256": "599657ad4077aef90a04d6dbabc8a2ab7fff2d7e7c6e4f218bdc36de096ad288"
+    },
+    {
+      "testId": "87832975-3885-4714-9988-2d6f193489fa",
+      "name": "S4-PAL-05 — Roles and bindings survive editing.",
+      "runId": "b684be32-5091-4b84-811c-ae553c6218d1",
+      "status": "blocked",
+      "reportSha256": "1cc3355c1c969bc7b501151e2cef63b71e794540f8dd63a0047eaa8bdfbfc965"
+    },
+    {
+      "testId": "5398500f-34a3-4661-ad5e-ed2dcbe9be7a",
+      "name": "S4-RELATION-01 — Turn it around, and bring it back.",
+      "runId": "52b03131-c871-4dc5-9ac0-33655c3d07e0",
+      "status": "blocked",
+      "reportSha256": "add678cb87f9281d77980b8dd10ce64aebffcee518a01c34454b0599cd51479d"
+    },
+    {
+      "testId": "451a46ca-eb84-452a-9925-d0ccff94addb",
+      "name": "S4-SAFE-02 — Co-Draw refuses a broken invitation.",
+      "runId": "7967b2ac-cc5f-4458-a151-7e9d6005fb9e",
+      "status": "passed"
+    },
+    {
+      "testId": "8841ff88-9ccd-453f-ba68-13a9aa339ac1",
+      "name": "S4-SAFE-01 — Diagnostics ask before sharing.",
+      "runId": "ce4e8a4e-6d98-49cc-94a3-65dc3560ffc9",
+      "status": "blocked",
+      "reportSha256": "a918d7a27a32c24eb4ec7fa1942afdb73e90e3c37624d5073ebd42bee1db8575"
+    },
+    {
+      "testId": "2dee1983-4ac9-490d-9986-1b054492cab0",
+      "name": "S4-SAFE-04 — Offline and update promises need an actual network boundary.",
+      "runId": "cf0781f8-b061-4424-af6a-71c0814896a6",
+      "status": "blocked",
+      "reportSha256": "a9f3ab8f41749c7f9896327f39a4d403f50e54b507201da0aa057e28356fe4fe"
+    },
+    {
+      "testId": "8659a0b0-983c-40c8-ab30-60a9eb8f81b5",
+      "name": "S4-SAFE-03 — A corrupted import leaves an escape.",
+      "runId": "57525d32-d2a3-4921-8d11-c62baf9fb2bb",
+      "status": "blocked",
+      "reportSha256": "e154b96aa14fafd88c29ff61e0e47f44858f41d03663bde64a2fea2212794ff8"
+    },
+    {
+      "testId": "269c1ec8-1b18-4d97-bc92-53311046b4b1",
+      "name": "S4-SAFE-05 — Surface tools leave Bun’s colors alone.",
+      "runId": "183bbdca-53f7-4ad2-a6e4-40550dcb3cb0",
+      "status": "passed"
+    },
+    {
+      "testId": "e08ab5de-e8e9-4a25-b6ca-2ecec084741e",
+      "name": "S4-SAVE-03 — A cancelled new drawing keeps tonight's work.",
+      "runId": "7001edd4-3711-4f42-974d-bb98d04e0196",
+      "status": "passed"
+    },
+    {
+      "testId": "a717d33a-ab5a-4e61-84a1-0108a0bd7b51",
+      "name": "S4-SAVE-02 — A gallery copy is its own project.",
+      "runId": "5cd86420-5a52-42d0-bb98-ffb6bea0601a",
+      "status": "passed"
+    },
+    {
+      "testId": "7352527c-5f87-46fc-b219-dfc06a82f65d",
+      "name": "S4-SAFE-06 — A layer lock also protects a selection.",
+      "runId": "2a08cffd-9d37-48d9-8cd7-4bc4dbb00f4d",
+      "status": "blocked",
+      "reportSha256": "fb12b7989e690a5d1fcc0a8381b9e04dcc22cfc372dcedc5597f5d7107877019"
+    },
+    {
+      "testId": "b353085c-8d22-424c-9ecc-8d3a7c75d367",
+      "name": "S4-SAVE-01 — Close the desk, keep the drawing.",
+      "runId": "e8a77d26-b1fd-4bd9-a69a-b8a437b36e3e",
+      "status": "blocked",
+      "reportSha256": "fc9f172e5a7120f1eb88ddc6274db218f9730ebeda40159bb8f2ca6b4b2143a7"
+    },
+    {
+      "testId": "76cb1fe2-c7c5-4cf0-b5b1-a3ea0cd8b905",
+      "name": "S4-STORY-01 — A lamp for a little midnight friend.",
+      "runId": "01ef1e41-f1bd-43a6-909f-99394ddc7737",
+      "status": "blocked",
+      "reportSha256": "ad41c649ae70a7f3e6cb2bb0536cf8cc7d068ae526632e8ba75f03284d588670"
+    },
+    {
+      "testId": "1bdd2744-29ef-4e59-879f-9852f0a1475c",
+      "name": "S4-VIEW-01 — Lenses do not leave the glass.",
+      "runId": "ea33900e-6cfb-45f2-a259-59233510e1bb",
+      "status": "blocked",
+      "reportSha256": "981bead989942753cd5b640c5d75fb54de3393c123bc974b7218f3aa5bdcb72c"
+    },
+    {
+      "testId": "aff47330-da21-4332-803b-67d3f8c1bb85",
+      "name": "S4-VIEW-02 — A workspace remembers its shelves.",
+      "runId": "0bdbcab9-3102-4fca-bc6f-5b596d0be914",
+      "status": "blocked",
+      "reportSha256": "4740f4678f07641ee595a1be15cfa814cab8f31236285bf0892ee58fc679ecdc"
+    },
+    {
+      "testId": "e65d4b15-428d-430e-bbbb-4c8f0e7e917c",
+      "name": "S4-VIEW-03 — Quick tools follow the keymap.",
+      "runId": "53eaf070-9496-457b-a55a-feac5d6e466b",
+      "status": "failed",
+      "reportSha256": "e95eb557d6f157ddff1f382dec52f7a1879ab8542b3caca51130c1aaf03c7f34"
+    },
+    {
+      "testId": "79f38a30-8492-4308-97a2-50189b25e598",
+      "name": "Select the Bun starter and continue into the studio",
+      "runId": "43b0fc1f-323f-4475-8f4f-e5d6b5aefd50",
+      "status": "passed"
+    },
+    {
+      "testId": "813350a7-4390-4ecc-8ab3-2298787696cf",
+      "name": "S4-WELCOME-01 — A welcome you can leave.",
+      "runId": "dd211157-adbe-4e2f-b4c0-482e8c2f14fe",
+      "status": "blocked",
+      "reportSha256": "e8c29e5fadb99d47d939f99c0e895d3f7ae455bdb6b844880c52ff7471965b44"
+    },
+    {
+      "testId": "47b10a79-72f8-4d03-be7f-93ae111d71c0",
+      "name": "Undo a layer deletion and restore its prior state",
+      "runId": "c55d0250-06aa-415a-8096-72b005b4aed1",
+      "status": "passed"
+    },
+    {
+      "testId": "c5377b6e-0321-4426-8e41-2da4c98a34cf",
+      "name": "Save a drawing and reload the project in the same browser context",
+      "runId": "13de4936-2caa-4ea6-b5c3-78b58f10a54b",
+      "status": "failed",
+      "reportSha256": "117f1853f6c2eb989fbc5b32c7d82238fe6545506c2692441ea68f6eeef38553"
+    }
+  ],
+  "failureTriage": [
+    {
+      "testId": "ac3e0785-bcf6-445d-a2a9-8ccef1464bec",
+      "runId": "707887be-5fd5-4465-b2e9-de8c30b2a9c5",
+      "status": "failed",
+      "observation": "Report confirms 100/200 ms holds and successful play/pause, but says loop mode, preview speed and timing were not exercised. Missing verification is not a demonstrated timing regression.",
+      "productFixClaimed": false
+    },
+    {
+      "testId": "5197eb3b-9b2a-43ca-8371-5fb0ed29d7ae",
+      "runId": "5d738ce7-d620-4807-89e0-8bc1f39e8906",
+      "status": "failed",
+      "observation": "The validation checkpoint occurred after later valid edits and closing Clips. The immediate-error checkpoint remains required; prior exact local/cloud companions are separate evidence.",
+      "productFixClaimed": false
+    },
+    {
+      "testId": "df2541b1-1b7c-4ea9-a018-d7fe083b5f2a",
+      "runId": "32809af8-8d98-4af2-a98b-bfeb5e4b8f39",
+      "status": "failed",
+      "observation": "Report alleges a Flood Fill shortcut failure, but retained action rows contain clicks and no keyboard action. Actual shortcut input is not established; product-defect attribution remains unknown.",
+      "productFixClaimed": false
+    },
+    {
+      "testId": "dcf76735-5c13-437a-8f98-45fb2ff95a19",
+      "runId": "285f8f41-754d-4cfd-a8db-152d7eb8f50e",
+      "status": "failed",
+      "observation": "The fixture was 16×16; 32× produces 512×512, safely below the 4096px/16.7MP admission ceiling. This does not demonstrate failure to refuse an unsafe export.",
+      "productFixClaimed": false
+    },
+    {
+      "testId": "8b27171a-6d28-442e-8df6-b9d50e53c57a",
+      "runId": "c4dfe4bf-08ca-4750-b1d1-204707828af8",
+      "status": "failed",
+      "observation": "The result says Undo failed, but the retained action sequence contains no Undo action after Outline. Exact local/manual companion Undo evidence is separate; retain the failed App verdict.",
+      "productFixClaimed": false
+    },
+    {
+      "testId": "acc0d53a-3bfd-455f-938a-27c91a99882c",
+      "runId": "ba22b914-e786-400b-af48-c1a9cc7b2b1c",
+      "status": "failed",
+      "observation": "Trace clicked Undo twice although the plan specified once. Matching one-Undo/one-Redo qualification is recorded above; no product history defect established.",
+      "productFixClaimed": false
+    },
+    {
+      "testId": "b5cab687-77f4-4ba1-8df6-5def1766b4f4",
+      "runId": "3f82801e-02b8-4f62-b295-f9465d01379e",
+      "status": "failed",
+      "observation": "Trace inspected animation review in Effects rather than Tools → Animate artwork → Create Motion Part. Pose/bake assertions were not exercised; no missing-feature conclusion follows.",
+      "productFixClaimed": false
+    },
+    {
+      "testId": "31ecb05a-6b76-42fd-bd87-a3525b49ff6c",
+      "runId": "2c76b2f3-5b45-43fa-99fd-0fceaaddb33f",
+      "status": "failed",
+      "observation": "Actual held-modifier pointer input is not established in the trace. Real held-Shift/right-click qualification is recorded above; original App failure is retained.",
+      "productFixClaimed": false
+    },
+    {
+      "testId": "e65d4b15-428d-430e-bbbb-4c8f0e7e917c",
+      "runId": "53eaf070-9496-457b-a55a-feac5d6e466b",
+      "status": "failed",
+      "observation": "Report confirms quick-menu actions but says separate text-editing behavior was not verified. No text-editing action appears in the retained sequence; incomplete execution does not prove absent deployed code.",
+      "productFixClaimed": false
+    },
+    {
+      "testId": "c5377b6e-0321-4426-8e41-2da4c98a34cf",
+      "runId": "13de4936-2caa-4ea6-b5c3-78b58f10a54b",
+      "status": "failed",
+      "observation": "Blue Mark was created in frame 2 but sought in frame 1; actual reload was not recorded. Frame-specific layers, real reload and decoded-file qualification are recorded above.",
+      "productFixClaimed": false
+    }
+  ],
+  "supportBoundary": {
+    "reportedOn": "2026-10-19",
+    "source": "Owner-pasted TestSprite Support AI response",
+    "fixtureUploads": "Expected paid-plan entitlement; unavailable on Free. Not a confirmed defect, no purchase or bypass.",
+    "runnerExecution": "Support AI could not confirm saved-Python versus UI-plan execution. This remains unknown, not a confirmed provider bug.",
+    "plannedStepsControl": "Official Run Behavior documentation describes Always use planned steps. The actual project settings UI and documented project read did not expose it; no unsupported setting was written.",
+    "documentationUrl": "https://docs.testsprite.com/web-portal/setup/execution-settings"
+  }
 }

@@ -6,20 +6,20 @@
   "entries": [
     {
       "pr": 6,
-      "title": "Matched deployment retried manually: 32 passed, 13 failed, 76 blocked",
+      "title": "Automatic fixing-commit dispatch: 33 passed, 10 failed, 78 blocked",
       "prUrl": "https://github.com/lxcario/PixiBun/pull/6",
       "checkedOn": "2026-10-19",
-      "testspriteRunUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/1023cedd-f23b-4b96-897e-43ff22a428e0",
+      "testspriteRunUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/145919a4-44b9-4e5c-b34e-975c9fe39c86",
       "failures": [
         {
-          "case": "Outline Undo and frame recovery",
+          "case": "Incomplete or mismatched execution prerequisites",
           "cause": "test-fix",
-          "note": "The action logs omitted actual Undo clicks. Corrected plans retain exact artwork requirements; the complete 121-case disposition is in pr6-triage-2026-10-19.md. These are representative confirmed causes, not a claim that every non-pass is diagnosed."
+          "note": "The complete automatic cohort and ten retained failures are in automatic-followup-2026-10-19.json. Double Undo, wrong-frame layer checks and a safe export fixture are diagnosed; not every non-pass has a confirmed cause. Separate local/manual passes do not replace App verdicts."
         },
         {
-          "case": "File fixtures and independent pixel observations",
+          "case": "Unavailable file/pixel/gesture observations",
           "cause": "environment",
-          "note": "Several App cases cannot establish required files, real gestures or native pixels. Free-plan fixture access was requested. Supporting manual/local passes do not replace this failed check or prove an unattended fixing-commit loop."
+          "note": "Support AI confirmed shared fixture uploads are excluded on Free. Saved-Python/App execution remains unknown. The prior manually retried 32/13/76 cohort is retained in pr6-triage-2026-10-19.json. This automatic check failed; no completed red-to-green loop is claimed."
         }
       ],
       "fixCommit": null,
