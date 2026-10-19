@@ -1,5 +1,11 @@
 # Current project status
 
+## Linux follow-up — 20 October 2026, Istanbul
+
+Published PR #6 head `2d27b262` passed all five local pre-push gates, including **2,902 unit tests /268 files** and unchanged coverage/performance thresholds. Vercel became Ready on that exact source and a fresh App execution started automatically. Its verdict remains pending; the branch preview stays fixed while it runs.
+
+The [native Linux follow-up](releases/2026-10-19-native-codec-ci.md#linux-follow-up-on-2d27b262--20-october-istanbul) completed **14 Passed /1 Failed**, improving the earlier 11/4 cohort: all three WebKit cases now pass. Firefox's actual MP4 color remains the one failure. Independent artifact retrieval matched all 15 indexed files. Container-only BT.601/BT.709 tagging did not correct Firefox; the [receipt](testsprite/native-codec-followup-2026-10-20.json) retains the unchanged original verdict, encoder metadata and native decoded samples. This is GitHub CI evidence, separate from TestSprite. No universal matrix fix or production release is claimed.
+
 ## First executed PR App check — 19 October 2026
 
 Published fixing candidate `a5caa2cb` produced a new ready Vercel preview and [automatic TestSprite execution](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/145919a4-44b9-4e5c-b34e-975c9fe39c86), without Run Now. Its preview manifest identifies the full candidate SHA and recorded navigation reaches that preview. The completed cohort is **33 Passed /10 Failed /78 Blocked**, and the actual `TestSprite V3` status is failure. The [terminal receipt](testsprite/automatic-followup-2026-10-19.json) preserves all 121 run IDs and ten failure assessments. This proves dispatch, not a passing automatic loop. The branch preview stayed unchanged through completion.
