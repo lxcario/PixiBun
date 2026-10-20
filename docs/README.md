@@ -16,6 +16,8 @@ Start with [current status](current-status.md) for scoped engineering results an
 
 ## Latest reconciliation
 
+The [20 October visible-failure follow-up](releases/2026-10-20-visible-failures-followup.md) separates actual current-head reproduction, runner prerequisites and historical results: thirty independent targeted executions, one honestly Blocked fresh portal replay, all original 72 Blocked cases classified, a passing Lighthouse retry and the minimal unpublished E2E job-budget repair. Its [receipt](testsprite/visible-five-followup-2026-10-20.json) retains source/run/environment identities and limits.
+
 The [20 October remaining-hardening record](releases/2026-10-20-remaining-hardening.md) preserves five strict controlled cloud passes, fifteen independent browser qualifications and the corrected Pocket viewport, with the retained UI-agent limitation and 46 remaining default Blocked cases explicit.
 
 The [20 October integrated follow-up](releases/2026-10-20-integrated-followup.md) records the actual Linux result, verified artifact transport, combined local 3,038-test candidate and fresh manual TestSprite passes, with the remaining automatic App/release gates explicit.

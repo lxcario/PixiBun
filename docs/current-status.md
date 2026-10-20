@@ -1,5 +1,11 @@
 # Current project status
 
+## Visible failures requalified on the actual PR head — 20 October 2026
+
+The [current-head follow-up](releases/2026-10-20-visible-failures-followup.md) reconciles the visible catalog, diagnoses all five original failures and classifies the 72 original Blocked reports. **30 targeted independent executions** pass on published PR head `98d7625e` across three engines, including exact lock/unlock cells, masked shapes, text-key isolation, clipped GIF contents and real editable-file roundtrips. Behaviors overlap; these are not thirty official cloud passes. No application defect reproduced or application source changed in this follow-up.
+
+One genuinely edited portal replay now records the missing Outline Undo action but remains **Blocked** on independent pixel/file observation. The reloaded visible catalog is **44 Passed /4 Failed /73 Blocked**; the older API default-only 75/0/46 was not the visible overall catalog. Lighthouse's isolated retry passed on `98d7625e`. Linux E2E passed 365 development checks, then hit its two-hour job limit with 555 production passes, four skips and two cases uncompleted. A local 150-minute job budget passes existing workflow checks; publication and a complete new Linux/App verdict remain pending approval. Required GitHub protections and original results remain intact; no push, merge or production release occurred.
+
 ## Five strict follow-ups — 20 October 2026
 
 The [remaining-hardening record](releases/2026-10-20-remaining-hardening.md) adds **15/15** independently qualified three-engine journeys and **five Passed controlled TestSprite scripts** on published `98d7625e`: actual PNG/SVG bytes, saved per-frame projects, inclusive cycles/Undo and Pocket. Pocket now has its required 390×844 test override, while its real UI-agent run remains Blocked on canvas input. The latest mixed default catalog is **75 Passed /0 Failed /46 Blocked**; automatic App qualification and the complete production-browser verdict remain open. No new app defect is claimed by this batch.

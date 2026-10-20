@@ -89,7 +89,10 @@ jobs:
   e2e:
     needs: validate
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    # The complete serial dev + three-engine production cohort exceeded two
+    # hours on 98d7625e, cancelling its last cases. Preserve every assertion,
+    # zero retries and the frozen build; allow bounded runner-speed headroom.
+    timeout-minutes: 150
     steps:
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
