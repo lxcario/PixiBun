@@ -1,6 +1,7 @@
 import { openMotionCapture } from '../helpers/motion';
 import { expect, test, type Page } from '@playwright/test';
 import { chooseTool } from '../helpers/tools';
+import { settleAnimations } from '../helpers/settle';
 
 const pixels = (page: Page, id = 'main-composite-canvas') => page.getByTestId(id).evaluate((canvas: HTMLCanvasElement) => Array.from(canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data));
 async function numeric(page: Page, label: string, value: string) { const input = page.getByRole('spinbutton', { name: label, exact: true }); await input.fill(value); await input.press('Enter'); }
@@ -46,7 +47,10 @@ for (const theme of ['atelier', 'cozy-classic']) test(`${theme} controls and can
   await start.click(); await start.evaluate(button => Promise.all(button.getAnimations().map(animation => animation.finished.catch(() => undefined))));
   expect((await start.boundingBox())!.height).toBe(poseBoxes[0]!.height); await end.click();
   const play = page.getByRole('button', { name: 'Play Loop', exact: true }), playBox = await play.boundingBox(); await play.click(); await expect(page.getByRole('button', { name: 'Pause', exact: true }).first()).toBeVisible();
-  const pause = page.getByTestId('piximotion-panel').getByRole('button', { name: 'Pause', exact: true }); expect((await pause.boundingBox())!.width).toBe(playBox!.width); await pause.click();
+  const pause = page.getByTestId('piximotion-panel').getByRole('button', { name: 'Pause', exact: true });
+  // Play and Pause share a control; measure its layout after the release spring.
+  await settleAnimations(pause);
+  expect((await pause.boundingBox())!.width).toBe(playBox!.width); await pause.click();
   await page.screenshot({ path: info.outputPath(`motion-${theme}-1024-bottom.png`) });
   await page.getByTestId('right-inspector').locator('.overflow-y-auto').evaluate(element => { element.scrollTop = 0; });
   await page.screenshot({ path: info.outputPath(`motion-${theme}-1024-top.png`) });

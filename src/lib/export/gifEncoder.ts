@@ -5,10 +5,11 @@ import {
   RawFrameData,
   quantizePixels,
   lzwEncode,
+  validateRawFrames,
 } from './gifEncoderCore';
 import type { WorkerRequest, WorkerResponse } from './gifEncoder.worker';
 
-export { quantizePixels, lzwEncode, encodeGifRawFrames };
+export { quantizePixels, lzwEncode, encodeGifRawFrames, validateRawFrames };
 export type { RawFrameData };
 
 import { extractScaledCanvasRgba } from '@/lib/canvas/scaleCanvas';
@@ -28,8 +29,20 @@ export function extractScaledRawFrames(
 ): RawFrameData[] {
   if (frameCanvases.length === 0) return [];
   const s = Math.max(1, Math.floor(scale));
-  const outW = frameCanvases[0].width * s;
-  const outH = frameCanvases[0].height * s;
+  const baseW = frameCanvases[0].width;
+  const baseH = frameCanvases[0].height;
+
+  for (let i = 1; i < frameCanvases.length; i++) {
+    const canvas = frameCanvases[i];
+    if (canvas.width !== baseW || canvas.height !== baseH) {
+      throw new RangeError(
+        `GIF export aborted: Frame ${i} canvas dimensions (${canvas.width}x${canvas.height}) do not match initial frame dimensions (${baseW}x${baseH}).`
+      );
+    }
+  }
+
+  const outW = baseW * s;
+  const outH = baseH * s;
   const validation = validateExportGeometry(outW, outH, {
     frameCount: frameCanvases.length,
     maxAggregatePixels: MAX_EXPORT_AGGREGATE_PIXELS,
@@ -67,8 +80,20 @@ async function encodeAnimatedGif(
   }
 
   const s = Math.max(1, Math.floor(scale));
-  const outW = frameCanvases[0].width * s;
-  const outH = frameCanvases[0].height * s;
+  const baseW = frameCanvases[0].width;
+  const baseH = frameCanvases[0].height;
+
+  for (let i = 1; i < frameCanvases.length; i++) {
+    const canvas = frameCanvases[i];
+    if (canvas.width !== baseW || canvas.height !== baseH) {
+      throw new RangeError(
+        `GIF export aborted: Frame ${i} canvas dimensions (${canvas.width}x${canvas.height}) do not match initial frame dimensions (${baseW}x${baseH}).`
+      );
+    }
+  }
+
+  const outW = baseW * s;
+  const outH = baseH * s;
   const validation = validateExportGeometry(outW, outH, {
     frameCount: frameCanvases.length,
     maxAggregatePixels: MAX_EXPORT_AGGREGATE_PIXELS,
@@ -78,6 +103,7 @@ async function encodeAnimatedGif(
   }
 
   const rawFrames = extractScaledRawFrames(frameCanvases, scale);
+  validateRawFrames(rawFrames);
 
   // Attempt Web Worker encoding first
   if (typeof window !== 'undefined' && typeof Worker !== 'undefined') {

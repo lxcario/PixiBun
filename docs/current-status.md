@@ -1,5 +1,11 @@
 # Current project status
 
+## Integrated candidate and fresh script qualification — 20 October 2026
+
+The [latest follow-up](releases/2026-10-20-integrated-followup.md) supersedes the pending observations below: published `5be4b61c` passed 365 Linux development checks and 556 production checks, with one finite-animation geometry measurement failure and four capability skips. Real artifact retrieval verified **314 files /0 mismatches**. The geometry assertion repair plus reviewed committed gallery/GIF/palette work pass **3,038 unit tests /279 files**, all six local gate stages, **6/6** three-engine geometry checks and **3/3** independently decoded actual GIF downloads. Final committed-source Linux qualification remains pending.
+
+Two fresh, source-pinned manual TestSprite scripts now pass on the correctly reported preview: palette authoring and all eight theme/scheme choices. A separate expected-failure harness diagnostic confirms saved Python execution on that fresh CLI path, despite zero UI-agent action records. This does not qualify automatic App execution; the 17-action portal cycle run still ends Blocked on exact pixel/history assertions. Required GitHub protections remain enforced, the full automatic trigger stays Disabled, and production remains `92de6c74`. No full green suite or production release is claimed.
+
 ## Bounded testing resumed — 20 October 2026, Istanbul
 
 Local follow-up: all six quality-gate stages passed on Node 22.23.3 for the uncommitted isolated candidate, including **2,916/2,916 unit tests** and the production build. This is separate from the still-unqualified complete Linux/browser combination and required automatic App check. The [dated record](releases/2026-10-20-resumed-verification.md) retains original failures and provider metadata limitations.

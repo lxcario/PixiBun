@@ -241,6 +241,84 @@ describe('Mark Ferrari 8-Bit Dynamic Palette Cycling Engine', () => {
         expect(Math.abs(totalPeriods - Math.round(totalPeriods))).toBeLessThan(1e-4);
       }
     });
+
+    it('closes loop exactly at boundary t = T and t = 2T for 5-color cycle with 7s duration', () => {
+      const palette = ['#111111', '#222222', '#333333', '#444444', '#555555'];
+      const track: PaletteCycleTrack = {
+        id: 'cycle5',
+        low: 0,
+        high: 4,
+        rate: 1.4,
+        direction: 'forward',
+        blendShift: false,
+        enabled: true,
+      };
+
+      const targetDurationSec = 7.0;
+      const [retuned] = retuneTracksForSeamlessLoop([track], targetDurationSec);
+
+      const lut0 = new Uint32Array(5);
+      const lutT = new Uint32Array(5);
+      const lut2T = new Uint32Array(5);
+
+      updateLivePaletteLUT32(palette, [retuned], 0.0, lut0);
+      updateLivePaletteLUT32(palette, [retuned], targetDurationSec, lutT);
+      updateLivePaletteLUT32(palette, [retuned], 2 * targetDurationSec, lut2T);
+
+      const colors0 = Array.from(lut0).map(unpackRgb32);
+      const colorsT = Array.from(lutT).map(unpackRgb32);
+      const colors2T = Array.from(lut2T).map(unpackRgb32);
+
+      expect(colorsT).toEqual(colors0);
+      expect(colors2T).toEqual(colors0);
+    });
+
+    it('closes multi-track loops with reverse, ping-pong, and non-integer durations', () => {
+      const palette = Array.from({ length: 16 }, (_, i) => `#${i.toString(16).padStart(2, '0').repeat(3)}`);
+      const tracks: PaletteCycleTrack[] = [
+        { id: 'fwd', low: 0, high: 4, rate: 10.0, direction: 'forward', blendShift: false, enabled: true },
+        { id: 'rev', low: 5, high: 9, rate: 8.0, direction: 'reverse', blendShift: false, enabled: true },
+        { id: 'ping', low: 10, high: 14, rate: 12.0, direction: 'ping-pong', blendShift: false, enabled: true },
+      ];
+
+      const nonIntegerT = 0.7; // Demonstrates 1-ULP float precision edge case
+      const retuned = retuneTracksForSeamlessLoop(tracks, nonIntegerT);
+
+      const lut0 = new Uint32Array(16);
+      const lutT = new Uint32Array(16);
+      updateLivePaletteLUT32(palette, retuned, 0.0, lut0);
+      updateLivePaletteLUT32(palette, retuned, nonIntegerT, lutT);
+
+      expect(Array.from(lutT).map(unpackRgb32)).toEqual(Array.from(lut0).map(unpackRgb32));
+    });
+
+    it('maintains exact loop closure at extended horizons (k = 10,000 and 100,000) using scale-aware IEEE 754 precision', () => {
+      const palette = ['#111111', '#222222', '#333333', '#444444', '#555555'];
+      const track: PaletteCycleTrack = {
+        id: 'cycle5-extended',
+        low: 0,
+        high: 4,
+        rate: 60.0,
+        direction: 'forward',
+        blendShift: false,
+        enabled: true,
+      };
+
+      const T = 1.3;
+      const [retuned] = retuneTracksForSeamlessLoop([track], T);
+
+      const lut0 = new Uint32Array(5);
+      const lut10k = new Uint32Array(5);
+      const lut100k = new Uint32Array(5);
+
+      updateLivePaletteLUT32(palette, [retuned], 0.0, lut0);
+      updateLivePaletteLUT32(palette, [retuned], 10000 * T, lut10k);
+      updateLivePaletteLUT32(palette, [retuned], 100000 * T, lut100k);
+
+      const colors0 = Array.from(lut0).map(unpackRgb32);
+      expect(Array.from(lut10k).map(unpackRgb32)).toEqual(colors0);
+      expect(Array.from(lut100k).map(unpackRgb32)).toEqual(colors0);
+    });
   });
 
   describe('Shader Exporters (Godot 4 & Unity URP)', () => {

@@ -298,6 +298,9 @@ export function updateLivePaletteLUT32(
 
     const S = high - low + 1;
     const phaseFloat = elapsedSec * track.rate;
+    const nearestPhaseInt = Math.round(phaseFloat);
+    const eps = 128 * Number.EPSILON * Math.max(1, Math.abs(phaseFloat));
+    const phaseInt = Math.abs(phaseFloat - nearestPhaseInt) < eps ? nearestPhaseInt : Math.floor(phaseFloat);
 
     if (track.direction === 'ping-pong') {
       const M = 2 * (S - 1);
@@ -328,7 +331,7 @@ export function updateLivePaletteLUT32(
 
           outLUT32[destRegister] = packRgb32(blended[0], blended[1], blended[2], 255);
         } else {
-          let p = (Math.floor(phaseFloat) + k) % M;
+          let p = (phaseInt + k) % M;
           if (p < 0) p += M;
           const offset = p < S ? p : M - p;
           const [r, g, b] = hexToRgb(basePaletteHex[low + offset] || '#000000');
@@ -358,7 +361,7 @@ export function updateLivePaletteLUT32(
 
           outLUT32[destRegister] = packRgb32(blended[0], blended[1], blended[2], 255);
         } else {
-          const shiftInt = Math.floor(phaseFloat) * dirSign;
+          const shiftInt = phaseInt * dirSign;
           let srcK = (k + shiftInt) % S;
           if (srcK < 0) srcK += S;
           const [r, g, b] = hexToRgb(basePaletteHex[low + srcK] || '#000000');
@@ -398,7 +401,7 @@ export function retuneTracksForSeamlessLoop(
 
     return {
       ...track,
-      rate: Math.round(retunedRate * 1e6) / 1e6,
+      rate: retunedRate,
     };
   });
 }
