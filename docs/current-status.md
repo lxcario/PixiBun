@@ -1,5 +1,9 @@
 # Current project status
 
+## Five strict follow-ups — 20 October 2026
+
+The [remaining-hardening record](releases/2026-10-20-remaining-hardening.md) adds **15/15** independently qualified three-engine journeys and **five Passed controlled TestSprite scripts** on published `98d7625e`: actual PNG/SVG bytes, saved per-frame projects, inclusive cycles/Undo and Pocket. Pocket now has its required 390×844 test override, while its real UI-agent run remains Blocked on canvas input. The latest mixed default catalog is **75 Passed /0 Failed /46 Blocked**; automatic App qualification and the complete production-browser verdict remain open. No new app defect is claimed by this batch.
+
 ## Integrated candidate and fresh script qualification — 20 October 2026
 
 The [latest follow-up](releases/2026-10-20-integrated-followup.md) supersedes the pending observations below: published `5be4b61c` passed 365 Linux development checks and 556 production checks, with one finite-animation geometry measurement failure and four capability skips. Real artifact retrieval verified **314 files /0 mismatches**. The geometry assertion repair plus reviewed committed gallery/GIF/palette work pass **3,038 unit tests /279 files**, all six local gate stages, **6/6** three-engine geometry checks and **3/3** independently decoded actual GIF downloads. Final committed-source Linux qualification remains pending.

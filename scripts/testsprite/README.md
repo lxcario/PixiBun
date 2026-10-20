@@ -1,6 +1,6 @@
 # The small promises journeys
 
-Seventeen standalone Python/Playwright scripts for the existing TestSprite Season 4 portal project. They refine its browser verification with independent literal-pixel and file oracles. They are supporting saved-script replays; the required GitHub App automatic suite remains a separate qualification.
+Twenty standalone Python/Playwright scripts for the existing TestSprite Season 4 portal project. They refine its browser verification with independent literal-pixel and file oracles. They are supporting saved-script replays; the required GitHub App automatic suite remains a separate qualification.
 
 | Script | Promise | Independent observation |
 | --- | --- | --- |
@@ -57,3 +57,7 @@ The source `77a40070` production qualification passed all four complete original
 | `pixibun-onion-overlay-integrity.py` | Actual nonempty ghost and clearing sensitivity; exact artwork and PNG guide exclusion |
 
 For these five scripts, `PIXIBUN_QUALIFICATION=1` permits an explicit installed browser executable against the public preview and omits Linux-only launch flags on Windows. Controlled proofs still pin and assert the full deployed source; this switch does not bypass app security, change application data or establish native picker coverage. These scripts passed fifteen local three-engine journeys plus five controlled cloud replays on source `36ccc620`. See the [trust record](../../docs/releases/2026-10-18-testsprite-trust-and-triage.md). Reusable target restoration does not itself establish an executed result.
+
+## Remaining-case strict companions — 20 October
+
+`pixibun-remaining-integrity.py` selects `svg`, `png`, `save` or `cycle` with `PIXIBUN_SCENARIO`; its default is `svg`. Each published copy fixes that scenario and a controlled source pin. It covers real files, literal painted cells, per-frame saved layers/holds and exact cycle boundaries/history. `pixibun-pocket-integrity.py` creates its own 390×844 browser context, uses real pointer/swatches/eraser controls, and decodes the actual Pocket PNG. Both retain bounded independent PNG decoding. See the [source-labelled record](../../docs/releases/2026-10-20-remaining-hardening.md). The mobile UI-agent result remains separate from the strict saved-script pass. Neither establishes a green automatic App loop.

@@ -16,6 +16,8 @@ Start with [current status](current-status.md) for scoped engineering results an
 
 ## Latest reconciliation
 
+The [20 October remaining-hardening record](releases/2026-10-20-remaining-hardening.md) preserves five strict controlled cloud passes, fifteen independent browser qualifications and the corrected Pocket viewport, with the retained UI-agent limitation and 46 remaining default Blocked cases explicit.
+
 The [20 October integrated follow-up](releases/2026-10-20-integrated-followup.md) records the actual Linux result, verified artifact transport, combined local 3,038-test candidate and fresh manual TestSprite passes, with the remaining automatic App/release gates explicit.
 
 The [20 October targeted repairs](releases/2026-10-20-targeted-repairs.md) preserve the palette-rate product discovery, MP4 color/memory fixes, nine targeted browser passes, fifty affected unit passes and the separate terminal 37/9/75 automatic App cohort. Local proof and unresolved Linux/cloud gates remain explicitly separated.
