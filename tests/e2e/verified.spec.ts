@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import { STUDIO_THEMES } from '../../src/lib/theme/registry';
 
 const ledger = JSON.parse(fs.readFileSync('docs/testsprite/loop-ledger.json', 'utf8')) as { entries: unknown[] };
+const stories = JSON.parse(fs.readFileSync('docs/testsprite/verification-stories.json', 'utf8')) as { automationNote: string; updated: string };
 
 test.describe('/verified', () => {
   test('shows the loop, the counts and the committed ledger without errors', async ({ page }) => {
@@ -19,7 +20,10 @@ test.describe('/verified', () => {
     await expect(page.getByTestId('verified-prs-checked')).toContainText(String(ledger.entries.length));
     await expect(page.getByTestId('verification-story')).toHaveCount(3);
     await expect(page.getByTestId('verification-supporting-check')).toHaveCount(16);
-    await expect(page.getByTestId('verification-automation-status')).toContainText('blocked by billing');
+    const automationStatus = page.getByTestId('verification-automation-status');
+    await expect(automationStatus).toContainText(stories.automationNote);
+    await expect(automationStatus.locator('time')).toHaveAttribute('dateTime', stories.updated);
+    await expect(automationStatus).toContainText('This page is a dated record, not a live status monitor.');
 
     if (ledger.entries.length === 0) await expect(page.getByTestId('loop-ledger-empty')).toBeVisible();
     else await expect(page.getByTestId('loop-ledger-row')).toHaveCount(ledger.entries.length);

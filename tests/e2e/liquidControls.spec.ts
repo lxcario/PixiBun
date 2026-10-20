@@ -82,3 +82,22 @@ test('a still hold on a grouped slot still opens its flyout', async ({ page }) =
   await page.mouse.up();
   await expect(page.getByTestId('tool-rail-lens')).not.toHaveClass(/is-glass/);
 });
+
+test('release selects the pointed tool even before the lens animation advances', async ({ page }) => {
+  await open(page, true);
+  const pen = (await page.getByTestId('pen-tool').boundingBox())!;
+  const eraser = (await page.getByTestId('eraser-tool').boundingBox())!;
+  // Hold animation frames still, while genuine pointer events keep arriving.
+  // Tool selection must follow the pointer target, not a lagging spring value.
+  await page.clock.install();
+  await page.clock.pauseAt(new Date(Date.now() + 1000));
+  await page.mouse.move(pen.x + pen.width / 2, pen.y + pen.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(eraser.x + eraser.width / 2, eraser.y + eraser.height / 2, { steps: 6 });
+  await expect(page.getByTestId('eraser-tool')).toHaveAttribute('data-lq-under', '');
+  await page.mouse.up();
+  await expect(page.getByTestId('eraser-tool')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('pen-tool')).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('[data-lq-under]')).toHaveCount(0);
+  await page.clock.resume();
+});

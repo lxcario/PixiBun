@@ -1,5 +1,15 @@
 # Current project status
 
+## Bounded testing resumed — 20 October 2026, Istanbul
+
+Local follow-up: all six quality-gate stages passed on Node 22.23.3 for the uncommitted isolated candidate, including **2,916/2,916 unit tests** and the production build. This is separate from the still-unqualified complete Linux/browser combination and required automatic App check. The [dated record](releases/2026-10-20-resumed-verification.md) retains original failures and provider metadata limitations.
+
+The owner explicitly resumed credit-consuming targeted work before the plan upgrade. The [resumed verification record](releases/2026-10-20-resumed-verification.md) preserves the six portal-definition repairs, review of all 75 original Blocked reports, a genuine CI-led liquid-tool release race, an obsolete evidence-page assertion and cancellation-time artifact-capture races. The local repairs pass seven affected browser checks, 17 focused unit checks, ten workflow checks, TypeScript and changed-file lint. Final source publication and complete Linux CI remain pending at this observation.
+
+Palette authoring and all eight new-theme Day/Night choices passed independently in three browsers on published `efb223ae`. TestSprite reports two manual scripted passes, separately labelled from the automatic App cohort; its API omits executed code-version/action attestation. Strict project/pixel assertions and original failures remain. The shared fixture pool is still Free-plan-gated, and the full automatic PR trigger remains Disabled. No 100% suite or automatic green is claimed.
+
+The existing [native Linux codec run](https://github.com/lxcario/PixiBun/actions/runs/39331136294) on `efb223ae` is now independently confirmed **15/15**, zero skipped/flaky/unexpected results. This supersedes the earlier Firefox qualification gate below for those fifteen cases, without replacing the historical `2d27b262` failure or qualifying the broader cancelled CI run.
+
 ## Targeted fixing candidate — 20 October 2026, Istanbul
 
 The [targeted repair record](releases/2026-10-20-targeted-repairs.md) documents a fourth genuine TestSprite-led product finding: a cycle track's default 6 Hz and entered 5.5 Hz violated its native step grid. Fix `f2f13f3c` preserves rate bounds and half-Hz buttons while accepting valid typed fractions. Independent production red → green is locally qualified; inclusive-range output/history and a fixing-preview App green are not implied.

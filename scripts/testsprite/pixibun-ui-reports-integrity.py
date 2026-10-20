@@ -257,7 +257,96 @@ async def dither(page):
     return {'actualDragAcrossSixteenCells':True,'admittedCells':8,'rowColors':sorted(colors),'all1024ChannelsExact':True,'undoExact':True,'allSavedPixelsAndMetadataExact':True,'contract':'Active-color pattern preserves skipped cells, not automatic two-color alternation'}
 
 
-SCENARIOS = {'quick-tools': quick_tools, 'erase': erase, 'lesson': lesson, 'outline': outline, 'frame-recovery': deletion, 'clip-validation': clips, 'dither': dither}
+async def palette_authoring(page):
+    baseline = await raster(page)
+    original = await project_snapshot(page)
+    await page.get_by_role('button', name='Palette', exact=True).click()
+    create = page.get_by_role('button', name='Create palette', exact=True)
+    if not await create.is_visible():
+        await page.get_by_role('button', name=re.compile('^Palette workshop')).click()
+    await create.click()
+    dialog = page.get_by_role('dialog', name='Create palette', exact=True)
+    await dialog.get_by_label('Palette name', exact=True).fill('S4 Lantern')
+    await dialog.get_by_label('Hex color', exact=True).fill('#FFAA00')
+    await dialog.get_by_role('button', name='+ Add color', exact=True).click()
+    await dialog.get_by_label('Hex color', exact=True).fill('#2D8C7A')
+    draft = dialog.get_by_role('group', name='Palette draft colors', exact=True)
+
+    async def order(colors):
+        await expect(draft.get_by_role('button')).to_have_count(len(colors))
+        for index, color in enumerate(colors):
+            await expect(draft.get_by_role('button').nth(index)).to_have_attribute('aria-label', f'Edit color {index + 1}: {color}')
+
+    await order(['#FFAA00', '#2D8C7A'])
+    await dialog.get_by_role('button', name='Move left', exact=True).click()
+    await order(['#2D8C7A', '#FFAA00'])
+    await expect(draft.get_by_role('button').nth(0)).to_have_attribute('aria-pressed', 'true')
+    await dialog.get_by_role('button', name='Move right', exact=True).click()
+    await order(['#FFAA00', '#2D8C7A'])
+    await dialog.get_by_role('button', name='+ Add color', exact=True).click()
+    await dialog.get_by_label('Hex color', exact=True).fill('#7C3AED')
+    await order(['#FFAA00', '#2D8C7A', '#7C3AED'])
+    await dialog.get_by_role('button', name='Remove', exact=True).click()
+    await order(['#FFAA00', '#2D8C7A'])
+    await dialog.get_by_role('button', name='Create palette', exact=True).click()
+    await expect(dialog).to_have_count(0)
+    committed = await project_snapshot(page)
+    assert len(committed['palettes']) == len(original['palettes']) + 1
+    selected = next(p for p in committed['palettes'] if p['id'] == committed['currentPaletteId'])
+    assert selected['name'] == 'S4 Lantern' and selected['colors'] == ['#FFAA00', '#2D8C7A']
+    assert committed['palettes'][:-1] == original['palettes'], 'Existing palettes changed'
+    protected = lambda project: {k: v for k, v in project.items() if k not in ('palettes', 'currentPaletteId')}
+    assert protected(committed) == protected(original), 'Palette authoring changed protected project data'
+    await exact(page, baseline)
+    await create.click()
+    await dialog.get_by_label('Palette name', exact=True).fill('S4 Uncommitted')
+    await dialog.get_by_label('Hex color', exact=True).fill('#7C3AED')
+    await dialog.get_by_role('button', name='Cancel', exact=True).click()
+    await expect(dialog).to_have_count(0)
+    after_cancel = await project_snapshot(page)
+    assert after_cancel == committed, 'Cancelled draft changed committed palette/project data'
+    assert all(p['name'] != 'S4 Uncommitted' for p in after_cancel['palettes'])
+    await exact(page, baseline)
+    return {'realSwatchReorderAndRemoval': True, 'draftCancelled': True,
+            'downloadedPaletteColors': selected['colors'], 'existingPalettesPreserved': True,
+            'allSavedPixelsAndProtectedMetadataExact': True, 'all1024ChannelsExact': True,
+            'savePath': 'browser-download fallback; native picker not qualified'}
+
+
+async def four_themes(page):
+    baseline = await raster(page)
+    original = await project_snapshot(page)
+    await page.get_by_test_id('appearance-button').click()
+    choices = []
+    for theme in ['cocoa', 'drizzle', 'harvest', 'harbor']:
+        await page.get_by_test_id('theme-option-' + theme).click()
+        for scheme in ['dark', 'light']:
+            await page.get_by_test_id('scheme-option-' + scheme).click()
+            await expect(page.locator('html')).to_have_attribute('data-studio-theme', theme)
+            await expect(page.locator('html')).to_have_attribute('data-color-scheme', scheme)
+            await expect(page.get_by_test_id('theme-option-' + theme)).to_have_attribute('aria-checked', 'true')
+            await expect(page.get_by_test_id('scheme-option-' + scheme)).to_have_attribute('aria-checked', 'true')
+            await exact(page, baseline)
+            await expect(page.locator('[data-frame-card]')).to_have_count(len(original['frames']))
+            await page.get_by_role('button', name='Close studio options', exact=True).click()
+            assert await project_snapshot(page) == original, 'Theme choice changed saved layer/frame identities, pixels or metadata'
+            choices.append({'theme': theme, 'scheme': scheme, 'all1024ChannelsExact': True, 'allSavedPixelsAndMetadataExact': True})
+            await page.get_by_test_id('appearance-button').click()
+    await page.get_by_role('button', name='Close studio options', exact=True).click()
+    await page.keyboard.press('Control+s')
+    await expect(page.get_by_role('button', name='Save now', exact=True)).to_have_attribute('title', 'All changes saved (Ctrl+S)')
+    await page.reload()
+    await expect(page.locator('[data-restoration-phase]')).to_have_attribute('data-restoration-phase', 'active')
+    await expect(page.locator('html')).to_have_attribute('data-studio-theme', 'harbor')
+    await expect(page.locator('html')).to_have_attribute('data-color-scheme', 'light')
+    await exact(page, baseline)
+    assert await project_snapshot(page) == original, 'Theme/reload changed saved project pixels or metadata'
+    return {'choices': choices, 'actualReload': True, 'harborDayPersisted': True,
+            'allSavedPixelsAndMetadataExact': True,
+            'savePath': 'browser-download fallback; native picker not qualified'}
+
+
+SCENARIOS = {'quick-tools': quick_tools, 'erase': erase, 'lesson': lesson, 'outline': outline, 'frame-recovery': deletion, 'clip-validation': clips, 'dither': dither, 'palette-authoring': palette_authoring, 'four-themes': four_themes}
 
 async def run_test():
     scenario = os.environ.get('PIXIBUN_SCENARIO', SCENARIO)
@@ -280,7 +369,7 @@ async def run_test():
         browser = await getattr(pw, engine).launch(**options)
         try:
             context = await browser.new_context(viewport={'width': 1920, 'height': 1080})
-            if scenario in ('frame-recovery', 'clip-validation', 'dither'):
+            if scenario in ('frame-recovery', 'clip-validation', 'dither', 'palette-authoring', 'four-themes'):
                 await context.add_init_script("Object.defineProperty(window, 'showSaveFilePicker', {value: undefined, configurable: true});")
             page = await context.new_page()
             page.set_default_timeout(15000)

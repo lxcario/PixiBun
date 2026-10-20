@@ -185,10 +185,11 @@ function Lens({ activeTool }: { activeTool: string }) {
       if (!d.live) return;
       live.current = false;
       setGlass(false);
+      // Commit the pointer's target, even while the visual spring trails it.
+      const target = commit ? under : null;
       markUnder(null);
       if (!reduce) animate(lift, 1, { type: 'spring', stiffness: 280, damping: 21 });
-      const target = commit ? nearest(y.get() + h.get() / 2) : null;
-      if (target && target.button.getAttribute('aria-pressed') !== 'true') target.button.click();
+      if (target && target.getAttribute('aria-pressed') !== 'true') target.click();
       else settle();
       // The release is not a click on whatever sits under it.
       suppressClick = true;

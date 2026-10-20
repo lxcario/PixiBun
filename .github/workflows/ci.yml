@@ -143,7 +143,10 @@ jobs:
 
       - name: Index browser evidence
         if: always()
-        run: node scripts/indexVerificationEvidence.mjs --source artifacts/browser --source playwright-report --source test-results --output artifacts/browser-index.json
+        run: |
+          node scripts/snapshotVerificationEvidence.mjs --source artifacts/browser --source playwright-report --source test-results --output artifacts/browser-snapshot
+          cd artifacts/browser-snapshot
+          node "$GITHUB_WORKSPACE/scripts/indexVerificationEvidence.mjs" --source artifacts --source playwright-report --source test-results --output artifacts/browser-index.json
 
       - name: Preserve browser evidence
         id: browser-evidence
@@ -153,10 +156,9 @@ jobs:
           name: browsers-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           include-hidden-files: true
           path: |
-            playwright-report/
-            test-results/
-            artifacts/browser/
-            artifacts/browser-index.json
+            artifacts/browser-snapshot/playwright-report/
+            artifacts/browser-snapshot/test-results/
+            artifacts/browser-snapshot/artifacts/
           retention-days: 90
 
       - name: Download browser evidence independently
@@ -168,7 +170,7 @@ jobs:
           merge-multiple: true
       - name: Verify downloaded browser evidence
         if: ${{ always() && steps.browser-evidence.outputs.artifact-id != '' }}
-        run: node scripts/verifyEvidenceDownload.mjs --index artifacts/browser-index.json --download artifacts/browser-download --downloaded-index artifacts/browser-index.json --receipt artifacts/browser-retrieval.json
+        run: node scripts/verifyEvidenceDownload.mjs --index artifacts/browser-snapshot/artifacts/browser-index.json --download artifacts/browser-download --downloaded-index artifacts/browser-index.json --receipt artifacts/browser-retrieval.json
       - name: Preserve browser retrieval verdict
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
