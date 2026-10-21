@@ -32,59 +32,81 @@ const aggregate = {
   runs: []
 };
 
-let anyFailed = false;
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-for (let i = 0; i < testIds.length; i++) {
-  const testId = testIds[i];
-  const summaryFile = resolve(outputDir, `summary-${testId}.json`);
-  console.log(`\n==================================================`);
-  console.log(`[${i + 1}/${testIds.length}] Running TestSprite replay for: ${testId}`);
-  console.log(`==================================================\n`);
+async function run() {
+  let anyFailed = false;
 
-  const args = [
-    'test', 'run', testId,
-    '--target-url', targetUrl,
-    '--no-auto-heal',
-    '--wait',
-    '--timeout', '600',
-    '--gh-output',
-    '--summary-file', summaryFile
-  ];
+  for (let i = 0; i < testIds.length; i++) {
+    const testId = testIds[i];
+    const summaryFile = resolve(outputDir, `summary-${testId}.json`);
+    console.log(`\n==================================================`);
+    console.log(`[${i + 1}/${testIds.length}] Running TestSprite replay for: ${testId}`);
+    console.log(`==================================================\n`);
 
-  const testspriteBin = process.env.TESTSPRITE_BIN || (process.platform === 'win32' ? 'testsprite.cmd' : 'testsprite');
-  const result = spawnSync(testspriteBin, args, { stdio: 'inherit', env: process.env });
+    const args = [
+      'test', 'run', testId,
+      '--target-url', targetUrl,
+      '--no-auto-heal',
+      '--wait',
+      '--timeout', '600',
+      '--gh-output',
+      '--summary-file', summaryFile
+    ];
 
-  if (existsSync(summaryFile)) {
-    try {
-      const summary = JSON.parse(readFileSync(summaryFile, 'utf8'));
-      if (Array.isArray(summary.runs)) {
-        aggregate.runs.push(...summary.runs);
+    const testspriteBin = process.env.TESTSPRITE_BIN || (process.platform === 'win32' ? 'testsprite.cmd' : 'testsprite');
+    let result;
+    const maxRetries = 30;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      result = spawnSync(testspriteBin, args, { stdio: 'inherit', env: process.env });
+
+      // Code 11: rate limit or in-flight cap hit (e.g. concurrent App batch execution)
+      if (result.status === 11 && attempt < maxRetries) {
+        console.warn(`\n[in-flight cap / throttle] Exit code 11 received. Waiting 30s for queue to drain (retry ${attempt}/${maxRetries})...\n`);
+        await sleep(30000);
+        continue;
       }
-      aggregate.passed += (summary.passed || 0);
-      aggregate.failed += (summary.failed || 0);
-      aggregate.skipped += (summary.skipped || 0);
-      aggregate.timedOut += (summary.timedOut || 0);
-    } catch (e) {
-      console.warn(`Could not parse summary file for ${testId}:`, e.message);
+      break;
     }
-  } else {
-    aggregate.runs.push({
-      testId,
-      status: result.status === 0 ? 'passed' : 'failed',
-      error: `Command exited with code ${result.status}`
-    });
-    if (result.status === 0) aggregate.passed++;
-    else aggregate.failed++;
+
+    if (existsSync(summaryFile)) {
+      try {
+        const summary = JSON.parse(readFileSync(summaryFile, 'utf8'));
+        if (Array.isArray(summary.runs)) {
+          aggregate.runs.push(...summary.runs);
+        }
+        aggregate.passed += (summary.passed || 0);
+        aggregate.failed += (summary.failed || 0);
+        aggregate.skipped += (summary.skipped || 0);
+        aggregate.timedOut += (summary.timedOut || 0);
+      } catch (e) {
+        console.warn(`Could not parse summary file for ${testId}:`, e.message);
+      }
+    } else {
+      aggregate.runs.push({
+        testId,
+        status: result.status === 0 ? 'passed' : 'failed',
+        error: `Command exited with code ${result.status}`
+      });
+      if (result.status === 0) aggregate.passed++;
+      else aggregate.failed++;
+    }
+
+    if (result.status !== 0) {
+      anyFailed = true;
+      console.error(`\n::error title=Test Replay Failed::Test ${testId} exited with code ${result.status}`);
+    }
   }
 
-  if (result.status !== 0) {
-    anyFailed = true;
-    console.error(`\n::error title=Test Replay Failed::Test ${testId} exited with code ${result.status}`);
-  }
+  const aggregateFile = resolve(outputDir, 'summary.json');
+  writeFileSync(aggregateFile, JSON.stringify(aggregate, null, 2), 'utf8');
+  console.log(`\nWrote aggregate summary to: ${aggregateFile}`);
+
+  process.exit(anyFailed ? 1 : 0);
 }
 
-const aggregateFile = resolve(outputDir, 'summary.json');
-writeFileSync(aggregateFile, JSON.stringify(aggregate, null, 2), 'utf8');
-console.log(`\nWrote aggregate summary to: ${aggregateFile}`);
-
-process.exit(anyFailed ? 1 : 0);
+run().catch(err => {
+  console.error('Fatal replay suite error:', err);
+  process.exit(1);
+});
