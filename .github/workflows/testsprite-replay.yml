@@ -1,0 +1,158 @@
+name: TestSprite Replay
+
+# Deterministic replay of stored TestSprite Python tests against commit-pinned preview deployments.
+# Per TestSprite engineering guidance, App-triggered runs execute plans via agent, while
+# saved Python scripts (including custom pixel assertions and fixtures) replay via CLI with --no-auto-heal.
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      test_ids:
+        description: 'Test IDs to replay (space-separated, defaults to verified S4 suite)'
+        required: false
+        default: '59fc51e1-ce16-4ad1-9ea4-392dcca93fd7 1165bc74-c877-4d9f-a3ad-ad58dd3f6729'
+      target_url:
+        description: 'Target preview URL override (optional)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+  deployments: read
+  pull-requests: read
+
+concurrency:
+  group: testsprite-replay-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  replay:
+    name: Stored Python Replay
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Fork PRs do not have access to repository secrets; protect against false reds on external forks.
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Install TestSprite CLI
+        run: npm install --global @testsprite/testsprite-cli@0.15.0
+
+      - name: Resolve and verify preview deployment
+        id: preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          INPUT_URL: ${{ inputs.target_url }}
+        run: |
+          set -euo pipefail
+
+          echo "Resolving preview for commit: $HEAD_SHA"
+
+          # Candidate URL resolution order:
+          # 1. Explicit workflow_dispatch input
+          # 2. GitHub Deployments API for this commit
+          # 3. Branch slug Vercel deployment URL
+          # 4. PR alias deployment URL
+
+          CANDIDATES=()
+
+          if [ -n "$INPUT_URL" ]; then
+            CANDIDATES+=("$INPUT_URL")
+          fi
+
+          # Query GitHub Deployments API for active deployments matching this SHA
+          DEPLOYMENT_URL=$(gh api "repos/${GITHUB_REPOSITORY}/deployments?ref=${HEAD_SHA}" --jq '.[0].id // empty' 2>/dev/null || true)
+          if [ -n "$DEPLOYMENT_URL" ]; then
+            LIVE_URL=$(gh api "repos/${GITHUB_REPOSITORY}/deployments/${DEPLOYMENT_URL}/statuses" --jq 'map(select(.state == "success")) | .[0].environment_url // empty' 2>/dev/null || true)
+            if [ -n "$LIVE_URL" ]; then
+              CANDIDATES+=("$LIVE_URL")
+            fi
+          fi
+
+          # Canonical Vercel branch deployment URL (slashes/underscores replaced with hyphens)
+          CLEAN_BRANCH=$(echo "$HEAD_REF" | sed -e 's/[^a-zA-Z0-9-]/-/g' -e 's/--*/-/g' -e 's/^-//' -e 's/-$//')
+          CANDIDATES+=("https://pixibun-git-${CLEAN_BRANCH}-lxcarios-projects.vercel.app")
+
+          if [ -n "$PR_NUMBER" ]; then
+            CANDIDATES+=("https://pixibun-pr-${PR_NUMBER}.vercel.app")
+          fi
+
+          # Direct fallback for known S4 integration branch
+          CANDIDATES+=("https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app")
+
+          TARGET_URL=""
+          MAX_RETRIES=30
+          SLEEP_SECONDS=10
+
+          for candidate in "${CANDIDATES[@]}"; do
+            candidate="${candidate%/}"
+            echo "Probing candidate preview: $candidate"
+
+            for i in $(seq 1 $MAX_RETRIES); do
+              MANIFEST=$(curl -s -f -m 5 "$candidate/precache-manifest.json" 2>/dev/null || true)
+              if [ -n "$MANIFEST" ]; then
+                VERSION=$(echo "$MANIFEST" | grep -o '"version":"[^"]*"' | cut -d'"' -f4 || true)
+                echo "  Attempt $i/$MAX_RETRIES: found manifest version '$VERSION'"
+
+                # Verify precache manifest contains the exact commit SHA
+                if echo "$VERSION" | grep -qi "$HEAD_SHA"; then
+                  echo "::notice title=Preview Verified::Preview is live at $candidate matching commit $HEAD_SHA"
+                  TARGET_URL="$candidate"
+                  break 2
+                fi
+              else
+                echo "  Attempt $i/$MAX_RETRIES: candidate returned no manifest yet"
+              fi
+              sleep $SLEEP_SECONDS
+            done
+          done
+
+          if [ -z "$TARGET_URL" ]; then
+            echo "::error title=Deployment Verification Failed::Could not verify an active preview deployment serving commit $HEAD_SHA after $((MAX_RETRIES * SLEEP_SECONDS))s. Zero silent testing of stale or production deployments allowed."
+            exit 1
+          fi
+
+          echo "url=$TARGET_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Run TestSprite Replay
+        id: run
+        env:
+          TESTSPRITE_API_KEY: ${{ secrets.TESTSPRITE_API_KEY }}
+          TESTSPRITE_PROJECT_ID: ${{ secrets.TESTSPRITE_PROJECT_ID || vars.TESTSPRITE_PROJECT_ID || 'ae8453ac-f859-4324-9ca2-5016e683bc6c' }}
+          TARGET_URL: ${{ steps.preview.outputs.url }}
+          TEST_IDS: ${{ inputs.test_ids || '59fc51e1-ce16-4ad1-9ea4-392dcca93fd7 1165bc74-c877-4d9f-a3ad-ad58dd3f6729' }}
+        run: |
+          node scripts/testsprite/run-replay-suite.mjs
+
+      - name: Generate JUnit XML Report
+        if: always()
+        run: |
+          node scripts/testsprite/generate-junit-xml.mjs ./test-results/summary.json ./test-results/junit.xml
+
+      - name: Publish Test Summary
+        if: always()
+        run: |
+          node scripts/testsprite/generate-step-summary.mjs ./test-results/summary.json
+
+      - name: Upload Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb99f8edd1 # v4.6.1
+        with:
+          name: testsprite-replay-results
+          path: ./test-results/
+          if-no-files-found: warn
