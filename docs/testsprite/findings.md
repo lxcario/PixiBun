@@ -1,5 +1,9 @@
 # Small promises, followed carefully
 
+## 21 October follow-up
+
+The [current PR story](../releases/2026-10-21-testsprite-verification-and-pr-story.md) now links the palette bug to its real fix and subsequent strict cloud passes on a8c0f90f. Exact color/history verification is available through the controlled saved-script path; the actual automatic App attempt remains Blocked on those observations. The required overall App check is still red. The original 20 October limits below remain a dated observation, not a claim that later manual qualification never happened.
+
 ## 20 October: even the default rate deserved a valid answer
 
 The automatic App found that a new cycle track's 6 Hz default and a typed 5.5 Hz were invalid. Independent browser checks traced this to a native step grid starting at 0.1 rather than 0. A focused repair keeps the bounds and half-Hz buttons while permitting valid typed fractions. The rate regression now passes in Chromium, Firefox and WebKit, including exact artwork preservation. This is a fourth genuine product finding, **locally qualified**, with its original automatic failure retained. Inclusive-range output/history and a fixing-preview App pass remain open. The [repair record](../releases/2026-10-20-targeted-repairs.md) and [hashed receipt](targeted-repairs-2026-10-20.json) separate those limits from the result.

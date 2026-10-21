@@ -1,5 +1,9 @@
 # Season 4 verification
 
+## Current observation — 21 October 2026
+
+The repository is public and Starter is active. PR #6 at a8c0f90f has passing GitHub E2E/Lighthouse/native-codec checks, while the actual required TestSprite App status remains failed (37/5/79). The real latest-case catalog is 91/0/30 across mixed executions; it is not a green automatic batch. The [current story](../releases/2026-10-21-testsprite-verification-and-pr-story.md) and [readiness receipt](s4-readiness-2026-10-21.json) preserve all sources, original failures, verified merge enforcement and the precise next-run proposal. Older dated setup observations below remain historical; their private-repo and billing statements are not current.
+
 Live app: https://pixibun.vercel.app/
 
 TestSprite 3.0 portal project: https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/test-cases

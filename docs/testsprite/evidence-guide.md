@@ -1,5 +1,7 @@
 # A little drawing, and the promises around it
 
+Latest observation, 21 October: the [PR #6 product-repair story](../releases/2026-10-21-testsprite-verification-and-pr-story.md) adds the genuine palette-rate App failure, fix `f2f13f3c` and controlled cloud green, while explicitly retaining the still-failed required App check. Actual latest catalog: 91 Passed /0 Failed /30 Blocked. GitHub E2E/Lighthouse/native codecs pass on current `a8c0f90f`; the required App status still prevents merging. Older source-labelled observations below remain historical.
+
 20 October follow-up: a fourth TestSprite-led product defect, cycle-rate native validity, now has independent local red → green qualification. It has **no fixing-preview cloud green yet**. The [targeted repair record](../releases/2026-10-20-targeted-repairs.md) preserves that boundary, the original App failure and actual three-engine observations. The three cloud-qualified stories below remain distinct. The [latest complete automatic cohort](automatic-followup-2026-10-20.json) is 37 Passed /9 Failed /75 Blocked, rather than a complete green suite.
 
 PixiBun is a small pixel-art and animation desk. An artist should be able to trust a lock, return to a palette with the keyboard, and find their drawing inside the file they take home.

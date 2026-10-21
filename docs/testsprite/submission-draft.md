@@ -2,6 +2,18 @@
 
 **Not ready to submit.** Use the official Discord channel's actual template. This draft keeps the story and evidence together; it is not an entry posted on the participant's behalf.
 
+## 21 October evidence update — still a draft
+
+Our fourth confirmed TestSprite-led product finding came from PR #6 itself: a palette loop's default 6 Hz was marked invalid. The [evidence story](../releases/2026-10-21-testsprite-verification-and-pr-story.md) links the original automatic failure, fix `f2f13f3c` in this PR, and the same case's passing manual cloud follow-up on the current fixing preview. We kept the bounds and buttons, strengthened the independent color/history checks, and retained the original failure. This is an honest product repair with controlled green evidence; the overall automatic PR check has not become green.
+
+Current observation: the actual catalog is 91 Passed /0 Failed /30 Blocked across mixed latest executions; PR #6's required App cohort remains 37/5/79 and prevents merge. E2E, Lighthouse and native-codec checks pass on current HEAD `a8c0f90f`. Starter is now active. No final production release or complete automatic green loop is claimed. Replace these dated observations only with verifiable newer evidence before using the official submission template.
+
+## Our story, in a few words
+
+PixiBun is a tiny drawing desk, so we wanted its promises to stay small and dependable: a lock protects your pixels, Undo brings them back, and the file you take home is really your drawing. TestSprite helped us find the places where those promises broke. On PR #6 it even caught a palette loop rejecting its own default speed. We kept the failed run, found the native input constraint and fixed it without changing the artist's controls. Now we follow real gestures into exact pixels and actual downloaded files. The automatic PR check still holds the merge, and we are leaving that unfinished green visible. A cozy desk earns trust by keeping the drawing safe—and by keeping the evidence honest.
+
+The [original red, code fix, latest automatic Blocked attempt and controlled green](../releases/2026-10-21-testsprite-verification-and-pr-story.md) are separate linked observations. Replace the unfinished-check sentence only after the real automatic green exists. This prose is ready to adapt to the official template; it has not been posted.
+
 ## The project
 
 PixiBun is a little pixel-art and animation desk for making something worth keeping. Draw a sprite, give its frames different pauses, try a little light, and take home an editable project or an animation. Its quietest features matter most: a lock that protects finished pixels, Undo that brings a pose back, and a file that really contains the drawing.

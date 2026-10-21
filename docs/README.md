@@ -16,6 +16,8 @@ Start with [current status](current-status.md) for scoped engineering results an
 
 ## Latest reconciliation
 
+The [21 October verification and PR story](releases/2026-10-21-testsprite-verification-and-pr-story.md) is the latest observation: actual portal 91/0/30, 38 additional manual cloud passes and 114 source-pinned browser checks; exact-head E2E/Lighthouse/native-codec success; a genuine palette-rate App failure, its code fix and controlled cloud follow-up; and the still-failed required App check actually preventing merge. Historical reports below retain their original sources and verdicts.
+
 The [20 October visible-failure follow-up](releases/2026-10-20-visible-failures-followup.md) separates actual current-head reproduction, runner prerequisites and historical results: thirty independent targeted executions, one honestly Blocked fresh portal replay, all original 72 Blocked cases classified, a passing Lighthouse retry and the minimal unpublished E2E job-budget repair. Its [receipt](testsprite/visible-five-followup-2026-10-20.json) retains source/run/environment identities and limits.
 
 The [20 October remaining-hardening record](releases/2026-10-20-remaining-hardening.md) preserves five strict controlled cloud passes, fifteen independent browser qualifications and the corrected Pocket viewport, with the retained UI-agent limitation and 46 remaining default Blocked cases explicit.

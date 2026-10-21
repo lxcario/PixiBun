@@ -1,0 +1,1172 @@
+{
+  "recordedAt": "2026-10-21T12:36:47.434Z",
+  "projectId": "ae8453ac-f859-4324-9ca2-5016e683bc6c",
+  "sourceCommit": "a8c0f90fbbcb3398f5e1b62f676c590a13c633bd",
+  "mainCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa",
+  "repoPublic": true,
+  "prOpenedAt": "2026-10-18T07:00:56Z",
+  "preview": {
+    "url": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app/precache-manifest.json",
+    "version": "v1.14.1-a8c0f90fbbcb3398f5e1b62f676c590a13c633bd"
+  },
+  "visibleCatalog": {
+    "passed": 91,
+    "failed": 0,
+    "blocked": 30,
+    "running": 0,
+    "total": 121
+  },
+  "latestHistoryCounts": {
+    "passed": 91,
+    "blocked": 30
+  },
+  "defaultOnlySummaryNotOfficial": {
+    "passed": 93,
+    "blocked": 28
+  },
+  "automaticApp": {
+    "executionId": "a5fbb654-b0ef-4e5e-bab6-d0551b22e67f",
+    "sourceCommit": "a8c0f90fbbcb3398f5e1b62f676c590a13c633bd",
+    "createdAt": "2026-10-20T19:11:15.420Z",
+    "counts": {
+      "blocked": 79,
+      "passed": 37,
+      "failed": 5
+    },
+    "status": "failure",
+    "source": "github_action",
+    "environment": "github-pr-6",
+    "requiredCheckUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/a5fbb654-b0ef-4e5e-bab6-d0551b22e67f",
+    "lastVercelReadyAt": "2026-10-20T19:11:13Z",
+    "triggerActive": true,
+    "triggerType": "Commit status: Vercel",
+    "targetPattern": "https://pixibun-git-{branch-slug}-lxcarios-projects.vercel.app",
+    "appMergeGateEnabled": true,
+    "noNewEventObserved": true
+  },
+  "palette": {
+    "originalAppFailureRunId": "43dbf725-da8f-4777-b38a-24fadfdb7786",
+    "originalSourceCommit": "2d27b262239fcf86aa1dc2ec9f13b42301319e4c",
+    "fixCommit": "f2f13f3caa255228c0d6b89e8dd4e09f9fc9f845",
+    "latestAutomaticAttempt": {
+      "runId": "1ec9b1e8-c4c3-45ef-bd8f-271a702937f0",
+      "status": "blocked",
+      "error": "TEST BLOCKED\n\nThe cycle track setup, rate selections, playback and pause, and track deletion were completed through the visible studio controls. The track disappeared after deletion, and the Bun artwork remained loaded. The required independent pixel-boundary comparison and project-file and undo/redo history checks could not be verified through the available UI.\n\nObservations:\n- Cycle Engine showed “No cycle tracks configured” after deletion.\n- Bun remained 16×16 with 192 painted pixels and six colors; frame digest 6af29269.\n- The 5.6 Hz setting, First=2, Last=5, Forward direction, BlendShift off, and play/pause were observed during the run; pixel-level and project-history oracles were unavailable.",
+      "environment": {
+        "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+        "name": "github-pr-6"
+      },
+      "source": "github_action",
+      "createdAt": "2026-10-20T19:11:15.420Z",
+      "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+      "codeVersion": null,
+      "steps": 21
+    },
+    "protectedDefaultDiagnostic": {
+      "runId": "953d3fac-524a-4bbf-acbb-4d526cd26095",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/cc4b4633-3ad1-4401-a0fc-a993884e6f2e/test/953d3fac-524a-4bbf-acbb-4d526cd26095",
+      "source": "cli",
+      "environment": "default",
+      "autoHeal": true,
+      "status": "passed",
+      "scriptUnchanged": true,
+      "codeVersion": "v-9f386d63a978",
+      "scriptSha256": "dc16d2f692902334b40555d67b8e31115f7ae759647f7def2161925665c78180"
+    }
+  },
+  "savedSuite": {
+    "withCode": 98,
+    "missing": 23,
+    "fixedOriginsRemaining": 0,
+    "urlBindingRepairs": 35,
+    "scope": "Syntax/readback checked. Binding replacements are not new execution passes or proof of App script selection.",
+    "changedBindings": [
+      {
+        "testId": "1c218262-aac8-4a1d-b6ba-fb7785bce98f",
+        "name": "S4-PAL-03 — Five shades from one seed.",
+        "beforeVersion": "v4.0",
+        "beforeSha256": "aa3ae7fbffb55839eb20a9dc2a1c4ab4c10388f2a9887ad309e1f8ab92e5421f",
+        "afterVersion": "v-c4f55f527967",
+        "afterSha256": "ac5987d18293e5a631b0fde2ae79429bb0f0af4b2082fc386dc865dfd6ec9313"
+      },
+      {
+        "testId": "2533dba8-1cfd-47e4-a42f-77e396cb56d0",
+        "name": "S4-LEARN-01 — Every lesson has a first page.",
+        "beforeVersion": "v3.0",
+        "beforeSha256": "9a97bd2c45eb2826ba5c47c9c1ac78b26fee72955060aa9879bebb335fd02c74",
+        "afterVersion": "v-f5b7ffdf4b45",
+        "afterSha256": "b1ad161c0feae0ba87adfa995b6e7d53bcdd8233b22d56eb9db19b452c88dd78"
+      },
+      {
+        "testId": "3028ec4f-6802-43b9-82f4-37f1bb927d69",
+        "name": "Persist desk theme after reloading the studio",
+        "beforeVersion": "v6.0",
+        "beforeSha256": "dcc6e123550a44d067b0735f2ae65e5917e0007da5130e95fe3306389d7a3f49",
+        "afterVersion": "v-b8fc3ce9453d",
+        "afterSha256": "61d27fb4259f92a474cc4fde2967708d7d434683ac36e71670fc81463685c08f"
+      },
+      {
+        "testId": "3645e185-6ffd-4ac9-a3ca-f14259d187e9",
+        "name": "S4-HIST-01 — View actions do not steal Undo.",
+        "beforeVersion": "v3.0",
+        "beforeSha256": "00e32609201025974870e4e688dde8d0e8e16988a2214bfe942b58d04208b3a7",
+        "afterVersion": "v-681221d57604",
+        "afterSha256": "ffd8c159d85cdb29fd588640b81486b1bfa5c8e24b088544bf51b63c11adb65f"
+      },
+      {
+        "testId": "3795f720-7b78-431f-9764-a388a2f51294",
+        "name": "S4-HIST-04 — Resize bounds are real.",
+        "beforeVersion": "v5.0",
+        "beforeSha256": "30668e81bb9739ffe1bce419894fbd773e9a6b89fa8abe2128fdddf652a599b9",
+        "afterVersion": "v-5b541f164612",
+        "afterSha256": "7bc3c5c917f7d7b94063daf1276c5c38d398f9a15b3d634c252f60993281b35f"
+      },
+      {
+        "testId": "3c65e1d1-03c9-4bf5-92f4-ad82e0f2ba2b",
+        "name": "Return to drawing from Playground",
+        "beforeVersion": "v5.0",
+        "beforeSha256": "9831a6a1961b0aaf5d02b94877793a03da9fcb6d587af2298dae4ffc747eba0d",
+        "afterVersion": "v-cd616b5585d4",
+        "afterSha256": "1356cdddaabbb78681f1fca1702faabf0bca45d55070bf1ac9ac81911a4733e8"
+      },
+      {
+        "testId": "421a951f-7f1a-42de-8f0a-1070b479fea3",
+        "name": "Cancel a lighting adjustment without changing pixels",
+        "beforeVersion": "v5.0",
+        "beforeSha256": "cba8daa2f532d0fa31642d47f6eea8529896a59047ed5e4277a55a153befca69",
+        "afterVersion": "v-d876408b9e4b",
+        "afterSha256": "153edeb20e60952ac7bb2c1148c96e2685f2ef25f6df17d5067bc51eef1cd2f6"
+      },
+      {
+        "testId": "451a46ca-eb84-452a-9925-d0ccff94addb",
+        "name": "S4-SAFE-02 — Co-Draw refuses a broken invitation.",
+        "beforeVersion": "v4.0",
+        "beforeSha256": "f4808192a0d7071cb8c384727ab33e7d70012bbd7984748f12f310e7b306fd66",
+        "afterVersion": "v-80e7e607a975",
+        "afterSha256": "d815c85c6a9b4906d24c0f4a1b08410bba567bae17325f4f316254332aa8d83b"
+      },
+      {
+        "testId": "47b10a79-72f8-4d03-be7f-93ae111d71c0",
+        "name": "Undo a layer deletion and restore its prior state",
+        "beforeVersion": "v6.0",
+        "beforeSha256": "aec6ba73fcc5148b9906be664413041da2691615087b81af84b9e215e468ebaf",
+        "afterVersion": "v-015d13d84d57",
+        "afterSha256": "c1a44c8532badc8f60c6075aa7482960d6429d6f32d1b4b6b26149f794a5904a"
+      },
+      {
+        "testId": "4a6bfdd0-5829-4661-ae5a-06f170218af8",
+        "name": "S4-LEARN-03 — Keep means a new project.",
+        "beforeVersion": "v2.0",
+        "beforeSha256": "311af6e08911aa89babfb765cd45ad4433622e7a884e75db35e68b1f76954fdb",
+        "afterVersion": "v-f234ab057978",
+        "afterSha256": "5e30092727bcba488a9a7667d1b06ed5f7522bf563edde3171724cd761ae8bd8"
+      },
+      {
+        "testId": "4cd53bc1-ed07-4e21-bfe8-0a3566035797",
+        "name": "S4-NEW-06 — A frame menu finds its way back.",
+        "beforeVersion": "v5.0",
+        "beforeSha256": "02bc60b3278d4b3237d85b5c59777de604afb714166b239e47c6ee3821def675",
+        "afterVersion": "v-9d6fa9113965",
+        "afterSha256": "fcabf724fc5ea8ed719b7ccbede01bd0804adacb177e582d39f351a1ad7673bd"
+      },
+      {
+        "testId": "4efa7cc4-49d7-43a1-887a-0d5148376376",
+        "name": "S4-LEARN-02 — Practice returns to the original.",
+        "beforeVersion": "v6.0",
+        "beforeSha256": "4c193909dd9b5e7ae4799997d3547df5ec12ecf8b387416f6ef03a2f92025584",
+        "afterVersion": "v-2510eb723488",
+        "afterSha256": "610570cc11ef528e67df6f398ce304692edbc078d34a9d9d803d3ff3d0d99eb1"
+      },
+      {
+        "testId": "4fdbc1b5-3baa-4fc0-bcf9-1d3bdc501e30",
+        "name": "S4-NEW-04 — Earlier and later respect the ends.",
+        "beforeVersion": "v5.0",
+        "beforeSha256": "fa7fc531b94f870245c9aba98831ca5be694d7e547671e377576eae20a55223b",
+        "afterVersion": "v-6bbe91d9e105",
+        "afterSha256": "250de3ac8346eaa6df875543f2fd8c97ce80fe68acc6941e49a09d21f0ba933f"
+      },
+      {
+        "testId": "53f05468-e8ac-46de-941b-353e4ab51b6f",
+        "name": "S4-NEW-13 — Recent colors remember settled choices.",
+        "beforeVersion": "v5.0",
+        "beforeSha256": "8e5ea19f69a766d96da85e7a3b975989331cdf486ef1a0e67914c54d6885feb9",
+        "afterVersion": "v-d7835729d5fb",
+        "afterSha256": "cc026e330813be1797e2ff72c711e5ff6ed4512fdbc3f8503cfe242d8737e069"
+      },
+      {
+        "testId": "64210b64-e030-4fda-856e-1956e73e6928",
+        "name": "Create two frames with distinct artwork and timing",
+        "beforeVersion": "v6.0",
+        "beforeSha256": "161e65f876696781338b0fdc1d07d487b972999495cd0c88be28e8f310451a28",
+        "afterVersion": "v-749ce3658fcd",
+        "afterSha256": "0dba9cd15bb9643294a8accb0ea0807d9e836f137be24ae717882846d53a11ce"
+      },
+      {
+        "testId": "71cc3067-44fb-4a52-8469-88468e42d1c9",
+        "name": "Reject invalid canvas size before starting a new drawing",
+        "beforeVersion": "v4.0",
+        "beforeSha256": "45990ef87f9180f928bc66b33eee3ec85f1b277271a7d20747e0143e003c1bef",
+        "afterVersion": "v-038f86fb7c0f",
+        "afterSha256": "003530157945968818c5e9bf3dc44a168cd86f0032bc55c4ddd0a025e2ee4814"
+      },
+      {
+        "testId": "76bbe317-2ce3-4643-b8a9-6649e732c91f",
+        "name": "S4-FX-02 — Cancel leaves the lamp unlit.",
+        "beforeVersion": "v2.0",
+        "beforeSha256": "9227985f196bd4ef7ba01a891a8c86f6a0ad512da6a37dafe8f18984002f48ce",
+        "afterVersion": "v-62913cf130e5",
+        "afterSha256": "dd37653b1cb20d263fdb78ae97270817c37a77449c6be4565cb3e9e54eaefa08"
+      },
+      {
+        "testId": "79f38a30-8492-4308-97a2-50189b25e598",
+        "name": "Select the Bun starter and continue into the studio",
+        "beforeVersion": "v6.0",
+        "beforeSha256": "169d5f4cb95f904ca7dae8df46aae9e406a8361b23e893ca43da7e3c85101c5d",
+        "afterVersion": "v-209257c3d46e",
+        "afterSha256": "31d72022271e8776d43a967a79aae8b6be2ec60aa49ab1d11d78a79910e8e976"
+      },
+      {
+        "testId": "9300184d-ab5e-4851-ac8f-58fe8b364e8b",
+        "name": "Keep practice in Studio from Playground",
+        "beforeVersion": "v4.0",
+        "beforeSha256": "370551837f0ad9eb7889b4eab00381f5f430a2c89d3bec5c9d918668433b4c19",
+        "afterVersion": "v-31169bafbf9b",
+        "afterSha256": "9c3070ff7447e71f7f99290a779b452d1d924fb7de4d0b14dd31748ef9873d6c"
+      },
+      {
+        "testId": "99a52012-60cf-4042-a0b3-96a70b39fb63",
+        "name": "Open command palette and select a tool",
+        "beforeVersion": "v2.0",
+        "beforeSha256": "e04373144e3a4aa47a6a0db67cf76e83fe8fdf160aebf6d8ae1f028cc31d8a27",
+        "afterVersion": "v-4df7d54b2748",
+        "afterSha256": "9b45781ef3f069c5de121c0924cc81b3c4c626a55473a0f68365d1c3b04f85c2"
+      },
+      {
+        "testId": "a3ffdffc-17ef-43b3-8df8-feeebb00d513",
+        "name": "S4-NEW-10 — A typo stays in the paint pot.",
+        "beforeVersion": "v5.0",
+        "beforeSha256": "e9bd8d224e4152551c692c8a09fa0c771c7608779177ab5491b2a73a22b13a69",
+        "afterVersion": "v-dc907de56371",
+        "afterSha256": "782bd71e138700dcf72f17191415094279b7f4a4d0f7d003e78e60d042e2718d"
+      },
+      {
+        "testId": "a717d33a-ab5a-4e61-84a1-0108a0bd7b51",
+        "name": "S4-SAVE-02 — A gallery copy is its own project.",
+        "beforeVersion": "v5.0",
+        "beforeSha256": "1af35ed61d7a24347efbad52a1c375458fa20e4902139a587e2bf938f33cc828",
+        "afterVersion": "v-fde80cdcf1c4",
+        "afterSha256": "a1824eeae1805a9012d90445a8ec0f29f60b2c966a412a1e293d4729a9d7bea7"
+      },
+      {
+        "testId": "b14b8600-0dd8-4837-bd4c-59f027f8fa4d",
+        "name": "S4-DRAW-13 — Eyedropper samples the art.",
+        "beforeVersion": "v2.0",
+        "beforeSha256": "bc9c252882ef1d1c0306562eff3f7633564a442fe2476de70e94c798401c17eb",
+        "afterVersion": "v-ec2f41d42803",
+        "afterSha256": "b72cd59d6234a980310599b73b660ada4376e3c3e26d99ac59d1600120161941"
+      },
+      {
+        "testId": "b8cf6346-268e-4131-8936-a699c4974816",
+        "name": "S4-NEW-19 — All twelve rooms keep the drawing.",
+        "beforeVersion": "v4.0",
+        "beforeSha256": "db05de9c4ced346203e88f1dfafd4c5f2269c47adbb555a3be4e151635e0f73b",
+        "afterVersion": "v-c9cdb6b9e333",
+        "afterSha256": "9da759b8aea8e6552bdd73e15bed5285f31cde5a8b8d3ff04d407454dc4bf965"
+      },
+      {
+        "testId": "bbb8f684-adbc-43aa-87f0-6a41913bda05",
+        "name": "S4-LAYER-01 — Layer structure is reversible.",
+        "beforeVersion": "v3.0",
+        "beforeSha256": "5b8c9ff777ad4bb5f8625dfb4ede2e0e835388fa5e00a990cda23ef7a5f11c7f",
+        "afterVersion": "v-7a879a425474",
+        "afterSha256": "150980394ac92782bf44e311e75ddd66bbb0508ee4b51d2c0371572e44ca3ccb"
+      },
+      {
+        "testId": "c84e8e84-b8ea-48a9-9a45-cbdcb7304c59",
+        "name": "S4-DRAW-09 — A transformed detail can come back.",
+        "beforeVersion": "v2.0",
+        "beforeSha256": "0228e06f929147546a21e580fb8830fa5af17220a641ace3cd6d211c5927b950",
+        "afterVersion": "v-c6a12cd1f23b",
+        "afterSha256": "bdea5135f8db016582d9bb6ee6aaf3ad247c8eddc9d89ef7e875a3191b9e4eb0"
+      },
+      {
+        "testId": "d2dcb17d-7df0-40ad-ba4a-078e2b661065",
+        "name": "Enter shortcut characters while editing text without switching tools",
+        "beforeVersion": "v5.0",
+        "beforeSha256": "5eeff9d2931a74231ac833c3a34d3610a76d0202566927402775b08ae807d1ce",
+        "afterVersion": "v-8c8e58fb4932",
+        "afterSha256": "a9a05d85de8552794cb3eb372de0551079d547036a92354298f749e6a4788191"
+      },
+      {
+        "testId": "df2541b1-1b7c-4ea9-a018-d7fe083b5f2a",
+        "name": "S4-DRAW-14 — Seventeen tools have reachable controls.",
+        "beforeVersion": "v3.0",
+        "beforeSha256": "1a93d57e49529a12f0f17cd3abe6a2f79f803ea41b7c4d7b5f2e19af8c73426c",
+        "afterVersion": "v-42cd1dcf3bf7",
+        "afterSha256": "43392a24294e369ac5714f552f2585db87af7c58977e920d0aa3c43799e2594f"
+      },
+      {
+        "testId": "e08ab5de-e8e9-4a25-b6ca-2ecec084741e",
+        "name": "S4-SAVE-03 — A cancelled new drawing keeps tonight's work.",
+        "beforeVersion": "v4.0",
+        "beforeSha256": "630c2baf933d4f3430f901bd562fd811eda41d9cc59f75108e74fa90156ec45e",
+        "afterVersion": "v-672c2d5c0b4f",
+        "afterSha256": "1a19385f5cf71812c31fd5cefe66ed91210e0660c60e85a7be7ac6ba2fd28416"
+      },
+      {
+        "testId": "e16f11fa-19e9-4617-bfaf-3811b9e2d9fc",
+        "name": "S4-NEW-22 — The command palette really opens.",
+        "beforeVersion": "v4.0",
+        "beforeSha256": "df55b34288bb7eb5d2ad13012ba8758a5d39e460fe1ea8e12d0b9e2511e7f355",
+        "afterVersion": "v-0821ff6485ff",
+        "afterSha256": "4ec48a347f4860b3e8e04f8930a6e420aea7181623e8133cf25ce5e1cc454278"
+      },
+      {
+        "testId": "e36de20f-0c53-4e83-98d4-1a537be622a1",
+        "name": "S4-NEW-21 — Every Lab can come home.",
+        "beforeVersion": "v4.0",
+        "beforeSha256": "4f7da7bf992bb3f17bbb689d389e66dee28af24e01e30243dbdc5604c1e41787",
+        "afterVersion": "v-5a03103b4340",
+        "afterSha256": "4cda27b75446060264da86ea38ee0af526426e56ed39d1b62adeb3db250d7d24"
+      },
+      {
+        "testId": "e4f6a0ae-6028-4035-9e59-a42ad5a88e46",
+        "name": "Reject or clamp invalid canvas sizes through the real resize controls",
+        "beforeVersion": "v5.0",
+        "beforeSha256": "fae826658f4be2afeb171be3f10b3b148f5723e20950bc2d71c31dc0ebf08aa2",
+        "afterVersion": "v-9185130f48e3",
+        "afterSha256": "96659f6716ec20728899d7424b77fafb3f33d7955e8775e7085c9bb5344838e8"
+      },
+      {
+        "testId": "e603c521-4772-4767-b258-2ec4e0e6973b",
+        "name": "S4-NEW-03 — The last frame stays.",
+        "beforeVersion": "v4.0",
+        "beforeSha256": "42625f498c4c6e29f59e266d2950196acb370b893e534141fb264a5c0a80c674",
+        "afterVersion": "v-14f100ab47b6",
+        "afterSha256": "760d8ed50ecd75868d638ab34dbd8f6d5c5f03b510c69189d823e03c29346d06"
+      },
+      {
+        "testId": "e871e984-5663-481a-a4f7-4797c95faab5",
+        "name": "S4-NEW-09 — Two paint pots, no surprises.",
+        "beforeVersion": "v4.0",
+        "beforeSha256": "45092bd96477d9453f1619e12a00132921dd7e0a26c0606719b425cd60986a96",
+        "afterVersion": "v-3a39d64efac8",
+        "afterSha256": "1dfc23f883fa6479d5d76cff5d9145ff7097413ac8d8f2f5f6da237959f4593c"
+      },
+      {
+        "testId": "f3933f1b-661a-41f6-8297-9a9bfbb58f84",
+        "name": "S4-NEW-14 — Preview is a window, not a paintbrush.",
+        "beforeVersion": "v2.0",
+        "beforeSha256": "6d3d0450661c44e4cfa34dd39931ed5f613b3ac2e1fbd57850d6140cf55216bb",
+        "afterVersion": "v-ccaf85343566",
+        "afterSha256": "78ee2c8c82b734f57b56b6be8e5bcbfe9110515595b9bf0e75628daf92a39f46"
+      }
+    ],
+    "notStored": [
+      {
+        "testId": "064e9c2c-3eef-42a9-a6f6-d6d9ae5db343",
+        "name": "S4-EXPORT-06 — A replay remembers the latest stroke."
+      },
+      {
+        "testId": "1165bc74-c877-4d9f-a3ad-ad58dd3f6729",
+        "name": "S4-CART-01 — A living postcard brings the drawing back."
+      },
+      {
+        "testId": "17a18f9f-1336-47db-abf7-e50fa5ab5427",
+        "name": "S4-NEW-17 — A layered stroke tells the truth."
+      },
+      {
+        "testId": "1bffe460-3740-40d7-acfc-f59d73cbc55a",
+        "name": "S4-EXPORT-11 — Video reports its real capability."
+      },
+      {
+        "testId": "2dee1983-4ac9-490d-9986-1b054492cab0",
+        "name": "S4-SAFE-04 — Offline and update promises need an actual network boundary."
+      },
+      {
+        "testId": "306a7b5a-9435-4506-9be2-eaf7dd9f607f",
+        "name": "S4-NEW-15 — Preview stays on the desk."
+      },
+      {
+        "testId": "31ecb05a-6b76-42fd-bd87-a3525b49ff6c",
+        "name": "S4-NEW-11 — A swatch knows which pot."
+      },
+      {
+        "testId": "4b519c7e-d4e0-4db7-87d3-d0a8dee71f17",
+        "name": "S4-FX-06 — Tiles agree with their map."
+      },
+      {
+        "testId": "6e22e00c-53b8-4a8c-b762-0859b83b8702",
+        "name": "S4-EXPORT-08 — Shader code travels with its context."
+      },
+      {
+        "testId": "7113128a-96dd-40fe-8c3d-79608d16fbc4",
+        "name": "S4-EXPORT-09 — Palette motion becomes a loop."
+      },
+      {
+        "testId": "76cb1fe2-c7c5-4cf0-b5b1-a3ea0cd8b905",
+        "name": "S4-STORY-01 — A lamp for a little midnight friend."
+      },
+      {
+        "testId": "87832975-3885-4714-9988-2d6f193489fa",
+        "name": "S4-PAL-05 — Roles and bindings survive editing."
+      },
+      {
+        "testId": "8e9da616-47f1-4cd9-ae9a-163ef2190f12",
+        "name": "S4-DRAW-08 — Three ways to select."
+      },
+      {
+        "testId": "8f4458ff-2a3b-415c-b99c-bc3a0fb42843",
+        "name": "S4-LAYER-03 — Blend and opacity keep their neighbors."
+      },
+      {
+        "testId": "9e95f9a5-6af7-402f-80d8-0fd14784b17f",
+        "name": "S4-NEW-16 — A pan is never a stroke."
+      },
+      {
+        "testId": "a0974817-fb8c-45ff-94cd-4223f9071a01",
+        "name": "S4-EXPORT-13 — A lighthouse for a pocket-sized drawing."
+      },
+      {
+        "testId": "b5cab687-77f4-4ba1-8df6-5def1766b4f4",
+        "name": "S4-MOTION-01 — A rigid part takes two poses."
+      },
+      {
+        "testId": "da6a67a2-4780-4761-98e9-5f9b33e07566",
+        "name": "S4-CART-02 — A broken postcard is not a lost drawing."
+      },
+      {
+        "testId": "dd5ae5f3-02e6-47a9-8b8c-fb05a96b25c9",
+        "name": "Export an editable backup and reopen it through the supported import flow"
+      },
+      {
+        "testId": "e3dedfcc-3074-4425-a274-6b3d9fc81674",
+        "name": "S4-ANIM-04 — Review explains a difference."
+      },
+      {
+        "testId": "fb1facc7-97dd-4f27-a7fe-c80787ee9859",
+        "name": "S4-FX-07 — Variations stay tied to their source."
+      },
+      {
+        "testId": "fd0f5e17-76da-47d0-942b-ddd752997e9c",
+        "name": "S4-NEW-08 — The timeline fits the desk."
+      },
+      {
+        "testId": "fd3da2e3-9a59-46e0-b591-df9d18fe2703",
+        "name": "S4-LAYER-02 — Hidden and locked mean different things."
+      }
+    ]
+  },
+  "targeted": [
+    {
+      "testId": "2c762ddc-9921-415d-bc62-0f49b0b4a30d",
+      "name": "Export a two-frame animation as GIF with distinct frame content",
+      "sourceCommit": "a8c0f90fbbcb3398f5e1b62f676c590a13c633bd",
+      "runId": "e65a6754-99d8-4987-862a-eb1d1e7ce6b1",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/4673a71f-5c18-40ea-8f62-4a305c49521f/test/e65a6754-99d8-4987-862a-eb1d1e7ce6b1",
+      "createdAt": "2026-10-21T12:31:10.863Z",
+      "finishedAt": "2026-10-21T12:31:33.805Z",
+      "source": "cli",
+      "environment": {
+        "id": "af89678a-1f0a-4333-9ae6-d2a6d6fb2570",
+        "name": "default"
+      },
+      "uploadVersion": "v-ffc19ec985c3",
+      "scriptSha256": "89a39fb476b048f1f720b6d5318771a97febd5facdf13d3b0dbacc089923e19e",
+      "browsers": [
+        {
+          "engine": "chromium",
+          "status": "passed",
+          "scriptSha256": "89a39fb476b048f1f720b6d5318771a97febd5facdf13d3b0dbacc089923e19e"
+        },
+        {
+          "engine": "firefox",
+          "status": "passed",
+          "scriptSha256": "89a39fb476b048f1f720b6d5318771a97febd5facdf13d3b0dbacc089923e19e"
+        },
+        {
+          "engine": "webkit",
+          "status": "passed",
+          "scriptSha256": "89a39fb476b048f1f720b6d5318771a97febd5facdf13d3b0dbacc089923e19e"
+        }
+      ],
+      "reusableVersion": "v-d691f2d34b47",
+      "reusableVersionNotExecuted": true
+    },
+    {
+      "testId": "ab425882-1179-4999-a003-1b0e0f434388",
+      "name": "S4-FX-01 — The Lamp can be put back.",
+      "sourceCommit": "a8c0f90fbbcb3398f5e1b62f676c590a13c633bd",
+      "runId": "e7d58066-1538-4264-ae46-dac5721890b2",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/10eb583c-6fb0-45c4-ba8a-046af2a894de/test/e7d58066-1538-4264-ae46-dac5721890b2",
+      "createdAt": "2026-10-21T12:31:13.778Z",
+      "finishedAt": "2026-10-21T12:31:29.209Z",
+      "source": "cli",
+      "environment": {
+        "id": "af89678a-1f0a-4333-9ae6-d2a6d6fb2570",
+        "name": "default"
+      },
+      "uploadVersion": "v-76ea15d8191a",
+      "scriptSha256": "7707d14730beeebe32c059569adb9c1c396383899f5afad6151a506d4850161c",
+      "browsers": [
+        {
+          "engine": "chromium",
+          "status": "passed",
+          "scriptSha256": "7707d14730beeebe32c059569adb9c1c396383899f5afad6151a506d4850161c"
+        },
+        {
+          "engine": "firefox",
+          "status": "passed",
+          "scriptSha256": "7707d14730beeebe32c059569adb9c1c396383899f5afad6151a506d4850161c"
+        },
+        {
+          "engine": "webkit",
+          "status": "passed",
+          "scriptSha256": "7707d14730beeebe32c059569adb9c1c396383899f5afad6151a506d4850161c"
+        }
+      ],
+      "reusableVersion": "v-fa0b769799b6",
+      "reusableVersionNotExecuted": true
+    },
+    {
+      "testId": "76bbe317-2ce3-4643-b8a9-6649e732c91f",
+      "name": "S4-FX-02 — Cancel leaves the lamp unlit.",
+      "sourceCommit": "a8c0f90fbbcb3398f5e1b62f676c590a13c633bd",
+      "runId": "35f9b5c1-3225-4c1f-9b5d-d17147972fdc",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/c3be695f-a0eb-46ff-be49-18b575cf33e0/test/35f9b5c1-3225-4c1f-9b5d-d17147972fdc",
+      "createdAt": "2026-10-21T12:31:15.337Z",
+      "finishedAt": "2026-10-21T12:31:32.234Z",
+      "source": "cli",
+      "environment": {
+        "id": "af89678a-1f0a-4333-9ae6-d2a6d6fb2570",
+        "name": "default"
+      },
+      "uploadVersion": "v-09026e24111e",
+      "scriptSha256": "37e5868943ce01f32f2520f745615add401917a16ed0da828380d026e0e819b0",
+      "browsers": [
+        {
+          "engine": "chromium",
+          "status": "passed",
+          "scriptSha256": "37e5868943ce01f32f2520f745615add401917a16ed0da828380d026e0e819b0"
+        },
+        {
+          "engine": "firefox",
+          "status": "passed",
+          "scriptSha256": "37e5868943ce01f32f2520f745615add401917a16ed0da828380d026e0e819b0"
+        },
+        {
+          "engine": "webkit",
+          "status": "passed",
+          "scriptSha256": "37e5868943ce01f32f2520f745615add401917a16ed0da828380d026e0e819b0"
+        }
+      ],
+      "reusableVersion": "v-672bac253c65",
+      "reusableVersionNotExecuted": true
+    }
+  ],
+  "oldFiveFailures": [
+    {
+      "testId": "5197eb3b-9b2a-43ca-8371-5fb0ed29d7ae",
+      "name": "S4-ANIM-03 — Clips use inclusive endpoints.",
+      "oldRunId": "1315da54-0d6b-40b8-9014-1d89d3b0a53c",
+      "latest": {
+        "runId": "d98be31e-91c4-449b-9b60-8ca2b02fcccb",
+        "status": "passed",
+        "source": "cli",
+        "createdAt": "2026-10-21T06:45:08.158Z",
+        "finishedAt": "2026-10-21T06:45:21.803Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "af89678a-1f0a-4333-9ae6-d2a6d6fb2570",
+          "name": "default"
+        }
+      }
+    },
+    {
+      "testId": "0f7b89d1-67d1-4337-8b4c-ee09195f9c10",
+      "name": "S4-DRAW-10 — Straight and isometric agree with their previews.",
+      "oldRunId": "a956cf84-3dd6-4d01-bb03-9b5c1811b410",
+      "latest": {
+        "runId": "6f00b26f-8822-471c-a055-be58fe42708d",
+        "status": "passed",
+        "source": "cli",
+        "createdAt": "2026-10-21T06:43:31.684Z",
+        "finishedAt": "2026-10-21T06:43:51.624Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "af89678a-1f0a-4333-9ae6-d2a6d6fb2570",
+          "name": "default"
+        }
+      }
+    },
+    {
+      "testId": "1c1f254a-e25d-422f-9bc9-62c35f7127e0",
+      "name": "S4-FX-05 — Cleanup keeps protected details.",
+      "oldRunId": "251b39b8-34cb-4553-a11f-41118af666ac",
+      "latest": {
+        "runId": "6bcb426b-b0c9-4654-93c2-f300cdef2d3e",
+        "status": "passed",
+        "source": "cli",
+        "createdAt": "2026-10-21T07:07:25.032Z",
+        "finishedAt": "2026-10-21T07:07:38.729Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "af89678a-1f0a-4333-9ae6-d2a6d6fb2570",
+          "name": "default"
+        }
+      }
+    },
+    {
+      "testId": "aff47330-da21-4332-803b-67d3f8c1bb85",
+      "name": "S4-VIEW-02 — A workspace remembers its shelves.",
+      "oldRunId": "9821641f-23ed-47cb-8f2f-306c571c5135",
+      "latest": {
+        "runId": "612ab68a-9e5b-4f58-9808-fbc8771db1ca",
+        "status": "passed",
+        "source": "cli",
+        "createdAt": "2026-10-21T06:45:10.813Z",
+        "finishedAt": "2026-10-21T06:45:28.962Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "af89678a-1f0a-4333-9ae6-d2a6d6fb2570",
+          "name": "default"
+        }
+      }
+    },
+    {
+      "testId": "813350a7-4390-4ecc-8ab3-2298787696cf",
+      "name": "S4-WELCOME-01 — A welcome you can leave.",
+      "oldRunId": "14d0c716-de66-488a-a41f-0704c4085002",
+      "latest": {
+        "runId": "0954b51c-509d-4af0-9a7e-ae0fcc15e4a5",
+        "status": "passed",
+        "source": "cli",
+        "createdAt": "2026-10-21T06:45:09.509Z",
+        "finishedAt": "2026-10-21T06:45:27.009Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "af89678a-1f0a-4333-9ae6-d2a6d6fb2570",
+          "name": "default"
+        }
+      }
+    }
+  ],
+  "remaining": [
+    {
+      "testId": "dd5ae5f3-02e6-47a9-8b8c-fb05a96b25c9",
+      "name": "Export an editable backup and reopen it through the supported import flow",
+      "latest": {
+        "runId": "837c2b63-ffd6-4ef6-84a0-412253cf4ed8",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:17:44.685Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "e3dedfcc-3074-4425-a274-6b3d9fc81674",
+      "name": "S4-ANIM-04 — Review explains a difference.",
+      "latest": {
+        "runId": "48ffb6e2-7ae5-4b98-bca1-dc40e1abd2af",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:45:13.669Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "1165bc74-c877-4d9f-a3ad-ad58dd3f6729",
+      "name": "S4-CART-01 — A living postcard brings the drawing back.",
+      "latest": {
+        "runId": "84bdc6c8-d3f2-445f-9bec-89c1211c6868",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:24:45.680Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "da6a67a2-4780-4761-98e9-5f9b33e07566",
+      "name": "S4-CART-02 — A broken postcard is not a lost drawing.",
+      "latest": {
+        "runId": "9e2d6cf1-540f-453f-9458-9c357fd688d2",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:40:11.380Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "8e9da616-47f1-4cd9-ae9a-163ef2190f12",
+      "name": "S4-DRAW-08 — Three ways to select.",
+      "latest": {
+        "runId": "539d8bef-dbb3-4fb0-ace9-45d92c9dd9b3",
+        "status": "blocked",
+        "source": "cli",
+        "createdAt": "2026-10-21T06:27:39.528Z",
+        "finishedAt": "2026-10-21T06:29:56.288Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "af89678a-1f0a-4333-9ae6-d2a6d6fb2570",
+          "name": "default"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "c84e8e84-b8ea-48a9-9a45-cbdcb7304c59",
+      "name": "S4-DRAW-09 — A transformed detail can come back.",
+      "latest": {
+        "runId": "406d1e4d-f4d0-44b3-a316-1c9f059721c1",
+        "status": "blocked",
+        "source": "cli",
+        "createdAt": "2026-10-21T06:27:40.317Z",
+        "finishedAt": "2026-10-21T06:29:14.190Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "af89678a-1f0a-4333-9ae6-d2a6d6fb2570",
+          "name": "default"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "dc365ace-40a4-4567-a6c5-7d199b58658c",
+      "name": "S4-DRAW-11 — Rectangles and ellipses keep their promises.",
+      "latest": {
+        "runId": "42d92a0c-f190-4e68-972a-bda9f5536ae1",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:40:17.574Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "064e9c2c-3eef-42a9-a6f6-d6d9ae5db343",
+      "name": "S4-EXPORT-06 — A replay remembers the latest stroke.",
+      "latest": {
+        "runId": "1d9f7eda-caf7-4b53-a9f5-6717f3307371",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:20:00.344Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "6e22e00c-53b8-4a8c-b762-0859b83b8702",
+      "name": "S4-EXPORT-08 — Shader code travels with its context.",
+      "latest": {
+        "runId": "f5275966-d71a-4a4b-9c27-6cca41e2f9bd",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:33:01.725Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "7113128a-96dd-40fe-8c3d-79608d16fbc4",
+      "name": "S4-EXPORT-09 — Palette motion becomes a loop.",
+      "latest": {
+        "runId": "6883265f-3990-47fa-b18e-88e3468f87cf",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:32:58.030Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "1bffe460-3740-40d7-acfc-f59d73cbc55a",
+      "name": "S4-EXPORT-11 — Video reports its real capability.",
+      "latest": {
+        "runId": "30508b6f-ab41-4dc6-843a-ad5864a29c1c",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:25:46.418Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "a0974817-fb8c-45ff-94cd-4223f9071a01",
+      "name": "S4-EXPORT-13 — A lighthouse for a pocket-sized drawing.",
+      "latest": {
+        "runId": "ea922bca-747c-4af4-8d57-57eb627e791f",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:36:21.336Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "4b519c7e-d4e0-4db7-87d3-d0a8dee71f17",
+      "name": "S4-FX-06 — Tiles agree with their map.",
+      "latest": {
+        "runId": "ae128777-e19f-4e64-b87d-2aeca6291947",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:28:14.388Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "fb1facc7-97dd-4f27-a7fe-c80787ee9859",
+      "name": "S4-FX-07 — Variations stay tied to their source.",
+      "latest": {
+        "runId": "9c1dc93c-512a-4738-a599-66b6e130bfb9",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:49:57.028Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "fd3da2e3-9a59-46e0-b591-df9d18fe2703",
+      "name": "S4-LAYER-02 — Hidden and locked mean different things.",
+      "latest": {
+        "runId": "b3ca1a5e-169e-4af5-96c0-5e33b8bb4bda",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:45:43.871Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "8f4458ff-2a3b-415c-b99c-bc3a0fb42843",
+      "name": "S4-LAYER-03 — Blend and opacity keep their neighbors.",
+      "latest": {
+        "runId": "b2e40566-ee2f-4561-853c-50499b1ea8a9",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:33:57.512Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "b914aaa8-21d5-4906-ab63-6e39bd356301",
+      "name": "S4-LEARN-04 — A coach teaches one pose at a time.",
+      "latest": {
+        "runId": "65b31d46-bb43-4707-9dfd-f237249a4f53",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:37:37.827Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "1ab5748d-2918-4ee6-9992-12d01a3cdd1b",
+      "name": "S4-LEARN-05 — The teaching board is an example.",
+      "latest": {
+        "runId": "f50653bd-de57-4a05-b2dd-7b97be5bb4e3",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:21:28.480Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "b5cab687-77f4-4ba1-8df6-5def1766b4f4",
+      "name": "S4-MOTION-01 — A rigid part takes two poses.",
+      "latest": {
+        "runId": "5dcac846-4989-46f2-9096-65305b090bbf",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:38:38.438Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "fd0f5e17-76da-47d0-942b-ddd752997e9c",
+      "name": "S4-NEW-08 — The timeline fits the desk.",
+      "latest": {
+        "runId": "09610242-51d0-4277-bd75-6901cae29745",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:43:51.296Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "e871e984-5663-481a-a4f7-4797c95faab5",
+      "name": "S4-NEW-09 — Two paint pots, no surprises.",
+      "latest": {
+        "runId": "67105b9b-b667-44c2-be57-d37da57cf8a3",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:17:45.644Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "31ecb05a-6b76-42fd-bd87-a3525b49ff6c",
+      "name": "S4-NEW-11 — A swatch knows which pot.",
+      "latest": {
+        "runId": "c681496c-ee39-4a83-8021-8438eabfee22",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:23:39.780Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "306a7b5a-9435-4506-9be2-eaf7dd9f607f",
+      "name": "S4-NEW-15 — Preview stays on the desk.",
+      "latest": {
+        "runId": "cc1e9680-9fa0-4e6d-80c3-176f5333d78a",
+        "status": "blocked",
+        "source": "cli",
+        "createdAt": "2026-10-21T06:27:41.177Z",
+        "finishedAt": "2026-10-21T06:29:37.595Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "af89678a-1f0a-4333-9ae6-d2a6d6fb2570",
+          "name": "default"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "9e95f9a5-6af7-402f-80d8-0fd14784b17f",
+      "name": "S4-NEW-16 — A pan is never a stroke.",
+      "latest": {
+        "runId": "7fe96828-3a3d-4695-8252-ed4924633064",
+        "status": "blocked",
+        "source": "cli",
+        "createdAt": "2026-10-21T06:27:41.936Z",
+        "finishedAt": "2026-10-21T06:30:53.583Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "af89678a-1f0a-4333-9ae6-d2a6d6fb2570",
+          "name": "default"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "17a18f9f-1336-47db-abf7-e50fa5ab5427",
+      "name": "S4-NEW-17 — A layered stroke tells the truth.",
+      "latest": {
+        "runId": "ffb6c205-16a5-49d4-8810-cdba709e7250",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:20:44.653Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "c9688b8d-3ebc-4fe3-b10d-ad7d49f546bf",
+      "name": "S4-PAL-02 — A library choice is explicit.",
+      "latest": {
+        "runId": "0efa0b69-aca4-4c75-869b-6e7e2fb54677",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:39:39.839Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "87832975-3885-4714-9988-2d6f193489fa",
+      "name": "S4-PAL-05 — Roles and bindings survive editing.",
+      "latest": {
+        "runId": "acaf2889-ea95-4c9e-9f86-51d5d1f5f8db",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:33:58.867Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "2dee1983-4ac9-490d-9986-1b054492cab0",
+      "name": "S4-SAFE-04 — Offline and update promises need an actual network boundary.",
+      "latest": {
+        "runId": "a00a12aa-401a-4490-bd5a-3c08f6e0947e",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:22:42.622Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "76cb1fe2-c7c5-4cf0-b5b1-a3ea0cd8b905",
+      "name": "S4-STORY-01 — A lamp for a little midnight friend.",
+      "latest": {
+        "runId": "84313c09-fa40-4bf7-ad4e-818aa813a5c2",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:31:48.993Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    },
+    {
+      "testId": "e65d4b15-428d-430e-bbbb-4c8f0e7e917c",
+      "name": "S4-VIEW-03 — Quick tools follow the keymap.",
+      "latest": {
+        "runId": "464c6d63-a979-4ecb-b95e-e44775482f9a",
+        "status": "blocked",
+        "source": "github_action",
+        "createdAt": "2026-10-20T19:11:15.420Z",
+        "finishedAt": "2026-10-20T19:44:21.305Z",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "environment": {
+          "id": "6a4f741e-8863-45f2-8d97-07efc24cb9f9",
+          "name": "github-pr-6"
+        }
+      },
+      "assessment": "Not fully qualified. The prior report does not establish a current product defect or a passing application feature."
+    }
+  ],
+  "newApplicationDefects": 0,
+  "appUiChanged": false,
+  "pushed": false,
+  "merged": false,
+  "branchProtectionChanged": false,
+  "automaticLoopCompleted": false
+}

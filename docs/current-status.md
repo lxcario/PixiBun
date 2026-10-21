@@ -1,5 +1,11 @@
 # Current project status
 
+## Current PR and portal verification — 21 October 2026
+
+The [21 October record](releases/2026-10-21-testsprite-verification-and-pr-story.md) supersedes current-state claims in older snapshots below. PR #6 remains at `a8c0f90fbbcb3398f5e1b62f676c590a13c633bd`. GitHub now reports E2E, Lighthouse, validation, native codecs and compatible rollback successful on this HEAD. The required TestSprite App check remains **failure: 37 Passed /5 Failed /79 Blocked**. Actual main protection requires TestSprite and validation, disallows administrator bypass, and currently disables merge.
+
+The actual latest-case portal catalog is **91 Passed /0 Failed /30 Blocked**, with no active runs; individual latest histories agree. This continuation added 38 manual saved-script passes backed by 114 exact-source three-engine qualifications and repaired 33 real plans without removing any original assertions. These are not automatic App passes. The record traces the genuine cycle-rate App failure through fix `f2f13f3c` to a controlled cloud green, while retaining the missing complete green PR loop. Original failures, stale default-only summaries and prior-source results remain historical. No app source change, push, merge or production release occurred in this continuation.
+
 ## Visible failures requalified on the actual PR head — 20 October 2026
 
 The [current-head follow-up](releases/2026-10-20-visible-failures-followup.md) reconciles the visible catalog, diagnoses all five original failures and classifies the 72 original Blocked reports. **30 targeted independent executions** pass on published PR head `98d7625e` across three engines, including exact lock/unlock cells, masked shapes, text-key isolation, clipped GIF contents and real editable-file roundtrips. Behaviors overlap; these are not thirty official cloud passes. No application defect reproduced or application source changed in this follow-up.

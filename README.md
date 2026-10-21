@@ -113,7 +113,15 @@ PixiBun is licensed under the [MIT License](LICENSE).
 
 Current engineering verification and remaining release checks are recorded in the [current status](docs/current-status.md).
 
-### Current Season 4 status — 19 October 2026
+### Current Season 4 status — 21 October 2026
+
+A layer lock should protect tonight's drawing. Undo should bring a pose back. A downloaded file should contain the pixels you made. We ask TestSprite to follow those small promises through real Studio controls, then check the actual artwork and files.
+
+On [PR #6](https://github.com/lxcario/PixiBun/pull/6), TestSprite caught a palette loop disagreeing with itself: its own default speed was marked invalid. We traced the browser's failure to the input's step constraint and [fixed the cause](https://github.com/lxcario/PixiBun/commit/f2f13f3caa255228c0d6b89e8dd4e09f9fc9f845). The same case passes a strict cloud follow-up; the original automatic failure stays available in [the story and evidence](docs/releases/2026-10-21-testsprite-verification-and-pr-story.md).
+
+The [real 121-case portal catalog](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/test-cases) shows **91 Passed /0 Failed /30 Blocked** across mixed latest executions on candidate a8c0f90f. Coverage includes drawing, layer protection, history, frames/holds, palettes, themes, lighting, saving and actual exported contents. These manual follow-ups are separate from the required automatic App cohort, still **37/5/79 and blocking merge**. GitHub E2E, Lighthouse and native-codec checks pass on that candidate. Production remains on older main; final automatic green and production-release verification are still open. [Readiness receipt](docs/testsprite/s4-readiness-2026-10-21.json).
+
+### Recorded Season 4 status — 19 October 2026
 
 The repository is public. Free-plan GitHub CI now executes: a manual retry of a matched PR #6 deployment produced **32 Passed /13 Failed /76 Blocked**. A later fixing push, `a5caa2cb`, automatically started a [fresh GitHub App run](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/145919a4-44b9-4e5c-b34e-975c9fe39c86), with recorded navigation reaching its preview. Its completed result is **33 Passed /10 Failed /78 Blocked**, with a real failed required check. A passing automatic fixing-commit loop is still required. Production remains on older `main` pending a qualified release.
 
