@@ -5,6 +5,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { Collapse } from '@/components/ui/surfaces/Collapse';
 import { FloatingPanel } from '@/components/ui/surfaces/FloatingPanel';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
+import { SurfaceToast } from '@/components/ui/surfaces/SurfaceToast';
 
 function setReducedMotion(reduce: boolean) {
   vi.stubGlobal('matchMedia', (query: string) => ({
@@ -171,5 +172,30 @@ describe('ModalWrapper motion', () => {
     rerender(<ModalWrapper isOpen={false} onClose={onClose} title="Once"><button type="button">Body</button></ModalWrapper>);
     fireEvent(dialog, new Event('close'));
     expect(onClose).not.toHaveBeenCalled();
+  });
+});
+
+describe('SurfaceToast inside a dialog', () => {
+  const error = { key: 'e', message: 'Clip frames must form a valid range within the animation.', tone: 'error' as const, icon: 'warning' as const, testId: 'studio-toast' };
+
+  function Desk({ open }: { open: boolean }) {
+    return (
+      <>
+        <ModalWrapper isOpen={open} onClose={() => {}} title="Clips"><button type="button">Body</button></ModalWrapper>
+        <SurfaceToast toast={error} />
+      </>
+    );
+  }
+
+  it('moves into the open dialog, where the page is not inert, and back out when it closes', async () => {
+    const { rerender } = render(<Desk open={false} />);
+    expect(screen.getByTestId('studio-toast').closest('dialog')).toBeNull();
+    rerender(<Desk open />);
+    const dialog = document.querySelector('dialog')!;
+    expect(dialog.open).toBe(true);
+    await waitFor(() => expect(dialog.contains(screen.getByTestId('studio-toast'))).toBe(true));
+    expect(screen.getByRole('alert').textContent).toContain('valid range');
+    rerender(<Desk open={false} />);
+    await waitFor(() => expect(screen.getByTestId('studio-toast').closest('dialog')).toBeNull());
   });
 });
