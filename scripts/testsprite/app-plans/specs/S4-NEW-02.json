@@ -71,7 +71,8 @@
       "why": "The 200 ms middle frame is gone."
     },
     {
-      "click": "Undo last action"
+      "click": "Undo last action",
+      "say": "Click the 'Undo last action' button once now. This click is required: the checks that follow are about what Undo brings back, so do not assert them without clicking it."
     },
     {
       "readout": {

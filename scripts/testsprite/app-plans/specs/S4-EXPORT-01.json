@@ -1,0 +1,86 @@
+{
+  "id": "1d9dc104-94e9-4eb1-ac2c-406a3003da92",
+  "key": "S4-EXPORT-01",
+  "title": "S4-EXPORT-01 — PNG takes the active pose home.",
+  "goal": "With a different Studio style, Day light and the Rule of thirds guide showing, the PNG export of Bun is still 16 x 16 at 1x and the drawing itself is unchanged: theme and guides are not artwork.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Studio options"
+    },
+    {
+      "click": "/^Harbor:/",
+      "role": "radio"
+    },
+    {
+      "click": "Day",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Harbor:/",
+      "role": "radio"
+    },
+    {
+      "click": "Close studio options"
+    },
+    {
+      "click": "View options menu"
+    },
+    {
+      "select": "Composition guide",
+      "option": "Rule of thirds"
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Style, light and guides do not change the artwork."
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "PNG",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "1x",
+      "within": "Export Studio Assets"
+    },
+    {
+      "text": "16 × 16 px"
+    },
+    {
+      "click": "Download PNG"
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "pixels": "192",
+        "digest": "=A"
+      }
+    }
+  ],
+  "cliOnly": [
+    "decoding the downloaded PNG and comparing every RGBA channel with the composite, with no theme, grid or guide pixels (tests/production/exportCompleteness.spec.ts, tests/production/viewportLenses.spec.ts)"
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

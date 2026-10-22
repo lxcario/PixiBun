@@ -1,0 +1,45 @@
+{
+  "id": "8e9da616-47f1-4cd9-ae9a-163ef2190f12",
+  "key": "S4-DRAW-08",
+  "title": "S4-DRAW-08 — Three ways to select.",
+  "goal": "probe",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "key": "w"
+    },
+    {
+      "pressed": "Magic Wand"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "text": "Selection 12×10"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      }
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "notext": "Selection 12×10"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      }
+    }
+  ]
+}

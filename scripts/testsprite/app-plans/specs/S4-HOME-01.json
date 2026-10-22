@@ -1,0 +1,82 @@
+{
+  "id": "6054b7b4-74c8-4c69-8285-9b9568558043",
+  "key": "S4-HOME-01",
+  "title": "S4-HOME-01 — The bench keeps its own tiny world.",
+  "goal": "The homepage bench is its own little world: painting on Bun there enables its Undo, its Light, Turn and Hop tools can be chosen, and the Studio drawing is untouched afterwards.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "open": "/",
+      "reload": true
+    },
+    {
+      "disabled": "Undo every edit to Bun"
+    },
+    {
+      "click": "/^Bun on the bench/",
+      "role": "img"
+    },
+    {
+      "enabled": "Undo every edit to Bun",
+      "why": "The click painted on the bench copy."
+    },
+    {
+      "click": "/^Light 2/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Light 2/",
+      "role": "radio"
+    },
+    {
+      "click": "/^Turn 3/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Turn 3/",
+      "role": "radio"
+    },
+    {
+      "click": "/^Hop 4/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Hop 4/",
+      "role": "radio"
+    },
+    {
+      "click": "Undo every edit to Bun"
+    },
+    {
+      "disabled": "Undo every edit to Bun"
+    },
+    {
+      "open": "/studio",
+      "reload": true
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      },
+      "why": "Bench experiments never repaint the Studio drawing."
+    }
+  ],
+  "cliOnly": [
+    "decoding the bench's Hop GIF (scripts/testsprite/pixibun-homepage-bench-integrity.py)"
+  ]
+}

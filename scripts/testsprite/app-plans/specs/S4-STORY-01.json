@@ -1,0 +1,192 @@
+{
+  "id": "76cb1fe2-c7c5-4cf0-b5b1-a3ea0cd8b905",
+  "key": "S4-STORY-01",
+  "title": "S4-STORY-01 — A lamp for a little midnight friend.",
+  "goal": "Bun gets one deliberate new colour; a lamp preview cancelled leaves it exact; the same lamp applied changes it; the lit pose is duplicated with its own holds; the GIF states both frames, and the backup is either saved or honestly not created.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "color": "#4FA58A"
+    },
+    {
+      "key": "b"
+    },
+    {
+      "click": "1px brush preset"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "!=A",
+        "pixels": "192",
+        "colors": "7"
+      },
+      "why": "One green pixel recolors Bun's centre."
+    },
+    {
+      "record": "P"
+    },
+    {
+      "click": "/^Effects/",
+      "nth": 0
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "click": "/^Add light and depth/"
+    },
+    {
+      "click": "Preview lighting"
+    },
+    {
+      "click": "Light from top left"
+    },
+    {
+      "fill": "Light Strength Slider",
+      "value": "2.5"
+    },
+    {
+      "click": "Cancel",
+      "nth": 0
+    },
+    {
+      "readout": {
+        "digest": "=P"
+      },
+      "why": "Cancel keeps the recolored drawing exactly."
+    },
+    {
+      "click": "Preview lighting"
+    },
+    {
+      "click": "Light from top left"
+    },
+    {
+      "fill": "Light Strength Slider",
+      "value": "2.5"
+    },
+    {
+      "click": "Apply",
+      "nth": 0
+    },
+    {
+      "readout": {
+        "digest": "!=P",
+        "pixels": "192"
+      },
+      "why": "Applying the lamp relights the drawing."
+    },
+    {
+      "record": "L"
+    },
+    {
+      "click": "Duplicate frame"
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "150"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "300"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "visible": "/^Select frame 1. #1 150ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 300ms/"
+    },
+    {
+      "readout": {
+        "digest": "=L",
+        "frames": "2"
+      }
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "GIF",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "1x",
+      "within": "Export Studio Assets"
+    },
+    {
+      "text": "16 × 16 px, 2 frames"
+    },
+    {
+      "click": "Download GIF"
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Project Backup",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "Download project backup"
+    },
+    {
+      "say": "Either the Export dialog has closed because the backup was saved, or it shows exactly \"No backup was created. Your project is still open here.\" It never shows a success state without a saved file.",
+      "either": [
+        {
+          "text": "No backup was created. Your project is still open here."
+        },
+        {
+          "absent": "Download project backup"
+        }
+      ]
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "readout": {
+        "digest": "=L",
+        "frames": "2"
+      },
+      "why": "Exports leave the lit pose exactly as it was."
+    }
+  ],
+  "cliOnly": [
+    "decoding the GIF's pose order and timing, and reopening the backup in a fresh browser (scripts/testsprite/pixibun-journey-journey.py, scripts/testsprite/pixibun-save-reopen-integrity.py)"
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

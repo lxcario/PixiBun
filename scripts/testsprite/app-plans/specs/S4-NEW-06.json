@@ -1,0 +1,62 @@
+{
+  "id": "4cd53bc1-ed07-4e21-bfe8-0a3566035797",
+  "key": "S4-NEW-06",
+  "title": "S4-NEW-06 — A frame menu finds its way back.",
+  "goal": "A frame card's menu, opened with Shift+F10, offers Duplicate, Move earlier (disabled for the first frame), Move later and Delete; Escape closes it without changing any frame or adding history.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10"
+    },
+    {
+      "skip": true
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "record": "A"
+    },
+    {
+      "key": "Shift+F10"
+    },
+    {
+      "visible": "/^Duplicate/",
+      "role": "menuitem"
+    },
+    {
+      "visible": "/^Move later/",
+      "role": "menuitem"
+    },
+    {
+      "visible": "/^Delete/",
+      "role": "menuitem"
+    },
+    {
+      "disabled": "/^Move earlier/",
+      "role": "menuitem",
+      "why": "The first frame cannot move earlier."
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "absent": "/^Duplicate Ctrl/",
+      "role": "menuitem",
+      "why": "Escape closes the menu."
+    },
+    {
+      "absent": "/^Select frame 3. /",
+      "why": "No frame was added."
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "frames": "2",
+        "digest": "=A"
+      }
+    }
+  ],
+  "cliOnly": [
+    "keyboard focus returning to the same frame card (tests/production/compactControlAccessibility.spec.ts)"
+  ]
+}

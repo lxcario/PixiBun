@@ -1,0 +1,158 @@
+{
+  "id": "1acf9570-11e0-44c8-bdc9-b0bf3c0ab39a",
+  "key": "S4-EXPORT-04",
+  "title": "S4-EXPORT-04 — A sheet and its map agree.",
+  "goal": "The sprite sheet offers horizontal, vertical and grid packing with engine metadata for both frames; each layout can be chosen and downloaded without changing the drawing.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10"
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "frames": "2",
+        "frame": "2 of 2",
+        "pixels": "1",
+        "top": "#0000ff 1"
+      },
+      "why": "The link drew frame 2: one blue pixel."
+    },
+    {
+      "record": "B"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "pixels": "1",
+        "top": "#ff0000 1"
+      },
+      "why": "Frame 1 holds one red pixel."
+    },
+    {
+      "record": "A"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "100"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "200"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Sprite Sheet",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "horizontal"
+    },
+    {
+      "click": "1x",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "0px"
+    },
+    {
+      "visible": "ENABLED",
+      "why": "Engine metadata (Godot and JSON) is included."
+    },
+    {
+      "text": "All Frames (1–2)",
+      "why": "Both frames go into the sheet."
+    },
+    {
+      "click": "Download SPRITESHEET"
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Sprite Sheet",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "vertical"
+    },
+    {
+      "click": "Download SPRITESHEET"
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Sprite Sheet",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "grid"
+    },
+    {
+      "click": "Download SPRITESHEET"
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "frames": "2",
+        "digest": "=A"
+      },
+      "why": "Exporting never changes the drawing."
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "readout": {
+        "digest": "=B"
+      }
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    }
+  ],
+  "cliOnly": [
+    "decoding each sheet and its JSON: cell rectangles match frame order and canvas bounds and never overlap (tests/production/gameDelivery.spec.ts)"
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

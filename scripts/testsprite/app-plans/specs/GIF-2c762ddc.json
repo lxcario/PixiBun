@@ -1,0 +1,112 @@
+{
+  "id": "2c762ddc-9921-415d-bc62-0f49b0b4a30d",
+  "key": "GIF-2c762ddc",
+  "title": "Export a two-frame animation as GIF with distinct frame content",
+  "goal": "A two-frame drawing (red pixel, then blue pixel, held 100 and 200 ms) offers a 1x GIF of 16 x 16 pixels and 2 frames; downloading it leaves both frames, their holds and their exact artwork unchanged.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10"
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "frames": "2",
+        "frame": "2 of 2",
+        "pixels": "1",
+        "top": "#0000ff 1"
+      },
+      "why": "The link drew frame 2: one blue pixel."
+    },
+    {
+      "record": "B"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "pixels": "1",
+        "top": "#ff0000 1"
+      },
+      "why": "Frame 1 holds one red pixel."
+    },
+    {
+      "record": "A"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "100"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "200"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "GIF",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "1x",
+      "within": "Export Studio Assets"
+    },
+    {
+      "text": "16 × 16 px, 2 frames",
+      "why": "The GIF covers both frames at native size."
+    },
+    {
+      "click": "Download GIF"
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "frames": "2",
+        "digest": "=A"
+      },
+      "why": "Exporting never changes the drawing."
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "readout": {
+        "digest": "=B"
+      }
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    }
+  ],
+  "cliOnly": [
+    "decoding the downloaded GIF: two 16x16 frames in red-then-blue order at (2,3) and (8,10), a transparent background and 100/200 ms delays (tests/production/animatedExportIntegrity.spec.ts, scripts/testsprite/pixibun-journey-journey.py)"
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

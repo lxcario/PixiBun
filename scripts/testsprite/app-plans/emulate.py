@@ -69,7 +69,9 @@ def run_step(page, step, memory):
     if "open" in step:
         page.goto(BASE + step["open"], timeout=180000)
         if "replay=" in step["open"]:
-            page.wait_for_selector("[data-testid=replay-status][data-state=applied]", state="attached", timeout=30000)
+            # A link the spec expects to be refused never reaches "applied".
+            state = "" if step.get("refused") else "[data-state=applied]"
+            page.wait_for_selector(f"[data-testid=replay-status]{state}", state="attached", timeout=30000)
         return
     if "skip" in step:
         try:
@@ -166,8 +168,18 @@ def run_step(page, step, memory):
         expect(named(page, step, "unchecked")).not_to_be_checked(timeout=10000)
     elif "field" in step:
         expect(scope(page, step).get_by_label(step["field"], exact=True)).to_have_value(step["equals"], timeout=10000)
+    elif "notext" in step:
+        expect(page.get_by_text(step["notext"], exact=False)).to_have_count(0, timeout=10000)
     elif "text" in step:
-        expect(page.get_by_text(step["text"], exact=False).first).to_be_attached(timeout=10000)
+        # The agent reads page text, where adjacent elements run together ("Unique Tiles: 4").
+        want = " ".join(step["text"].split())
+        deadline = time.time() + 10
+        while True:
+            if page.get_by_text(step["text"], exact=False).count() or want in " ".join(page.locator("body").inner_text().split()):
+                break
+            if time.time() > deadline:
+                raise StepFailed(f"text not found: {step['text']}")
+            time.sleep(0.25)
     elif "alert" in step:
         alert = page.get_by_role("alert").filter(has_text=step["alert"]).first
         expect(alert).to_be_visible(timeout=10000)
@@ -219,6 +231,12 @@ def run_spec(browser, path):
             first = str(error).splitlines()[0][:220]
             print(f"  {index:>2} FAIL {kind}: {step.get(kind)} -> {first}")
             page.screenshot(path=str(HERE / "out" / f"{spec['key']}-fail.png"))
+            if os.environ.get("DUMP"):
+                # Debugging aid: list the accessible names on the page that match DUMP (a regex).
+                pattern = re.compile(os.environ["DUMP"])
+                for line in page.locator("body").aria_snapshot().splitlines():
+                    if pattern.search(line):
+                        print("       |", line.strip()[:170])
             break
     context.close()
     return spec["key"], ok

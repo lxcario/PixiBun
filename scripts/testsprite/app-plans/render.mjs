@@ -99,6 +99,7 @@ function render(step, spec) {
   if (step.checked) return [{ type: 'assertion', description: `The ${nameOf(step.checked, step.shown)} ${roleWord(step)} is checked.${step.why ? ` ${step.why}` : ''}` }];
   if (step.field) return [{ type: 'assertion', description: `The field labelled ${q(step.field)}${where(step)} shows ${q(step.equals)}.${step.why ? ` ${step.why}` : ''}` }];
   if (step.focused) return [{ type: 'assertion', description: `Keyboard focus is on the ${nameOf(step.focused, step.shown)} ${roleWord(step)}.${step.why ? ` ${step.why}` : ''}` }];
+  if (step.notext) return [{ type: 'assertion', description: `The page no longer contains the text "${step.notext}".${step.why ? ` ${step.why}` : ''}` }];
   if (step.text) return [{ type: 'assertion', description: `The page contains the text "${step.text}".${step.why ? ` ${step.why}` : ''}` }];
   if (step.alert) return [{ type: 'assertion', description: `An alert message reading "${step.alert}" is shown immediately, before any other edit.${step.why ? ` ${step.why}` : ''}` }];
   if (step.note) return [];

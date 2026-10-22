@@ -20,7 +20,7 @@
       "color": "#1D4ED8"
     },
     {
-      "click": "2px brush preset"
+      "click": "1px brush preset"
     },
     {
       "canvas": "click"
@@ -30,9 +30,6 @@
     },
     {
       "color": "#E83A5C"
-    },
-    {
-      "click": "1px brush preset"
     },
     {
       "canvas": "click"

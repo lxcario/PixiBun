@@ -1,0 +1,84 @@
+{
+  "id": "87832975-3885-4714-9988-2d6f193489fa",
+  "key": "S4-PAL-05",
+  "title": "S4-PAL-05 — Roles and bindings survive editing.",
+  "goal": "A palette register gets the role name S4 Lantern Ink and keeps it; binding a Magic Wand selection to it records one index binding; removing the binding leaves the role, and nothing changes the artwork.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "key": "w"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "text": "Selection 12×10"
+    },
+    {
+      "click": "Palette",
+      "nth": 0
+    },
+    {
+      "clickText": "Roles and index bindings"
+    },
+    {
+      "fill": "Palette role name",
+      "value": "S4 Lantern Ink"
+    },
+    {
+      "click": "Save palette role"
+    },
+    {
+      "text": "Saved role: S4 Lantern Ink",
+      "why": "The register keeps its name."
+    },
+    {
+      "enabled": "Bind selection to register",
+      "why": "A selection can be bound."
+    },
+    {
+      "click": "Bind selection to register"
+    },
+    {
+      "text": "saved index binding",
+      "why": "The binding is recorded."
+    },
+    {
+      "visible": "/^Remove index binding/",
+      "why": "Exactly the recorded binding can be removed."
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Naming and binding change no pixels."
+    },
+    {
+      "click": "/^Remove index binding/"
+    },
+    {
+      "text": "0 saved index bindings",
+      "why": "The binding is gone."
+    },
+    {
+      "text": "Saved role: S4 Lantern Ink",
+      "why": "Removing the binding keeps the role."
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      }
+    }
+  ],
+  "cliOnly": [
+    "exported index metadata round-trips (tests/production/gameDelivery.spec.ts)"
+  ]
+}

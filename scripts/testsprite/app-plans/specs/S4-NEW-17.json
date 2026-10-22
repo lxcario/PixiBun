@@ -1,0 +1,84 @@
+{
+  "id": "17a18f9f-1336-47db-abf7-e50fa5ab5427",
+  "key": "S4-NEW-17",
+  "title": "S4-NEW-17 — A layered stroke tells the truth.",
+  "goal": "With a half-transparent upper layer, a red stroke on the lower layer shows through at exactly one pixel blended about halfway (all other 255 cells stay #808080); a locked upper layer refuses a stroke; Undo restores the exact composite.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_4080c0.c08040_R0.0.0.15.15~L~R1.0.0.15.15"
+    },
+    {
+      "skip": true
+    },
+    {
+      "click": "Layers",
+      "nth": 0
+    },
+    {
+      "fill": "Layer opacity",
+      "value": "50"
+    },
+    {
+      "readout": {
+        "top~": "#808080 256",
+        "layers": "2"
+      },
+      "why": "Half opacity mixes the two full layers halfway."
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Lock layer Layer 2"
+    },
+    {
+      "color": "#FF0000"
+    },
+    {
+      "key": "b"
+    },
+    {
+      "click": "1px brush preset"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "The locked upper layer refuses the stroke."
+    },
+    {
+      "click": "/^Select layer Base Layer/"
+    },
+    {
+      "readout": {
+        "layer": "Base Layer"
+      }
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "pixels": "256",
+        "colors": "2",
+        "digest": "!=A"
+      },
+      "why": "Exactly one pixel changes: red under the half-transparent upper layer shows through, blended about halfway (about #e04020)."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Undo restores the exact composite."
+    }
+  ],
+  "cliOnly": [
+    "the blended pixel's exact RGBA against an independent compositing model (tests/production/drawingConsistency.spec.ts)"
+  ]
+}

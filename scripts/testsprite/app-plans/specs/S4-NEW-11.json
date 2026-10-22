@@ -1,0 +1,56 @@
+{
+  "id": "31ecb05a-6b76-42fd-bd87-a3525b49ff6c",
+  "key": "S4-NEW-11",
+  "title": "S4-NEW-11 — A swatch knows which pot.",
+  "goal": "Colors edits the pot it was opened from: a swatch chosen from the Primary well changes only the primary color, one chosen from the Secondary well changes only the secondary; the artwork never changes.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Primary color/"
+    },
+    {
+      "click": "Palette color #c792df"
+    },
+    {
+      "click": "Close color access"
+    },
+    {
+      "visible": "/^Primary color #c792df/i",
+      "why": "The Primary pot took the swatch."
+    },
+    {
+      "click": "/^Secondary color/"
+    },
+    {
+      "click": "Palette color #3a2e4c"
+    },
+    {
+      "click": "Close color access"
+    },
+    {
+      "visible": "/^Secondary color #3a2e4c/i",
+      "why": "The Secondary pot took the second swatch."
+    },
+    {
+      "visible": "/^Primary color #c792df/i",
+      "why": "The Primary pot kept its own color."
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Choosing colors changed no artwork."
+    }
+  ],
+  "cliOnly": [
+    "Shift-click and right-click on a swatch, which need held modifiers or a pointer right-click (tests/production/inputOwnership.spec.ts, tests/production/canvasContextMenu.spec.ts)"
+  ]
+}

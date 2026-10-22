@@ -1,0 +1,115 @@
+{
+  "id": "6c9b8100-1170-433a-890b-7477303e6181",
+  "key": "S4-EXPORT-03",
+  "title": "S4-EXPORT-03 — APNG preserves admitted RGBA.",
+  "goal": "APNG states that it keeps full RGBA for both frames at native size; downloading changes neither frames, holds nor artwork.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10"
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "frames": "2",
+        "frame": "2 of 2",
+        "pixels": "1",
+        "top": "#0000ff 1"
+      },
+      "why": "The link drew frame 2: one blue pixel."
+    },
+    {
+      "record": "B"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "pixels": "1",
+        "top": "#ff0000 1"
+      },
+      "why": "Frame 1 holds one red pixel."
+    },
+    {
+      "record": "A"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "100"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "200"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "APNG",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "1x",
+      "within": "Export Studio Assets"
+    },
+    {
+      "text": "16 × 16 px, 2 frames (RGBA)"
+    },
+    {
+      "text": "APNG keeps full RGBA color and transparency."
+    },
+    {
+      "click": "Download APNG"
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "frames": "2",
+        "digest": "=A"
+      },
+      "why": "Exporting never changes the drawing."
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "readout": {
+        "digest": "=B"
+      }
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    }
+  ],
+  "cliOnly": [
+    "decoding the APNG: CRCs, sequence numbers, frame order, exact RGBA and 100/200 ms holds (scripts/testsprite/pixibun-journey-journey.py, tests/production/remainingAuditSafety.spec.ts)"
+  ],
+  "allow": [
+    "raw pixel channels",
+    "reading a download"
+  ]
+}

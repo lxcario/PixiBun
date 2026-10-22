@@ -1,0 +1,53 @@
+{
+  "id": "e16f11fa-19e9-4617-bfaf-3811b9e2d9fc",
+  "key": "S4-NEW-22",
+  "title": "S4-NEW-22 — The command palette really opens.",
+  "goal": "Control+K opens the command palette; searching Eraser and choosing it selects the Eraser and closes the palette; reopening and pressing Escape closes it; nothing changes the artwork or adds history.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "command": "Eraser"
+    },
+    {
+      "pressed": "Eraser",
+      "why": "The palette's result selected the Eraser."
+    },
+    {
+      "absent": "Search studio commands",
+      "role": "combobox",
+      "why": "Choosing a result closes the palette."
+    },
+    {
+      "key": "Control+k"
+    },
+    {
+      "visible": "Search studio commands",
+      "role": "combobox"
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "absent": "Search studio commands",
+      "role": "combobox",
+      "why": "Escape closes the palette."
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      }
+    },
+    {
+      "disabled": "Undo last action",
+      "why": "No history was added."
+    }
+  ]
+}

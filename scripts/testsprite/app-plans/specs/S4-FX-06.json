@@ -1,0 +1,78 @@
+{
+  "id": "4b519c7e-d4e0-4db7-87d3-d0a8dee71f17",
+  "key": "S4-FX-06",
+  "title": "S4-FX-06 — Tiles agree with their map.",
+  "goal": "Slicing the 16 x 16 Bun into 8 px tiles reports 4 unique tiles in a 2 x 2 grid and offers the tileset with its maps; slicing never changes the artwork, and after an edit a fresh slice reflects the new source.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Effects/",
+      "nth": 0
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "click": "/^Build tiles and patterns/"
+    },
+    {
+      "click": "Patterns & Tilesets"
+    },
+    {
+      "click": "8px"
+    },
+    {
+      "pressed": "8px"
+    },
+    {
+      "click": "Slice Into Unique Tiles"
+    },
+    {
+      "text": "Unique Tiles: 4",
+      "why": "Bun's four 8 x 8 quarters are all different."
+    },
+    {
+      "text": "Grid Dimensions: 2 × 2"
+    },
+    {
+      "visible": "Download tile PNG + maps (.zip)"
+    },
+    {
+      "text": "Includes tileset.png, zero-based tilemap.json and Tiled map.tmj."
+    },
+    {
+      "click": "Download tile PNG + maps (.zip)"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Slicing and downloading never change the drawing."
+    },
+    {
+      "click": "16px"
+    },
+    {
+      "click": "Slice Into Unique Tiles"
+    },
+    {
+      "text": "Unique Tiles: 1",
+      "why": "At 16 px the whole canvas is one tile: the result follows the chosen size."
+    }
+  ],
+  "cliOnly": [
+    "decoding the ZIP: tileset.png and the tilemaps agree on indices and bounds (tests/production/gameDelivery.spec.ts)"
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "1165bc74-c877-4d9f-a3ad-ad58dd3f6729",
+  "key": "S4-CART-01",
+  "title": "S4-CART-01 — A living postcard brings the drawing back.",
+  "goal": "A cart takes the project's own title, shows a card preview and announces that it saved the whole drawing; saving it never changes the drawing.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Cart",
+      "within": "Export Studio Assets"
+    },
+    {
+      "visible": "Card preview: Bun",
+      "role": "img"
+    },
+    {
+      "fill": "Title",
+      "value": "S4 Postcard"
+    },
+    {
+      "visible": "Card preview: S4 Postcard",
+      "role": "img",
+      "why": "The preview follows the title."
+    },
+    {
+      "click": "Save cart"
+    },
+    {
+      "text": "Cart saved. Anyone who opens it in PixiBun gets the whole drawing."
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      }
+    }
+  ],
+  "cliOnly": [
+    "opening the saved cart PNG in /open: it plays and reopens as an editable project with its frames, holds and pixels (tests/production/cartPlayer.spec.ts, tests/production/carts.spec.ts)"
+  ]
+}

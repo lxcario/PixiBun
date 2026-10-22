@@ -1,0 +1,139 @@
+{
+  "id": "cab0a484-4493-495d-99c0-687662d1ce3d",
+  "key": "S4-FX-04",
+  "title": "S4-FX-04 — One normal exports; two refuse; lighting Cancel preserves layers.",
+  "goal": "With exactly one surface (normal) layer the Godot kit's normal atlas is ready; a lighting preview cancelled leaves both layers and the artwork exact; with a second surface layer the normal atlas is refused with its reason.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Effects/",
+      "nth": 0
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "click": "/^Add light and depth/"
+    },
+    {
+      "click": "/^Shape the surface/"
+    },
+    {
+      "click": "Create surface layer"
+    },
+    {
+      "readout": {
+        "layers": "2",
+        "digest": "=A"
+      }
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Godot Kit",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "Include normal-map atlas",
+      "role": "checkbox"
+    },
+    {
+      "text": "Normal maps: Verified neutral normal layer on all 1 frames.",
+      "why": "Exactly one normal source is accepted."
+    },
+    {
+      "text": "Ready (4)"
+    },
+    {
+      "click": "Close dialog"
+    },
+    {
+      "click": "/^Add light and depth/",
+      "optional": true
+    },
+    {
+      "click": "Preview lighting"
+    },
+    {
+      "click": "Light from top left"
+    },
+    {
+      "click": "Cancel",
+      "nth": 0
+    },
+    {
+      "readout": {
+        "layers": "2",
+        "digest": "=A"
+      },
+      "why": "Cancelling the lighting preview keeps both layers and the artwork exact."
+    },
+    {
+      "click": "Layers",
+      "nth": 0
+    },
+    {
+      "click": "/^Select layer Normal Facets/"
+    },
+    {
+      "click": "Duplicate Layer"
+    },
+    {
+      "readout": {
+        "layers": "3"
+      },
+      "why": "Duplicating the surface layer makes a second normal source."
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Godot Kit",
+      "within": "Export Studio Assets"
+    },
+    {
+      "checked": "Include normal-map atlas",
+      "role": "checkbox",
+      "why": "The export dialog keeps the normal atlas setting."
+    },
+    {
+      "text": "Needs attention (1)",
+      "why": "Two normal sources in one frame are refused in the preflight."
+    },
+    {
+      "click": "Download Godot kit"
+    },
+    {
+      "alert": "Normal export needs exactly one full-opacity Normal Facets or Normal Map layer",
+      "why": "The download is refused with the reason; no kit is written."
+    },
+    {
+      "click": "Close dialog"
+    },
+    {
+      "readout": {
+        "layers": "3",
+        "digest": "=A"
+      },
+      "why": "The refusal changed nothing."
+    }
+  ],
+  "cliOnly": [
+    "opening the ZIP and decoding its 18 x 18 normal atlas: the neutral field inside a transparent one-pixel border (scripts/testsprite/pixibun-explicit-normal-sources-integrity.py, tests/production/gameDelivery.spec.ts)"
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

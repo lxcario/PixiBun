@@ -1,0 +1,114 @@
+{
+  "id": "9d8df519-fd82-44cc-95dd-ba29fec74e73",
+  "key": "S4-EXPORT-02",
+  "title": "S4-EXPORT-02 — A GIF keeps the beat.",
+  "goal": "A two-frame drawing held 100 and 200 ms exports as a 2-frame GIF at native size; the dialog states it, and downloading changes neither frames, holds nor artwork.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10"
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "frames": "2",
+        "frame": "2 of 2",
+        "pixels": "1",
+        "top": "#0000ff 1"
+      },
+      "why": "The link drew frame 2: one blue pixel."
+    },
+    {
+      "record": "B"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "pixels": "1",
+        "top": "#ff0000 1"
+      },
+      "why": "Frame 1 holds one red pixel."
+    },
+    {
+      "record": "A"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "100"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "200"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "GIF",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "1x",
+      "within": "Export Studio Assets"
+    },
+    {
+      "text": "16 × 16 px, 2 frames"
+    },
+    {
+      "text": "Animated GIF with crisp nearest-neighbor integer scaling."
+    },
+    {
+      "click": "Download GIF"
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "frames": "2",
+        "digest": "=A"
+      },
+      "why": "Exporting never changes the drawing."
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "readout": {
+        "digest": "=B"
+      }
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    }
+  ],
+  "cliOnly": [
+    "decoding the GIF: frame order and the 100/200 ms delays within GIF centisecond quantization (tests/production/animatedExportIntegrity.spec.ts, scripts/testsprite/pixibun-journey-journey.py)"
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

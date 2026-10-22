@@ -1,0 +1,206 @@
+{
+  "id": "2533dba8-1cfd-47e4-a42f-77e396cb56d0",
+  "key": "S4-LEARN-01",
+  "title": "S4-LEARN-01 — Every lesson has a first page.",
+  "goal": "Each of the twelve lessons can be chosen in the Playground and then shows its own title and pose strip. This is lesson operability, not learning gains.",
+  "steps": [
+    {
+      "open": "/playground"
+    },
+    {
+      "skip": true
+    },
+    {
+      "click": "Other lessons"
+    },
+    {
+      "click": "/^Bouncy Mochi \\d+ frames/",
+      "within": "Choose a lesson"
+    },
+    {
+      "visible": "/make Bouncy Mochi$/",
+      "role": "heading",
+      "why": "Bouncy Mochi is the lesson now shown."
+    },
+    {
+      "visible": "/^Frame 1: /",
+      "why": "Its pose strip starts at frame 1."
+    },
+    {
+      "click": "Other lessons"
+    },
+    {
+      "click": "/^Cozy Flame \\d+ frames/",
+      "within": "Choose a lesson"
+    },
+    {
+      "visible": "/make Cozy Flame$/",
+      "role": "heading",
+      "why": "Cozy Flame is the lesson now shown."
+    },
+    {
+      "visible": "/^Frame 1: /",
+      "why": "Its pose strip starts at frame 1."
+    },
+    {
+      "click": "Other lessons"
+    },
+    {
+      "click": "/^Bun Hops \\d+ frames/",
+      "within": "Choose a lesson"
+    },
+    {
+      "visible": "/make Bun Hops$/",
+      "role": "heading",
+      "why": "Bun Hops is the lesson now shown."
+    },
+    {
+      "visible": "/^Frame 1: /",
+      "why": "Its pose strip starts at frame 1."
+    },
+    {
+      "click": "Other lessons"
+    },
+    {
+      "click": "/^Twinkling Star \\d+ frames/",
+      "within": "Choose a lesson"
+    },
+    {
+      "visible": "/make Twinkling Star$/",
+      "role": "heading",
+      "why": "Twinkling Star is the lesson now shown."
+    },
+    {
+      "visible": "/^Frame 1: /",
+      "why": "Its pose strip starts at frame 1."
+    },
+    {
+      "click": "Other lessons"
+    },
+    {
+      "click": "/^Potion Bubbles \\d+ frames/",
+      "within": "Choose a lesson"
+    },
+    {
+      "visible": "/make Potion Bubbles$/",
+      "role": "heading",
+      "why": "Potion Bubbles is the lesson now shown."
+    },
+    {
+      "visible": "/^Frame 1: /",
+      "why": "Its pose strip starts at frame 1."
+    },
+    {
+      "click": "Other lessons"
+    },
+    {
+      "click": "/^Slime Slide \\d+ frames/",
+      "within": "Choose a lesson"
+    },
+    {
+      "visible": "/make Slime Slide$/",
+      "role": "heading",
+      "why": "Slime Slide is the lesson now shown."
+    },
+    {
+      "visible": "/^Frame 1: /",
+      "why": "Its pose strip starts at frame 1."
+    },
+    {
+      "click": "Other lessons"
+    },
+    {
+      "click": "/^Water Ripple \\d+ frames/",
+      "within": "Choose a lesson"
+    },
+    {
+      "visible": "/make Water Ripple$/",
+      "role": "heading",
+      "why": "Water Ripple is the lesson now shown."
+    },
+    {
+      "visible": "/^Frame 1: /",
+      "why": "Its pose strip starts at frame 1."
+    },
+    {
+      "click": "Other lessons"
+    },
+    {
+      "click": "/^Sword Swing \\d+ frames/",
+      "within": "Choose a lesson"
+    },
+    {
+      "visible": "/make Sword Swing$/",
+      "role": "heading",
+      "why": "Sword Swing is the lesson now shown."
+    },
+    {
+      "visible": "/^Frame 1: /",
+      "why": "Its pose strip starts at frame 1."
+    },
+    {
+      "click": "Other lessons"
+    },
+    {
+      "click": "/^The Full Bounce \\d+ frames/",
+      "within": "Choose a lesson"
+    },
+    {
+      "visible": "/make The Full Bounce$/",
+      "role": "heading",
+      "why": "The Full Bounce is the lesson now shown."
+    },
+    {
+      "visible": "/^Frame 1: /",
+      "why": "Its pose strip starts at frame 1."
+    },
+    {
+      "click": "Other lessons"
+    },
+    {
+      "click": "/^Breathing Idle \\d+ frames/",
+      "within": "Choose a lesson"
+    },
+    {
+      "visible": "/make Breathing Idle$/",
+      "role": "heading",
+      "why": "Breathing Idle is the lesson now shown."
+    },
+    {
+      "visible": "/^Frame 1: /",
+      "why": "Its pose strip starts at frame 1."
+    },
+    {
+      "click": "Other lessons"
+    },
+    {
+      "click": "/^Power Slash \\d+ frames/",
+      "within": "Choose a lesson"
+    },
+    {
+      "visible": "/make Power Slash$/",
+      "role": "heading",
+      "why": "Power Slash is the lesson now shown."
+    },
+    {
+      "visible": "/^Frame 1: /",
+      "why": "Its pose strip starts at frame 1."
+    },
+    {
+      "click": "Other lessons"
+    },
+    {
+      "click": "/^Big Hop \\d+ frames/",
+      "within": "Choose a lesson"
+    },
+    {
+      "visible": "/make Big Hop$/",
+      "role": "heading",
+      "why": "Big Hop is the lesson now shown."
+    },
+    {
+      "visible": "/^Frame 1: /",
+      "why": "Its pose strip starts at frame 1."
+    }
+  ]
+}

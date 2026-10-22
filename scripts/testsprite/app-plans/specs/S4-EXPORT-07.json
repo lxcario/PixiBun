@@ -1,0 +1,56 @@
+{
+  "id": "df8bdde4-3afe-4f0d-8d06-eecc3a00e058",
+  "key": "S4-EXPORT-07",
+  "title": "S4-EXPORT-07 — SVG explains its approximation.",
+  "goal": "Vector SVG explains that it is an approximate contour conversion whose smoothing can change edges, reports 64 x 64 output for Bun at 4x, and downloads without changing the drawing.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Vector SVG",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "4x",
+      "within": "Export Studio Assets"
+    },
+    {
+      "text": "64 × 64 px (Vector SVG)"
+    },
+    {
+      "text": "An approximate contour conversion"
+    },
+    {
+      "text": "Smoothing can change edges and small details."
+    },
+    {
+      "click": "Download SVG"
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      }
+    }
+  ],
+  "cliOnly": [
+    "parsing the downloaded SVG: an svg root in the SVG namespace, width and height 64 and nonempty geometry (scripts/testsprite/pixibun-remaining-integrity.py svg, tests/production/exportCompleteness.spec.ts)"
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

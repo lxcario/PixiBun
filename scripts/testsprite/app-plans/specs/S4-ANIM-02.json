@@ -1,0 +1,109 @@
+{
+  "id": "ac3e0785-bcf6-445d-a2a9-8ccef1464bec",
+  "key": "S4-ANIM-02",
+  "title": "S4-ANIM-02 — Holds and playback remain editable.",
+  "goal": "A two-frame animation held 100 and 200 ms plays and pauses, plays at 2x preview speed without changing its stored holds, and in Once mode stops by itself on the last frame; artwork and holds stay exact.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10"
+    },
+    {
+      "skip": true
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "record": "A"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "100"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "200"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "click": "Play"
+    },
+    {
+      "visible": "Pause",
+      "why": "Playback is running."
+    },
+    {
+      "click": "Pause"
+    },
+    {
+      "visible": "Play"
+    },
+    {
+      "click": "Preview 1× speed"
+    },
+    {
+      "click": "/^2×/"
+    },
+    {
+      "visible": "/^Preview 2×/",
+      "why": "The preview speed changed."
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/",
+      "why": "Preview speed does not rewrite the stored holds."
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "click": "Loop mode: Repeat"
+    },
+    {
+      "visible": "/^Loop mode: /"
+    },
+    {
+      "click": "/^Loop mode: /"
+    },
+    {
+      "visible": "Loop mode: Once"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "click": "Play"
+    },
+    {
+      "readout": {
+        "frame": "2 of 2"
+      },
+      "why": "In Once mode playback stops by itself on the last frame."
+    },
+    {
+      "visible": "Play",
+      "why": "Playback has stopped."
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      }
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    }
+  ],
+  "cliOnly": [
+    "measured on-screen frame timing at 1x and 2x (tests/production/playbackStall.spec.ts, tests/production/motionEditing.spec.ts)"
+  ]
+}

@@ -2,7 +2,7 @@
   "id": "48fad655-2a7c-49e7-9bb8-c58f74e0f5eb",
   "key": "S4-NEW-12",
   "title": "S4-NEW-12 — Colors by keyboard.",
-  "goal": "In Colors, arrow keys move focus along the palette swatches, End reaches the last, Enter applies the focused swatch to the Primary color, and Escape closes Colors and returns focus to the Primary well. The test starts from a swatch that differs from the current Primary so the change is observable; the artwork never changes.",
+  "goal": "In Colors, arrow keys and End move along the palette swatches and Enter applies the swatch reached, which shows in the Primary well; Escape closes Colors and returns focus to the Primary well, so Enter reopens Colors. The artwork never changes.",
   "steps": [
     {
       "open": "/studio?template=bun"
@@ -27,22 +27,21 @@
       "key": "ArrowLeft"
     },
     {
-      "focused": "Palette color #3a2e4c",
-      "why": "Left moves focus to the previous swatch."
+      "key": "Enter"
+    },
+    {
+      "visible": "/^Primary color #3a2e4c/i",
+      "why": "Left moved to the previous swatch and Enter applied it."
     },
     {
       "key": "End"
-    },
-    {
-      "focused": "Palette color #faf6fc",
-      "why": "End reaches the last swatch."
     },
     {
       "key": "Enter"
     },
     {
       "visible": "/^Primary color #faf6fc/i",
-      "why": "Enter applies the focused swatch."
+      "why": "End reached the last swatch and Enter applied it."
     },
     {
       "key": "Escape"
@@ -52,8 +51,14 @@
       "why": "Escape closes Colors."
     },
     {
-      "focused": "/^Primary color #faf6fc/i",
-      "why": "Focus returns to the Primary well that opened Colors."
+      "key": "Enter"
+    },
+    {
+      "visible": "Close color access",
+      "why": "Focus went back to the Primary well, so Enter reopens Colors."
+    },
+    {
+      "key": "Escape"
     },
     {
       "readout": {

@@ -1,0 +1,168 @@
+{
+  "id": "b5cab687-77f4-4ba1-8df6-5def1766b4f4",
+  "key": "S4-MOTION-01",
+  "title": "S4-MOTION-01 — A rigid part takes two poses.",
+  "goal": "A Magic Wand selection of Bun becomes a rigid part: its END pose takes a small move that pose Undo and Redo step through; Cancel returns to drawing with nothing added; a 2-pose Bake adds editable frames while the original frame stays exact.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "key": "w"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "text": "Selection 12×10"
+    },
+    {
+      "click": "Tools",
+      "nth": 0
+    },
+    {
+      "click": "Create Motion Part"
+    },
+    {
+      "visible": "PixiMotion: Rigid Part",
+      "role": "heading"
+    },
+    {
+      "click": "● START"
+    },
+    {
+      "click": "● END"
+    },
+    {
+      "pressed": "● END"
+    },
+    {
+      "click": "Pose translation X",
+      "role": "slider"
+    },
+    {
+      "key": "ArrowRight"
+    },
+    {
+      "key": "ArrowRight"
+    },
+    {
+      "enabled": "Undo motion edit",
+      "why": "The pose edit is a motion-session step."
+    },
+    {
+      "click": "Undo motion edit"
+    },
+    {
+      "enabled": "Redo motion edit"
+    },
+    {
+      "click": "Redo motion edit"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "frames": "1"
+      },
+      "why": "Posing previews the part; the drawing is unchanged."
+    },
+    {
+      "click": "Cancel (Escape)"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "frames": "1"
+      },
+      "why": "Cancel returns to drawing and adds nothing."
+    },
+    {
+      "key": "Escape",
+      "why": "Clear the old selection before making a new one."
+    },
+    {
+      "notext": "Selection 12×10"
+    },
+    {
+      "key": "w"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "text": "Selection 12×10"
+    },
+    {
+      "click": "Create Motion Part"
+    },
+    {
+      "click": "● END"
+    },
+    {
+      "click": "Pose translation X",
+      "role": "slider"
+    },
+    {
+      "key": "ArrowRight"
+    },
+    {
+      "key": "ArrowRight"
+    },
+    {
+      "fill": "Motion frames",
+      "value": "2"
+    },
+    {
+      "click": "BAKE"
+    },
+    {
+      "text": "Baked 2 frames to timeline",
+      "why": "The bake reports what it added."
+    },
+    {
+      "readout": {
+        "frames": "2",
+        "digest": "!=A"
+      },
+      "why": "Two editable cels: the moved END pose is now frame 2."
+    },
+    {
+      "visible": "/^Select frame 1. #1 125ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 125ms/",
+      "why": "Each baked cel keeps the source duration."
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "The START cel is the exact original."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "absent": "/^Select frame 2. /",
+      "why": "One Undo removes the bake."
+    },
+    {
+      "readout": {
+        "frames": "1",
+        "digest": "=A"
+      }
+    }
+  ],
+  "cliOnly": [
+    "multi-part rigs and exact baked cel pixels (tests/production/motionRigPersistence.spec.ts, tests/production/motionEditing.spec.ts)"
+  ]
+}
