@@ -6,7 +6,7 @@
   "entries": [
     {
       "pr": 6,
-      "title": "Automatic App runs: 33/7/81 on b78fffb1 to 63/2/56 on 89d7041b",
+      "title": "Automatic App runs: 33/7/81 on b78fffb1 to 68/7/46 on 9c2197d2",
       "prUrl": "https://github.com/lxcario/PixiBun/pull/6",
       "checkedOn": "2026-10-19",
       "testspriteRunUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/ba8a1a0c-18da-4534-990d-435efe23aece",
@@ -25,6 +25,11 @@
           "case": "S4-RELATION-01 — Turn it around, and bring it back.",
           "cause": "product-bug",
           "note": "Automatic App run on 48f9b999 failed because the agent could not find the transform controls: their accessible names were only glyphs (fixed in ff320663). Reproducing it exposed data loss: after a selection was lifted with H or V, Escape deleted it with no Undo, and Undo after Commit or Ctrl+D returned to the cut-out hole (fixed in c534cc99, with tests/e2e/selectionTransformUndo.spec.ts). The automatic App run on 0259f782 passed the redesigned case on the fixed build."
+        },
+        {
+          "case": "S4-HIST-03 — Resize can be cancelled.",
+          "cause": "product-bug",
+          "note": "Automatic App run on 9c2197d2 failed: typing 24 into the Canvas size Width field gave 44, because the field clamped to 4–512 on every keystroke (the 2 snapped to 4 before the 4 arrived), so Apply resized to 44×44 and no size starting with 1, 2 or 3 could be typed. Reproduced with real key events in Chromium and WebKit on the deployed preview. Fixed in 4d838ca9 with tests/components/CanvasResizeModal.test.tsx; no App verdict on the fixed build yet."
         },
         {
           "case": "Incomplete or mismatched execution prerequisites",
