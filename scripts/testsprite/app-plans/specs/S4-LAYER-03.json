@@ -67,7 +67,7 @@
       "readout": {
         "top~": "#808080 256"
       },
-      "why": "Half opacity mixes 64/192 and 128/128 halfway to 128 in every channel; 8-bit canvas compositing may land one step away (Chromium gives #80807f)."
+      "why": "Half opacity mixes 64/192 and 128/128 halfway to 128 in red, green and blue; 8-bit canvas compositing may land one step away (Chromium gives #80807f)."
     },
     {
       "fill": "Layer opacity",

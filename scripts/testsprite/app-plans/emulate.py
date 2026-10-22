@@ -56,8 +56,12 @@ def scope(page, step):
 def named(page, step, key):
     role = step.get("role", "button")
     name = step[key]
-    target = scope(page, step).get_by_role(role, name=re.compile(name[1:-1]) if name.startswith("/") else name,
-                                            exact=None if name.startswith("/") else True)
+    if name.startswith("/"):
+        flags = re.IGNORECASE if name.endswith("/i") else 0
+        pattern = re.compile(name[1:-2] if name.endswith("/i") else name[1:-1], flags)
+        target = scope(page, step).get_by_role(role, name=pattern)
+    else:
+        target = scope(page, step).get_by_role(role, name=name, exact=True)
     return target.nth(step["nth"]) if "nth" in step else target.first
 
 
@@ -81,12 +85,14 @@ def run_step(page, step, memory):
                 pass
             return
         target = named(page, step, "click")
-        if step.get("role") in ("checkbox", "radio", "switch"):
-            # Visually hidden inputs inside their labels: the agent activates the
+        try:
+            target.click(timeout=4000 if step.get("role") in ("checkbox", "radio", "switch") else 10000)
+        except Exception:
+            if step.get("role") not in ("checkbox", "radio", "switch"):
+                raise
+            # A visually hidden input inside its label: the agent activates the
             # element itself rather than the point under the cursor.
             target.evaluate("element => element.click()")
-        else:
-            target.click(timeout=10000)
     elif "rightClick" in step:
         named(page, step, "rightClick").click(button="right", timeout=10000)
     elif "canvas" in step:

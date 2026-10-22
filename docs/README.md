@@ -16,6 +16,8 @@ Start with [current status](current-status.md) for scoped engineering results an
 
 ## Latest reconciliation
 
+The [22 October App-plan record](releases/2026-10-22-app-plan-reliability.md) classifies all 88 non-passing cases of the `b78fffb1` App run, fixes the one PixiBun defect it found (inert error toasts inside dialogs) and redesigns 28 plans the App agent can finish, emulated 27/28 on the PR preview and 28/28 with the fix. Nothing was published or pushed.
+
 The [21 October verification and PR story](releases/2026-10-21-testsprite-verification-and-pr-story.md) is the latest observation: actual portal 91/0/30, 38 additional manual cloud passes and 114 source-pinned browser checks; exact-head E2E/Lighthouse/native-codec success; a genuine palette-rate App failure, its code fix and controlled cloud follow-up; and the still-failed required App check actually preventing merge. Historical reports below retain their original sources and verdicts.
 
 The [20 October visible-failure follow-up](releases/2026-10-20-visible-failures-followup.md) separates actual current-head reproduction, runner prerequisites and historical results: thirty independent targeted executions, one honestly Blocked fresh portal replay, all original 72 Blocked cases classified, a passing Lighthouse retry and the minimal unpublished E2E job-budget repair. Its [receipt](testsprite/visible-five-followup-2026-10-20.json) retains source/run/environment identities and limits.

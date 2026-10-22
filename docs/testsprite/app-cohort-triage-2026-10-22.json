@@ -1,0 +1,830 @@
+{
+  "cohort": {
+    "source": "b78fffb199756933554729e21fafad1210432281",
+    "environment": "github-pr-6",
+    "startedAt": "2026-10-21T21:32:31.761Z",
+    "counts": {
+      "passed": 33,
+      "failed": 7,
+      "blocked": 81,
+      "total": 121
+    }
+  },
+  "classes": {
+    "defect": "PixiBun defect",
+    "plan": "Test-plan error",
+    "oracle": "Plan demanded an oracle the App agent cannot read (raw RGBA, decoded file) where the Canvas readout suffices",
+    "download": "Runner limitation: reading a downloaded file or completing the native save picker",
+    "gesture": "Runner limitation: drag, held modifier, coordinate right-click or pointer stroke",
+    "keys": "Runner limitation: focus-dependent keyboard sequence not reliably performed",
+    "viewport": "Runner limitation: viewport or network control",
+    "fixture": "Fixture: needs an uploaded test file the App run did not use as specified",
+    "vague": "Plan too open-ended for a deterministic verdict"
+  },
+  "summary": {
+    "oracle": 19,
+    "gesture": 14,
+    "download": 25,
+    "vague": 5,
+    "defect": 1,
+    "fixture": 11,
+    "plan": 7,
+    "viewport": 4,
+    "keys": 2
+  },
+  "redesigned": 28,
+  "cases": [
+    {
+      "id": "a6c571af-6e7d-4a40-bbdf-2d0f196bd9be",
+      "name": "Draw distinct pixels, then undo and redo",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Readout proves the exact pixels; redesigned.",
+      "redesignedSpec": "PIXELS-a6c571af"
+    },
+    {
+      "id": "f9fbb1e0-03fb-4d5a-90a0-4ab44ccfa8a6",
+      "name": "Draw on an unlocked layer, lock it, and verify drawing is blocked until unlocked",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Lock refusal and Undo proven by digest; redesigned.",
+      "redesignedSpec": "LOCK-f9fbb1e0"
+    },
+    {
+      "id": "fde7a312-bc33-4d07-bbde-6dd6d7e49972",
+      "name": "EXP-003 — Paint a little heart, light it, and bring it back.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "gesture",
+      "note": "Thirteen Pen drags replaced by the documented Heart replay; drags stay in the stored Python.",
+      "redesignedSpec": "EXP-003"
+    },
+    {
+      "id": "0aa9fcd9-0c73-4973-a819-e6891b25d1cd",
+      "name": "Erase part of a drawing and undo the erase",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "gesture",
+      "note": "Dragged stroke replaced by a replay square and a one-pixel erase; redesigned.",
+      "redesignedSpec": "ERASE-0aa9fcd9"
+    },
+    {
+      "id": "2c762ddc-9921-415d-bc62-0f49b0b4a30d",
+      "name": "Export a two-frame animation as GIF with distinct frame content",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "Needs the decoded GIF.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "dd5ae5f3-02e6-47a9-8b8c-fb05a96b25c9",
+      "name": "Export an editable backup and reopen it through the supported import flow",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "download",
+      "note": "Backups use the native save picker in Chromium; the agent sees 'No backup was created'.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "8ba9f1eb-92b7-4d26-bf19-2ce9e9b92273",
+      "name": "Export the current drawing as PNG and verify the decoded image matches",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "Needs the decoded PNG.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "69f584fe-836d-49a2-b91d-0ad7a857affa",
+      "name": "S4-ANIM-01 — Onion skin is only a guide.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "Needs the decoded PNG and the uploaded Lantern fixture.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "ac3e0785-bcf6-445d-a2a9-8ccef1464bec",
+      "name": "S4-ANIM-02 — Holds and playback remain editable.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "vague",
+      "note": "Asks for measured frame timing; playback holds are otherwise observable.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "5197eb3b-9b2a-43ca-8371-5fb0ed29d7ae",
+      "name": "S4-ANIM-03 — Clips use inclusive endpoints.",
+      "appVerdict": "failed",
+      "storedPython": true,
+      "class": "defect",
+      "note": "Error toast was inert behind the open Clips dialog; fixed in e43248c0 and redesigned.",
+      "redesignedSpec": "S4-ANIM-03"
+    },
+    {
+      "id": "e3dedfcc-3074-4425-a274-6b3d9fc81674",
+      "name": "S4-ANIM-04 — Review explains a difference.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "vague",
+      "note": "'Create two explicit different poses' is unspecified.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "1165bc74-c877-4d9f-a3ad-ad58dd3f6729",
+      "name": "S4-CART-01 — A living postcard brings the drawing back.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "Cart must be downloaded and reopened.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "da6a67a2-4780-4761-98e9-5f9b33e07566",
+      "name": "S4-CART-02 — A broken postcard is not a lost drawing.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "fixture",
+      "note": "Needs an invalid postcard payload.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "6b85de97-1585-4bda-a830-b9b23fb83901",
+      "name": "S4-DRAW-01 — Pen and erase return exact pixels.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Redesigned with exact readout digests.",
+      "redesignedSpec": "S4-DRAW-01"
+    },
+    {
+      "id": "61070835-b7f7-480e-9506-352f6c13b36f",
+      "name": "S4-DRAW-02 — The curve can be reconsidered.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "gesture",
+      "note": "Curve and handle drags.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "7e243cd0-2e2f-45e2-a6ae-a2c9e6c0c2c6",
+      "name": "S4-DRAW-03 — A bucket respects its boundary.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "fixture",
+      "note": "Uploaded fixture replaced by a replay link with the same geometry; redesigned.",
+      "redesignedSpec": "S4-DRAW-03"
+    },
+    {
+      "id": "07d954a4-7605-43c9-af85-207d06a8b18a",
+      "name": "S4-DRAW-04 — A gradient stays in its selection.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "gesture",
+      "note": "Marquee and gradient drags.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "5185d7a0-c55b-4bd4-bdac-87ccd1daef0b",
+      "name": "S4-DRAW-05 — Dither leaves the gaps alone.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "gesture",
+      "note": "Sixteen-cell dragged dither stroke.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "5ccfecc6-b4bc-4017-9184-6e76f51b4e98",
+      "name": "S4-DRAW-06 — Replace only the requested color.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "fixture",
+      "note": "Uploaded fixture replaced by a two-layer replay; redesigned.",
+      "redesignedSpec": "S4-DRAW-06"
+    },
+    {
+      "id": "bde1ab4b-a6e2-47ae-ab33-00c8ee84c3cf",
+      "name": "S4-DRAW-07 — Erase a family, keep a neighbor.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "fixture",
+      "note": "The 'S4 Family Garden' project does not exist in a fresh browser.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "8e9da616-47f1-4cd9-ae9a-163ef2190f12",
+      "name": "S4-DRAW-08 — Three ways to select.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "gesture",
+      "note": "Marquee and lasso drags.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "c84e8e84-b8ea-48a9-9a45-cbdcb7304c59",
+      "name": "S4-DRAW-09 — A transformed detail can come back.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "gesture",
+      "note": "Selection and move drags.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "0f7b89d1-67d1-4337-8b4c-ee09195f9c10",
+      "name": "S4-DRAW-10 — Straight and isometric agree with their previews.",
+      "appVerdict": "failed",
+      "storedPython": true,
+      "class": "plan",
+      "note": "The grouped tool slot opens on hold, right-click or arrow key, not a click; J works. Redesigned.",
+      "redesignedSpec": "S4-DRAW-10"
+    },
+    {
+      "id": "dc365ace-40a4-4567-a6c5-7d199b58658c",
+      "name": "S4-DRAW-11 — Rectangles and ellipses keep their promises.",
+      "appVerdict": "failed",
+      "storedPython": true,
+      "class": "plan",
+      "note": "Same flyout misunderstanding plus drags; redesigned with shortcuts, one-point shapes and the shapes replay.",
+      "redesignedSpec": "S4-DRAW-11"
+    },
+    {
+      "id": "055924c4-9b9d-4a1f-9215-2685358f3896",
+      "name": "S4-DRAW-12 — A normal is a surface, not paint.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "Needs the downloaded project to decode the normal layer.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "b14b8600-0dd8-4837-bd4c-59f027f8fa4d",
+      "name": "S4-DRAW-13 — Eyedropper samples the art.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Sampled color is visible in the Primary well; redesigned.",
+      "redesignedSpec": "S4-DRAW-13"
+    },
+    {
+      "id": "1d9dc104-94e9-4eb1-ac2c-406a3003da92",
+      "name": "S4-EXPORT-01 — PNG takes the active pose home.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "Needs the decoded PNG.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "9d8df519-fd82-44cc-95dd-ba29fec74e73",
+      "name": "S4-EXPORT-02 — A GIF keeps the beat.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "Needs the decoded GIF.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "6c9b8100-1170-433a-890b-7477303e6181",
+      "name": "S4-EXPORT-03 — APNG preserves admitted RGBA.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "Needs the decoded APNG.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "1acf9570-11e0-44c8-bdc9-b0bf3c0ab39a",
+      "name": "S4-EXPORT-04 — A sheet and its map agree.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "Needs the decoded sheet and its JSON.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "87220cbb-74de-4287-8bc4-f5b34179289c",
+      "name": "S4-EXPORT-05 — A Godot kit opens as a bundle.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "Needs the ZIP.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "064e9c2c-3eef-42a9-a6f6-d6d9ae5db343",
+      "name": "S4-EXPORT-06 — A replay remembers the latest stroke.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "download",
+      "note": "Needs the timelapse GIF.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "df8bdde4-3afe-4f0d-8d06-eecc3a00e058",
+      "name": "S4-EXPORT-07 — SVG explains its approximation.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "Needs the SVG file.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "6e22e00c-53b8-4a8c-b762-0859b83b8702",
+      "name": "S4-EXPORT-08 — Shader code travels with its context.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "download",
+      "note": "Needs the shader text file.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "7113128a-96dd-40fe-8c3d-79608d16fbc4",
+      "name": "S4-EXPORT-09 — Palette motion becomes a loop.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "download",
+      "note": "Needs the cycle loop file.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "f736d94f-04d6-4e9c-9d50-e3f286076e34",
+      "name": "S4-EXPORT-10 — An editable backup really reopens.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "Native save picker; see the backup case.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "1bffe460-3740-40d7-acfc-f59d73cbc55a",
+      "name": "S4-EXPORT-11 — Video reports its real capability.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "download",
+      "note": "Needs the encoded movie or a codec refusal.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "dcf76735-5c13-437a-8f98-45fb2ff95a19",
+      "name": "S4-EXPORT-12 — Unsafe scale is refused kindly.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Refusal is visible in the UI; plan also insists on native RGBA beyond the readout.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "a0974817-fb8c-45ff-94cd-4223f9071a01",
+      "name": "S4-EXPORT-13 — A lighthouse for a pocket-sized drawing.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "download",
+      "note": "Needs the encoded video.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "ab425882-1179-4999-a003-1b0e0f434388",
+      "name": "S4-FX-01 — The Lamp can be put back.",
+      "appVerdict": "failed",
+      "storedPython": true,
+      "class": "plan",
+      "note": "Agent imported an unrelated five-pixel fixture although the plan named Bun; redesigned to forbid files and use the readout.",
+      "redesignedSpec": "S4-FX-01"
+    },
+    {
+      "id": "76bbe317-2ce3-4643-b8a9-6649e732c91f",
+      "name": "S4-FX-02 — Cancel leaves the lamp unlit.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Redesigned with digests.",
+      "redesignedSpec": "S4-FX-02"
+    },
+    {
+      "id": "8b27171a-6d28-442e-8df6-b9d50e53c57a",
+      "name": "S4-FX-03 — Quick magic has a way home.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Quick magic Lab must be on; redesigned.",
+      "redesignedSpec": "S4-FX-03"
+    },
+    {
+      "id": "cab0a484-4493-495d-99c0-687662d1ce3d",
+      "name": "S4-FX-04 — One normal exports; two refuse; lighting Cancel preserves layers.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "fixture",
+      "note": "Needs two normal-layer fixtures and the decoded ZIP.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "1c1f254a-e25d-422f-9bc9-62c35f7127e0",
+      "name": "S4-FX-05 — Cleanup keeps protected details.",
+      "appVerdict": "failed",
+      "storedPython": true,
+      "class": "plan",
+      "note": "Agent scanned an unrelated uploaded fixture; on the specified drawing the scan finds the stray. Redesigned with a replay.",
+      "redesignedSpec": "S4-FX-05"
+    },
+    {
+      "id": "4b519c7e-d4e0-4db7-87d3-d0a8dee71f17",
+      "name": "S4-FX-06 — Tiles agree with their map.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "fixture",
+      "note": "Needs a tile fixture and the downloaded bundle.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "fb1facc7-97dd-4f27-a7fe-c80787ee9859",
+      "name": "S4-FX-07 — Variations stay tied to their source.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "vague",
+      "note": "Recipe source-change journey with many open choices.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "6c4c3552-16b8-441f-a51b-9732ae33da1f",
+      "name": "S4-HIST-02 — An empty history stays calm.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Branching and reload proven by digest; redesigned.",
+      "redesignedSpec": "S4-HIST-02"
+    },
+    {
+      "id": "6054b7b4-74c8-4c69-8285-9b9568558043",
+      "name": "S4-HOME-01 — The bench keeps its own tiny world.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "Two tabs and the bench GIF download.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "86e87409-b0d0-4575-aca7-881510dca77a",
+      "name": "S4-IMPORT-01 — Image import is explicit.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "fixture",
+      "note": "Needs the pose PNG uploads.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "270fa57f-a5d9-4b0e-aa99-c4158133a420",
+      "name": "S4-IMPORT-02 — A sheet becomes the right poses.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "fixture",
+      "note": "Needs the sprite sheet upload.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "afc0b83b-d6df-4b48-8341-bb2cf962f3fc",
+      "name": "S4-JOURNEY-01 — A little animation comes safely home.",
+      "appVerdict": "failed",
+      "storedPython": true,
+      "class": "download",
+      "note": "Native save picker and a fresh browser context.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "bbb8f684-adbc-43aa-87f0-6a41913bda05",
+      "name": "S4-LAYER-01 — Layer structure is reversible.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Layer stack and digest; redesigned.",
+      "redesignedSpec": "S4-LAYER-01"
+    },
+    {
+      "id": "fd3da2e3-9a59-46e0-b591-df9d18fe2703",
+      "name": "S4-LAYER-02 — Hidden and locked mean different things.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "oracle",
+      "note": "Hidden composite and lock refusal by readout; redesigned.",
+      "redesignedSpec": "S4-LAYER-02"
+    },
+    {
+      "id": "8f4458ff-2a3b-415c-b99c-bc3a0fb42843",
+      "name": "S4-LAYER-03 — Blend and opacity keep their neighbors.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "oracle",
+      "note": "Composite colors checked against independent formulas; redesigned.",
+      "redesignedSpec": "S4-LAYER-03"
+    },
+    {
+      "id": "b914aaa8-21d5-4906-ab63-6e39bd356301",
+      "name": "S4-LEARN-04 — A coach teaches one pose at a time.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "gesture",
+      "note": "A partial tracing needs pointer strokes.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "1ab5748d-2918-4ee6-9992-12d01a3cdd1b",
+      "name": "S4-LEARN-05 — The teaching board is an example.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "vague",
+      "note": "Board flow; assertion not tied to an observable.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "161d6301-2b6b-4c53-aa18-b396f848bd60",
+      "name": "S4-LEARN-06 — Pocket has a desk of its own.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "viewport",
+      "note": "390×844 viewport.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "b5cab687-77f4-4ba1-8df6-5def1766b4f4",
+      "name": "S4-MOTION-01 — A rigid part takes two poses.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "gesture",
+      "note": "Marquee selection for the rigid part.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "f06ef9db-6227-43e0-815e-72bf8fd2166a",
+      "name": "S4-MOTION-02 — A saved rig refuses its genuinely changed source after reload.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "Rig fingerprint read from a downloaded project, plus a marquee drag.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "acc0d53a-3bfd-455f-938a-27c91a99882c",
+      "name": "S4-NEW-01 — A tiny loop keeps its place.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "plan",
+      "note": "Two edits in one focused field are one Undo step by design; the plan's Tab was skipped. Redesigned with a blur click.",
+      "redesignedSpec": "S4-NEW-01"
+    },
+    {
+      "id": "59fc51e1-ce16-4ad1-9ea4-392dcca93fd7",
+      "name": "S4-NEW-02 — Delete, then bring the pose home.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Order, holds and digest after Undo; redesigned.",
+      "redesignedSpec": "S4-NEW-02"
+    },
+    {
+      "id": "e6d22c7e-0756-4ee6-8edd-d8aeb2e8b757",
+      "name": "S4-NEW-05 — Frame keys belong to the focused frame.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "keys",
+      "note": "Focused frame card with Ctrl+D and Alt+arrows.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "4cd53bc1-ed07-4e21-bfe8-0a3566035797",
+      "name": "S4-NEW-06 — A frame menu finds its way back.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "keys",
+      "note": "Shift+F10 on a focused frame card.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "f10cb6c5-a9fa-4223-b3b8-45eb48d6481e",
+      "name": "S4-NEW-07 — Animate means add a blank frame.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Blank frame proven by readout; keyboard activation stays in the stored Python. Redesigned.",
+      "redesignedSpec": "S4-NEW-07"
+    },
+    {
+      "id": "fd0f5e17-76da-47d0-942b-ddd752997e9c",
+      "name": "S4-NEW-08 — The timeline fits the desk.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "viewport",
+      "note": "Four desktop widths.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "31ecb05a-6b76-42fd-bd87-a3525b49ff6c",
+      "name": "S4-NEW-11 — A swatch knows which pot.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "gesture",
+      "note": "Shift-click and right-click on swatches.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "48fad655-2a7c-49e7-9bb8-c58f74e0f5eb",
+      "name": "S4-NEW-12 — Colors by keyboard.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "plan",
+      "note": "The first palette swatch equals the default primary (#3A2E4C), so Enter on it cannot show a change; also focus-dependent keys.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "306a7b5a-9435-4506-9be2-eaf7dd9f607f",
+      "name": "S4-NEW-15 — Preview stays on the desk.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "gesture",
+      "note": "Window drag and resize.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "9e95f9a5-6af7-402f-80d8-0fd14784b17f",
+      "name": "S4-NEW-16 — A pan is never a stroke.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "gesture",
+      "note": "Middle-button pan and wheel zoom.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "17a18f9f-1336-47db-abf7-e50fa5ab5427",
+      "name": "S4-NEW-17 — A layered stroke tells the truth.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "vague",
+      "note": "Fixture left to the agent.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "8454253c-80b9-4da4-b9c8-548776bb4298",
+      "name": "S4-NEW-18 — The four new cozy rooms.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Theme radios and digest across reopening; redesigned.",
+      "redesignedSpec": "S4-NEW-18"
+    },
+    {
+      "id": "d175b106-aba4-40a9-a5c3-12c035d7b76b",
+      "name": "S4-NEW-20 — Quiet motion, complete controls.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "viewport",
+      "note": "Reduced-motion preference.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "ffedf7d1-5b19-4552-993a-fe63e56e9f19",
+      "name": "S4-PAL-01 — A named palette is a keepsake.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Palette state is visible; plan adds an unreadable RGBA demand.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "c9688b8d-3ebc-4fe3-b10d-ad7d49f546bf",
+      "name": "S4-PAL-02 — A library choice is explicit.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Palette and foreground are visible; plan adds an unreadable RGBA demand.",
+      "redesignedSpec": "S4-PAL-02"
+    },
+    {
+      "id": "3de75df2-12d6-451d-99e8-23af772c3063",
+      "name": "S4-PAL-04 — Cycle tracks keep their range.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Rates and history are visible; plan adds RGBA permutation and project download.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "87832975-3885-4714-9988-2d6f193489fa",
+      "name": "S4-PAL-05 — Roles and bindings survive editing.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "gesture",
+      "note": "Marquee drag.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "90c317f8-81f2-489e-8d74-459e5e50c755",
+      "name": "S4-READOUT-01 — A heart in pixels, words and a real PNG.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "PNG decode stays in the stored Python; readout and Undo/Redo redesigned.",
+      "redesignedSpec": "S4-READOUT-01"
+    },
+    {
+      "id": "5398500f-34a3-4661-ad5e-ed2dcbe9be7a",
+      "name": "S4-RELATION-01 — Turn it around, and bring it back.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "fixture",
+      "note": "Uploaded fixture, marquee drags and backup downloads.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "8841ff88-9ccd-453f-ba68-13a9aa339ac1",
+      "name": "S4-SAFE-01 — Diagnostics ask before sharing.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "Diagnostics JSON download.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "8659a0b0-983c-40c8-ab30-60a9eb8f81b5",
+      "name": "S4-SAFE-03 — A corrupted import leaves an escape.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "fixture",
+      "note": "Invalid-file uploads and backup downloads.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "2dee1983-4ac9-490d-9986-1b054492cab0",
+      "name": "S4-SAFE-04 — Offline and update promises need an actual network boundary.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "viewport",
+      "note": "Offline network control.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "7352527c-5f87-46fc-b219-dfc06a82f65d",
+      "name": "S4-SAFE-06 — A layer lock also protects a selection.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "gesture",
+      "note": "Marquee drag; redesigned with a Magic Wand click.",
+      "redesignedSpec": "S4-SAFE-06"
+    },
+    {
+      "id": "b353085c-8d22-424c-9ecc-8d3a7c75d367",
+      "name": "S4-SAVE-01 — Close the desk, keep the drawing.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "fixture",
+      "note": "Uploaded fixture, layer downloads and a tab close.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "76cb1fe2-c7c5-4cf0-b5b1-a3ea0cd8b905",
+      "name": "S4-STORY-01 — A lamp for a little midnight friend.",
+      "appVerdict": "blocked",
+      "storedPython": false,
+      "class": "download",
+      "note": "GIF and backup.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "1bdd2744-29ef-4e59-879f-9852f0a1475c",
+      "name": "S4-VIEW-01 — Lenses do not leave the glass.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "download",
+      "note": "PNG decode.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "aff47330-da21-4332-803b-67d3f8c1bb85",
+      "name": "S4-VIEW-02 — A workspace remembers its shelves.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Layout state is visible; plan adds native RGBA.",
+      "redesignedSpec": null
+    },
+    {
+      "id": "e65d4b15-428d-430e-bbbb-4c8f0e7e917c",
+      "name": "S4-VIEW-03 — Quick tools follow the keymap.",
+      "appVerdict": "failed",
+      "storedPython": true,
+      "class": "plan",
+      "note": "Standard keymap: right-click on the artwork paints with the secondary color by design. Redesigned with Eyedropper focus and Shift+F10.",
+      "redesignedSpec": "S4-VIEW-03"
+    },
+    {
+      "id": "813350a7-4390-4ecc-8ab3-2298787696cf",
+      "name": "S4-WELCOME-01 — A welcome you can leave.",
+      "appVerdict": "blocked",
+      "storedPython": true,
+      "class": "oracle",
+      "note": "Theme persistence is visible; plan adds unchanged-pixel proof.",
+      "redesignedSpec": "S4-WELCOME-01"
+    }
+  ]
+}

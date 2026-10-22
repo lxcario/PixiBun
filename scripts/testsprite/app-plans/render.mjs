@@ -25,12 +25,12 @@ const q = (s) => `'${s}'`;
 const where = (step) => (step.within ? ` inside the ${q(step.within)} dialog` : '');
 const roleWord = (step) => ({ button: 'button', link: 'link', tab: 'tab', checkbox: 'checkbox', option: 'option',
   menuitemradio: 'menu item', radio: 'option', switch: 'switch' }[step.role ?? 'button'] ?? step.role);
-const nameOf = (name, shown) => (shown ? `${q(shown)} (accessible name ${q(name)})` : name.startsWith('/') ? `whose name matches ${name.slice(1, -1)}` : q(name));
+const nameOf = (name, shown) => (shown ? `${q(shown)} (accessible name ${q(name)})` : name.startsWith('/') ? `whose name matches ${name.replace(/^\/|\/i?$/g, '')}${name.endsWith('/i') ? ' (any letter case)' : ''}` : q(name));
 
 function value(field, want) {
   if (field.endsWith('~')) {
     const [hex, count] = want.split(' ');
-    return `${LABELS[field.slice(0, -1)]} is a single color within one step (±1 per channel) of ${hex}, covering ${count} pixels`;
+    return `${LABELS[field.slice(0, -1)]} is a single color within one step (±1 in each of red, green and blue) of ${hex}, covering ${count} pixels`;
   }
   if (typeof want === 'string' && want.startsWith('!=')) {
     const [ref, sub] = want.slice(2).split('.');
@@ -46,7 +46,7 @@ function value(field, want) {
 
 function render(step, spec) {
   if (step.say) return [{ type: step.assert ? 'assertion' : kindOf(step), description: step.say }];
-  if (step.open) return [{ type: 'action', description: `Navigate directly to ${step.open} on the environment under test (the origin plus this path). Do not import or upload any file in this test.` }];
+  if (step.open) return [{ type: 'action', description: `Navigate directly to ${step.open} on the environment under test (the origin plus this path). This test needs no file: the page itself draws the fixture.` }];
   if (step.skip) return [{ type: 'action', description: `If a welcome dialog appears, click ${q('Skip setup')}; otherwise continue.` }];
   if (step.click && step.optional) return [{ type: 'action', description: `If a ${nameOf(step.click, step.shown)} ${roleWord(step)} appears${where(step)}, click it; otherwise continue.` }];
   if (step.click) return [{ type: 'action', description: `Click the ${nameOf(step.click, step.shown)} ${roleWord(step)}${where(step)}.` }];
