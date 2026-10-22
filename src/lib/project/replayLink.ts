@@ -122,9 +122,15 @@ function parseStep(text: string, index: number, width: number, height: number, p
   }
 }
 
+// Invisible formatting characters that copied links pick up from chats and documents
+// (zero-width space, non-joiner, joiner, word joiner, byte-order mark). The format uses
+// only URL-unreserved characters, so they never carry meaning.
+const INVISIBLE = /[\u200B-\u200D\u2060\uFEFF]/g;
+
 /** Reads a replay link's `replay` value. Never throws. */
-export function parseReplay(input: unknown): ReplayParseResult {
+export function parseReplay(raw: unknown): ReplayParseResult {
   try {
+    const input = typeof raw === 'string' ? raw.replace(INVISIBLE, '').trim() : raw;
     if (typeof input !== 'string' || input.length === 0) fail('The replay link is empty.');
     if (input.length > REPLAY_LIMITS.maxLength) fail(`The replay link is longer than ${REPLAY_LIMITS.maxLength} characters.`);
     const sections = input.split('_');

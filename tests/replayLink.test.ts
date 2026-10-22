@@ -139,6 +139,17 @@ describe('replay link format', () => {
     expect(errorOf(`1_4x4_000000_p0${'.9'.repeat(20)}`)).toMatch(/^Step 1 \(p0\.9\.9\.9\.9\.9\.9\.9\.9\.9\.9\.9…\)/);
   });
 
+  it('ignores invisible characters and spaces a copied link picks up, but nothing visible', () => {
+    const link = '1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10';
+    const clean = parseReplay(link);
+    expect(clean.ok).toBe(true);
+    for (const copied of [`${link}\u200C`, `\uFEFF${link}`, `${link.slice(0, 20)}\u200B${link.slice(20)}`, ` ${link}\u2060 `]) {
+      expect(parseReplay(copied)).toEqual(clean);
+    }
+    expect(parseReplay(`${link}x`).ok).toBe(false);
+    expect(parseReplay('\u200C').ok).toBe(false);
+  });
+
   it('never throws on arbitrary input', () => {
     const alphabet = '0123456789_x.~pxlrReEfLFab-%';
     let seed = 7;
