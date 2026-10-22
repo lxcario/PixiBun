@@ -1,0 +1,50 @@
+{
+  "id": "b14b8600-0dd8-4837-bd4c-59f027f8fa4d",
+  "key": "S4-DRAW-13",
+  "title": "S4-DRAW-13 — Eyedropper samples the art.",
+  "goal": "The Eyedropper takes the exact color of the sampled artwork pixel into the Primary well, without changing artwork or adding an Undo step. The fixture is a replay with a known #2a9d8f pixel at the canvas centre.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_ffffff.2a9d8f_R0.0.0.15.15~p1.8.8"
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "top": "#ffffff 255, #2a9d8f 1"
+      }
+    },
+    {
+      "record": "A"
+    },
+    {
+      "key": "i"
+    },
+    {
+      "pressed": "Eyedropper"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "visible": "/^Primary color #2a9d8f/",
+      "why": "The sampled centre pixel's exact color becomes the Primary color."
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Sampling changes no artwork."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "top": "#ffffff 256"
+      },
+      "why": "Sampling added no Undo step: one Undo removes the replay's own last step, the centre pixel."
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "id": "dc365ace-40a4-4567-a6c5-7d199b58658c",
+  "key": "S4-DRAW-11",
+  "title": "S4-DRAW-11 — Rectangles and ellipses keep their promises.",
+  "goal": "Rectangle and Ellipse rasterize exactly: the documented shapes replay (rectangle outline, contained fill, ellipse outline, contained fill, diagonal line on 32×20) matches its golden readout, and one Undo removes only the last step. The real Rectangle and filled Ellipse tools are reachable by U and O, commit at the canvas centre, and Undo removes only the newest shape.",
+  "cliOnly": [
+    "dragged rectangle/ellipse bounds and selection-mask clipping against native RGBA"
+  ],
+  "steps": [
+    {
+      "open": "/studio?replay=1_32x20_3a2e4c.7ec8e3.ffd166_r0.1.1.12.10~f1.5.5~e0.15.2.30.17~f2.22.9~l0.0.19.31.0"
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "size": "32×20",
+        "pixels": "336",
+        "colors": "3",
+        "top": "#ffd166 146, #3a2e4c 110, #7ec8e3 80",
+        "digest": "67a657a9"
+      },
+      "why": "Each fill stays inside its outline."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "pixels": "316",
+        "top": "#ffd166 156, #3a2e4c 80, #7ec8e3 80",
+        "digest": "ede47e99"
+      },
+      "why": "Undo removes only the diagonal line."
+    },
+    {
+      "click": "Redo last action"
+    },
+    {
+      "readout": {
+        "digest": "67a657a9"
+      }
+    },
+    {
+      "open": "/studio?replay=1_16x16_ffffff_R0.0.0.15.15"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "W"
+    },
+    {
+      "color": "#1D4ED8"
+    },
+    {
+      "key": "u"
+    },
+    {
+      "pressed": "Rectangle",
+      "why": "U selects Rectangle."
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "top": "#ffffff 255, #1d4ed8 1",
+        "digest": "f99d82e7"
+      },
+      "why": "A one-point rectangle commits exactly pixel (8,8)."
+    },
+    {
+      "record": "R"
+    },
+    {
+      "color": "#E83A5C"
+    },
+    {
+      "key": "o"
+    },
+    {
+      "pressed": "Ellipse",
+      "why": "O selects Ellipse."
+    },
+    {
+      "click": "Tools",
+      "role": "button",
+      "nth": 0
+    },
+    {
+      "click": "/^Filled shape/",
+      "role": "checkbox"
+    },
+    {
+      "checked": "/^Filled shape/",
+      "role": "checkbox"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "top": "#ffffff 255, #e83a5c 1",
+        "digest": "f09d282e"
+      },
+      "why": "The filled ellipse replaces the centre pixel."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=R",
+        "top": "#ffffff 255, #1d4ed8 1"
+      },
+      "why": "Undo removes only the ellipse; the rectangle remains."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=W"
+      }
+    }
+  ]
+}

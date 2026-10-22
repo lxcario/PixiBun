@@ -1,0 +1,27 @@
+{
+  "id": "fde7a312-bc33-4d07-bbde-6dd6d7e49972",
+  "key": "EXP-003",
+  "title": "EXP-003 — Paint a little heart, light it, and bring it back.",
+  "goal": "A known heart (the documented Heart replay) takes real lighting as one undoable step: Apply changes colors but not the silhouette, Undo returns the exact heart, Redo returns the exact lit heart, and a second Undo returns the heart again.",
+  "cliOnly": ["painting the heart through thirteen real Pen drags", "decoded PNG and all 1,024 channels of the lit and restored rasters"],
+  "steps": [
+    {"open": "/studio?replay=1_16x16_e83a5c.ffd6e0.ffffff_l0.3.3.5.3~l0.10.3.12.3~l0.2.4.6.4~l0.9.4.13.4~l0.1.5.14.5~l0.1.6.14.6~l0.1.7.14.7~l0.2.8.13.8~l0.3.9.12.9~l0.4.10.11.10~l0.5.11.10.11~l0.6.12.9.12~l0.7.13.8.13~f1.0.0~p2.4.4.3.5.3.6"},
+    {"skip": true},
+    {"readout": {"pixels": "256", "top": "#ffd6e0 156, #e83a5c 97, #ffffff 3", "digest": "57feec3e"}},
+    {"click": "/^Effects/", "nth": 0},
+    {"click": "Got it", "optional": true},
+    {"click": "/^Add light and depth/"},
+    {"click": "Preview lighting"},
+    {"click": "Light from top left"},
+    {"fill": "Light Strength Slider", "value": "2.5"},
+    {"click": "Apply", "nth": 0},
+    {"readout": {"pixels": "256", "digest": "!=57feec3e"}, "why": "Lighting changed colors while every pixel stays painted."},
+    {"record": "L"},
+    {"click": "Undo last action"},
+    {"readout": {"top": "#ffd6e0 156, #e83a5c 97, #ffffff 3", "digest": "57feec3e"}, "why": "Undo restores the exact heart."},
+    {"click": "Redo last action"},
+    {"readout": {"digest": "=L", "top": "=L"}, "why": "Redo restores the exact lit heart."},
+    {"click": "Undo last action"},
+    {"readout": {"digest": "57feec3e"}, "why": "A second Undo returns the exact heart again."}
+  ]
+}

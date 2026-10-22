@@ -1,0 +1,17 @@
+{
+  "id": "90c317f8-81f2-489e-8d74-459e5e50c755",
+  "key": "S4-READOUT-01",
+  "title": "S4-READOUT-01 — A heart in pixels, words and a real PNG.",
+  "goal": "The documented Heart replay link draws exactly its golden artwork, the accessible Canvas readout states it in words and numbers, and Undo/Redo walk the last step back and forth exactly.",
+  "cliOnly": ["the downloaded native-scale PNG decoded against all 1,024 literal channels"],
+  "steps": [
+    {"open": "/studio?replay=1_16x16_e83a5c.ffd6e0.ffffff_l0.3.3.5.3~l0.10.3.12.3~l0.2.4.6.4~l0.9.4.13.4~l0.1.5.14.5~l0.1.6.14.6~l0.1.7.14.7~l0.2.8.13.8~l0.3.9.12.9~l0.4.10.11.10~l0.5.11.10.11~l0.6.12.9.12~l0.7.13.8.13~f1.0.0~p2.4.4.3.5.3.6"},
+    {"skip": true},
+    {"text": "16×16 canvas, frame 1 of 1, layer Base Layer: 256 painted pixels in 3 colors.", "why": "The readout summary describes the drawing in words."},
+    {"readout": {"size": "16×16", "frame": "1 of 1", "frames": "1", "layer": "Base Layer", "layers": "1", "pixels": "256", "colors": "3", "top": "#ffd6e0 156, #e83a5c 97, #ffffff 3", "digest": "57feec3e"}},
+    {"click": "Undo last action"},
+    {"readout": {"pixels": "256", "colors": "2", "top": "#ffd6e0 156, #e83a5c 100", "digest": "ddfeef45"}, "why": "One Undo removes exactly the three-pixel white highlight."},
+    {"click": "Redo last action"},
+    {"readout": {"pixels": "256", "colors": "3", "top": "#ffd6e0 156, #e83a5c 97, #ffffff 3", "digest": "57feec3e"}, "why": "Redo returns the exact heart."}
+  ]
+}

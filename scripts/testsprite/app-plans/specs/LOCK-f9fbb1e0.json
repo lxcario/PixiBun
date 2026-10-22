@@ -1,0 +1,120 @@
+{
+  "id": "f9fbb1e0-03fb-4d5a-90a0-4ab44ccfa8a6",
+  "key": "LOCK-UNLOCK",
+  "title": "Draw on an unlocked layer, lock it, and verify drawing is blocked until unlocked",
+  "goal": "A pixel painted on a new layer appears over Bun; once that layer is locked, painting changes nothing and adds no Undo step; after unlocking, painting works again and one Undo removes only the newest stroke.",
+  "cliOnly": [
+    "pixels at (0,0) and (1,0) placed by coordinate and per-layer native RGBA"
+  ],
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Layers",
+      "nth": 0
+    },
+    {
+      "click": "Add New Layer"
+    },
+    {
+      "readout": {
+        "layers": "2",
+        "layer": "Layer 2",
+        "digest": "=A"
+      },
+      "why": "The new, empty layer is active and changes nothing visible."
+    },
+    {
+      "color": "#1D4ED8"
+    },
+    {
+      "key": "b"
+    },
+    {
+      "click": "1px brush preset"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "!=A",
+        "pixels": "192"
+      },
+      "why": "The blue pixel covers Bun's centre pixel on the new layer."
+    },
+    {
+      "record": "P"
+    },
+    {
+      "click": "Lock layer Layer 2"
+    },
+    {
+      "visible": "Unlock layer Layer 2",
+      "why": "The layer shows it is locked."
+    },
+    {
+      "color": "#E83A5C"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "=P"
+      },
+      "why": "The locked layer refused the stroke."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "visible": "Lock layer Layer 2",
+      "why": "The refused stroke added no Undo step: one Undo reverses the lock itself."
+    },
+    {
+      "readout": {
+        "digest": "=P"
+      },
+      "why": "The blue pixel is still there."
+    },
+    {
+      "click": "Redo last action"
+    },
+    {
+      "visible": "Unlock layer Layer 2",
+      "why": "Redo locks the layer again."
+    },
+    {
+      "click": "Unlock layer Layer 2"
+    },
+    {
+      "visible": "Lock layer Layer 2"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "!=P"
+      },
+      "why": "After unlocking, the red stroke lands."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=P"
+      },
+      "why": "Undo removes only the post-unlock stroke."
+    }
+  ]
+}

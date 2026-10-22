@@ -1,0 +1,22 @@
+{
+  "id": "1c1f254a-e25d-422f-9bc9-62c35f7127e0",
+  "key": "S4-FX-05",
+  "title": "S4-FX-05 — Cleanup keeps protected details.",
+  "goal": "Cleanup finds a detached stray pixel without changing anything while it scans, Apply removes only that pixel, and Undo restores the exact marked artwork. The drawing comes from a replay link: a filled 10×10 ellipse plus one detached gray pixel at (0,0).",
+  "cliOnly": ["protected-region exclusion (needs a marquee drag)", "native RGBA of the preview"],
+  "steps": [
+    {"open": "/studio?replay=1_16x16_3a2e4c.808080_E0.3.3.12.12~p1.0.0"},
+    {"skip": true},
+    {"readout": {"size": "16×16", "pixels": "77", "colors": "2", "top": "#3a2e4c 76, #808080 1", "digest": "ed3c3a60"}, "why": "The replay draws exactly the ellipse and one stray."},
+    {"click": "/^Effects/", "nth": 0},
+    {"click": "Got it", "optional": true},
+    {"click": "/^Clean and refine/"},
+    {"click": "Scan artwork for cleanup", "shown": "Scan Artwork"},
+    {"text": "1 stray", "why": "The scan reports the detached pixel as a stray."},
+    {"readout": {"digest": "ed3c3a60", "pixels": "77"}, "why": "Scanning alone changes no pixels."},
+    {"click": "Apply analyzed artwork cleanup", "shown": "Apply Cleanup"},
+    {"readout": {"pixels": "76", "colors": "1", "top": "#3a2e4c 76"}, "why": "Only the stray is removed; the ellipse is intact."},
+    {"click": "Undo last action"},
+    {"readout": {"pixels": "77", "top": "#3a2e4c 76, #808080 1", "digest": "ed3c3a60"}, "why": "Undo restores the exact marked artwork."}
+  ]
+}
