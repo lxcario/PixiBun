@@ -1,16 +1,26 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-10-19",
+  "updated": "2026-10-22",
   "testspriteProjectUrl": "https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/test-cases",
   "suiteCases": 121,
   "entries": [
     {
       "pr": 6,
-      "title": "Automatic fixing-commit dispatch: 33 passed, 10 failed, 78 blocked",
+      "title": "Automatic App runs: 33 passed, 7 failed, 81 blocked on b78fffb1; 55, 7, 59 on 48f9b999",
       "prUrl": "https://github.com/lxcario/PixiBun/pull/6",
       "checkedOn": "2026-10-19",
-      "testspriteRunUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/145919a4-44b9-4e5c-b34e-975c9fe39c86",
+      "testspriteRunUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/89634b92-4729-4ee2-8948-e463dbd50a9a",
       "failures": [
+        {
+          "case": "S4-ANIM-03 — Clips use inclusive endpoints.",
+          "cause": "product-bug",
+          "note": "Automatic App run on b78fffb1 failed: the inverted-range error toast rendered outside the open Clips dialog, so it was inert and absent from the accessibility tree. Fixed in e43248c0; the automatic App run on 48f9b999 passed the same case. The PR check as a whole is still red."
+        },
+        {
+          "case": "S4-PAL-04 — Cycle tracks keep their range.",
+          "cause": "product-bug",
+          "note": "Automatic App run on 2d27b262 found 6 Hz and 5.5 Hz marked invalid by the rate input. Fixed in f2f13f3c; the follow-up pass was a manual controlled run, not an automatic App green."
+        },
         {
           "case": "Incomplete or mismatched execution prerequisites",
           "cause": "test-fix",

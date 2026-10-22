@@ -2,6 +2,10 @@
 
 **Not ready to submit.** Use the official Discord channel's actual template. This draft keeps the story and evidence together; it is not an entry posted on the participant's behalf.
 
+## 22 October evidence update — still a draft
+
+An automatic case-level red → fix → green now exists on PR #6. The GitHub App run on `b78fffb1` [failed S4-ANIM-03](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/b628a4b9-5173-45e0-9275-4083a2b21e92/test/0f8d6ed7-ec0e-480e-9575-bc9dfcb01f49): when Clips refused an inverted range, its error message sat outside the open dialog, where the browser makes content inert, so screen readers never heard it. Commit `e43248c0` moves the message into the open dialog, and the next automatic App run, on `48f9b999`, [passed the same case](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/89634b92-4729-4ee2-8948-e463dbd50a9a/test/96f2f816-b333-4247-8b0f-89dca05ae402). That run went from 33/7/81 to **55 Passed /7 Failed /59 Blocked** after 28 plans were rewritten to use only gestures the App agent performs and the Studio's Canvas readout. The PR check as a whole is still red and still holds the merge. Details: [22 October record](../releases/2026-10-22-app-plan-reliability.md).
+
 ## 21 October evidence update — still a draft
 
 Our fourth confirmed TestSprite-led product finding came from PR #6 itself: a palette loop's default 6 Hz was marked invalid. The [evidence story](../releases/2026-10-21-testsprite-verification-and-pr-story.md) links the original automatic failure, fix `f2f13f3c` in this PR, and the same case's passing manual cloud follow-up on the current fixing preview. We kept the bounds and buttons, strengthened the independent color/history checks, and retained the original failure. This is an honest product repair with controlled green evidence; the overall automatic PR check has not become green.
@@ -33,7 +37,7 @@ The first executed PR App batch was 32 Passed /13 Failed /76 Blocked. We kept it
 
 ## The automatic loop — evidence still required
 
-Capture a fresh fixing commit, its ready PR preview/full SHA, the automatic GitHub App dispatch, the real retained failure bundle, the agent's repair and the automatic rerun. Show the required passing check actually holding the merge. Our [ledger](loop-ledger.md) currently records the first executed failed PR check; it has zero completed red → fix → green PR loops. Manual companion passes must remain labelled manual.
+Capture a fresh fixing commit, its ready PR preview/full SHA, the automatic GitHub App dispatch, the real retained failure bundle, the agent's repair and the automatic rerun. Show the required passing check actually holding the merge. Our [ledger](loop-ledger.md) currently records the first executed failed PR check; it has zero PR-level red → fix → green loops; S4-ANIM-03 is a completed case-level automatic loop (22 October update above). Manual companion passes must remain labelled manual.
 
 ## A short demo, once the release is qualified
 
