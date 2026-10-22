@@ -220,6 +220,7 @@ export const AtelierRail = React.memo(function AtelierRail({
         {isEditingName ? (
           <input
             type="text"
+            aria-label="Project name"
             maxLength={MAX_PROJECT_NAME_LENGTH}
             value={tempName}
             onChange={(e) => setTempName(e.target.value)}
