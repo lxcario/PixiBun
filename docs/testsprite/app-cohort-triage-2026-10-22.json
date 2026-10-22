@@ -32,7 +32,7 @@
     "viewport": 4,
     "keys": 2
   },
-  "redesigned": 28,
+  "redesigned": 33,
   "cases": [
     {
       "id": "a6c571af-6e7d-4a40-bbdf-2d0f196bd9be",
@@ -374,7 +374,7 @@
       "storedPython": true,
       "class": "oracle",
       "note": "Refusal is visible in the UI; plan also insists on native RGBA beyond the readout.",
-      "redesignedSpec": null
+      "redesignedSpec": "S4-EXPORT-12"
     },
     {
       "id": "a0974817-fb8c-45ff-94cd-4223f9071a01",
@@ -689,7 +689,7 @@
       "storedPython": true,
       "class": "oracle",
       "note": "Palette state is visible; plan adds an unreadable RGBA demand.",
-      "redesignedSpec": null
+      "redesignedSpec": "S4-PAL-01"
     },
     {
       "id": "c9688b8d-3ebc-4fe3-b10d-ad7d49f546bf",
@@ -734,7 +734,7 @@
       "storedPython": true,
       "class": "fixture",
       "note": "Uploaded fixture, marquee drags and backup downloads.",
-      "redesignedSpec": null
+      "redesignedSpec": "S4-RELATION-01"
     },
     {
       "id": "8841ff88-9ccd-453f-ba68-13a9aa339ac1",
@@ -743,7 +743,7 @@
       "storedPython": true,
       "class": "download",
       "note": "Diagnostics JSON download.",
-      "redesignedSpec": null
+      "redesignedSpec": "S4-SAFE-01"
     },
     {
       "id": "8659a0b0-983c-40c8-ab30-60a9eb8f81b5",
@@ -806,7 +806,7 @@
       "storedPython": true,
       "class": "oracle",
       "note": "Layout state is visible; plan adds native RGBA.",
-      "redesignedSpec": null
+      "redesignedSpec": "S4-VIEW-02"
     },
     {
       "id": "e65d4b15-428d-430e-bbbb-4c8f0e7e917c",

@@ -33,6 +33,13 @@ for (const plan of plans) {
     console.log(`! ${plan.key}: server name "${current.name}" differs from spec title; skipped`);
     continue;
   }
+  const rendered = JSON.parse(readFileSync(join(out, `${plan.key}.steps.json`), 'utf8')).planSteps;
+  const unchanged = current.description === plan.description && current.planSteps.length === rendered.length
+    && current.planSteps.every((s, i) => s.type === rendered[i].type && s.description === rendered[i].description);
+  if (unchanged) {
+    console.log(`= ${plan.key}: already published`);
+    continue;
+  }
   writeFileSync(join(out, 'before', `${plan.id}.json`), `${JSON.stringify({ description: current.description, planSteps: current.planSteps }, null, 2)}\n`);
   console.log(`${apply ? 'apply' : 'would apply'} ${plan.key}: ${current.planSteps.length} → ${plan.steps} steps`);
   if (!apply) continue;
