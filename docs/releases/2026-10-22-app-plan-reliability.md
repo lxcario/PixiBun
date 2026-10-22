@@ -152,3 +152,5 @@ Open a starter, press Save, go Home, choose Playground: practice refused with "R
 Also fixed: the inline project-name field was an unnamed text box (`c105ac05`, now "Project name"). Left as is and noted: Live preview's toggle is named "Toggle Live PiP Preview Window" while its text reads "Live preview · Floating window" (WCAG 2.5.3); a stored script and two internal tests use the current name.
 
 Seven more specs (41 in all): S4-NEW-02, S4-HIST-02 and S4-NEW-10 tightened; S4-NEW-04, S4-NEW-14, S4-LEARN-02 and S4-LEARN-03 new.
+
+All 41 specs pass the emulator on the fixed local build. With the owner's approval the seven changed plans were published; a full re-fetch found all 41 redesigned plans matching the render and the other 80 unchanged. Previous definitions are archived under `artifacts/testsprite-plan-publish-2026-10-22/republish-7/`.
