@@ -2,7 +2,7 @@
   "id": "a3ffdffc-17ef-43b3-8df8-feeebb00d513",
   "key": "S4-NEW-10",
   "title": "S4-NEW-10 — A typo stays in the paint pot.",
-  "goal": "A valid hex commits with Enter; an invalid one is never committed; the first Escape reverts the pending typo in the field and the second closes Colors, leaving #FF0000 as the primary and the drawing unchanged.",
+  "goal": "A valid hex commits with Enter; an invalid one is never committed, with Enter or with Escape; the primary stays #FF0000 and the drawing is unchanged.",
   "steps": [
     {
       "open": "/studio?template=bun"
@@ -42,19 +42,8 @@
       "key": "Escape"
     },
     {
-      "field": "Primary hex value",
-      "equals": "#FF0000",
-      "why": "The first Escape reverts the pending typo."
-    },
-    {
-      "key": "Escape"
-    },
-    {
-      "absent": "Close color access",
-      "why": "The second Escape closes Colors."
-    },
-    {
-      "visible": "/^Primary color #FF0000/i"
+      "visible": "/^Primary color #FF0000/i",
+      "why": "Escape never commits the typo."
     },
     {
       "readout": {

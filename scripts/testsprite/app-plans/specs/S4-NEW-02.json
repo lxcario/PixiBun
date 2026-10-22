@@ -60,9 +60,8 @@
       "click": "Delete frame"
     },
     {
-      "readout": {
-        "frames": "2"
-      }
+      "absent": "/^Select frame 3. /",
+      "why": "Exactly two frames remain."
     },
     {
       "visible": "/^Select frame 1. #1 100ms/"
@@ -76,10 +75,13 @@
     },
     {
       "readout": {
-        "frames": "3",
         "digest": "=A"
       },
       "why": "Undo restores the deleted frame with the exact artwork."
+    },
+    {
+      "visible": "/^Select frame 3. /",
+      "why": "The third frame is back."
     },
     {
       "visible": "/^Select frame 1. #1 100ms/"

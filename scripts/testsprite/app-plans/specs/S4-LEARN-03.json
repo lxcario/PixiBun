@@ -1,0 +1,89 @@
+{
+  "id": "4a6bfdd0-5829-4661-ae5a-06f170218af8",
+  "key": "S4-LEARN-03",
+  "title": "S4-LEARN-03 — Keep means a new project.",
+  "goal": "Keeping a traced practice in Studio creates a new 'Practice Drawing' project, while the saved original stays in Projects and reopens with its exact artwork.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Rename project Bun"
+    },
+    {
+      "fill": "Project name",
+      "value": "S4 Original Keep"
+    },
+    {
+      "key": "Enter"
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "click": "/PIXIBUN STUDIO/",
+      "role": "link",
+      "nth": 0
+    },
+    {
+      "click": "/^Playground/",
+      "role": "link",
+      "nth": 0
+    },
+    {
+      "click": "/^Let.s start/",
+      "nth": 0,
+      "settle": 1
+    },
+    {
+      "click": "/^Trace it for me/",
+      "nth": 0
+    },
+    {
+      "text": "Matched",
+      "why": "The practice pose is traced."
+    },
+    {
+      "click": "/^Keep practice in Studio/",
+      "nth": 0
+    },
+    {
+      "visible": "Rename project Practice Drawing",
+      "why": "The kept practice is a new project."
+    },
+    {
+      "click": "/^File/",
+      "nth": 0
+    },
+    {
+      "click": "Projects",
+      "role": "menuitem"
+    },
+    {
+      "visible": "Open project Practice Drawing"
+    },
+    {
+      "visible": "Open project S4 Original Keep",
+      "why": "The original is still in Projects."
+    },
+    {
+      "click": "Open project S4 Original Keep"
+    },
+    {
+      "visible": "Rename project S4 Original Keep"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      },
+      "why": "The original reopens with its exact artwork."
+    }
+  ]
+}
