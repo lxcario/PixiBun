@@ -61,11 +61,19 @@
     },
     {
       "readout": {
-        "layers": "=A",
         "pixels": "192",
         "digest": "=A"
       },
       "why": "One Undo returns the exact original artwork and layers."
+    },
+    {
+      "click": "Layers",
+      "nth": 0
+    },
+    {
+      "visible": "/^Layers \\(1\\)/",
+      "role": "heading",
+      "why": "Still one layer after Undo."
     }
   ]
 }
