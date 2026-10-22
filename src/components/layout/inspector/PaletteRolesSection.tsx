@@ -150,7 +150,7 @@ export function PaletteRolesSection({ palette }: { palette: ColorPalette }) {
       </div>
 
       <p className="text-[10px] text-[var(--text-muted)]">Bindings use the selection's bounding box on the current frame. Only pixels exactly matching this register's RGB are assigned; alpha stays separate. Later matching bindings win. Drawing remains editable.</p>
-      <p>{semantics.bindings.length} saved index bindings</p>
+      <p>{semantics.bindings.length} saved index {semantics.bindings.length === 1 ? 'binding' : 'bindings'}</p>
       {semantics.bindings.map(binding => <div key={binding.id} className="flex flex-col gap-1 border-t border-[var(--desk-border)] pt-1">
         <span className="break-words">{frames.some(f => f.id === binding.frameId) ? `Frame ${frames.findIndex(f => f.id === binding.frameId) + 1}` : 'Removed frame'}: #{semantics.entries.findIndex(e => e.id === binding.entryId)} at ({binding.x}, {binding.y}), {binding.w} × {binding.h}</span>
         <TactileButton size="sm" aria-label={`Remove index binding ${binding.id}`} onClick={() => update(palette.id, {
