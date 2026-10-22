@@ -21,7 +21,8 @@
       "value": "S4 Original Before Practice"
     },
     {
-      "key": "Enter"
+      "click": "Save now",
+      "why": "Saving also finishes the name edit."
     },
     {
       "visible": "Rename project S4 Original Before Practice"

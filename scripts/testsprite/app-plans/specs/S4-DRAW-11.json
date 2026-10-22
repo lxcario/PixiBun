@@ -40,7 +40,8 @@
       }
     },
     {
-      "open": "/studio?replay=1_16x16_ffffff_R0.0.0.15.15"
+      "open": "/studio?replay=1_16x16_ffffff_R0.0.0.15.15",
+      "reload": true
     },
     {
       "skip": true

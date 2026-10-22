@@ -52,7 +52,11 @@ function value(field, want) {
 
 function render(step, spec) {
   if (step.say) return [{ type: step.assert || step.either ? 'assertion' : kindOf(step), description: step.say }];
-  if (step.open) return [{ type: 'action', description: `Navigate directly to ${step.open} on the environment under test (the origin plus this path). This test needs no file: the page itself draws the fixture.` }];
+  if (step.open && step.reload) return [{ type: 'action', description: `Reload the app now: navigate directly to ${step.open} on the environment under test as a full page load. This step is required; do not skip it or replace it with in-app navigation.` }];
+  if (step.open) {
+    const guard = spec.steps.some((s) => s.canvas) ? '' : ' Do not click the drawing canvas at any point in this test: a click paints a pixel and changes the artwork.';
+    return [{ type: 'action', description: `Navigate directly to ${step.open} on the environment under test (the origin plus this path). This test needs no file: the page itself draws the fixture.${guard}` }];
+  }
   if (step.skip) return [{ type: 'action', description: `If a welcome dialog appears, click ${q('Skip setup')}; otherwise continue.` }];
   if (step.click && step.optional) return [{ type: 'action', description: `If a ${nameOf(step.click, step.shown)} ${roleWord(step)} appears${where(step)}, click it; otherwise continue.` }];
   if (step.click) return [{ type: 'action', description: `Click the ${nameOf(step.click, step.shown)} ${roleWord(step)}${where(step)}.` }];

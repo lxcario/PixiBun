@@ -101,7 +101,8 @@
       "nth": -1
     },
     {
-      "open": "/studio"
+      "open": "/studio",
+      "reload": true
     },
     {
       "skip": true

@@ -171,3 +171,14 @@ All 41 specs pass the emulator on the fixed local build. With the owner's approv
 - **Three untouched plans drifted from Passed to Blocked:** S4-HIST-04 (the agent opened the default blank Studio instead of the Bun starter the plan names), "Reject invalid canvas size…" (the agent improvised an image import) and S4-SAVE-03 (reproduced on `89d7041b`: "S4 Before New" stays in Projects). No regression.
 
 Five plans were then pinned or rewritten and published with the owner's standing approval (all 45 specs emulate green against the deployed `89d7041b`; a full re-fetch found the 45 matching and the other 76 unchanged; previous definitions under `artifacts/testsprite-plan-publish-2026-10-22/republish-5/`): S4-NEW-01, S4-HIST-04, S4-SAVE-03, "Reject invalid canvas size before starting a new drawing" (now: the dialog offers only preset sizes, and Keep Drawing keeps the original exactly), and S4-EXPORT-10. **Trade-off for S4-EXPORT-10:** its App plan now checks that requesting a backup never pretends (either the dialog closes after saving, or the exact no-backup message) and never changes the project; the real download, fresh-context reopen and layer/frame/pixel comparison stay in its hand-written stored Python, because the agent's browser cannot complete a native save dialog.
+
+## The automatic App run on `c5e0ebf9` — run-to-run variation
+
+`c5e0ebf9` changed only documentation after `89d7041b`, so its run (12:14–12:58 UTC) measures the agent rather than the app: **59 Passed / 8 Failed / 54 Blocked** against 63/2/56. [Per-case results](../testsprite/app-run-2026-10-22-c5e0ebf9.json). Every new failure we traced came from how the agent carried out a step:
+
+- S4-LEARN-03 and S4-SAVE-03: after typing a project name the agent clicked the canvas to commit it, which painted Bun's centre pixel (digest `668adea8` instead of `6af29269`).
+- S4-HIST-02: the agent skipped the required reload, so Undo was naturally still available.
+- "Undo a layer deletion": the agent never painted on the new layer before deleting it.
+- S4-SAVE-03 also claimed the readout kept 192 pixels after Start New Drawing; on the deployed build the readout reports 0 within 0.1 s.
+
+The renderer now designs those habits out for every plan: a plan that never draws says "do not click the drawing canvas; a click paints", a rename is committed by Save now rather than Enter, and a second navigation is a required full reload. Ten plans changed wording as a result.

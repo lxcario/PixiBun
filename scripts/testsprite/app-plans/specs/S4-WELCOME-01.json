@@ -67,7 +67,8 @@
       "click": "Save now"
     },
     {
-      "open": "/studio"
+      "open": "/studio",
+      "reload": true
     },
     {
       "skip": true
