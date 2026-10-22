@@ -69,13 +69,22 @@ function render(step, spec) {
   }
   if (step.fill) return [{ type: 'action', description: `Fill ${q(step.value)} into the field labelled ${q(step.fill)}${where(step)}.` }];
   if (step.select) return [{ type: 'action', description: `In the ${q(step.select)} dropdown${where(step)}, choose ${q(step.option)}.` }];
+  if (step.key && step.inField) return [{ type: 'action', description: `With the field labelled ${q(step.inField)}${where(step)} still focused, press the ${step.key} key.${step.why ? ` ${step.why}` : ''}` }];
   if (step.key) return [{ type: 'action', description: `Press the ${step.key} key while no text field has focus.` }];
   if (step.color) {
     const pot = step.pot ?? 'Primary';
     return [{ type: 'action', description: `Set the ${pot} color to ${step.color}: click the ${q(`${pot} color …`)} well, fill ${q(step.color)} into the field labelled ${q(`${pot} hex value`)}, then click ${q('Close color access')}.` }];
   }
   if (step.command) return [{ type: 'action', description: `Press Control+K to open the command palette, fill ${q(step.command)} into ${q('Search studio commands')}, then click the matching ${q(step.command)} result.` }];
-  if (step.record) return [{ type: 'action', description: `Read ${READOUT_INTRO} and write down its Frame digest, Painted pixels in this frame, Colors in this frame and Most used colors with pixel counts as ${step.record}.` }];
+  if (step.record) {
+    // Also write down any other field a later step compares with this record, so the agent has it.
+    const base = ['digest', 'pixels', 'colors', 'top'];
+    const extra = [...new Set(spec.steps.flatMap((s) => Object.entries(s.readout || {})
+      .filter(([, want]) => typeof want === 'string' && want.replace(/^!?=/, '').split('.')[0] === step.record && /^!?=/.test(want))
+      .map(([field]) => field.replace(/~$/, ''))))].filter((field) => !base.includes(field) && LABELS[field]);
+    const fields = ['Frame digest', ...extra.map((field) => LABELS[field]), 'Painted pixels in this frame', 'Colors in this frame'];
+    return [{ type: 'action', description: `Read ${READOUT_INTRO} and write down its ${fields.join(', ')} and Most used colors with pixel counts as ${step.record}.` }];
+  }
   if (step.readout) {
     const parts = Object.entries(step.readout).map(([field, want]) => value(field, want));
     return [{ type: 'assertion', description: `In ${READOUT_INTRO}: ${parts.join('; ')}.${step.why ? ` ${step.why}` : ''}` }];

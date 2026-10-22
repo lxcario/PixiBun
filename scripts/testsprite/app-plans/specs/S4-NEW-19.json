@@ -1,0 +1,147 @@
+{
+  "id": "b8cf6346-268e-4131-8936-a699c4974816",
+  "key": "S4-NEW-19",
+  "title": "S4-NEW-19 — All twelve rooms keep the drawing.",
+  "goal": "Each of the twelve Studio styles can be chosen and is shown as the selected style; with Graphite and with Plum the Studio panel states that they keep the classic studio; and after all twelve changes the Bun artwork is exactly as it was.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Studio options"
+    },
+    {
+      "click": "/^Moonlit:/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Moonlit:/",
+      "role": "radio",
+      "why": "Moonlit is now the selected Studio style."
+    },
+    {
+      "click": "/^Sakura:/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Sakura:/",
+      "role": "radio",
+      "why": "Sakura is now the selected Studio style."
+    },
+    {
+      "click": "/^Tidepool:/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Tidepool:/",
+      "role": "radio",
+      "why": "Tidepool is now the selected Studio style."
+    },
+    {
+      "click": "/^Ember:/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Ember:/",
+      "role": "radio",
+      "why": "Ember is now the selected Studio style."
+    },
+    {
+      "click": "/^Moss:/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Moss:/",
+      "role": "radio",
+      "why": "Moss is now the selected Studio style."
+    },
+    {
+      "click": "/^Arcade:/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Arcade:/",
+      "role": "radio",
+      "why": "Arcade is now the selected Studio style."
+    },
+    {
+      "click": "/^Cocoa:/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Cocoa:/",
+      "role": "radio",
+      "why": "Cocoa is now the selected Studio style."
+    },
+    {
+      "click": "/^Drizzle:/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Drizzle:/",
+      "role": "radio",
+      "why": "Drizzle is now the selected Studio style."
+    },
+    {
+      "click": "/^Harvest:/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Harvest:/",
+      "role": "radio",
+      "why": "Harvest is now the selected Studio style."
+    },
+    {
+      "click": "/^Harbor:/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Harbor:/",
+      "role": "radio",
+      "why": "Harbor is now the selected Studio style."
+    },
+    {
+      "click": "/^Graphite:/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Graphite:/",
+      "role": "radio",
+      "why": "Graphite is now the selected Studio style."
+    },
+    {
+      "text": "Graphite and Plum always keep the classic studio.",
+      "why": "Graphite and Plum keep the classic studio: Labs never apply to them."
+    },
+    {
+      "click": "/^Plum:/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Plum:/",
+      "role": "radio",
+      "why": "Plum is now the selected Studio style."
+    },
+    {
+      "text": "Graphite and Plum always keep the classic studio.",
+      "why": "Graphite and Plum keep the classic studio: Labs never apply to them."
+    },
+    {
+      "click": "Close studio options"
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "pixels": "192",
+        "digest": "=A"
+      },
+      "why": "Changing the Studio style twelve times never changed the artwork."
+    }
+  ]
+}
