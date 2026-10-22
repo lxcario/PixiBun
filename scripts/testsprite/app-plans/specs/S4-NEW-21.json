@@ -1,0 +1,105 @@
+{
+  "id": "e36de20f-0c53-4e83-98d4-1a537be622a1",
+  "key": "S4-NEW-21",
+  "title": "S4-NEW-21 — Every Lab can come home.",
+  "goal": "Each of the five Studio Labs can be turned on and shows as on; Classic studio turns all five off; the drawing and its history are untouched and the editor stays usable.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Studio/",
+      "nth": 0
+    },
+    {
+      "click": "Lab: Dynamic island",
+      "role": "checkbox"
+    },
+    {
+      "checked": "Lab: Dynamic island",
+      "role": "checkbox"
+    },
+    {
+      "click": "Lab: Liquid tabs",
+      "role": "checkbox"
+    },
+    {
+      "checked": "Lab: Liquid tabs",
+      "role": "checkbox"
+    },
+    {
+      "click": "Lab: Liquid controls",
+      "role": "checkbox"
+    },
+    {
+      "checked": "Lab: Liquid controls",
+      "role": "checkbox"
+    },
+    {
+      "click": "Lab: Paint pot palette",
+      "role": "checkbox"
+    },
+    {
+      "checked": "Lab: Paint pot palette",
+      "role": "checkbox"
+    },
+    {
+      "click": "Lab: Quick magic",
+      "role": "checkbox"
+    },
+    {
+      "checked": "Lab: Quick magic",
+      "role": "checkbox"
+    },
+    {
+      "click": "Classic studio"
+    },
+    {
+      "unchecked": "Lab: Dynamic island",
+      "role": "checkbox"
+    },
+    {
+      "unchecked": "Lab: Liquid tabs",
+      "role": "checkbox"
+    },
+    {
+      "unchecked": "Lab: Liquid controls",
+      "role": "checkbox"
+    },
+    {
+      "unchecked": "Lab: Paint pot palette",
+      "role": "checkbox"
+    },
+    {
+      "unchecked": "Lab: Quick magic",
+      "role": "checkbox"
+    },
+    {
+      "click": "Close studio options"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      },
+      "why": "Labs and Classic studio leave the drawing exact."
+    },
+    {
+      "disabled": "Undo last action",
+      "why": "No artwork history was created."
+    },
+    {
+      "key": "b"
+    },
+    {
+      "pressed": "Pen",
+      "why": "The editor stays usable."
+    }
+  ]
+}

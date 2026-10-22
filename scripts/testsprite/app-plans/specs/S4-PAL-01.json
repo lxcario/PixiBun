@@ -1,0 +1,157 @@
+{
+  "id": "ffedf7d1-5b19-4552-993a-fe63e56e9f19",
+  "key": "S4-PAL-01",
+  "title": "S4-PAL-01 — A named palette is a keepsake.",
+  "goal": "A new palette is named, gets two colors, is reordered and has a temporary color removed in its draft; creating it selects exactly that two-color palette; a second, cancelled draft leaves no trace; the drawing never changes.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Palette",
+      "nth": 0
+    },
+    {
+      "click": "Create palette",
+      "nth": 0
+    },
+    {
+      "fill": "Palette name",
+      "value": "S4 Lantern",
+      "within": "Create palette"
+    },
+    {
+      "fill": "Hex color",
+      "value": "#FFAA00",
+      "within": "Create palette"
+    },
+    {
+      "click": "+ Add color",
+      "within": "Create palette"
+    },
+    {
+      "fill": "Hex color",
+      "value": "#2D8C7A",
+      "within": "Create palette"
+    },
+    {
+      "visible": "Edit color 2: #2D8C7A",
+      "within": "Create palette"
+    },
+    {
+      "click": "Move left",
+      "within": "Create palette"
+    },
+    {
+      "pressed": "Edit color 1: #2D8C7A",
+      "within": "Create palette",
+      "why": "The moved teal swatch is first and still selected."
+    },
+    {
+      "visible": "Edit color 2: #FFAA00",
+      "within": "Create palette"
+    },
+    {
+      "click": "Move right",
+      "within": "Create palette"
+    },
+    {
+      "visible": "Edit color 1: #FFAA00",
+      "within": "Create palette"
+    },
+    {
+      "visible": "Edit color 2: #2D8C7A",
+      "within": "Create palette"
+    },
+    {
+      "click": "+ Add color",
+      "within": "Create palette"
+    },
+    {
+      "fill": "Hex color",
+      "value": "#7C3AED",
+      "within": "Create palette"
+    },
+    {
+      "visible": "Edit color 3: #7C3AED",
+      "within": "Create palette"
+    },
+    {
+      "click": "Remove",
+      "within": "Create palette"
+    },
+    {
+      "absent": "Edit color 3: #7C3AED",
+      "within": "Create palette",
+      "why": "The temporary purple swatch is gone."
+    },
+    {
+      "visible": "Edit color 1: #FFAA00",
+      "within": "Create palette"
+    },
+    {
+      "visible": "Edit color 2: #2D8C7A",
+      "within": "Create palette"
+    },
+    {
+      "click": "Create palette",
+      "within": "Create palette"
+    },
+    {
+      "selected": "Color palette preset",
+      "option": "S4 Lantern (2)",
+      "why": "Exactly one committed two-color palette is selected."
+    },
+    {
+      "visible": "/^Select color #ffaa00/i"
+    },
+    {
+      "visible": "/^Select color #2d8c7a/i"
+    },
+    {
+      "absent": "/^Select color #7c3aed/i",
+      "why": "The removed color was not committed."
+    },
+    {
+      "click": "Create palette",
+      "nth": 0
+    },
+    {
+      "fill": "Palette name",
+      "value": "S4 Uncommitted",
+      "within": "Create palette"
+    },
+    {
+      "fill": "Hex color",
+      "value": "#7C3AED",
+      "within": "Create palette"
+    },
+    {
+      "click": "Cancel",
+      "within": "Create palette"
+    },
+    {
+      "selected": "Color palette preset",
+      "option": "S4 Lantern (2)",
+      "why": "Cancelling the draft keeps S4 Lantern selected."
+    },
+    {
+      "absent": "/^S4 Uncommitted/",
+      "role": "option",
+      "why": "The cancelled draft was not saved."
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      },
+      "why": "Palette editing never touched the artwork."
+    }
+  ]
+}

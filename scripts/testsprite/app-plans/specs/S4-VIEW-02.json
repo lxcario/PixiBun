@@ -1,0 +1,149 @@
+{
+  "id": "aff47330-da21-4332-803b-67d3f8c1bb85",
+  "key": "S4-VIEW-02",
+  "title": "S4-VIEW-02 — A workspace remembers its shelves.",
+  "goal": "A saved layout restores the inspector's side and width after other changes and after reopening; the Drawing, Animation and Lighting presets keep Export reachable; none of it changes the drawing.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^View/",
+      "nth": 0
+    },
+    {
+      "click": "/^Arrange/"
+    },
+    {
+      "select": "Inspector position",
+      "option": "Left"
+    },
+    {
+      "fill": "Inspector width",
+      "value": "300"
+    },
+    {
+      "fill": "New workspace name",
+      "value": "S4 Proof Desk"
+    },
+    {
+      "click": "Save layout"
+    },
+    {
+      "visible": "S4 Proof Desk",
+      "why": "The saved layout is listed."
+    },
+    {
+      "select": "Inspector position",
+      "option": "Right"
+    },
+    {
+      "fill": "Inspector width",
+      "value": "380"
+    },
+    {
+      "click": "S4 Proof Desk"
+    },
+    {
+      "selected": "Inspector position",
+      "option": "Left",
+      "why": "The saved side returns."
+    },
+    {
+      "field": "Inspector width",
+      "equals": "300",
+      "why": "The saved width returns."
+    },
+    {
+      "click": "Close dialog"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Layout changes do not touch the drawing."
+    },
+    {
+      "select": "Workspace layout",
+      "option": "Drawing"
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "visible": "/^Export/",
+      "nth": -1
+    },
+    {
+      "select": "Workspace layout",
+      "option": "Animation"
+    },
+    {
+      "visible": "Play"
+    },
+    {
+      "visible": "/^Export/",
+      "nth": -1
+    },
+    {
+      "select": "Workspace layout",
+      "option": "Lighting"
+    },
+    {
+      "visible": "/^Export/",
+      "nth": -1
+    },
+    {
+      "open": "/studio"
+    },
+    {
+      "skip": true
+    },
+    {
+      "click": "/^View/",
+      "nth": 0
+    },
+    {
+      "click": "/^Arrange/"
+    },
+    {
+      "click": "S4 Proof Desk"
+    },
+    {
+      "selected": "Inspector position",
+      "option": "Left",
+      "why": "The saved layout survives reopening."
+    },
+    {
+      "field": "Inspector width",
+      "equals": "300"
+    },
+    {
+      "click": "Close dialog"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "visible": "Download PNG",
+      "why": "Export opens and is usable."
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "The drawing is exactly the original."
+    }
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

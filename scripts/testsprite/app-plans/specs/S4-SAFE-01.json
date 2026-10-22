@@ -1,0 +1,62 @@
+{
+  "id": "8841ff88-9ccd-453f-ba68-13a9aa339ac1",
+  "key": "S4-SAFE-01",
+  "title": "S4-SAFE-01 — Diagnostics ask before sharing.",
+  "goal": "Privacy & Diagnostics says logs stay on the device by default, local logging is on, sending reports is off until the person turns it on, and opening and closing it never changes the drawing.",
+  "cliOnly": [
+    "the exported diagnostics JSON contents",
+    "absence of network reports"
+  ],
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Studio/",
+      "nth": 0
+    },
+    {
+      "click": "Atelier Guide, Diagnostics and Shortcuts"
+    },
+    {
+      "click": "/^Privacy & Diagnostics/"
+    },
+    {
+      "text": "stay on this device by default",
+      "why": "Logs are local by default."
+    },
+    {
+      "checked": "Enable local diagnostic ring buffer (device only)",
+      "role": "checkbox"
+    },
+    {
+      "unchecked": "Send diagnostic reports (off by default)",
+      "role": "checkbox",
+      "why": "Sharing is opt-in."
+    },
+    {
+      "visible": "Export Diagnostics JSON",
+      "why": "The person can inspect records before choosing to send them."
+    },
+    {
+      "click": "Close",
+      "within": "Privacy, Diagnostics & Health"
+    },
+    {
+      "absent": "Export Diagnostics JSON"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      },
+      "why": "Diagnostics changed nothing in the drawing."
+    }
+  ]
+}

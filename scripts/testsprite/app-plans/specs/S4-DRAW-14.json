@@ -1,0 +1,147 @@
+{
+  "id": "df2541b1-1b7c-4ea9-a018-d7fe083b5f2a",
+  "key": "S4-DRAW-14",
+  "title": "S4-DRAW-14 — Seventeen tools have reachable controls.",
+  "goal": "Each of the seventeen tools is selected by its keyboard shortcut and shows as the pressed tool, including the ones folded into shared toolbar slots; choosing tools changes no artwork and adds no history. Operability only: each tool's pixels are covered by its own case.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "key": "b"
+    },
+    {
+      "pressed": "Pen",
+      "why": "b selects Pen."
+    },
+    {
+      "key": "c"
+    },
+    {
+      "pressed": "Bézier Curve",
+      "why": "c selects Bézier Curve."
+    },
+    {
+      "key": "e"
+    },
+    {
+      "pressed": "Eraser",
+      "why": "e selects Eraser."
+    },
+    {
+      "key": "g"
+    },
+    {
+      "pressed": "Flood Fill",
+      "why": "g selects Flood Fill."
+    },
+    {
+      "key": "Shift+G"
+    },
+    {
+      "pressed": "Pixel Gradient",
+      "why": "Shift+G selects Pixel Gradient."
+    },
+    {
+      "key": "d"
+    },
+    {
+      "pressed": "Dither Brush",
+      "why": "d selects Dither Brush."
+    },
+    {
+      "key": "r"
+    },
+    {
+      "pressed": "Color Replace",
+      "why": "r selects Color Replace."
+    },
+    {
+      "key": "Shift+R"
+    },
+    {
+      "pressed": "Erase Sampled Color",
+      "why": "Shift+R selects Erase Sampled Color."
+    },
+    {
+      "key": "m"
+    },
+    {
+      "pressed": "Marquee Box",
+      "why": "m selects Marquee Box."
+    },
+    {
+      "key": "q"
+    },
+    {
+      "pressed": "Lasso Select",
+      "why": "q selects Lasso Select."
+    },
+    {
+      "key": "w"
+    },
+    {
+      "pressed": "Magic Wand",
+      "why": "w selects Magic Wand."
+    },
+    {
+      "key": "l"
+    },
+    {
+      "pressed": "Line",
+      "why": "l selects Line."
+    },
+    {
+      "key": "j"
+    },
+    {
+      "pressed": "2:1 Iso Line",
+      "why": "j selects 2:1 Iso Line."
+    },
+    {
+      "key": "u"
+    },
+    {
+      "pressed": "Rectangle",
+      "why": "u selects Rectangle."
+    },
+    {
+      "key": "o"
+    },
+    {
+      "pressed": "Ellipse",
+      "why": "o selects Ellipse."
+    },
+    {
+      "key": "k"
+    },
+    {
+      "pressed": "Normal Chisel",
+      "why": "k selects Normal Chisel."
+    },
+    {
+      "key": "i"
+    },
+    {
+      "pressed": "Eyedropper",
+      "why": "i selects Eyedropper."
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      },
+      "why": "Choosing tools never changes the artwork."
+    },
+    {
+      "disabled": "Undo last action",
+      "why": "Tool choices add no history."
+    }
+  ]
+}

@@ -76,7 +76,8 @@ function render(step, spec) {
     return [{ type: 'assertion', description: `In ${READOUT_INTRO}: ${parts.join('; ')}.${step.why ? ` ${step.why}` : ''}` }];
   }
   if (step.visible) return [{ type: 'assertion', description: `The ${nameOf(step.visible, step.shown)} ${roleWord(step)} is visible${where(step)}.${step.why ? ` ${step.why}` : ''}` }];
-  if (step.absent) return [{ type: 'assertion', description: `There is no ${q(step.absent)} ${roleWord(step)}${where(step)}.${step.why ? ` ${step.why}` : ''}` }];
+  if (step.absent) return [{ type: 'assertion', description: `There is no ${roleWord(step)} named ${nameOf(step.absent)}${where(step)}.${step.why ? ` ${step.why}` : ''}` }];
+  if (step.selected) return [{ type: 'assertion', description: `In the ${q(step.selected)} dropdown${where(step)}, ${q(step.option)} is the selected option.${step.why ? ` ${step.why}` : ''}` }];
   if (step.enabled) return [{ type: 'assertion', description: `The ${nameOf(step.enabled, step.shown)} ${roleWord(step)} is enabled.${step.why ? ` ${step.why}` : ''}` }];
   if (step.disabled) return [{ type: 'assertion', description: `The ${nameOf(step.disabled, step.shown)} ${roleWord(step)} is disabled.${step.why ? ` ${step.why}` : ''}` }];
   if (step.pressed) return [{ type: 'assertion', description: `The ${nameOf(step.pressed, step.shown)} ${roleWord(step)} is pressed (selected).${step.why ? ` ${step.why}` : ''}` }];
@@ -90,7 +91,7 @@ function render(step, spec) {
 }
 
 function kindOf(step) {
-  return ['readout', 'visible', 'absent', 'enabled', 'disabled', 'pressed', 'checked', 'unchecked', 'field', 'text', 'alert']
+  return ['readout', 'visible', 'absent', 'selected', 'enabled', 'disabled', 'pressed', 'checked', 'unchecked', 'field', 'text', 'alert']
     .some((k) => k in step) ? 'assertion' : 'action';
 }
 

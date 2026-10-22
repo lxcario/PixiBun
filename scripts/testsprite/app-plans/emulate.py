@@ -142,7 +142,16 @@ def run_step(page, step, memory):
     elif "visible" in step:
         expect(named(page, step, "visible")).to_be_visible(timeout=10000)
     elif "absent" in step:
-        expect(scope(page, step).get_by_role(step.get("role", "button"), name=step["absent"], exact=True)).to_have_count(0, timeout=10000)
+        name = step["absent"]
+        role = step.get("role", "button")
+        flags = re.IGNORECASE if name.endswith("/i") else 0
+        target = (scope(page, step).get_by_role(role, name=re.compile(name[1:-2] if name.endswith("/i") else name[1:-1], flags)) if name.startswith("/")
+                  else scope(page, step).get_by_role(role, name=name, exact=True))
+        expect(target).to_have_count(0, timeout=10000)
+    elif "selected" in step:
+        chosen = scope(page, step).get_by_label(step["selected"], exact=True).evaluate("select => select.selectedOptions[0]?.text ?? ''")
+        if chosen.strip() != step["option"]:
+            raise StepFailed(f"{step['selected']}: expected {step['option']!r} selected, got {chosen!r}")
     elif "enabled" in step:
         expect(named(page, step, "enabled")).to_be_enabled(timeout=10000)
     elif "disabled" in step:
