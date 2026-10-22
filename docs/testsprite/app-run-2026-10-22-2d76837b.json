@@ -3,11 +3,11 @@
   "environment": "github-pr-6",
   "trigger": "automatic GitHub App after Vercel deployment ready",
   "finishedBy": "2026-10-22T18:30Z",
-  "note": "First run with the 43 rewritten plans and the dither fix. 23 plans were republished mid-run at 18:07-18:12 UTC; cases started before then ran the earlier wording.",
+  "note": "First run with the 43 rewritten plans and the dither fix. Counts are the App execution's own. 23 plans were republished mid-run at 18:07-18:12 UTC; every App case had started at 17:49 with the earlier wording.",
   "counts": {
-    "passed": 98,
-    "failed": 7,
-    "blocked": 16,
+    "passed": 99,
+    "failed": 8,
+    "blocked": 14,
     "total": 121
   },
   "previous": {
@@ -866,5 +866,11 @@
       "now": "passed",
       "startedAt": "17:49"
     }
-  ]
+  ],
+  "latestStatusView": {
+    "passed": 98,
+    "failed": 7,
+    "blocked": 16,
+    "note": "After the App run, the TestSprite Replay check's CLI replays blocked S4-NEW-02 (App: passed) and S4-CART-01 (App: failed) as stale_code."
+  }
 }
