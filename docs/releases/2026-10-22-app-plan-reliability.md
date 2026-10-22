@@ -132,3 +132,23 @@ S4-RELATION-01, S4-SAFE-01 and S4-EXPORT-12 (Blocked or Failed on runner limits)
 The loop ledger now records S4-RELATION-01 as a third product bug on PR #6, alongside S4-ANIM-03 and the palette rate.
 
 All 37 specs pass the emulator on the fixed local build ([receipt](../testsprite/app-plan-emulation-2026-10-22.json)). With the owner's approval the ten plans that differed from the server (the nine new ones and S4-VIEW-03's clearer "there is no … button" wording) were published; a full re-fetch afterwards found all 37 redesigned plans matching the render and the other 84 unchanged. Previous definitions are archived under `artifacts/testsprite-plan-publish-2026-10-22/republish-10/`.
+
+## The automatic App run on `0259f782` — 22 October, 09:34–10:18 UTC
+
+Pushed with the owner's approval after all five pre-push gates passed (3,041 unit tests); the App started all 121 cases within seconds of the preview serving `0259f782`. [Per-case results](../testsprite/app-run-2026-10-22-0259f782.json); raw results archived locally under `artifacts/testsprite-app-run-2026-10-22-0259f782/`.
+
+| Cohort | Passed | Failed | Blocked |
+| --- | ---: | ---: | ---: |
+| `48f9b999` | 55 | 7 | 59 |
+| `0259f782` | **58** | 8 | 55 |
+
+- **Redesigned plans: 34 of 37 passed**, including S4-RELATION-01 on the transform fix, S4-EXPORT-12 on the labelled size fields, and S4-FX-01, S4-DRAW-13 and EXP-003 after this morning's tightening. The three failures were agent sequencing, with correct product observations: S4-NEW-02 confirmed digest `6af29269` and the 100/200/300 ms holds but could not find the readout's "Frames" number; S4-HIST-02 painted and undid before checking the "fresh desk" assertion; S4-NEW-10's browser reverted the invalid hex on Enter, so the specified two-Escape sequence did not apply. All three were rewritten to avoid those dependencies.
+- **Untouched plans:** six that passed on `48f9b999` were Blocked (S4-LEARN-01/02/03, S4-NEW-04/05/14). Investigating S4-LEARN-02 found the next defect.
+
+### Practice refused right after saving (fixed, `53eb033b`)
+
+Open a starter, press Save, go Home, choose Playground: practice refused with "Return to Studio and finish saving your drawing before starting practice." It worked only after a detour back through Return to drawing. Production `main` behaves the same, so this predates S4. Opening a starter, blank, replay or postcard drawing replaces the project without a new Studio lifecycle, so the practice handoff stayed registered for the previous project. It now follows the store's current project. [practiceAfterStarter.spec.ts](../../tests/e2e/practiceAfterStarter.spec.ts) fails on the `0259f782` preview and passes with the fix; the existing practice, project, recovery and replay e2e specs (28) and 68 related unit tests pass.
+
+Also fixed: the inline project-name field was an unnamed text box (`c105ac05`, now "Project name"). Left as is and noted: Live preview's toggle is named "Toggle Live PiP Preview Window" while its text reads "Live preview · Floating window" (WCAG 2.5.3); a stored script and two internal tests use the current name.
+
+Seven more specs (41 in all): S4-NEW-02, S4-HIST-02 and S4-NEW-10 tightened; S4-NEW-04, S4-NEW-14, S4-LEARN-02 and S4-LEARN-03 new.

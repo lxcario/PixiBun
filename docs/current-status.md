@@ -2,7 +2,7 @@
 
 ## Current PR and portal verification — 21 October 2026
 
-The [22 October App-plan record](releases/2026-10-22-app-plan-reliability.md) supersedes the App counts below: the latest automatic App run on PR #6 (`48f9b999`, 22 October) is **55 Passed /7 Failed /59 Blocked**, up from 33/7/81 on `b78fffb1`. It includes the fix for inert error toasts inside dialogs and 28 redesigned App plans, 25 of which passed.
+The [22 October App-plan record](releases/2026-10-22-app-plan-reliability.md) supersedes the App counts below: the latest automatic App run on PR #6 (`0259f782`, 22 October) is **58 Passed /8 Failed /55 Blocked** (33/7/81 on `b78fffb1`, 55/7/59 on `48f9b999`). Fixes since: inert error toasts in dialogs, lost pixels after a key-lifted selection, unnamed transform/size/name controls, and practice refusing a just-saved starter.
 
 The [21 October record](releases/2026-10-21-testsprite-verification-and-pr-story.md) supersedes current-state claims in older snapshots below. PR #6 remains at `a8c0f90fbbcb3398f5e1b62f676c590a13c633bd`. GitHub now reports E2E, Lighthouse, validation, native codecs and compatible rollback successful on this HEAD. The required TestSprite App check remains **failure: 37 Passed /5 Failed /79 Blocked**. Actual main protection requires TestSprite and validation, disallows administrator bypass, and currently disables merge.
 
