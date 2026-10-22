@@ -67,7 +67,10 @@ export function sceneRecolor(themeId: string, day: boolean): Recolor {
     const green = chroma > 0.15 && hue > 75 && hue < 170;
     const highlight = l > (day ? 74 : 82);
     if (!warm && !green && !highlight) {
-      const target = day ? 97 - l * 0.85 : l;
+      // By day the ramp is inverted gently: a full inversion turned the night painting's pale far
+      // ridge into a dark band and the near hills nearly white. Compressed, the sky stays lightest
+      // and distant shapes fade towards it, the way hills look in daylight haze.
+      const target = day ? 97 - l * 0.5 : l;
       let lo = stops[0];
       let hi = stops[stops.length - 1];
       for (let i = 0; i < stops.length - 1; i++) {
