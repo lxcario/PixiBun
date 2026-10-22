@@ -173,6 +173,15 @@ def run_step(page, step, memory):
         # (it is inert), and the App agent reads that tree. Playwright's role query does not.
         if not alert.evaluate("el => { const top = [...document.querySelectorAll('dialog')].filter(d => d.matches(':modal')).pop(); return !top || top.contains(el); }"):
             raise StepFailed("the alert is outside the open modal dialog, so it is inert and never announced")
+    elif "either" in step:
+        errors = []
+        for option in step["either"]:
+            try:
+                run_step(page, option, memory)
+                return
+            except Exception as error:  # noqa: BLE001 - any option may hold
+                errors.append(str(error).splitlines()[0][:120])
+        raise StepFailed("none of the alternatives held: " + " | ".join(errors))
     elif "note" in step:
         return
     else:
@@ -189,7 +198,7 @@ def run_spec(browser, path):
     print(f"\n{spec['key']} — {spec['title']}")
     ok = True
     for index, step in enumerate(spec["steps"], 1):
-        kind = next(k for k in step if k not in ("role", "within", "nth", "value", "option", "equals", "pot", "settle", "say", "why", "optional", "assert", "shown"))
+        kind = next(k for k in step if k not in ("role", "within", "nth", "value", "option", "equals", "pot", "settle", "say", "why", "optional", "assert", "shown", "allow"))
         try:
             run_step(page, step, memory)
             print(f"  {index:>2} ok   {kind}: {step.get(kind)}")

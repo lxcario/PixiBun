@@ -1,0 +1,80 @@
+{
+  "id": "e08ab5de-e8e9-4a25-b6ca-2ecec084741e",
+  "key": "S4-SAVE-03",
+  "title": "S4-SAVE-03 — A cancelled new drawing keeps tonight's work.",
+  "goal": "A renamed, saved Bun survives a cancelled New drawing exactly; after a real new drawing the canvas is blank and the saved original is still in Projects.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Rename project Bun"
+    },
+    {
+      "fill": "Project name",
+      "value": "S4 Before New"
+    },
+    {
+      "key": "Enter"
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "click": "/^File/",
+      "nth": 0
+    },
+    {
+      "click": "New drawing",
+      "role": "menuitem"
+    },
+    {
+      "click": "Keep Drawing"
+    },
+    {
+      "visible": "Rename project S4 Before New"
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "digest": "=A"
+      },
+      "why": "Keep Drawing leaves the original exactly."
+    },
+    {
+      "click": "/^File/",
+      "nth": 0
+    },
+    {
+      "click": "New drawing",
+      "role": "menuitem"
+    },
+    {
+      "click": "Start New Drawing"
+    },
+    {
+      "readout": {
+        "pixels": "0"
+      },
+      "why": "The new drawing is blank."
+    },
+    {
+      "click": "/^File/",
+      "nth": 0
+    },
+    {
+      "click": "Projects",
+      "role": "menuitem"
+    },
+    {
+      "visible": "Open project S4 Before New",
+      "why": "The saved original is still in Projects."
+    }
+  ]
+}

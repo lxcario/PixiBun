@@ -51,7 +51,7 @@ function value(field, want) {
 }
 
 function render(step, spec) {
-  if (step.say) return [{ type: step.assert ? 'assertion' : kindOf(step), description: step.say }];
+  if (step.say) return [{ type: step.assert || step.either ? 'assertion' : kindOf(step), description: step.say }];
   if (step.open) return [{ type: 'action', description: `Navigate directly to ${step.open} on the environment under test (the origin plus this path). This test needs no file: the page itself draws the fixture.` }];
   if (step.skip) return [{ type: 'action', description: `If a welcome dialog appears, click ${q('Skip setup')}; otherwise continue.` }];
   if (step.click && step.optional) return [{ type: 'action', description: `If a ${nameOf(step.click, step.shown)} ${roleWord(step)} appears${where(step)}, click it; otherwise continue.` }];

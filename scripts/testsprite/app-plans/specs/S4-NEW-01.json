@@ -43,8 +43,11 @@
       "value": "100"
     },
     {
-      "click": "/^Select frame 1. /",
-      "why": "Clicking the frame card finishes the hold edit, so the next edit is its own Undo step."
+      "click": "/^Select frame 2. /",
+      "why": "Moving to another frame finishes the hold edit, so the next edit is its own Undo step."
+    },
+    {
+      "click": "/^Select frame 1. /"
     },
     {
       "visible": "/^Select frame 1. #1 100ms/"

@@ -1,0 +1,54 @@
+{
+  "id": "3795f720-7b78-431f-9764-a388a2f51294",
+  "key": "S4-HIST-04",
+  "title": "S4-HIST-04 — Resize bounds are real.",
+  "goal": "The canvas size fields admit only 4 to 512 pixels: 0 becomes 4 and 513 becomes 512 as they are typed, and Cancel leaves the 16x16 Bun exactly as it was without allocating anything.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^File/",
+      "nth": 0
+    },
+    {
+      "click": "/^Canvas size/",
+      "role": "menuitem"
+    },
+    {
+      "fill": "Width (px)",
+      "value": "0"
+    },
+    {
+      "field": "Width (px)",
+      "equals": "4",
+      "why": "0 is clamped to the minimum 4."
+    },
+    {
+      "fill": "Width (px)",
+      "value": "513"
+    },
+    {
+      "field": "Width (px)",
+      "equals": "512",
+      "why": "513 is clamped to the maximum 512."
+    },
+    {
+      "click": "Cancel",
+      "nth": -1
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "digest": "=A"
+      },
+      "why": "Cancel leaves the original drawing exactly as it was."
+    }
+  ]
+}

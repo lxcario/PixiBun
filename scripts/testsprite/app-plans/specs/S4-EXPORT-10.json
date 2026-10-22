@@ -1,0 +1,52 @@
+{
+  "id": "f736d94f-04d6-4e9c-9d50-e3f286076e34",
+  "key": "S4-EXPORT-10",
+  "title": "S4-EXPORT-10 — An editable backup really reopens.",
+  "goal": "Asking for a project backup never pretends: either the file is saved and the dialog closes, or, when the browser's save dialog is cancelled or unavailable, the app says plainly that no backup was created. Either way the project stays open and unchanged.",
+  "cliOnly": [
+    "downloading the backup, reopening it in a fresh browser and comparing every layer, frame, hold and pixel"
+  ],
+  "allow": [
+    "reading a download"
+  ],
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Project Backup"
+    },
+    {
+      "click": "Download project backup"
+    },
+    {
+      "say": "Either the Export dialog has closed because the backup was saved, or it shows exactly \"No backup was created. Your project is still open here.\" It never shows a success state without a saved file.",
+      "either": [
+        {
+          "text": "No backup was created. Your project is still open here."
+        },
+        {
+          "absent": "Download project backup"
+        }
+      ]
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "frames": "1",
+        "layers": "1"
+      },
+      "why": "The project is unchanged whether or not a file was written."
+    }
+  ]
+}
