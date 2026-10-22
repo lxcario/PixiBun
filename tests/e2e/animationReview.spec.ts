@@ -52,7 +52,7 @@ test('selected protection survives cleanup across the clip and metadata undo/red
   await page.getByRole('button', { name: 'Cleanup frame scope' }).click();
   await page.getByRole('button', { name: 'Scan artwork for cleanup' }).click();
   await expect(page.getByText(/Kept 2 protected pixels/)).toBeVisible();
-  await page.getByRole('button', { name: 'Apply analyzed artwork cleanup' }).click();
+  await page.getByRole('button', { name: 'Apply Cleanup', exact: true }).click();
   expect(await pixel(page, 2, 2)).toEqual([120, 120, 120, 51]); await expect.poll(() => pixel(page, 6, 6)).toEqual([0, 0, 0, 0]);
   await page.getByTestId('undo-button').click(); await expect.poll(() => pixel(page, 6, 6)).toEqual([120, 120, 120, 51]);
   await page.getByTestId('save-button').click();

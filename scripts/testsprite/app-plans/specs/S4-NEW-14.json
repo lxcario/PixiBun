@@ -18,8 +18,7 @@
       "nth": 0
     },
     {
-      "click": "Toggle Live PiP Preview Window",
-      "shown": "Live preview — Floating window"
+      "click": "Live preview Floating window"
     },
     {
       "click": "Close view options"

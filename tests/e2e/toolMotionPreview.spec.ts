@@ -193,7 +193,7 @@ test('PixiTools actions preview their effect without changing the project', asyn
   await scanPreview.screenshot({ path: testInfo.outputPath('scan-preview.png') });
 
   // Verify Apply Cleanup preview (even when temporarily disabled)
-  const applyCleanup = page.getByRole('button', { name: /Apply analyzed artwork cleanup/i });
+  const applyCleanup = page.getByRole('button', { name: 'Apply Cleanup', exact: true });
   await applyCleanup.hover();
   const applyPreview = page.getByRole('group', { name: 'Apply Cleanup preview' });
   await expect(applyPreview).toBeVisible();

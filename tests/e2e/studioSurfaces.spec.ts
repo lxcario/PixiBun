@@ -57,8 +57,8 @@ test('Studio and View popovers bloom from their trigger and keep keyboard behavi
   await view.click();
   const region = page.getByRole('region', { name: 'View options menu' });
   await expect(region).toBeInViewport();
-  await region.getByRole('button', { name: 'Toggle Live PiP Preview Window', exact: true }).click();
-  await expect(region.getByRole('button', { name: 'Toggle Live PiP Preview Window', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await region.getByRole('button', { name: 'Live preview Floating window', exact: true }).click();
+  await expect(region.getByRole('button', { name: 'Live preview Floating window', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await region.getByRole('combobox', { name: 'Composition guide' }).selectOption('diagonals');
   await expect(page.getByTestId('diagonal-composition-guide')).toBeVisible();
   await page.mouse.click(400, 500);

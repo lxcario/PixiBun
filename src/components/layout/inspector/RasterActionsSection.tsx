@@ -193,7 +193,7 @@ export const RasterActionsSection: React.FC = () => {
               })} className="text-[10px] justify-center">
               Scan Artwork
             </TactileButton>
-            <TactileButton size="sm" variant="primary" aria-label="Apply analyzed artwork cleanup"
+            <TactileButton size="sm" variant="primary" title="Apply the analyzed artwork cleanup"
               disabled={!cleanupPreviewCurrent}
               onClick={() => studioEvents.emit('pixibun:sprite-cleanup-apply', {
                 options: cleanupOptions(), allFrames: cleanupAllFrames,

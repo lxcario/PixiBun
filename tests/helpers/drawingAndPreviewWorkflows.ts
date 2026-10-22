@@ -82,7 +82,7 @@ export async function verifyFloatingPreview(page: Page, capture?: (name: string)
   await page.mouse.up();
   const original = await pixels(page);
   const window = page.getByRole('dialog', { name: 'Live Preview Window', exact: true });
-  const toggle = async () => { await page.getByRole('button', { name: 'View options menu', exact: true }).click(); await page.getByRole('button', { name: 'Toggle Live PiP Preview Window', exact: true }).click(); await page.keyboard.press('Escape'); };
+  const toggle = async () => { await page.getByRole('button', { name: 'View options menu', exact: true }).click(); await page.getByRole('button', { name: 'Live preview Floating window', exact: true }).click(); await page.keyboard.press('Escape'); };
   await toggle(); await expect(window).toHaveCount(1); await expect(window).toBeVisible();
   const preview = window.locator('canvas');
   const previewPixels = () => preview.evaluate((c: HTMLCanvasElement) => Array.from(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data));
