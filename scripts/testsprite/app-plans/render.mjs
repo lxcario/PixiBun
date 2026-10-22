@@ -25,7 +25,13 @@ const q = (s) => `'${s}'`;
 const where = (step) => (step.within ? ` inside the ${q(step.within)} dialog` : '');
 const roleWord = (step) => ({ button: 'button', link: 'link', tab: 'tab', checkbox: 'checkbox', option: 'option',
   menuitemradio: 'menu item', radio: 'option', switch: 'switch' }[step.role ?? 'button'] ?? step.role);
-const nameOf = (name, shown) => (shown ? `${q(shown)} (accessible name ${q(name)})` : name.startsWith('/') ? `whose name matches ${name.replace(/^\/|\/i?$/g, '')}${name.endsWith('/i') ? ' (any letter case)' : ''}` : q(name));
+// A /pattern/ name is written as the text it starts with, which is how every spec uses it.
+const nameOf = (name, shown) => {
+  if (shown) return `${q(shown)} (accessible name ${q(name)})`;
+  if (!name.startsWith('/')) return q(name);
+  const text = name.replace(/^\/\^?|\/i?$/g, '').replace(/\\(.)/g, '$1');
+  return `one whose name starts with ${q(text)}${name.endsWith('/i') ? ' (any letter case)' : ''}`;
+};
 
 function value(field, want) {
   if (field.endsWith('~')) {
@@ -104,6 +110,7 @@ function description(spec) {
     spec.goal,
     'App plan: every step is a click, fill, select or a named key on a labelled control, and every artwork check reads the Studio\'s Canvas readout (painted pixels, colors with counts, frame digest), which is computed from the actual composite of the active frame.',
     spec.cliOnly?.length ? `Byte-level checks kept in this test's stored Python replay: ${spec.cliOnly.join('; ')}.` : '',
+    spec.uncovered?.length ? `Not covered by any independent script yet: ${spec.uncovered.join('; ')}.` : '',
     'A readout or control that differs from the stated value is a Failed result, not Blocked.',
   ].filter(Boolean).join(' ');
 }
@@ -113,7 +120,11 @@ const plans = [];
 const problems = [];
 for (const file of readdirSync(specsDir).filter((f) => f.endsWith('.json')).sort()) {
   const spec = JSON.parse(readFileSync(join(specsDir, file), 'utf8'));
-  const planSteps = spec.steps.flatMap((step) => render(step, spec));
+  // "the one whose name starts with 'X' button" reads as "the button whose name starts with 'X'".
+  const planSteps = spec.steps.flatMap((step) => render(step, spec)).map((step) => ({
+    ...step,
+    description: step.description.replace(/([Tt])he one (whose name starts with '[^']*'(?: \(any letter case\))?) ([a-z]+(?: item)?)/g, '$1he $3 $2'),
+  }));
   if (planSteps.length > 200) problems.push(`${spec.key}: ${planSteps.length} steps (limit 200)`);
   for (const step of planSteps) {
     for (const [pattern, what] of UNSUPPORTED) {

@@ -3,9 +3,6 @@
   "key": "S4-LAYER-01",
   "title": "S4-LAYER-01 — Layer structure is reversible.",
   "goal": "Adding, renaming, duplicating and deleting layers change only the layer stack; Undo after a delete restores the exact three layers; the artwork never changes; the last layer cannot be deleted.",
-  "cliOnly": [
-    "merge down and drag reordering"
-  ],
   "steps": [
     {
       "open": "/studio?template=bun"
@@ -82,7 +79,7 @@
       "why": "Undo restores the deleted copy as the active layer."
     },
     {
-      "visible": "/^Select layer S4 Upper .Copy./"
+      "visible": "/^Select layer S4 Upper \\(Copy\\)/"
     },
     {
       "visible": "/^Select layer S4 Upper. /"
@@ -90,5 +87,8 @@
     {
       "visible": "/^Select layer Base Layer/"
     }
+  ],
+  "uncovered": [
+    "merge down and drag reordering"
   ]
 }
