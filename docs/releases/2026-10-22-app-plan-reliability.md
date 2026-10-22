@@ -154,3 +154,20 @@ Also fixed: the inline project-name field was an unnamed text box (`c105ac05`, n
 Seven more specs (41 in all): S4-NEW-02, S4-HIST-02 and S4-NEW-10 tightened; S4-NEW-04, S4-NEW-14, S4-LEARN-02 and S4-LEARN-03 new.
 
 All 41 specs pass the emulator on the fixed local build. With the owner's approval the seven changed plans were published; a full re-fetch found all 41 redesigned plans matching the render and the other 80 unchanged. Previous definitions are archived under `artifacts/testsprite-plan-publish-2026-10-22/republish-7/`.
+
+## The automatic App run on `89d7041b` — 22 October, 11:13–11:57 UTC
+
+[Per-case results](../testsprite/app-run-2026-10-22-89d7041b.json); raw results archived locally under `artifacts/testsprite-app-run-2026-10-22-89d7041b/`.
+
+| Cohort | Passed | Failed | Blocked |
+| --- | ---: | ---: | ---: |
+| `b78fffb1` (21 Oct, old plans) | 33 | 7 | 81 |
+| `48f9b999` | 55 | 7 | 59 |
+| `0259f782` | 58 | 8 | 55 |
+| `89d7041b` | **63** | **2** | 56 |
+
+- **Redesigned plans: 40 of 41 passed**, including all four new practice/preview/frame-order plans and the three tightened ones. S4-NEW-01 failed because the agent skipped the click that finished a hold edit, so two edits merged into one Undo step (by design); the plan now finishes the edit by selecting another frame.
+- **Failed:** S4-NEW-01 (above) and S4-EXPORT-10, which reported "No backup was created. Your project is still open here." That is the app's honest message when the browser's native save dialog is not completed, as in the agent's browser.
+- **Three untouched plans drifted from Passed to Blocked:** S4-HIST-04 (the agent opened the default blank Studio instead of the Bun starter the plan names), "Reject invalid canvas size…" (the agent improvised an image import) and S4-SAVE-03 (reproduced on `89d7041b`: "S4 Before New" stays in Projects). No regression.
+
+Five plans were then pinned or rewritten and published with the owner's standing approval (all 45 specs emulate green against the deployed `89d7041b`; a full re-fetch found the 45 matching and the other 76 unchanged; previous definitions under `artifacts/testsprite-plan-publish-2026-10-22/republish-5/`): S4-NEW-01, S4-HIST-04, S4-SAVE-03, "Reject invalid canvas size before starting a new drawing" (now: the dialog offers only preset sizes, and Keep Drawing keeps the original exactly), and S4-EXPORT-10. **Trade-off for S4-EXPORT-10:** its App plan now checks that requesting a backup never pretends (either the dialog closes after saving, or the exact no-backup message) and never changes the project; the real download, fresh-context reopen and layer/frame/pixel comparison stay in its hand-written stored Python, because the agent's browser cannot complete a native save dialog.
