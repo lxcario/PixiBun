@@ -5,8 +5,8 @@
     "suites": 280
   },
   "editor": {
-    "tests": 371,
-    "files": 56
+    "tests": 373,
+    "files": 57
   },
   "production": {
     "tests": 561,

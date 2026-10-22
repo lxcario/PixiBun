@@ -212,3 +212,26 @@ The five changed plans (S4-FX-03, S4-HIST-04, S4-NEW-07, S4-NEW-18, S4-NEW-19) w
 - **TestSprite Replay had never produced a verdict on a push.** Every run since the job was added ended "cancelled" at its 20-minute limit. Each push also starts the App's full batch, which fills TestSprite's in-flight run slots for about 45 minutes, so `test run` was refused with exit 11 and the 15-minute retry budget ran out. `run-replay-suite.mjs` now waits for a slot within a 60-minute budget (the job allows 90 minutes) and reports a replay that never starts as "not started, no verdict" rather than as a test failure (`aa052331`; checked locally with a stand-in CLI for both the refused-then-accepted and never-accepted paths).
 - **CI e2e on `48f9b999` failed on one of 561 checks:** the WebKit cozy-classic geometry check read a timeline button at 27.66 px instead of 28 while the Onion Skin press spring was still running (Firefox read 27.98 px in a probe; settled, every browser reads 28). The check now measures once the row's animations finish; the 28 px rule is unchanged (`5ae6a289`; 54/54 runs across Chromium, Firefox and WebKit against the preview). CI runs on `0259f782`, `89d7041b` and `c5e0ebf9` were cancelled by later pushes, not failed.
 - Native codec regressions pass on every push; Preview Deploy is skipped by design while the Vercel integration posts previews.
+
+## The App run on `3c61db42` (68 / 9 / 44) and the last 43 plans
+
+The run on `3c61db42` (same app as `9c2197d2` plus the resize fix) ended **68 Passed / 9 Failed / 44 Blocked**. [Per-case results](../testsprite/app-run-2026-10-22-3c61db42.json); raw results are archived under `artifacts/testsprite-app-run-2026-10-22-3c61db42/`.
+
+- Four failures were plans not yet redesigned (S4-EXPORT-13, S4-JOURNEY-01, S4-STORY-01, S4-NEW-20) and one (S4-LEARN-01) an older plan whose boilerplate tells the agent to report Blocked without a file oracle.
+- Four were redesigned plans that passed the previous run; each was traced to the agent: S4-NEW-02's video ends on the Delete click, so Undo was never pressed (the emulator passes with both the button and Ctrl+Z); S4-VIEW-03 painted Bun's centre pixel (digest `668adea8`); S4-HIST-02 could not switch to the 2px brush; S4-NEW-12 could not see keyboard focus. S4-NEW-12 now checks focus by its effect (Enter applies the swatch reached; Enter after Escape reopens Colors), S4-HIST-02 no longer switches brush size, and S4-NEW-02 marks its Undo click as required.
+
+TestSprite support confirmed on 21 October that test-file uploads are not available on this plan and that the App agent re-performs each plan rather than replaying saved Python. Every remaining plan was therefore rewritten around what the agent can do and see, with the decoded-file, upload and gesture checks named in each plan's description and kept in CI production specs or the Python replays:
+
+- **Downloads (19):** the Export dialog's own statements (size, frame count, RGBA and approximation notes, Godot preflight, Light Sweep format), downloads clicked, refusals checked (`Normal export needs exactly one ...` when the normal atlas has no source; the Cycle Loop warning without a cycle; video either delivered or honestly refused), and the artwork digest unchanged.
+- **Uploads and fixtures:** replay links draw the fixtures; S4-SAFE-03 refuses two corrupted replay links (`This is not a PixiBun replay link.`) and reopens the saved original exactly; S4-CART-02 refuses a broken `/open#` cart link.
+- **Gestures:** Magic Wand clicks, the frame menu, zoom buttons, keyboard and named controls replace drags; S4-NEW-16 lands a click on native pixel (8,8) after zooming (independent digest `f99d82e7`).
+- **Open-ended plans:** concrete checks for lessons, the coach (7% partial tracing, What's missing?, Trace it for me matches only the current pose), the Teaching Board, the homepage bench, motion parts and bake, a stale rig's refusal (`The saved source artwork changed.`), palette roles and bindings, tiles and Try a new look.
+
+Seven cases stay honestly blocked because their essence needs what the agent lacks: S4-DRAW-02 and S4-DRAW-04 (drags), S4-NEW-15 (window drag), S4-IMPORT-01 and S4-IMPORT-02 (file uploads), S4-LEARN-06 (phone viewport) and S4-SAFE-04 (offline).
+
+**Product defects found while redesigning:**
+
+- **Dither Brush ignored its pattern above 1px (`88ba8cde`).** The pattern was tested only at each stamp's centre, so a 4px stamp at Bayer 2×2 / 50% painted 16 of 16 cells (8px: 64 of 64). Each footprint pixel is now tested; `tests/e2e/ditherBrushSize.spec.ts` compares a 4px stamp with an independently drawn replay and fails on the old build with 17 and 65 painted pixels.
+- **The Teaching Board announced a load even when it failed**, and palette roles read "1 saved index bindings" (`1e68955a`).
+
+All 95 plans were emulated against the deployed preview: 94 pass; S4-DRAW-05 fails there only because the preview predates the dither fix, and passes on the fixed local build with S4-LEARN-05 and S4-PAL-05. The 46 changed plans were published with no credits used and read back exactly; previous versions are archived under `artifacts/testsprite-plan-publish-2026-10-22/republish-46-after-3c61db42/`. Unit suite: 3,045 passed.
