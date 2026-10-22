@@ -2,7 +2,7 @@
   "id": "161d6301-2b6b-4c53-aa18-b396f848bd60",
   "key": "S4-LEARN-06",
   "title": "S4-LEARN-06 — Pocket has a desk of its own.",
-  "goal": "At a desktop width the Playground offers the full practice workspace (lesson, Pen, Fill, Eraser, swatches, frames) rather than the narrow-screen Pocket pad; drawing in it and clearing the frame work. Pocket itself appears only below 1024 px.",
+  "goal": "At a desktop width the Playground offers the full practice workspace (lesson, Pen, Fill, Eraser, swatches) rather than the narrow-screen Pocket pad, and drawing in a started lesson is an undoable edit. Pocket itself appears only below 1024 px.",
   "steps": [
     {
       "open": "/playground"
@@ -31,9 +31,6 @@
     },
     {
       "click": "Let's start"
-    },
-    {
-      "text": "Your tracing"
     },
     {
       "canvas": "click"

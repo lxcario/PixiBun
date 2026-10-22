@@ -26,7 +26,8 @@
       "nth": 0
     },
     {
-      "click": "Shade ramp"
+      "click": "Shade ramp",
+      "say": "Click the 'Shade ramp' button in the Palette panel. It is not the '+ Add 4 to palette' button under 'Shades of the main color', which is a different, four-shade tool."
     },
     {
       "selected": "Color palette preset",
