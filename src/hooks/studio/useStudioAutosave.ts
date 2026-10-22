@@ -386,23 +386,33 @@ export function useStudioAutosave() {
   }, [runAutosave, updateLifecycle]);
 
   // Keep only the latest Studio's save coordinator for the practice route handoff.
+  // Opening a starter, blank, replay or postcard drawing replaces the project
+  // without a new lifecycle, so follow the store's current project: otherwise
+  // practice finds no session for the new drawing and refuses to start.
   useEffect(() => {
     if (lifecycleState.phase !== 'active') return;
-    const projectId = lifecycleState.projectId;
-    const resume = (): StudioResume => ({
-      projectId, storageVersions: new Map(storageVersionsRef.current),
-      lifecycle: lifecycleRef.current, conflictProjectId: conflictRef.current,
-    });
-    registerStudioRouteSession({
-      projectId, resume,
-      checkpoint: async () => {
-        if (useStudioStore.getState().currentProjectId !== projectId) throw new Error('Studio no longer owns this drawing.');
-        const result = await runAutosave();
-        if (!result.ok || useStudioStore.getState().isDirty || useStudioStore.getState().currentProjectId !== projectId) {
-          throw new Error(result.ok ? 'Your drawing changed while saving. Try again from Studio.' : result.error || 'Your drawing could not be saved. Return to Studio and export a backup.');
-        }
-        return resume();
-      },
+    const register = (projectId: string) => {
+      const resume = (): StudioResume => ({
+        projectId, storageVersions: new Map(storageVersionsRef.current),
+        lifecycle: lifecycleRef.current, conflictProjectId: conflictRef.current,
+      });
+      registerStudioRouteSession({
+        projectId, resume,
+        checkpoint: async () => {
+          if (useStudioStore.getState().currentProjectId !== projectId) throw new Error('Studio no longer owns this drawing.');
+          const result = await runAutosave();
+          if (!result.ok || useStudioStore.getState().isDirty || useStudioStore.getState().currentProjectId !== projectId) {
+            throw new Error(result.ok ? 'Your drawing changed while saving. Try again from Studio.' : result.error || 'Your drawing could not be saved. Return to Studio and export a backup.');
+          }
+          return resume();
+        },
+      });
+    };
+    register(lifecycleState.projectId);
+    const current = useStudioStore.getState().currentProjectId;
+    if (current !== lifecycleState.projectId) register(current);
+    return useStudioStore.subscribe((state, previous) => {
+      if (state.currentProjectId !== previous.currentProjectId) register(state.currentProjectId);
     });
   }, [lifecycleState, runAutosave]);
 
