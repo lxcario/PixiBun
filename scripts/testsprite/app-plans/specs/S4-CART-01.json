@@ -38,7 +38,16 @@
       "click": "Save cart"
     },
     {
-      "text": "Cart saved. Anyone who opens it in PixiBun gets the whole drawing."
+      "say": "Either the message \"Cart saved. Anyone who opens it in PixiBun gets the whole drawing.\" appears, or the Export dialog has closed with no error message: the dialog closes only after a successful save, and a failed save keeps it open with the error.",
+      "either": [
+        {
+          "text": "Cart saved. Anyone who opens it in PixiBun gets the whole drawing."
+        },
+        {
+          "absent": "Export Studio Assets",
+          "role": "dialog"
+        }
+      ]
     },
     {
       "click": "Close dialog",

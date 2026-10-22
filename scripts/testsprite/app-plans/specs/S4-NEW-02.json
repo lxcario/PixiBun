@@ -60,15 +60,9 @@
       "click": "Delete frame"
     },
     {
-      "absent": "/^Select frame 3. /",
-      "why": "Exactly two frames remain."
-    },
-    {
-      "visible": "/^Select frame 1. #1 100ms/"
-    },
-    {
+      "say": "Exactly two frames remain: frame 1 shows #1 100ms and frame 2 shows #2 300ms; the 200 ms middle frame is gone.",
       "visible": "/^Select frame 2. #2 300ms/",
-      "why": "The 200 ms middle frame is gone."
+      "assert": true
     },
     {
       "click": "Undo last action",

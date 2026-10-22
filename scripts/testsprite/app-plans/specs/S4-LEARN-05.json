@@ -50,8 +50,7 @@
       "why": "The practice timeline now holds the example's ten frames."
     },
     {
-      "open": "/studio",
-      "reload": true
+      "click": "Return to drawing"
     },
     {
       "skip": true
