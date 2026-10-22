@@ -235,3 +235,19 @@ Seven cases stay honestly blocked because their essence needs what the agent lac
 - **The Teaching Board announced a load even when it failed**, and palette roles read "1 saved index bindings" (`1e68955a`).
 
 All 95 plans were emulated against the deployed preview: 94 pass; S4-DRAW-05 fails there only because the preview predates the dither fix, and passes on the fixed local build with S4-LEARN-05 and S4-PAL-05. The 46 changed plans were published with no credits used and read back exactly; previous versions are archived under `artifacts/testsprite-plan-publish-2026-10-22/republish-46-after-3c61db42/`. Unit suite: 3,045 passed.
+
+## The App run on `2d76837b`: 98 / 7 / 16
+
+The first run with the rewritten plans and the dither fix ended **98 Passed / 7 Failed / 16 Blocked** (68/9/44 before). [Per-case results](../testsprite/app-run-2026-10-22-2d76837b.json); raw results under `artifacts/testsprite-app-run-2026-10-22-2d76837b/`. No new product defect was found; every non-pass was traced:
+
+- **Download waits (ten cases, all started 17:49):** after clicking a Download or Save button the agent waited for the file, reported a timeout and failed or blocked plans whose visible checks had held (S4-EXPORT-01, 05, 06, 08, 09, 11, S4-FX-06, S4-VIEW-01, the older S4-ANIM-01, and Save PNG in S4-LEARN-06). The GIF, PNG and backup plans passed in the same run, so downloads work. Download clicks now tell the agent to click once and not wait for or verify the file; republished 18:07–18:12 UTC, after these cases had started.
+- **S4-DRAW-05** was published with an outdated colour line (my error): its wording expected a single colour while the readout lists the blue cells and the untouched corner pixel. Corrected in the same republish.
+- **S4-DRAW-01:** the agent opened the brush-size menu instead of the 2px preset; the step now names the preset row and checks it is selected before painting.
+- **S4-DRAW-08:** the agent's W press did not reach the Studio; the plan now clicks the Magic Wand button.
+- **S4-FX-04:** the agent read "Layers in this frame" without its value although the readout holds it; the final count is now read from the Layers panel heading.
+- **"Reject or clamp invalid canvas sizes"** (older plan) expected clamping on every keystroke, which `4d838ca9` deliberately changed; it now commits each value with Tab or Enter.
+- **S4-LEARN-05:** the agent's own report reads PASS with the exact digest; a navigation timeout marked it failed.
+- **S4-CART-01 and S4-NEW-02** were retried at 18:14 and blocked with `stale_code`: TestSprite had stored code from an earlier version of the plan.
+- **Seven honest blocks:** S4-DRAW-02, S4-DRAW-04, S4-NEW-15 (drags), S4-IMPORT-01, S4-IMPORT-02 (uploads), S4-LEARN-06 (phone viewport), S4-SAFE-04 (offline).
+
+The four plans changed after the run were emulated (all pass) and published with no credits used.
