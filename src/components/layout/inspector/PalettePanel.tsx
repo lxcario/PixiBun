@@ -377,6 +377,7 @@ export const PalettePanel: React.FC<{ basics?: boolean }> = ({ basics = true }) 
                     <div className="flex items-center gap-2">
                       <StudioToggle
                         label=""
+                        ariaLabel={`Enable ${track.name || `Track [${track.low}..${track.high}]`}`}
                         checked={track.enabled}
                         onChange={(val) => updatePaletteCycleTrack(currentPalette.id, track.id, { enabled: val })}
                       />

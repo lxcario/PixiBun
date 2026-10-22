@@ -9,6 +9,8 @@ interface StudioToggleProps {
   id?: string;
   disabled?: boolean;
   className?: string;
+  /** Accessible name when no visible label is shown. */
+  ariaLabel?: string;
 }
 
 export default function StudioToggle({
@@ -17,7 +19,8 @@ export default function StudioToggle({
   onChange,
   id,
   disabled,
-  className = ''
+  className = '',
+  ariaLabel,
 }: StudioToggleProps) {
   const autoId = useId();
   const toggleId = id || `studio-toggle-${autoId}`;
@@ -31,6 +34,7 @@ export default function StudioToggle({
         <input
           type="checkbox"
           id={toggleId}
+          aria-label={ariaLabel}
           checked={checked}
           disabled={disabled}
           onChange={(e) => onChange(e.target.checked)}
