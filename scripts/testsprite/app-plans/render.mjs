@@ -60,6 +60,7 @@ function render(step, spec) {
   if (step.skip) return [{ type: 'action', description: `If a welcome dialog appears, click ${q('Skip setup')}; otherwise continue.` }];
   if (step.click && step.optional) return [{ type: 'action', description: `If a ${nameOf(step.click, step.shown)} ${roleWord(step)} appears${where(step)}, click it; otherwise continue.` }];
   if (step.click) return [{ type: 'action', description: `Click the ${nameOf(step.click, step.shown)} ${roleWord(step)}${where(step)}.` }];
+  if (step.clickText) return [{ type: 'action', description: `Click the text ${q(step.clickText)} to expand that section.` }];
   if (step.rightClick) return [{ type: 'action', description: `Right-click the ${nameOf(step.rightClick, step.shown)} ${roleWord(step)}${where(step)}.` }];
   if (step.canvas) {
     const size = spec.canvas ?? '16×16';
@@ -88,6 +89,7 @@ function render(step, spec) {
   if (step.unchecked) return [{ type: 'assertion', description: `The ${nameOf(step.unchecked, step.shown)} ${roleWord(step)} is not checked.${step.why ? ` ${step.why}` : ''}` }];
   if (step.checked) return [{ type: 'assertion', description: `The ${nameOf(step.checked, step.shown)} ${roleWord(step)} is checked.${step.why ? ` ${step.why}` : ''}` }];
   if (step.field) return [{ type: 'assertion', description: `The field labelled ${q(step.field)}${where(step)} shows ${q(step.equals)}.${step.why ? ` ${step.why}` : ''}` }];
+  if (step.focused) return [{ type: 'assertion', description: `Keyboard focus is on the ${nameOf(step.focused, step.shown)} ${roleWord(step)}.${step.why ? ` ${step.why}` : ''}` }];
   if (step.text) return [{ type: 'assertion', description: `The page contains the text "${step.text}".${step.why ? ` ${step.why}` : ''}` }];
   if (step.alert) return [{ type: 'assertion', description: `An alert message reading "${step.alert}" is shown immediately, before any other edit.${step.why ? ` ${step.why}` : ''}` }];
   if (step.note) return [];
@@ -95,7 +97,7 @@ function render(step, spec) {
 }
 
 function kindOf(step) {
-  return ['readout', 'visible', 'absent', 'selected', 'enabled', 'disabled', 'pressed', 'checked', 'unchecked', 'field', 'text', 'alert']
+  return ['readout', 'visible', 'absent', 'selected', 'focused', 'enabled', 'disabled', 'pressed', 'checked', 'unchecked', 'field', 'text', 'alert']
     .some((k) => k in step) ? 'assertion' : 'action';
 }
 

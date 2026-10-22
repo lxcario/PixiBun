@@ -1,0 +1,131 @@
+{
+  "id": "e6d22c7e-0756-4ee6-8edd-d8aeb2e8b757",
+  "key": "S4-NEW-05",
+  "title": "S4-NEW-05 — Frame keys belong to the focused frame.",
+  "goal": "Keyboard shortcuts act on the focused frame card: Alt+Left and Alt+Right move it, Ctrl+D duplicates it and Delete removes it, keeping the other holds and the artwork exact. Typing the same keys into a text field never changes the timeline.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Duplicate frame"
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "100"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "200"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "click": "/^Select frame 2. /",
+      "why": "Clicking the card focuses it."
+    },
+    {
+      "key": "Alt+ArrowLeft"
+    },
+    {
+      "visible": "/^Select frame 1. #1 200ms/",
+      "why": "The focused 200 ms frame moved earlier."
+    },
+    {
+      "visible": "/^Select frame 2. #2 100ms/"
+    },
+    {
+      "key": "Alt+ArrowRight"
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "key": "Control+d"
+    },
+    {
+      "visible": "/^Select frame 3. /",
+      "why": "Ctrl+D duplicated the focused frame."
+    },
+    {
+      "key": "Delete"
+    },
+    {
+      "absent": "/^Select frame 3. /",
+      "why": "Delete removed the focused duplicate."
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Frame keys never changed the artwork."
+    },
+    {
+      "click": "/^View/",
+      "nth": 0
+    },
+    {
+      "click": "/^Arrange/"
+    },
+    {
+      "fill": "New workspace name",
+      "value": "dxy"
+    },
+    {
+      "key": "Home"
+    },
+    {
+      "key": "Delete"
+    },
+    {
+      "field": "New workspace name",
+      "equals": "xy",
+      "why": "Delete edits the text at the caret."
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/",
+      "why": "Typing in a text field did not touch the timeline."
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "absent": "/^Select frame 3. /"
+    }
+  ]
+}

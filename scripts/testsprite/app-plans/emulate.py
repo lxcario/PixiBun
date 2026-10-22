@@ -93,6 +93,8 @@ def run_step(page, step, memory):
             # A visually hidden input inside its label: the agent activates the
             # element itself rather than the point under the cursor.
             target.evaluate("element => element.click()")
+    elif "clickText" in step:
+        page.get_by_text(step["clickText"], exact=False).first.click(timeout=10000)
     elif "rightClick" in step:
         named(page, step, "rightClick").click(button="right", timeout=10000)
     elif "canvas" in step:
@@ -173,6 +175,16 @@ def run_step(page, step, memory):
         # (it is inert), and the App agent reads that tree. Playwright's role query does not.
         if not alert.evaluate("el => { const top = [...document.querySelectorAll('dialog')].filter(d => d.matches(':modal')).pop(); return !top || top.contains(el); }"):
             raise StepFailed("the alert is outside the open modal dialog, so it is inert and never announced")
+    elif "focused" in step:
+        name = page.evaluate("() => document.activeElement?.getAttribute('aria-label') || document.activeElement?.textContent || ''")
+        pattern = step["focused"]
+        if pattern.startswith("/"):
+            ignore = pattern.endswith("/i")
+            ok = re.match(pattern[1:-2] if ignore else pattern[1:-1], name, re.IGNORECASE if ignore else 0)
+        else:
+            ok = name == pattern
+        if not ok:
+            raise StepFailed(f"focus is on {name[:60]!r}, expected {pattern!r}")
     elif "either" in step:
         errors = []
         for option in step["either"]:
