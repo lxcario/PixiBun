@@ -6,7 +6,7 @@ import { Point, getBresenhamLine, getUndirectedLine, filterPixelPerfect } from '
 import { shouldDitherPixel } from '@/lib/canvas/ditherMatrix';
 
 interface BrushHandlerProps {
-  drawPointsOnActiveLayer: (points: Point[], color: string, isErase: boolean) => void;
+  drawPointsOnActiveLayer: (points: Point[], color: string, isErase: boolean, refresh?: boolean, keep?: (x: number, y: number) => boolean) => void;
   lastPoint: Point | null;
   setLastPoint: (pt: Point | null) => void;
   drawProvisionalPoint?: (point: Point, color: string, isErase: boolean) => (() => void) | undefined;
@@ -29,6 +29,10 @@ export function useBrushPointerHandler({
   const strokeRef = useRef<{ last: Point; previous: Point; pending: Point | null; rollback?: () => void } | null>(null);
 
   /** `lineFrom`: Shift-click in the standard keymap draws a straight line from the previous stroke's end. */
+  // The pattern applies to every pixel the brush covers, not only to its centre: a wider
+  // Dither Brush still leaves the skipped cells untouched.
+  const ditherKeep = () => (x: number, y: number) => shouldDitherPixel(x, y, tools.ditherMatrix, tools.ditherDensity);
+
   const onPointerDown = (e: React.PointerEvent, coords: Point, lineFrom?: Point) => {
     const isErase = tools.activeTool === 'eraser';
     const drawColor = usesSecondary(e) ? secondaryColor : primaryColor;
@@ -38,8 +42,7 @@ export function useBrushPointerHandler({
     if (tools.activeTool === 'pen' || tools.activeTool === 'eraser') {
       drawPointsOnActiveLayer(points, drawColor, isErase);
     } else if (tools.activeTool === 'dither') {
-      const stamps = points.filter(point => shouldDitherPixel(point.x, point.y, tools.ditherMatrix, tools.ditherDensity));
-      if (stamps.length) drawPointsOnActiveLayer(stamps, drawColor, false);
+      drawPointsOnActiveLayer(points, drawColor, false, true, ditherKeep());
     }
   };
 
@@ -72,8 +75,7 @@ export function useBrushPointerHandler({
     } else if (tools.activeTool === 'dither') {
       const start = strokeRef.current?.last ?? lastPoint;
       const points = start ? getBresenhamLine(start.x, start.y, coords.x, coords.y).slice(1) : [coords];
-      const stamps = points.filter(point => shouldDitherPixel(point.x, point.y, tools.ditherMatrix, tools.ditherDensity));
-      if (stamps.length) drawPointsOnActiveLayer(stamps, drawColor, false);
+      if (points.length) drawPointsOnActiveLayer(points, drawColor, false, true, ditherKeep());
       if (strokeRef.current) strokeRef.current.last = coords;
       setLastPoint(coords);
     }

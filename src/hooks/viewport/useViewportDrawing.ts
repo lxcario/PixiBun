@@ -621,7 +621,9 @@ export function useViewportDrawing({
 
   // Draw points on active layer
   const drawPointsOnActiveLayer = useCallback(
-    (points: Point[], color: string, isErase: boolean = false, refresh: boolean = true) => {
+    // `keep`, when given, decides pixel by pixel which cells of each brush footprint are painted
+    // (the Dither Brush pattern); without it every footprint is a solid square.
+    (points: Point[], color: string, isErase: boolean = false, refresh: boolean = true, keep?: (x: number, y: number) => boolean) => {
       const currentFrame = useStudioStore.getState().frames[activeFrameIndex] || frames[activeFrameIndex];
       const targetLayerId = useStudioStore.getState().activeLayerId || activeLayerId || currentFrame?.layers[0]?.id;
       if (!targetLayerId || !currentFrame?.layers.some(layer => layer.id === targetLayerId && isEditableLayer(layer))) return;
@@ -652,7 +654,16 @@ export function useViewportDrawing({
       // An active selection limits every brush, line, shape and curve stamp.
       const selected = useStudioStore.getState();
       const mask = resolveSelectionMask(selected.selection, selected.selectionMask, canvasWidth, canvasHeight);
-      const stamp = (p: Point) => fillRectMasked(ctx, p.x - offset, p.y - offset, tools.brushSize, tools.brushSize, mask, canvasWidth, canvasHeight);
+      const size = tools.brushSize;
+      const stamp = keep
+        ? (p: Point) => {
+          for (let y = p.y - offset; y < p.y - offset + size; y++) {
+            for (let x = p.x - offset; x < p.x - offset + size; x++) {
+              if (keep(x, y)) fillRectMasked(ctx, x, y, 1, 1, mask, canvasWidth, canvasHeight);
+            }
+          }
+        }
+        : (p: Point) => fillRectMasked(ctx, p.x - offset, p.y - offset, size, size, mask, canvasWidth, canvasHeight);
       if (isErase) {
         ctx.globalCompositeOperation = 'destination-out';
         allPoints.forEach(stamp);
