@@ -34,6 +34,11 @@ const aggregate = {
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+// One shared budget for waiting on a free run slot, across all replays in this job.
+const queueDeadlineMs = Number(process.env.REPLAY_QUEUE_DEADLINE_MIN || 60) * 60000;
+const retryDelayMs = Number(process.env.REPLAY_RETRY_DELAY_SEC || 60) * 1000;
+const queueStart = Date.now();
+
 async function run() {
   let anyFailed = false;
 
@@ -56,18 +61,27 @@ async function run() {
 
     const testspriteBin = process.env.TESTSPRITE_BIN || (process.platform === 'win32' ? 'testsprite.cmd' : 'testsprite');
     let result;
-    const maxRetries = 30;
+    let attempt = 0;
 
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    // Exit 11 means the run was not started: either the per-minute trigger throttle, or the
+    // account already has its maximum runs in flight ("inflight_cap"). Every push to the PR also
+    // starts the TestSprite App's full plan batch, which holds those slots for about 45 minutes,
+    // so a fixed number of short retries always ran out. Wait for a free slot until a deadline
+    // instead; nothing has been executed (or charged) until a trigger is accepted.
+    for (;;) {
+      attempt++;
       result = spawnSync(testspriteBin, args, { stdio: 'inherit', env: process.env });
-
-      // Code 11: rate limit or in-flight cap hit (e.g. concurrent App batch execution)
-      if (result.status === 11 && attempt < maxRetries) {
-        console.warn(`\n[in-flight cap / throttle] Exit code 11 received. Waiting 30s for queue to drain (retry ${attempt}/${maxRetries})...\n`);
-        await sleep(30000);
-        continue;
+      if (result.status !== 11) break;
+      const waited = Date.now() - queueStart;
+      if (waited + retryDelayMs > queueDeadlineMs) {
+        console.error(`
+::error title=Replay not started::TestSprite refused to start ${testId} (exit 11: run queue full or throttled) for ${Math.round(waited / 60000)} min. No replay ran; this is not a test verdict. Re-run this check once the App batch has finished.`);
+        break;
       }
-      break;
+      console.warn(`
+[queue full / throttled] Exit 11 (attempt ${attempt}); waiting ${retryDelayMs / 1000}s for a free run slot (${Math.round(waited / 60000)} of ${queueDeadlineMs / 60000} min used)...
+`);
+      await sleep(retryDelayMs);
     }
 
     if (existsSync(summaryFile)) {
@@ -87,7 +101,9 @@ async function run() {
       aggregate.runs.push({
         testId,
         status: result.status === 0 ? 'passed' : 'failed',
-        error: `Command exited with code ${result.status}`
+        error: result.status === 11
+          ? 'Not started: TestSprite run queue stayed full or throttled (exit 11); no verdict'
+          : `Command exited with code ${result.status}`
       });
       if (result.status === 0) aggregate.passed++;
       else aggregate.failed++;

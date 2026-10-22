@@ -32,7 +32,10 @@ jobs:
   replay:
     name: Stored Python Replay
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Each push also starts the App's full plan batch, which fills TestSprite's in-flight
+    # run slots for about 45 minutes; the replay waits for a slot (up to 60 minutes, see
+    # run-replay-suite.mjs) and then needs about 10 minutes per stored test.
+    timeout-minutes: 90
     # Fork PRs do not have access to repository secrets; protect against false reds on external forks.
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
