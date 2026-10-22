@@ -1,0 +1,204 @@
+{
+  "id": "8454253c-80b9-4da4-b9c8-548776bb4298",
+  "key": "S4-NEW-18",
+  "title": "S4-NEW-18 — The four new cozy rooms.",
+  "goal": "Cocoa, Drizzle, Harvest and Harbor each take Night and Day without touching the drawing, and Harbor Day persists with the exact drawing after reopening.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Studio/",
+      "nth": 0
+    },
+    {
+      "click": "/^Cocoa:/",
+      "role": "radio"
+    },
+    {
+      "click": "Night",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Cocoa:/",
+      "role": "radio"
+    },
+    {
+      "checked": "Night",
+      "role": "radio"
+    },
+    {
+      "click": "Day",
+      "role": "radio"
+    },
+    {
+      "checked": "Day",
+      "role": "radio"
+    },
+    {
+      "click": "Close studio options"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "frames": "=A",
+        "layers": "=A"
+      },
+      "why": "Cocoa in Night and Day leaves the drawing exact."
+    },
+    {
+      "click": "/^Studio/",
+      "nth": 0
+    },
+    {
+      "click": "/^Drizzle:/",
+      "role": "radio"
+    },
+    {
+      "click": "Night",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Drizzle:/",
+      "role": "radio"
+    },
+    {
+      "checked": "Night",
+      "role": "radio"
+    },
+    {
+      "click": "Day",
+      "role": "radio"
+    },
+    {
+      "checked": "Day",
+      "role": "radio"
+    },
+    {
+      "click": "Close studio options"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "frames": "=A",
+        "layers": "=A"
+      },
+      "why": "Drizzle in Night and Day leaves the drawing exact."
+    },
+    {
+      "click": "/^Studio/",
+      "nth": 0
+    },
+    {
+      "click": "/^Harvest:/",
+      "role": "radio"
+    },
+    {
+      "click": "Night",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Harvest:/",
+      "role": "radio"
+    },
+    {
+      "checked": "Night",
+      "role": "radio"
+    },
+    {
+      "click": "Day",
+      "role": "radio"
+    },
+    {
+      "checked": "Day",
+      "role": "radio"
+    },
+    {
+      "click": "Close studio options"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "frames": "=A",
+        "layers": "=A"
+      },
+      "why": "Harvest in Night and Day leaves the drawing exact."
+    },
+    {
+      "click": "/^Studio/",
+      "nth": 0
+    },
+    {
+      "click": "/^Harbor:/",
+      "role": "radio"
+    },
+    {
+      "click": "Night",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Harbor:/",
+      "role": "radio"
+    },
+    {
+      "checked": "Night",
+      "role": "radio"
+    },
+    {
+      "click": "Day",
+      "role": "radio"
+    },
+    {
+      "checked": "Day",
+      "role": "radio"
+    },
+    {
+      "click": "Close studio options"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "frames": "=A",
+        "layers": "=A"
+      },
+      "why": "Harbor in Night and Day leaves the drawing exact."
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "open": "/studio"
+    },
+    {
+      "skip": true
+    },
+    {
+      "click": "/^Studio/",
+      "nth": 0
+    },
+    {
+      "checked": "/^Harbor:/",
+      "role": "radio",
+      "why": "Harbor persists after reopening."
+    },
+    {
+      "checked": "Day",
+      "role": "radio"
+    },
+    {
+      "click": "Close studio options"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "The drawing reopens exactly."
+    }
+  ]
+}

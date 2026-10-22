@@ -28,6 +28,10 @@ const roleWord = (step) => ({ button: 'button', link: 'link', tab: 'tab', checkb
 const nameOf = (name, shown) => (shown ? `${q(shown)} (accessible name ${q(name)})` : name.startsWith('/') ? `whose name matches ${name.slice(1, -1)}` : q(name));
 
 function value(field, want) {
+  if (field.endsWith('~')) {
+    const [hex, count] = want.split(' ');
+    return `${LABELS[field.slice(0, -1)]} is a single color within one step (±1 per channel) of ${hex}, covering ${count} pixels`;
+  }
   if (typeof want === 'string' && want.startsWith('!=')) {
     const [ref, sub] = want.slice(2).split('.');
     if (/^[0-9a-f]{8}$/.test(ref)) return `${LABELS[field]} is no longer "${ref}"`;

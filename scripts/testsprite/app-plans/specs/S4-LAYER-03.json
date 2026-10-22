@@ -1,0 +1,83 @@
+{
+  "id": "8f4458ff-2a3b-415c-b99c-bc3a0fb42843",
+  "key": "S4-LAYER-03",
+  "title": "S4-LAYER-03 — Blend and opacity keep their neighbors.",
+  "goal": "Blend modes and opacity composite exactly as their formulas say. Fixture replay: Base Layer filled #4080c0, Layer 2 filled #c08040. Expected composites are computed independently: Normal #c08040, Multiply a*b/255 = #304030, Screen 255-(255-a)(255-b)/255 = #d0c0d0, Normal at 50% opacity = #808080 within one 8-bit step per channel. Changing modes never edits either layer.",
+  "cliOnly": [
+    "Overlay, Color Dodge and On artwork only against native RGBA",
+    "stale cache checks across frames"
+  ],
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_4080c0.c08040_R0.0.0.15.15~L~R1.0.0.15.15"
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "layer": "Layer 2",
+        "layers": "2",
+        "top": "#c08040 256"
+      },
+      "why": "Normal blending shows the upper layer."
+    },
+    {
+      "record": "N"
+    },
+    {
+      "click": "Layers",
+      "nth": 0
+    },
+    {
+      "select": "Layer blend mode",
+      "option": "Multiply"
+    },
+    {
+      "readout": {
+        "top": "#304030 256"
+      },
+      "why": "Multiply: 64*192/255, 128*128/255, 192*64/255 round to 48, 64, 48."
+    },
+    {
+      "select": "Layer blend mode",
+      "option": "Screen"
+    },
+    {
+      "readout": {
+        "top": "#d0c0d0 256"
+      },
+      "why": "Screen: 255 - 191*63/255 and 255 - 127*127/255 round to 208, 192, 208."
+    },
+    {
+      "select": "Layer blend mode",
+      "option": "Normal"
+    },
+    {
+      "readout": {
+        "digest": "=N"
+      },
+      "why": "Back to Normal, the composite is exactly the original."
+    },
+    {
+      "fill": "Layer opacity",
+      "value": "50"
+    },
+    {
+      "readout": {
+        "top~": "#808080 256"
+      },
+      "why": "Half opacity mixes 64/192 and 128/128 halfway to 128 in every channel; 8-bit canvas compositing may land one step away (Chromium gives #80807f)."
+    },
+    {
+      "fill": "Layer opacity",
+      "value": "100"
+    },
+    {
+      "readout": {
+        "digest": "=N"
+      },
+      "why": "Full opacity restores the exact composite: neither layer was edited."
+    }
+  ]
+}

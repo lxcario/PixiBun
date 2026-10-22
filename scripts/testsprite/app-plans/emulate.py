@@ -30,6 +30,9 @@ FIELDS = {
 }
 
 
+FIELDS_ALIAS = {}
+
+
 class StepFailed(AssertionError):
     pass
 
@@ -111,6 +114,14 @@ def run_step(page, step, memory):
     elif "readout" in step:
         actual = readout(page)
         for field, want in step["readout"].items():
+            if field.endswith("~"):
+                # One 8-bit step per channel, same pixel count: "#808080 256".
+                hex_want, count_want = want.split()
+                hex_got, count_got = actual[FIELDS_ALIAS.get(field[:-1], field[:-1])].split()
+                close = all(abs(int(hex_want[i:i + 2], 16) - int(hex_got[i:i + 2], 16)) <= 1 for i in (1, 3, 5))
+                if not close or count_got != count_want:
+                    raise StepFailed(f"readout {field[:-1]}: expected about {want!r}, got {hex_got} {count_got}")
+                continue
             if isinstance(want, str) and want.startswith("="):
                 ref, _, sub = want[1:].partition(".")
                 want = memory[ref][sub or field]

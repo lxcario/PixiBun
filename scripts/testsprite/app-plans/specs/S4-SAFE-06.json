@@ -1,0 +1,84 @@
+{
+  "id": "7352527c-5f87-46fc-b219-dfc06a82f65d",
+  "key": "S4-SAFE-06",
+  "title": "S4-SAFE-06 — A layer lock also protects a selection.",
+  "goal": "A Magic Wand selection of Bun's light body (a click at the canvas centre, tolerance 0, connected) is cleared by Delete on an unlocked layer and restored exactly by Undo; after locking the layer, the same selection and Delete change nothing.",
+  "cliOnly": [
+    "a dragged marquee from (0,0) to (15,15)"
+  ],
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "key": "w"
+    },
+    {
+      "pressed": "Magic Wand"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "key": "Delete"
+    },
+    {
+      "readout": {
+        "pixels": "!=A",
+        "digest": "!=A"
+      },
+      "why": "Sensitivity: on an unlocked layer, Delete clears the selected light pixels."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Undo restores every pixel."
+    },
+    {
+      "click": "Layers",
+      "nth": 0
+    },
+    {
+      "click": "Lock layer Base Layer"
+    },
+    {
+      "visible": "Unlock layer Base Layer",
+      "why": "The layer is locked."
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Locking changes no pixels."
+    },
+    {
+      "key": "w"
+    },
+    {
+      "pressed": "Magic Wand"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "key": "Delete"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      },
+      "why": "The lock protects the selection: nothing is cleared."
+    }
+  ]
+}
