@@ -458,4 +458,14 @@ describe('Animated Exporters Output Safety Ceilings (H3 Verification)', () => {
     expect(webmView.queryByTestId('unsafe-scale-warning')).toBeNull();
     webmView.unmount();
   });
+
+  it('S. Output Info counts one frame as "1 frame"', () => {
+    const props = { scale: 1, setScale: vi.fn(), canvasWidth: 16, canvasHeight: 16, fps: 8, videoLoopCount: 1, setVideoLoopCount: vi.fn(), isMp4Supported: true };
+    const one = render(React.createElement(AnimatedExportTab, { ...props, exportType: 'gif', totalFrames: 1 }));
+    expect(one.getByText(/16 × 16 px, 1 frame at 8 FPS/)).toBeDefined();
+    one.unmount();
+    const two = render(React.createElement(AnimatedExportTab, { ...props, exportType: 'apng', totalFrames: 2 }));
+    expect(two.getByText(/16 × 16 px, 2 frames \(RGBA\)/)).toBeDefined();
+    two.unmount();
+  });
 });
