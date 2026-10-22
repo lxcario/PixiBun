@@ -329,6 +329,7 @@ export const SelectionTransformGizmo: React.FC<SelectionTransformGizmoProps> = (
             type="button"
             onClick={onFlipH}
             title="Flip Horizontal (H)"
+            aria-label="Flip Horizontal (H)"
             className="w-6 h-5 flex items-center justify-center text-[var(--text-body)] hover:text-[#f0be7c] hover:bg-[#2c1e40] rounded-[2px] cursor-pointer"
           >
             ↔
@@ -337,6 +338,7 @@ export const SelectionTransformGizmo: React.FC<SelectionTransformGizmoProps> = (
             type="button"
             onClick={onFlipV}
             title="Flip Vertical (V)"
+            aria-label="Flip Vertical (V)"
             className="w-6 h-5 flex items-center justify-center text-[var(--text-body)] hover:text-[#f0be7c] hover:bg-[#2c1e40] rounded-[2px] cursor-pointer"
           >
             ↕
@@ -346,6 +348,7 @@ export const SelectionTransformGizmo: React.FC<SelectionTransformGizmoProps> = (
             type="button"
             onClick={onRotate90CCW}
             title="Rotate 90° CCW"
+            aria-label="Rotate 90° CCW"
             className="w-6 h-5 flex items-center justify-center text-[var(--text-body)] hover:text-[#f0be7c] hover:bg-[#2c1e40] rounded-[2px] cursor-pointer"
           >
             ↺
@@ -354,6 +357,7 @@ export const SelectionTransformGizmo: React.FC<SelectionTransformGizmoProps> = (
             type="button"
             onClick={onRotate90CW}
             title="Rotate 90° CW"
+            aria-label="Rotate 90° CW"
             className="w-6 h-5 flex items-center justify-center text-[var(--text-body)] hover:text-[#f0be7c] hover:bg-[#2c1e40] rounded-[2px] cursor-pointer"
           >
             ↻
@@ -363,6 +367,7 @@ export const SelectionTransformGizmo: React.FC<SelectionTransformGizmoProps> = (
             type="button"
             onClick={onCommit}
             title="Commit Transform (Enter)"
+            aria-label="Commit Transform (Enter)"
             data-testid="gizmo-commit-btn"
             className="w-6 h-5 flex items-center justify-center text-[#80e080] hover:bg-[#1a3a1a] rounded-[2px] cursor-pointer font-bold"
           >
@@ -372,6 +377,7 @@ export const SelectionTransformGizmo: React.FC<SelectionTransformGizmoProps> = (
             type="button"
             onClick={onCancel}
             title="Cancel Transform (Escape)"
+            aria-label="Cancel Transform (Escape)"
             data-testid="gizmo-cancel-btn"
             className="w-6 h-5 flex items-center justify-center text-[#ff8080] hover:bg-[#3a1a1a] rounded-[2px] cursor-pointer font-bold"
           >
