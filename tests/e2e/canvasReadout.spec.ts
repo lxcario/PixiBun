@@ -40,7 +40,7 @@ test('canvas readout reports a committed stroke, ignores it mid-drag and follows
   await expect(page.getByTestId('canvas-readout-top-colors')).toHaveText('none');
   await expect(page.getByTestId('canvas-readout-digest')).toHaveText(blank.digest);
   await expect(page.getByTestId('canvas-readout-summary')).toHaveText(
-    `${SIZE}×${SIZE} canvas, frame 1 of 1, layer Base Layer: 0 painted pixels in 0 colors.`);
+    `${SIZE}×${SIZE} canvas, frame 1 of 1, layer Base Layer of 1 layer: 0 painted pixels in 0 colors.`);
 
   const primary = await page.evaluate(() =>
     (window as Window & { __studioStore?: { getState: () => { primaryColor: string } } }).__studioStore!.getState().primaryColor);
@@ -73,7 +73,7 @@ test('canvas readout reports a committed stroke, ignores it mid-drag and follows
   await expect(page.getByTestId('canvas-readout-digest')).toHaveText(stroked.digest);
   expect(stroked.digest).not.toBe(blank.digest);
   await expect(page.getByTestId('canvas-readout-summary')).toHaveText(
-    `${SIZE}×${SIZE} canvas, frame 1 of 1, layer Base Layer: 8 painted pixels in 1 color.`);
+    `${SIZE}×${SIZE} canvas, frame 1 of 1, layer Base Layer of 1 layer: 8 painted pixels in 1 color.`);
 
   await page.getByTestId('undo-button').click();
   await expect(page.getByTestId('canvas-readout-pixels')).toHaveText('0');

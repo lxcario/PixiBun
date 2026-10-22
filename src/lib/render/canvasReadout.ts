@@ -106,7 +106,8 @@ export function formatReadoutColors(colors: ReadoutColor[]): string {
 export function describeCanvasReadout(readout: CanvasReadout): string {
   const pixels = `${readout.paintedPixels} painted ${readout.paintedPixels === 1 ? 'pixel' : 'pixels'}`;
   const colors = `${readout.colorCount} ${readout.colorCount === 1 ? 'color' : 'colors'}`;
-  return `${readout.width}×${readout.height} canvas, frame ${readout.frameNumber} of ${readout.frameCount}, layer ${readout.layerName}: ${pixels} in ${colors}.`;
+  const layers = `${readout.layerCount} ${readout.layerCount === 1 ? 'layer' : 'layers'}`;
+  return `${readout.width}×${readout.height} canvas, frame ${readout.frameNumber} of ${readout.frameCount}, layer ${readout.layerName} of ${layers}: ${pixels} in ${colors}.`;
 }
 
 interface ReadoutSource {

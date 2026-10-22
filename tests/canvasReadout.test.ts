@@ -120,7 +120,8 @@ describe('readout text', () => {
   });
 
   it('describes the frame in one sentence with singular and plural counts', () => {
-    expect(describeCanvasReadout(readout)).toBe('32×32 canvas, frame 2 of 3, layer Ink: 1 painted pixel in 1 color.');
+    expect(describeCanvasReadout(readout)).toBe('32×32 canvas, frame 2 of 3, layer Ink of 2 layers: 1 painted pixel in 1 color.');
+    expect(describeCanvasReadout({ ...readout, layerCount: 1 })).toContain('layer Ink of 1 layer:');
     expect(describeCanvasReadout({ ...readout, paintedPixels: 9, colorCount: 2 })).toContain('9 painted pixels in 2 colors.');
   });
 });
