@@ -5,7 +5,7 @@ import { Point } from '@/lib/canvas/rasterMath';
 import { runRotSpriteInWorker } from '@/lib/engine/workerDispatcher';
 import { computeRotatedBounds } from '@/lib/canvas/rotSprite';
 import { FloatingSelection } from './useViewportOverlays';
-import { isWorkspaceControlTarget, shouldIgnoreWorkspaceKey } from '@/lib/input/workspaceKeyboard';
+import { isWorkspaceControlTarget, shouldIgnoreWorkspaceKey, workspaceShortcutKey } from '@/lib/input/workspaceKeyboard';
 import { beginWorkspaceJob, type WorkspaceJob } from '@/lib/engine/workspaceJob';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { useStudioStore } from '@/stores/studioStore';
@@ -237,6 +237,20 @@ export function useViewportSelectionTransform({
       // If not yet floating, lift active selection to floating buffer now
       if (!floatingSelection && selection) {
         if (!ensureFloatingSelection()) return;
+      } else if (floatingSelection && !originalSourceRef.current && floatingSelection.liftedFrom) {
+        // Lifted elsewhere (a drag or a key): its Undo snapshot is pending; keep its source for Cancel.
+        const { canvas, x, y } = floatingSelection.liftedFrom;
+        originalSourceRef.current = {
+          canvas,
+          x,
+          y,
+          w: canvas.width,
+          h: canvas.height,
+          mask: null,
+          layerId: floatingSelection.layerId ?? activeLayerId,
+          restorePixels: true,
+          ownership: beginWorkspaceJob([activeLayerId], undefined, () => transformSourceKey(activeLayerId)),
+        };
       } else if (floatingSelection && !originalSourceRef.current) {
         // A paste has not cut pixels from the layer and has no Undo baseline yet.
         captureSnapshot('Transform Pasted Selection');
@@ -566,7 +580,8 @@ export function useViewportSelectionTransform({
       if (current.activeLayerId !== activeLayerId || !current.frames[current.activeFrameIndex]?.layers.some(layer => layer.id === activeLayerId && !layer.locked)) {
         throw new Error('The transform source is no longer the active unlocked layer. Cancel this transform.');
       }
-      if (!originalSourceRef.current) {
+      // Lifted pixels already have their Undo snapshot from before the lift.
+      if (!originalSourceRef.current && !floatingSelection?.liftedFrom) {
         captureSnapshot('Commit Free Transform');
       }
 
@@ -722,6 +737,17 @@ export function useViewportSelectionTransform({
       } catch { restoreAllowed = false; /* Stale backing pixels belong to the newer workspace. */ }
       finally { ownership.dispose(); }
       originalSourceRef.current = null;
+    } else if (floatingSelection?.liftedFrom && floatingSelection.layerId) {
+      // Lifted without a recorded backup: put the original pixels back where they were.
+      const { canvas, x, y } = floatingSelection.liftedFrom;
+      const entry = snapshotBuffers().get(floatingSelection.layerId);
+      if (entry) {
+        entry.ctx.imageSmoothingEnabled = false;
+        entry.ctx.drawImage(canvas, x, y);
+        touchBuffer(floatingSelection.layerId);
+      } else {
+        restoreAllowed = false;
+      }
     }
 
     lastActiveBoxRef.current = null;
@@ -742,7 +768,7 @@ export function useViewportSelectionTransform({
 
     renderComposite();
     if (restoreAllowed) bumpBufferVersion();
-  }, [bumpBufferVersion, renderComposite, setFloatingSelection, setSelection]);
+  }, [bumpBufferVersion, floatingSelection, renderComposite, setFloatingSelection, setSelection]);
 
   // Quick Action: Flip Horizontal
   const handleFlipH = useCallback(() => {
@@ -824,10 +850,14 @@ export function useViewportSelectionTransform({
   useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
         if (useStudioStore.getState().motionPart) return;
-        if (shouldIgnoreWorkspaceKey(e) || e.ctrlKey || e.metaKey || e.altKey || isWorkspaceControlTarget(e)) return;
+        if (shouldIgnoreWorkspaceKey(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+        // Focus stays on a HUD button after it is clicked; Escape there still cancels.
+        const fromHud = e.target instanceof Element && e.target.closest('[data-testid="gizmo-hud-bar"]') !== null;
+        if (isWorkspaceControlTarget(e) && !(fromHud && e.key === 'Escape')) return;
 
       const active = floatingSelection || selection;
       if (!active) return;
+      const key = workspaceShortcutKey(e);
 
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -835,6 +865,12 @@ export function useViewportSelectionTransform({
       } else if (e.key === 'Escape') {
         e.preventDefault();
         cancelTransform();
+      } else if (key === 'h' && !e.shiftKey) {
+        e.preventDefault();
+        handleFlipH();
+      } else if (key === 'v' && !e.shiftKey) {
+        e.preventDefault();
+        handleFlipV();
       } else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
         e.preventDefault();
         const step = e.shiftKey ? 10 : 1;
@@ -862,7 +898,7 @@ export function useViewportSelectionTransform({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [cancelTransform, commitTransform, floatingSelection, renderComposite, selection, setFloatingSelection]);
+  }, [cancelTransform, commitTransform, floatingSelection, handleFlipH, handleFlipV, renderComposite, selection, setFloatingSelection]);
 
   return {
     transform,

@@ -142,6 +142,11 @@ export function useViewportSelection({
       ctx.clearRect(selection.x, selection.y, selection.w, selection.h);
     }
 
+    const original = document.createElement('canvas');
+    original.width = selection.w;
+    original.height = selection.h;
+    original.getContext('2d')?.drawImage(floatCanvas, 0, 0);
+
     setFloatingSelection({
       canvas: floatCanvas,
       x: selection.x,
@@ -149,6 +154,7 @@ export function useViewportSelection({
       w: selection.w,
       h: selection.h,
       layerId: activeLayerId,
+      liftedFrom: { canvas: original, x: selection.x, y: selection.y },
     });
 
     renderComposite();
@@ -173,7 +179,11 @@ export function useViewportSelection({
     const target = floatingSelectionTarget(floatingSelection.layerId);
     if (!target || !confirmLayerEditable(target)) return false;
 
-    captureSnapshot('Commit Selection', target.id);
+    // Lifted pixels already have their Undo snapshot (taken before the lift).
+    // Capturing again here would make Undo return to the cut-out hole.
+    if (!(floatingSelection.liftedFrom && target.id === floatingSelection.layerId)) {
+      captureSnapshot('Commit Selection', target.id);
+    }
     const layerCanvas = getOrCreateLayerCanvas(target.id);
     const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return false;
@@ -410,6 +420,8 @@ export function useViewportSelection({
       // CenterViewport delegates Escape/arrows to its transform hook. One owner
       // avoids committing then cancelling, or moving a floating selection twice.
       if (!ownsTransformShortcuts && ['Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+      // Flips too: the transform owner keeps the source for Cancel and flips on the first press.
+      if (!ownsTransformShortcuts && !e.ctrlKey && !e.metaKey && (key === 'h' || key === 'v')) return;
 
       if ((e.ctrlKey || e.metaKey) && key === 'c') {
         e.preventDefault();
