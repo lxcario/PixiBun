@@ -95,6 +95,7 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
             min={4}
             max={512}
             value={width}
+            aria-label="Width (px)"
             onChange={(e) => handleWidthChange(parseInt(e.target.value, 10) || 4)}
             className="bg-[var(--desk-surface)] text-[var(--text-heading)] font-mono font-bold text-sm px-2.5 py-1.5 rounded-[2px] border-2 border-[var(--desk-border)] focus:border-[var(--accent-gold)] outline-none"
           />
@@ -107,6 +108,7 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
             min={4}
             max={512}
             value={height}
+            aria-label="Height (px)"
             onChange={(e) => handleHeightChange(parseInt(e.target.value, 10) || 4)}
             className="bg-[var(--desk-surface)] text-[var(--text-heading)] font-mono font-bold text-sm px-2.5 py-1.5 rounded-[2px] border-2 border-[var(--desk-border)] focus:border-[var(--accent-gold)] outline-none"
           />
