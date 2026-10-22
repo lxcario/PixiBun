@@ -22,6 +22,11 @@
           "note": "Automatic App run on 2d27b262 found 6 Hz and 5.5 Hz marked invalid by the rate input. Fixed in f2f13f3c; the follow-up pass was a manual controlled run, not an automatic App green."
         },
         {
+          "case": "S4-RELATION-01 — Turn it around, and bring it back.",
+          "cause": "product-bug",
+          "note": "Automatic App run on 48f9b999 failed because the agent could not find the transform controls: their accessible names were only glyphs (fixed in ff320663). Reproducing it exposed data loss: after a selection was lifted with H or V, Escape deleted it with no Undo, and Undo after Commit or Ctrl+D returned to the cut-out hole (fixed in c534cc99, with tests/e2e/selectionTransformUndo.spec.ts). The fixed build has not yet had an automatic App run."
+        },
+        {
           "case": "Incomplete or mismatched execution prerequisites",
           "cause": "test-fix",
           "note": "The complete automatic cohort and ten retained failures are in automatic-followup-2026-10-19.json. Double Undo, wrong-frame layer checks and a safe export fixture are diagnosed; not every non-pass has a confirmed cause. Separate local/manual passes do not replace App verdicts."

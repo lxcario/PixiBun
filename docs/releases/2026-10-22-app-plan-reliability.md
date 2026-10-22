@@ -102,3 +102,31 @@ The three redesigned plans were then tightened locally: FX-01 asserts the lit di
 With the owner's approval only S4-FX-01, S4-DRAW-13 and EXP-003 were republished; their previous (first-redesign) definitions were saved first. A full re-fetch of all 121 cases afterwards: the three match the rendered steps and descriptions, the other 25 redesigned plans and the 93 untouched plans are unchanged, and every case's latest result is still the 06:59 run. No run was started and nothing was pushed.
 
 The same re-fetch showed that the 06:59 App run itself had stored TestSprite-generated Python for three cases it passed: S4-LAYER-02 and S4-LAYER-03 (no script before) and S4-DRAW-11 (its earlier generated v1.0 replaced by v2.0). All 63 hand-written replay scripts are unchanged. It also exposed an inaccurate claim: S4-DRAW-11, S4-LAYER-01 and S4-LAYER-03 had said their byte-level checks were "kept in this test's stored Python", but their scripts are generated from plans, not independent replays. Their specs now list those checks as **not covered by any independent script yet** (dragged shape bounds and selection clipping; merge down and drag reordering; Overlay, Color Dodge, On artwork only and cross-frame cache checks). The renderer's wording for name patterns was also fixed ("the button whose name starts with …"). With the owner's approval those 21 plans were republished at 08:01 UTC (wording, plus the three corrected descriptions); their prior definitions are archived under `artifacts/testsprite-plan-publish-2026-10-22/republish-21/`. A full re-fetch afterwards: all 28 redesigned plans match the current render, the 93 untouched plans equal their 21 October definitions, all 121 stored scripts equal their post-run state, and every latest result is still the 06:59 run. No run was started and nothing was pushed.
+
+## Second round — 22 October, afternoon
+
+Local branch work after the `48f9b999` run; not yet pushed or run by the App at the time of writing.
+
+### Data loss in selection transforms (fixed, `c534cc99`)
+
+Redesigning S4-RELATION-01 around a Magic Wand selection exposed three ways to lose pixels, reproduced on the PR preview and the Bun starter:
+
+| Sequence | Before |
+| --- | --- |
+| Select, press H or V, then Escape or the HUD Cancel | Selected pixels deleted; no Undo |
+| Select, press H, then Commit, then Undo | Undo returns the cut-out hole; the original is unreachable |
+| Select, flip with the HUD button, Ctrl+D, then Undo | Same hole |
+| Select, press H | Lifts but does not flip |
+
+Cause: the H/V keys used an older lift that kept no source backup, and committing a lifted selection captured a second Undo snapshot after the lift. A lifted floating selection now carries its original pixels and marks its pre-lift snapshot as pending; commits do not re-capture, cancel restores, H/V go through the transform owner and flip at once, and Escape also cancels from a HUD button. [selectionTransformUndo.spec.ts](../../tests/e2e/selectionTransformUndo.spec.ts) checks five paths against composites drawn independently by replay links: 5/5 fail on the `48f9b999` preview and 5/5 pass with the fix. The existing selection, lasso, layer-lock and artwork-protection e2e specs (17) and 156 related unit tests pass.
+
+### Accessibility fixes found while redesigning
+
+- **Transform HUD buttons** (`ff320663`): their accessible names were their glyphs (✓, ↔, ↻…). They now carry their titles as labels. This is what the App agent hit in S4-RELATION-01 ("transform controls not exposed").
+- **Canvas size fields** (`9add4e04`): Width and Height had no accessible name. They are now "Width (px)" and "Height (px)".
+
+### Nine more App plans
+
+S4-RELATION-01, S4-SAFE-01 and S4-EXPORT-12 (Blocked or Failed on runner limits), S4-PAL-01 and S4-VIEW-02 (Blocked on unreadable oracles), and the four untouched plans whose App verdict drifted between runs (S4-HIST-01, S4-DRAW-14, S4-NEW-21, S4-NEW-10) now have specs: 37 in all. The flaky four had only TestSprite-generated scripts and open-ended plans; their specs name each control and check the readout. S4-DRAW-14 now selects all seventeen tools by shortcut instead of the press-and-hold flyout. S4-RELATION-01 depends on the transform fix and S4-EXPORT-12 on the labelled size fields.
+
+The loop ledger now records S4-RELATION-01 as a third product bug on PR #6, alongside S4-ANIM-03 and the palette rate.
