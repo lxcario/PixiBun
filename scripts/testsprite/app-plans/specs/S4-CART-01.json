@@ -52,5 +52,8 @@
   ],
   "cliOnly": [
     "opening the saved cart PNG in /open: it plays and reopens as an editable project with its frames, holds and pixels (tests/production/cartPlayer.spec.ts, tests/production/carts.spec.ts)"
+  ],
+  "allow": [
+    "reading a download"
   ]
 }

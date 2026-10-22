@@ -59,6 +59,9 @@ function render(step, spec) {
   }
   if (step.skip) return [{ type: 'action', description: `If a welcome dialog appears, click ${q('Skip setup')}; otherwise continue.` }];
   if (step.click && step.optional) return [{ type: 'action', description: `If a ${nameOf(step.click, step.shown)} ${roleWord(step)} appears${where(step)}, click it; otherwise continue.` }];
+  // A click that starts a browser download: the agent's tools wait on downloads and time out,
+  // and nothing in these plans depends on the file, so say plainly not to wait for it.
+  if (step.click && /^(Download |Save cart$|Save video$)/.test(step.click) && !step.say) return [{ type: 'action', description: `Click the ${nameOf(step.click, step.shown)} ${roleWord(step)}${where(step)} once. It may start a browser download: do not wait for the download, open it or verify it, and do not click it again. Go straight on to the next step; a download that does not finish is not a failure of this test.` }];
   if (step.click) return [{ type: 'action', description: `Click the ${nameOf(step.click, step.shown)} ${roleWord(step)}${where(step)}.` }];
   if (step.clickText) return [{ type: 'action', description: `Click the text ${q(step.clickText)} to expand that section.` }];
   if (step.rightClick) return [{ type: 'action', description: `Right-click the ${nameOf(step.rightClick, step.shown)} ${roleWord(step)}${where(step)}.` }];

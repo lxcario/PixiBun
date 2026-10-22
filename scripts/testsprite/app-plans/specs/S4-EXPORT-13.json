@@ -56,5 +56,8 @@
   ],
   "cliOnly": [
     "decoding the delivered clip: the lamp position changes over time and animated drawings keep playing (tests/production/lightSweep.spec.ts)"
+  ],
+  "allow": [
+    "reading a download"
   ]
 }
