@@ -162,7 +162,7 @@ export const NightHero: React.FC = () => {
     if (!section || !canvas || !ctx) return;
 
     const frozen = reduceMotion;
-    let recolor = sceneRecolor(themeRef.current.studioTheme, themeRef.current.day);
+    let recolor = sceneRecolor(themeRef.current.studioTheme, themeRef.current.day, true);
     let motes: BuiltScene | null = null;
     const buildMotes = (w: number, h: number) => {
       const { studioTheme: theme, day: isDay } = themeRef.current;
@@ -182,7 +182,7 @@ export const NightHero: React.FC = () => {
       canvas.style.width = `${w * PX}px`;
       canvas.style.height = `${h * PX}px`;
       ctx.imageSmoothingEnabled = false;
-      sceneRef.current = new MoonlitScene(w, h, ctx);
+      sceneRef.current = new MoonlitScene(w, h, ctx, themeRef.current.day);
       buildMotes(w, h);
     };
 
@@ -208,8 +208,10 @@ export const NightHero: React.FC = () => {
     };
     renderNow.current = draw;
     retheme.current = () => {
-      recolor = sceneRecolor(themeRef.current.studioTheme, themeRef.current.day);
-      if (sceneRef.current) buildMotes(canvas.width, canvas.height);
+      recolor = sceneRecolor(themeRef.current.studioTheme, themeRef.current.day, true);
+      // Day and Night paint different landscapes; the town is seeded, so rebuilding keeps it.
+      if (sceneRef.current && sceneRef.current.day !== themeRef.current.day) build();
+      else if (sceneRef.current) buildMotes(canvas.width, canvas.height);
       draw();
     };
 

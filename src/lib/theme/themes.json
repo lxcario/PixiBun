@@ -46,7 +46,7 @@
         "bg": "#fdf3f5", "surface": "#f8e6eb", "raised": "#fffbfc", "sunken": "#f1d9e0", "elevated": "#fcedf1",
         "border": "#5c2742", "borderHi": "#8f3d66", "borderSubtle": "#ecd2da",
         "heading": "#2c1120", "body": "#563246", "muted": "#704a5e",
-        "accent": "#a62a63", "accent2": "#3a55a3", "accent3": "#a83a6c", "positive": "#2e7a48", "danger": "#ad2c42",
+        "accent": "#a62a63", "accent2": "#8a5a0c", "accent3": "#a83a6c", "positive": "#2e7a48", "danger": "#ad2c42",
         "ink": "#5c2742", "hover": "#f9dfe7", "active": "#f3cfdb",
         "primary": "#ffb0cc", "primaryFg": "#2c1120", "primaryShade": "#e07fa4", "primaryShine": "#ffe8f0",
         "frame": "#b8687e", "frameLight": "#dc90a5", "frameDark": "#84405a"

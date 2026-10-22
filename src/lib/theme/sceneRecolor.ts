@@ -44,8 +44,12 @@ function hueChroma(r: number, g: number, b: number): [number, number] {
 
 export type Recolor = ((image: ImageData) => void) | null;
 
-/** Returns null when the scene should keep its original colors (Moonlit at night). */
-export function sceneRecolor(themeId: string, day: boolean): Recolor {
+/**
+ * Returns null when the scene should keep its original colors (Moonlit at night).
+ * `paintedForDay` is for a scene that paints its own daylight values: by day its lightness
+ * is kept as painted instead of inverted, and only near-white highlights stay unthemed.
+ */
+export function sceneRecolor(themeId: string, day: boolean, paintedForDay = false): Recolor {
   const theme = getStudioTheme(themeId);
   if (theme.id === 'moonlit' && !day) return null;
   const palette = day ? theme.day : theme.night;
@@ -65,12 +69,12 @@ export function sceneRecolor(themeId: string, day: boolean): Recolor {
     // Keep warm light, plants and the brightest highlights as painted.
     const warm = chroma > 0.18 && hue >= 12 && hue <= 75;
     const green = chroma > 0.15 && hue > 75 && hue < 170;
-    const highlight = l > (day ? 74 : 82);
+    const highlight = l > (paintedForDay && day ? 98.5 : day ? 74 : 82);
     if (!warm && !green && !highlight) {
       // By day the ramp is inverted gently: a full inversion turned the night painting's pale far
       // ridge into a dark band and the near hills nearly white. Compressed, the sky stays lightest
       // and distant shapes fade towards it, the way hills look in daylight haze.
-      const target = day ? 97 - l * 0.5 : l;
+      const target = day && !paintedForDay ? 97 - l * 0.5 : l;
       let lo = stops[0];
       let hi = stops[stops.length - 1];
       for (let i = 0; i < stops.length - 1; i++) {

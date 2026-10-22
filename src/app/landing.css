@@ -13,6 +13,16 @@ html[data-color-scheme="light"] .landing-veil {
   background: linear-gradient(to bottom, color-mix(in srgb, var(--desk-bg) 58%, transparent), color-mix(in srgb, var(--desk-bg) 40%, transparent) 70%, color-mix(in srgb, var(--desk-bg) 15%, transparent));
 }
 
+/* Text in a theme accent. Some accents are fills (Sakura's button pink) that vanish as text on
+   a light page, so by day the tint is deepened towards the heading color. */
+.tint-text { color: var(--tint); }
+html[data-color-scheme="light"] .tint-text { color: color-mix(in srgb, var(--tint) 45%, var(--text-heading)); }
+
+/* The colored glow behind the tour's stage. By day a dark accent (Sakura's green) blurred at
+   night strength reads as a smudge, so daylight keeps it faint. */
+.story-stage-glow { opacity: 0.4; }
+html[data-color-scheme="light"] .story-stage-glow { opacity: 0.16; }
+
 /* Tour reel: each chapter rests at the middle; its neighbours wait above and below. */
 .story-reel {
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);

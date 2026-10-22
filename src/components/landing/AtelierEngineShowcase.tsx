@@ -197,7 +197,7 @@ export const AtelierEngineShowcase: React.FC = () => {
             <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-[var(--accent-gold)]">the bench</p>
             <h2 className="mt-2 font-display text-2xl sm:text-[28px] leading-[1.15] [text-shadow:0_3px_0_var(--ink)]">
               {TOOLS.map((t) => (
-                <span key={t.id} className={`lg:block transition-colors duration-200 ${t.id === tool ? 'text-[var(--primary-bg)]' : 'text-[var(--text-heading)] lg:text-[var(--text-muted)]'}`}>
+                <span key={t.id} className={`lg:block transition-colors duration-200 ${t.id === tool ? 'tint-text [--tint:var(--primary-bg)]' : 'text-[var(--text-heading)] lg:text-[var(--text-muted)]'}`}>
                   {t.name} it.{' '}
                 </span>
               ))}
