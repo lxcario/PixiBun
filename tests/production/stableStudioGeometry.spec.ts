@@ -34,7 +34,8 @@ for (const theme of ['atelier', 'cozy-classic']) test(`${theme} controls and can
     const geometry = () => page.evaluate(() => ['main-composite-canvas', 'bottom-timeline'].map(id => { const r = document.querySelector(`[data-testid="${id}"]`)!.getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }));
     const before = await geometry(), onion = page.getByRole('button', { name: 'Onion Skin', exact: true });
     await onion.click(); await expect.poll(geometry).toEqual(before); await onion.click(); await expect.poll(geometry).toEqual(before);
-    const row = page.getByTestId('bottom-timeline'); expect(await row.evaluate(element => {
+    // The Onion Skin press springs the button's scale; measure the row's buttons once it has settled.
+    const row = page.getByTestId('bottom-timeline'); await settleAnimations(row); expect(await row.evaluate(element => {
       const bounds = element.getBoundingClientRect(); return Array.from(element.querySelectorAll('button')).filter(button => !button.closest('details:not([open])') && button.getClientRects().length && button.getBoundingClientRect().top < bounds.top + 40).every(button => { const box = button.getBoundingClientRect(); return box.left >= bounds.left && box.right <= bounds.right && box.height === 28; });
     })).toBe(true);
   }
