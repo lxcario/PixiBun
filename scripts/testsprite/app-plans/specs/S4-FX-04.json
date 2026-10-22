@@ -90,9 +90,16 @@
       "click": "Duplicate Layer"
     },
     {
-      "readout": {
-        "layers": "3"
-      },
+      "click": "Layers",
+      "nth": 0
+    },
+    {
+      "visible": "/^Layers \\(3\\)/",
+      "role": "heading",
+      "why": "The Layers panel lists three layers: the second surface layer is still there."
+    },
+    {
+      "readout": {},
       "why": "Duplicating the surface layer makes a second normal source."
     },
     {
@@ -123,8 +130,16 @@
       "click": "Close dialog"
     },
     {
+      "click": "Layers",
+      "nth": 0
+    },
+    {
+      "visible": "/^Layers \\(3\\)/",
+      "role": "heading",
+      "why": "The Layers panel lists three layers: the second surface layer is still there."
+    },
+    {
       "readout": {
-        "layers": "3",
         "digest": "=A"
       },
       "why": "The refusal changed nothing."

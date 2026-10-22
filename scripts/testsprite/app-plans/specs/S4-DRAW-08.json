@@ -2,7 +2,7 @@
   "id": "8e9da616-47f1-4cd9-ae9a-163ef2190f12",
   "key": "S4-DRAW-08",
   "title": "S4-DRAW-08 — Three ways to select.",
-  "goal": "probe",
+  "goal": "A Magic Wand click selects a 12 x 10 region of Bun without changing any pixel, and Escape clears the selection, still without changing any pixel.",
   "steps": [
     {
       "open": "/studio?template=bun"
@@ -14,7 +14,7 @@
       "record": "A"
     },
     {
-      "key": "w"
+      "click": "Magic Wand"
     },
     {
       "pressed": "Magic Wand"

@@ -1,0 +1,86 @@
+{
+  "id": "69f584fe-836d-49a2-b91d-0ad7a857affa",
+  "key": "S4-ANIM-01",
+  "title": "S4-ANIM-01 — Onion skin is only a guide.",
+  "goal": "Onion Skin is only a guide: turning it on for frame 2 of a two-frame drawing shows the previous pose as a ghost without changing either frame's artwork or adding history, the PNG export stays 16 x 16, and turning it off leaves everything exact.",
+  "cliOnly": [
+    "sampling the ghost overlay's visible pixels and decoding the exported PNG to prove no ghost pixels (scripts/testsprite/pixibun-onion-overlay-integrity.py, tests/production/animatedExportIntegrity.spec.ts)"
+  ],
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10"
+    },
+    {
+      "skip": true
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "readout": {
+        "frame": "2 of 2",
+        "pixels": "1",
+        "top": "#0000ff 1"
+      }
+    },
+    {
+      "record": "B"
+    },
+    {
+      "click": "Onion Skin"
+    },
+    {
+      "pressed": "Onion Skin",
+      "why": "The guide is on."
+    },
+    {
+      "readout": {
+        "digest": "=B",
+        "pixels": "1"
+      },
+      "why": "The ghost of frame 1 is not part of frame 2's artwork."
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "PNG",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "1x",
+      "within": "Export Studio Assets"
+    },
+    {
+      "text": "16 × 16 px",
+      "why": "The export is the drawing at native size, not the guide."
+    },
+    {
+      "click": "Close dialog"
+    },
+    {
+      "click": "Onion Skin"
+    },
+    {
+      "readout": {
+        "digest": "=B"
+      }
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Frame 1 is untouched too."
+    }
+  ]
+}
