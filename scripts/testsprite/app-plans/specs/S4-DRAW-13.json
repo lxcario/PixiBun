@@ -19,7 +19,8 @@
       "record": "A"
     },
     {
-      "key": "i"
+      "click": "Eyedropper",
+      "why": "Choose the tool from the toolbar."
     },
     {
       "pressed": "Eyedropper"

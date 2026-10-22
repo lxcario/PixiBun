@@ -3,24 +3,78 @@
   "key": "S4-FX-01",
   "title": "S4-FX-01 — The Lamp can be put back.",
   "goal": "Applying a lamp to Bun changes its colors as one undoable step: one Undo returns the exact original artwork and one Redo returns the exact lit result.",
-  "cliOnly": ["full native RGBA of the applied and restored rasters"],
+  "cliOnly": [
+    "full native RGBA of the applied and restored rasters"
+  ],
   "steps": [
-    {"open": "/studio?template=bun"},
-    {"skip": true},
-    {"readout": {"size": "16×16", "pixels": "192", "colors": "6"}},
-    {"record": "A"},
-    {"click": "/^Effects/", "nth": 0},
-    {"click": "Got it", "optional": true},
-    {"click": "/^Add light and depth/"},
-    {"click": "Preview lighting"},
-    {"click": "Light from top left"},
-    {"fill": "Light Strength Slider", "value": "2.5"},
-    {"click": "Apply", "nth": 0},
-    {"readout": {"pixels": "192", "digest": "!=A"}, "why": "The lamp recolors Bun without changing its silhouette."},
-    {"record": "L"},
-    {"click": "Undo last action"},
-    {"readout": {"digest": "=A", "top": "=A", "pixels": "192"}, "why": "One Undo restores the original artwork exactly."},
-    {"click": "Redo last action"},
-    {"readout": {"digest": "=L", "top": "=L"}, "why": "One Redo restores the exact lit result."}
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "pixels": "192",
+        "colors": "6"
+      }
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Effects/",
+      "nth": 0
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "click": "/^Add light and depth/"
+    },
+    {
+      "click": "Preview lighting"
+    },
+    {
+      "click": "Light from top left"
+    },
+    {
+      "fill": "Light Strength Slider",
+      "value": "2.5"
+    },
+    {
+      "click": "Apply",
+      "nth": 0
+    },
+    {
+      "readout": {
+        "pixels": "192",
+        "digest": "170f6bf5"
+      },
+      "why": "The lamp recolors Bun without changing its silhouette; the lit frame digest is 170f6bf5."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "top": "=A",
+        "pixels": "192"
+      },
+      "why": "One Undo restores the original artwork exactly."
+    },
+    {
+      "click": "Redo last action"
+    },
+    {
+      "readout": {
+        "digest": "170f6bf5",
+        "pixels": "192"
+      },
+      "why": "One Redo restores the exact lit result (digest 170f6bf5)."
+    }
   ]
 }

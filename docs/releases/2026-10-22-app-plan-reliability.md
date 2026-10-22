@@ -68,8 +68,6 @@ No original assertion was deleted from the suite: the stored scripts are unchang
 
 ## Still open
 
-- **No cloud run yet**: the published plans have not been executed by the App agent. Their first automatic run is the real test; existing case statuses still reflect the old plans.
-- **The app fix is not deployed**: S4-ANIM-03 stays red on any build without `e43248c0`.
 - **60 non-passing cases are not redesigned.** 25 need a downloaded file or the native save picker (Chromium backups always show "No backup was created" to the agent); 14 need drags or modifiers; 11 need uploaded fixtures; 6 need viewport, network or focus control; 5 are open-ended. Their stored Python remains the qualifying path. S4-JOURNEY-01 is in the download group.
 - A minor accessibility note: *Apply Cleanup*'s accessible name ("Apply analyzed artwork cleanup") doesn't contain its visible text (WCAG 2.5.3). Eleven stored scripts use that exact name, so it was left alone.
 
@@ -82,3 +80,19 @@ With the owner's approval, `apply.mjs --apply` replaced the plan steps and descr
 - 121/121 stored Python scripts byte-identical to the archive: the CLI replay path is untouched.
 
 The previous plans and the published files are kept locally under `artifacts/testsprite-plan-publish-2026-10-22/` (manifest SHA-256 `1ca13f95…`). Restoring any case is `testsprite test plan put <id> --steps <saved file>`. No test was run and no status was changed by publishing.
+
+## The automatic App run on the fix — 22 October, 06:59–07:43 UTC
+
+With the owner's approval the branch was fast-forwarded onto `testsprite-s4` (`b78fffb1..48f9b999`, no force) after all five pre-push quality gates passed under the pinned Node 22.23.3 (3,041 unit tests). Two earlier push attempts were stopped by that gate and are part of this record: a stale generated test inventory (fixed in `48f9b999`) and a typecheck error from `.next/dev` types left by a local dev server (generated, untracked; removed).
+
+The preview manifest served `48f9b999` at 06:59:47 UTC and the TestSprite App started all 121 cases in `github-pr-6` within seconds. [Per-case results](../testsprite/app-run-2026-10-22-48f9b999.json); raw results archived locally under `artifacts/testsprite-app-run-2026-10-22-48f9b999/`.
+
+| Cohort | Passed | Failed | Blocked |
+| --- | ---: | ---: | ---: |
+| `b78fffb1`, old plans | 33 | 7 | 81 |
+| `48f9b999`, 28 redesigned plans and the toast fix | **55** | 7 | 59 |
+
+- **Redesigned plans: 25 of 28 passed**, including S4-ANIM-03 on the fixed build (20 were Blocked, 5 were Failed). The three that failed did so on plan wording; the agent's own observations show correct behavior. S4-FX-01 reached the exact lit digest `170f6bf5` after Redo but had not recorded color counts after Apply. S4-DRAW-13 reported that pressing I did not select the Eyedropper (it does, in a real browser; Shift+I does not), then sampled #2a9d8f correctly. EXP-003 checked the heart's starting readout only after opening the lighting preview, so it read previewed colors.
+- **Untouched plans: 30 of 93 passed.** Four that passed on `b78fffb1` did not this time: S4-HIST-01, S4-DRAW-14 (the press-and-hold flyout again), S4-NEW-21 and S4-NEW-10. Their plans did not change. S4-NEW-21 and S4-NEW-10 were reproduced on `48f9b999` and behave correctly: Classic studio keeps the workspace and Pen with Labs off and artwork intact; an invalid hex is refused and the first Escape reverts the draft. This is run-to-run variation in the agent's judgement, not a product regression. S4-RELATION-01, S4-SAFE-01 and S4-EXPORT-10 moved from Blocked to Failed on the known drag, download and save-picker limits.
+
+The three redesigned plans were then tightened locally: FX-01 asserts the lit digest `170f6bf5` instead of unrecorded counts, DRAW-13 clicks the Eyedropper button, and EXP-003 requires the starting check before Effects is opened. All three pass the emulator against the deployed `48f9b999` preview. They are not yet republished.
