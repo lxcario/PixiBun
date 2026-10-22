@@ -1,6 +1,6 @@
 # App plans the agent can finish — 22 October
 
-Observed 22 October 2026, Istanbul morning, on local branch `claude/s4-reliability` cut from PR [#6](https://github.com/lxcario/PixiBun/pull/6) head `b78fffb199756933554729e21fafad1210432281`. Nothing here was pushed, published to the TestSprite project or run in the cloud. Earlier records and their verdicts stand as written.
+Observed 22 October 2026, Istanbul morning, on local branch `claude/s4-reliability` cut from PR [#6](https://github.com/lxcario/PixiBun/pull/6) head `b78fffb199756933554729e21fafad1210432281`. Nothing here was pushed or run in the cloud; the 28 plans were published to the TestSprite project with the owner's approval (see the end). Earlier records and their verdicts stand as written.
 
 ## The cohort we started from
 
@@ -68,7 +68,17 @@ No original assertion was deleted from the suite: the stored scripts are unchang
 
 ## Still open
 
-- **Publishing**: the 28 plans are local. `apply.mjs --apply` would replace their plan steps and descriptions in the shared TestSprite project; that needs the owner's approval, as does a cloud run to confirm the agent follows them.
+- **No cloud run yet**: the published plans have not been executed by the App agent. Their first automatic run is the real test; existing case statuses still reflect the old plans.
 - **The app fix is not deployed**: S4-ANIM-03 stays red on any build without `e43248c0`.
 - **60 non-passing cases are not redesigned.** 25 need a downloaded file or the native save picker (Chromium backups always show "No backup was created" to the agent); 14 need drags or modifiers; 11 need uploaded fixtures; 6 need viewport, network or focus control; 5 are open-ended. Their stored Python remains the qualifying path. S4-JOURNEY-01 is in the download group.
 - A minor accessibility note: *Apply Cleanup*'s accessible name ("Apply analyzed artwork cleanup") doesn't contain its visible text (WCAG 2.5.3). Eleven stored scripts use that exact name, so it was left alone.
+
+## Published — 22 October, 06:23 UTC
+
+With the owner's approval, `apply.mjs --apply` replaced the plan steps and descriptions of the 28 cases above in project `ae8453ac-f859-4324-9ca2-5016e683bc6c`. Each case's previous definition was saved first; all 28 saved copies equal the archived pre-change definitions. A separate full re-fetch of all 121 cases afterwards found:
+
+- 28/28 published cases match the rendered steps, step types and descriptions exactly; names unchanged.
+- 93/93 other cases unchanged (plan steps, description, name).
+- 121/121 stored Python scripts byte-identical to the archive: the CLI replay path is untouched.
+
+The previous plans and the published files are kept locally under `artifacts/testsprite-plan-publish-2026-10-22/` (manifest SHA-256 `1ca13f95…`). Restoring any case is `testsprite test plan put <id> --steps <saved file>`. No test was run and no status was changed by publishing.

@@ -2,7 +2,7 @@
 
 ## Current PR and portal verification — 21 October 2026
 
-The [22 October App-plan record](releases/2026-10-22-app-plan-reliability.md) supersedes the App counts below: the latest automatic App run on PR #6 (`b78fffb1`) is **33 Passed /7 Failed /81 Blocked**. One PixiBun defect (error toasts inert behind open dialogs) is fixed locally in `e43248c0`; 28 App plans are redesigned and emulated, not yet published or pushed.
+The [22 October App-plan record](releases/2026-10-22-app-plan-reliability.md) supersedes the App counts below: the latest automatic App run on PR #6 (`b78fffb1`) is **33 Passed /7 Failed /81 Blocked**. One PixiBun defect (error toasts inert behind open dialogs) is fixed locally in `e43248c0`; 28 App plans are redesigned, emulated and published to the TestSprite project (not yet run in the cloud); the fix is not pushed.
 
 The [21 October record](releases/2026-10-21-testsprite-verification-and-pr-story.md) supersedes current-state claims in older snapshots below. PR #6 remains at `a8c0f90fbbcb3398f5e1b62f676c590a13c633bd`. GitHub now reports E2E, Lighthouse, validation, native codecs and compatible rollback successful on this HEAD. The required TestSprite App check remains **failure: 37 Passed /5 Failed /79 Blocked**. Actual main protection requires TestSprite and validation, disallows administrator bypass, and currently disables merge.
 
