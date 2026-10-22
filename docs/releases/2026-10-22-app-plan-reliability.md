@@ -251,3 +251,25 @@ The first run with the rewritten plans and the dither fix ended **99 Passed / 8 
 - **Seven honest blocks:** S4-DRAW-02, S4-DRAW-04, S4-NEW-15 (drags), S4-IMPORT-01, S4-IMPORT-02 (uploads), S4-LEARN-06 (phone viewport), S4-SAFE-04 (offline).
 
 The four plans changed after the run were emulated (all pass) and published with no credits used.
+
+## The App runs on `cc64dfd5` (106 / 7 / 8) and `587da149` (116 / 3 / 2)
+
+Counts are each App execution's own, read per case from `test result --history` (source `github_action`), not the dashboard's latest status. Raw results are archived under `artifacts/testsprite-app-run-2026-10-22-cc64dfd5/` and `-587da149/`. Neither run found a product defect.
+
+**`cc64dfd5`: 106 Passed / 7 Failed / 8 Blocked.** The TestSprite Replay check passed on this head for the first time; its two re-stored deep scripts replayed cleanly. Every App case started at 19:18 UTC, before the fixes below were published:
+
+- *The agent skipped an action it then reported doing.* S4-NEW-02: the HTML snapshot at the failing check shows Redo still disabled, so Undo never ran, and the video ends on the Delete click. S4-ANIM-02: the snapshot still shows Play, so playback never started. S4-DRAW-03: it clicked a "Local" button that does not exist instead of the "Connected pixels only" row, whose checkbox is visually hidden.
+- *The agent read the page incompletely.* S4-FX-04 closed the dialog before reading the refusal it had seen. S4-PAL-01 read the palette name without its colour count.
+- *Runner limits.* S4-CART-01's "Cart saved" toast lasts 3.5 s; S4-LEARN-05's own verdict was PASS while TestSprite's navigate step failed; S4-EXPORT-08's Download click hung the agent's tool despite the wording not to wait.
+
+Fixes: download clicks are removed from App plans, which now check that each export is ready or refused; Undo follows the post-Delete check immediately; Play, the hidden toggles, the refusal timing and the palette label are spelled out; cart success also accepts the dialog closing (it closes only after a successful save); S4-LEARN-05 returns with Return to drawing. The seven plans whose essence needs a drag, an upload, a phone viewport or offline mode were rewritten to what the agent can verify, naming the rest in their descriptions (the import pair's App-level version is thin by necessity).
+
+**`587da149`: 116 Passed / 3 Failed / 2 Blocked**, the first run with every plan already carrying these fixes. The Replay check's CLI replays of S4-NEW-02 and S4-CART-01 passed again.
+
+- S4-FX-07: the snapshot at the failing check shows the applied preview (layers 2) with Undo enabled and Redo disabled, so Undo was never pressed, although the agent reported pressing it. Every Undo and Redo click in the plans now carries the wording that made S4-NEW-02 pass (38 plans, wording only).
+- S4-DRAW-04: the agent again read "Layers in this frame" as blank while the page held `1`; the count is read from the Layers heading.
+- "Erase part of a drawing": the agent's E press did not select the Eraser (erase, Undo and Redo then matched); the Eraser is now clicked, since S4-VIEW-03 covers the keymap.
+- S4-NEW-21: the Lab switches are visually hidden checkboxes; the agent managed one of five. Each Lab is now toggled by its visible name.
+- S4-LEARN-06: my error, a heading pattern rendered literally as "Let.s make"; now the lesson-heading form S4-LEARN-01 uses.
+
+All five pass in the emulator against the `587da149` preview. 38 plans were republished (no credits used) and read back exactly; the two replay scripts were re-stored afterwards. 125.7 credits remain.

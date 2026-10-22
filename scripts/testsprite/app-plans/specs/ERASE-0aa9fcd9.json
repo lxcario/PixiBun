@@ -3,20 +3,67 @@
   "key": "ERASE-UNDO",
   "title": "Erase part of a drawing and undo the erase",
   "goal": "On a known 4×4 blue square in a transparent 16×16 drawing, one Eraser click removes exactly one pixel; Undo restores the exact square and Redo removes exactly that pixel again.",
-  "cliOnly": ["a dragged four-pixel stroke and native RGBA of the neighbouring cells"],
+  "cliOnly": [
+    "a dragged four-pixel stroke and native RGBA of the neighbouring cells"
+  ],
   "steps": [
-    {"open": "/studio?replay=1_16x16_1d4ed8_R0.6.6.9.9"},
-    {"skip": true},
-    {"readout": {"size": "16×16", "pixels": "16", "colors": "1", "top": "#1d4ed8 16"}, "why": "The replay draws a 4×4 blue square around the centre."},
-    {"record": "S"},
-    {"key": "e"},
-    {"pressed": "Eraser"},
-    {"click": "1px brush preset"},
-    {"canvas": "click"},
-    {"readout": {"pixels": "15", "top": "#1d4ed8 15", "digest": "b855c807"}, "why": "Exactly the centre pixel (8,8) is erased; the other fifteen stay blue."},
-    {"click": "Undo last action"},
-    {"readout": {"pixels": "16", "digest": "=S"}, "why": "Undo restores the square exactly."},
-    {"click": "Redo last action"},
-    {"readout": {"pixels": "15", "digest": "b855c807"}, "why": "Redo erases exactly the same pixel again."}
+    {
+      "open": "/studio?replay=1_16x16_1d4ed8_R0.6.6.9.9"
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "pixels": "16",
+        "colors": "1",
+        "top": "#1d4ed8 16"
+      },
+      "why": "The replay draws a 4×4 blue square around the centre."
+    },
+    {
+      "record": "S"
+    },
+    {
+      "click": "Eraser"
+    },
+    {
+      "pressed": "Eraser"
+    },
+    {
+      "click": "1px brush preset"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "pixels": "15",
+        "top": "#1d4ed8 15",
+        "digest": "b855c807"
+      },
+      "why": "Exactly the centre pixel (8,8) is erased; the other fifteen stay blue."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "pixels": "16",
+        "digest": "=S"
+      },
+      "why": "Undo restores the square exactly."
+    },
+    {
+      "click": "Redo last action"
+    },
+    {
+      "readout": {
+        "pixels": "15",
+        "digest": "b855c807"
+      },
+      "why": "Redo erases exactly the same pixel again."
+    }
   ]
 }

@@ -58,6 +58,8 @@ function render(step, spec) {
     return [{ type: 'action', description: `Navigate directly to ${step.open} on the environment under test (the origin plus this path). This test needs no file: the page itself draws the fixture.${guard}` }];
   }
   if (step.skip) return [{ type: 'action', description: `If a welcome dialog appears, click ${q('Skip setup')}; otherwise continue.` }];
+  // The agent has repeatedly reported an Undo it never performed (Redo stayed disabled), so say it plainly.
+  if ((step.click === 'Undo last action' || step.click === 'Redo last action') && !step.say) return [{ type: 'action', description: `Click the ${q(step.click)} button once now, with the mouse. This click is required: the checks that follow are about what ${step.click.startsWith('Undo') ? 'Undo' : 'Redo'} restores, so do not assert them without clicking it.` }];
   if (step.click && step.optional) return [{ type: 'action', description: `If a ${nameOf(step.click, step.shown)} ${roleWord(step)} appears${where(step)}, click it; otherwise continue.` }];
   // A click that starts a browser download: the agent's tools wait on downloads and time out,
   // and nothing in these plans depends on the file, so say plainly not to wait for it.

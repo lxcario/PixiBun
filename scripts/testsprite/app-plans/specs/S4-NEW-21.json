@@ -18,40 +18,40 @@
       "nth": 0
     },
     {
-      "click": "Lab: Dynamic island",
-      "role": "checkbox"
+      "clickText": "Dynamic island",
+      "why": "Click the name of the Dynamic island Lab; its row toggles the switch."
     },
     {
       "checked": "Lab: Dynamic island",
       "role": "checkbox"
     },
     {
-      "click": "Lab: Liquid tabs",
-      "role": "checkbox"
+      "clickText": "Liquid tabs",
+      "why": "Click the name of the Liquid tabs Lab; its row toggles the switch."
     },
     {
       "checked": "Lab: Liquid tabs",
       "role": "checkbox"
     },
     {
-      "click": "Lab: Liquid controls",
-      "role": "checkbox"
+      "clickText": "Liquid controls",
+      "why": "Click the name of the Liquid controls Lab; its row toggles the switch."
     },
     {
       "checked": "Lab: Liquid controls",
       "role": "checkbox"
     },
     {
-      "click": "Lab: Paint pot palette",
-      "role": "checkbox"
+      "clickText": "Paint pot palette",
+      "why": "Click the name of the Paint pot palette Lab; its row toggles the switch."
     },
     {
       "checked": "Lab: Paint pot palette",
       "role": "checkbox"
     },
     {
-      "click": "Lab: Quick magic",
-      "role": "checkbox"
+      "clickText": "Quick magic",
+      "why": "Click the name of the Quick magic Lab; its row toggles the switch."
     },
     {
       "checked": "Lab: Quick magic",

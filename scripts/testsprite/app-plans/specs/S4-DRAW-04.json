@@ -54,10 +54,18 @@
     },
     {
       "readout": {
-        "digest": "=A",
-        "layers": "1"
+        "digest": "=A"
       },
       "why": "A click is not a gradient: nothing is painted and no layer is added."
+    },
+    {
+      "click": "Layers",
+      "nth": 0
+    },
+    {
+      "visible": "/^Layers \\(1\\)/",
+      "role": "heading",
+      "why": "Still one layer: the click added no gradient layer."
     },
     {
       "disabled": "Undo last action"
