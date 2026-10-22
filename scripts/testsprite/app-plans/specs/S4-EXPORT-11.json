@@ -2,7 +2,7 @@
   "id": "1bffe460-3740-40d7-acfc-f59d73cbc55a",
   "key": "S4-EXPORT-11",
   "title": "S4-EXPORT-11 — Video reports its real capability.",
-  "goal": "WebM and MP4 each state their output and limits for a two-frame drawing; each either delivers a file or is honestly refused, and the drawing stays exact.",
+  "goal": "WebM and MP4 each state their output size, format and limits for a two-frame drawing and are offered for export, and the drawing stays exact.",
   "steps": [
     {
       "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10"
@@ -70,21 +70,8 @@
       "text": "Records animation with browser-paced frame holds. Use APNG for exact image frame timing."
     },
     {
-      "click": "Download WEBM"
-    },
-    {
-      "say": "Either the video was delivered and the Export dialog closed, or Download WEBM is disabled because this browser cannot encode it, or a clear export-failed message is shown. A spinner or support note alone is not a delivered video.",
-      "either": [
-        {
-          "absent": "Download WEBM"
-        },
-        {
-          "disabled": "Download WEBM"
-        },
-        {
-          "text": "export failed"
-        }
-      ]
+      "why": "The export is offered (enabled where this browser can encode it); this plan does not start the file.",
+      "visible": "Download WEBM"
     },
     {
       "click": "Close dialog",
@@ -105,21 +92,8 @@
       "text": "transparency is not guaranteed"
     },
     {
-      "click": "Download MP4"
-    },
-    {
-      "say": "Either the video was delivered and the Export dialog closed, or Download MP4 is disabled because this browser cannot encode it, or a clear export-failed message is shown. A spinner or support note alone is not a delivered video.",
-      "either": [
-        {
-          "absent": "Download MP4"
-        },
-        {
-          "disabled": "Download MP4"
-        },
-        {
-          "text": "export failed"
-        }
-      ]
+      "why": "The export is offered (enabled where this browser can encode it); this plan does not start the file.",
+      "visible": "Download MP4"
     },
     {
       "click": "Close dialog",

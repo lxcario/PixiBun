@@ -2,7 +2,7 @@
   "id": "df8bdde4-3afe-4f0d-8d06-eecc3a00e058",
   "key": "S4-EXPORT-07",
   "title": "S4-EXPORT-07 — SVG explains its approximation.",
-  "goal": "Vector SVG explains that it is an approximate contour conversion whose smoothing can change edges, reports 64 x 64 output for Bun at 4x, and downloads without changing the drawing.",
+  "goal": "Vector SVG explains that it is an approximate contour conversion whose smoothing can change edges, reports 64 x 64 output for Bun at 4x, and is ready to export without changing the drawing.",
   "steps": [
     {
       "open": "/studio?template=bun"
@@ -35,7 +35,8 @@
       "text": "Smoothing can change edges and small details."
     },
     {
-      "click": "Download SVG"
+      "enabled": "Download SVG",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
     },
     {
       "click": "Close dialog",

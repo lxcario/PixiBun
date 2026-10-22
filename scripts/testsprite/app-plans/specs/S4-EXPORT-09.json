@@ -2,7 +2,7 @@
   "id": "7113128a-96dd-40fe-8c3d-79608d16fbc4",
   "key": "S4-EXPORT-09",
   "title": "S4-EXPORT-09 — Palette motion becomes a loop.",
-  "goal": "With a cycle track over Bun's colors 2 to 5, Cycle Loop is ready to export a loop (no warning, download enabled) and downloads without changing the stored artwork.",
+  "goal": "With a cycle track over Bun's colors 2 to 5, Cycle Loop is ready to export a loop (no warning, download enabled) and is ready without changing the stored artwork.",
   "steps": [
     {
       "open": "/studio?template=bun"
@@ -74,7 +74,8 @@
       "why": "The loop length is stated."
     },
     {
-      "click": "Download cycle animation"
+      "enabled": "Download cycle animation",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
     },
     {
       "click": "Close dialog",

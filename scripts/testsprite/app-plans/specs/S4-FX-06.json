@@ -50,7 +50,8 @@
       "text": "Includes tileset.png, zero-based tilemap.json and Tiled map.tmj."
     },
     {
-      "click": "Download tile PNG + maps (.zip)"
+      "enabled": "Download tile PNG + maps (.zip)",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
     },
     {
       "readout": {

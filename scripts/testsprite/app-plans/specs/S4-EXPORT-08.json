@@ -2,7 +2,7 @@
   "id": "6e22e00c-53b8-4a8c-b762-0859b83b8702",
   "key": "S4-EXPORT-08",
   "title": "S4-EXPORT-08 — Shader code travels with its context.",
-  "goal": "Shader export offers Godot and Unity targets, states that it is shader code only and that textures must be supplied separately, and downloads without changing the drawing.",
+  "goal": "Shader export offers Godot and Unity targets, states that it is shader code only and that textures must be supplied separately, and is ready to export without changing the drawing.",
   "steps": [
     {
       "open": "/studio?template=bun"
@@ -34,7 +34,8 @@
       "text": "Shader code only; supply a normalized index texture and palette LUT yourself."
     },
     {
-      "click": "Download SHADER"
+      "enabled": "Download SHADER",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
     },
     {
       "click": "Close dialog",

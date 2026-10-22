@@ -106,7 +106,9 @@
     {
       "selected": "Color palette preset",
       "option": "S4 Lantern (2)",
-      "why": "Exactly one committed two-color palette is selected."
+      "why": "Exactly one committed two-color palette is selected.",
+      "say": "In the 'Color palette preset' dropdown, the selected palette is S4 Lantern; its option label adds its colour count, 'S4 Lantern (2)'. Exactly one committed two-color palette is selected.",
+      "assert": true
     },
     {
       "visible": "/^Select color #ffaa00/i"
@@ -139,7 +141,9 @@
     {
       "selected": "Color palette preset",
       "option": "S4 Lantern (2)",
-      "why": "Cancelling the draft keeps S4 Lantern selected."
+      "why": "Cancelling the draft keeps S4 Lantern selected.",
+      "say": "In the 'Color palette preset' dropdown, the selected palette is S4 Lantern; its option label adds its colour count, 'S4 Lantern (2)'. Cancelling the draft keeps S4 Lantern selected.",
+      "assert": true
     },
     {
       "absent": "/^S4 Uncommitted/",

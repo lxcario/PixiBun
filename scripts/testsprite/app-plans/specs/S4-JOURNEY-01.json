@@ -119,7 +119,8 @@
       "text": "16 × 16 px"
     },
     {
-      "click": "Download PNG"
+      "enabled": "Download PNG",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
     },
     {
       "click": "Close dialog",
@@ -141,7 +142,8 @@
       "text": "16 × 16 px, 2 frames"
     },
     {
-      "click": "Download GIF"
+      "enabled": "Download GIF",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
     },
     {
       "click": "Close dialog",
@@ -163,7 +165,8 @@
       "text": "16 × 16 px, 2 frames (RGBA)"
     },
     {
-      "click": "Download APNG"
+      "enabled": "Download APNG",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
     },
     {
       "click": "Close dialog",

@@ -1,0 +1,55 @@
+{
+  "id": "161d6301-2b6b-4c53-aa18-b396f848bd60",
+  "key": "S4-LEARN-06",
+  "title": "S4-LEARN-06 — Pocket has a desk of its own.",
+  "goal": "At a desktop width the Playground offers the full practice workspace (lesson, Pen, Fill, Eraser, swatches, frames) rather than the narrow-screen Pocket pad; drawing in it and clearing the frame work. Pocket itself appears only below 1024 px.",
+  "steps": [
+    {
+      "open": "/playground"
+    },
+    {
+      "skip": true
+    },
+    {
+      "visible": "/^Let.s make /",
+      "role": "heading",
+      "why": "The desktop practice workspace is shown."
+    },
+    {
+      "absent": "Pocket Doodle Pad",
+      "role": "heading",
+      "why": "Pocket is the narrow-screen pad, not shown at desktop width."
+    },
+    {
+      "visible": "Pen (B)"
+    },
+    {
+      "visible": "Eraser (E)"
+    },
+    {
+      "visible": "/^Use color /"
+    },
+    {
+      "click": "Let's start"
+    },
+    {
+      "text": "Your tracing"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "enabled": "Undo",
+      "why": "Drawing in practice is an undoable edit."
+    },
+    {
+      "click": "Undo"
+    },
+    {
+      "disabled": "Undo"
+    }
+  ],
+  "cliOnly": [
+    "the Pocket Doodle Pad at 390 x 844: lesson and free doodle, swatches, eraser, frames and the PNG strip (scripts/testsprite/pixibun-pocket-integrity.py)"
+  ]
+}

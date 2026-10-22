@@ -31,7 +31,8 @@
       "click": "/^Select frame 1. /"
     },
     {
-      "click": "Play"
+      "click": "Play",
+      "say": "Click the timeline's 'Play' button (the ▶ Play button at the bottom left of the Studio) with the mouse. Do not use the Space key: with a frame card focused, Space only selects that card."
     },
     {
       "visible": "Pause",
@@ -76,7 +77,8 @@
       "click": "/^Select frame 1. /"
     },
     {
-      "click": "Play"
+      "click": "Play",
+      "say": "Click the timeline's 'Play' button (the ▶ Play button at the bottom left of the Studio) with the mouse. Do not use the Space key: with a frame card focused, Space only selects that card."
     },
     {
       "readout": {

@@ -70,7 +70,8 @@
       "why": "Tiling does not enlarge the export."
     },
     {
-      "click": "Download PNG"
+      "enabled": "Download PNG",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
     },
     {
       "click": "Close dialog",

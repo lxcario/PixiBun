@@ -3,41 +3,147 @@
   "key": "S4-DRAW-03",
   "title": "S4-DRAW-03 — A bucket respects its boundary.",
   "goal": "Flood Fill stays inside a closed border, leaves an enclosed gray speck alone at tolerance 0, takes the speck when tolerance allows, fills every exact match when Connected pixels only is off, and a locked layer refuses the fill. The fixture is a replay: a white 16×16 field, a dark square outline from (4,4) to (12,12) and a light gray #d8d8d8 speck at (10,10), about 67.5 from white in RGBA distance; the canvas centre (8,8) is inside the border.",
-  "cliOnly": ["coordinate fill at (4,4) on the imported Ink-layer fixture and native RGBA"],
+  "cliOnly": [
+    "coordinate fill at (4,4) on the imported Ink-layer fixture and native RGBA"
+  ],
   "steps": [
-    {"open": "/studio?replay=1_16x16_ffffff.3a2e4c.d8d8d8_R0.0.0.15.15~r1.4.4.12.12~p2.10.10"},
-    {"skip": true},
-    {"readout": {"pixels": "256", "top": "#ffffff 223, #3a2e4c 32, #d8d8d8 1"}, "why": "175 white cells outside, 48 inside, a 32-cell border and one speck."},
-    {"record": "F"},
-    {"color": "#1D4ED8"},
-    {"key": "g"},
-    {"pressed": "Flood Fill"},
-    {"click": "Tools", "nth": 0},
-    {"checked": "/^Connected pixels only/", "role": "checkbox", "why": "Connected fill is the default."},
-    {"unchecked": "/^Fill enclosed specks/", "role": "checkbox"},
-    {"fill": "Tool panel fill tolerance", "value": "0"},
-    {"canvas": "click"},
-    {"readout": {"top": "#ffffff 175, #1d4ed8 48, #3a2e4c 32, #d8d8d8 1"}, "why": "Exactly the 48 white cells inside the border turn blue; the speck, border and outside stay."},
-    {"click": "Undo last action"},
-    {"readout": {"digest": "=F"}, "why": "Undo restores the exact fixture."},
-    {"fill": "Tool panel fill tolerance", "value": "70"},
-    {"canvas": "click"},
-    {"readout": {"top": "#ffffff 175, #1d4ed8 49, #3a2e4c 32"}, "why": "At tolerance 70 the light gray speck (distance about 67.5) fills too; the border and outside are untouched."},
-    {"click": "Undo last action"},
-    {"readout": {"digest": "=F"}},
-    {"fill": "Tool panel fill tolerance", "value": "0"},
-    {"click": "/^Connected pixels only/", "role": "checkbox"},
-    {"unchecked": "/^Connected pixels only/", "role": "checkbox"},
-    {"canvas": "click"},
-    {"readout": {"top": "#1d4ed8 223, #3a2e4c 32, #d8d8d8 1"}, "why": "A global fill takes every exact white match, inside and outside, but not the speck or border."},
-    {"click": "Undo last action"},
-    {"readout": {"digest": "=F"}},
-    {"click": "Layers", "nth": 0},
-    {"click": "Lock layer Base Layer"},
-    {"canvas": "click"},
-    {"readout": {"digest": "=F"}, "why": "The locked layer refuses the fill."},
-    {"click": "Undo last action"},
-    {"visible": "Lock layer Base Layer", "why": "The refused fill added no Undo step: one Undo reverses the lock."},
-    {"readout": {"digest": "=F"}}
+    {
+      "open": "/studio?replay=1_16x16_ffffff.3a2e4c.d8d8d8_R0.0.0.15.15~r1.4.4.12.12~p2.10.10"
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "pixels": "256",
+        "top": "#ffffff 223, #3a2e4c 32, #d8d8d8 1"
+      },
+      "why": "175 white cells outside, 48 inside, a 32-cell border and one speck."
+    },
+    {
+      "record": "F"
+    },
+    {
+      "color": "#1D4ED8"
+    },
+    {
+      "key": "g"
+    },
+    {
+      "pressed": "Flood Fill"
+    },
+    {
+      "click": "Tools",
+      "nth": 0
+    },
+    {
+      "checked": "/^Connected pixels only/",
+      "role": "checkbox",
+      "why": "Connected fill is the default."
+    },
+    {
+      "unchecked": "/^Fill enclosed specks/",
+      "role": "checkbox"
+    },
+    {
+      "fill": "Tool panel fill tolerance",
+      "value": "0"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "top": "#ffffff 175, #1d4ed8 48, #3a2e4c 32, #d8d8d8 1"
+      },
+      "why": "Exactly the 48 white cells inside the border turn blue; the speck, border and outside stay."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=F"
+      },
+      "why": "Undo restores the exact fixture."
+    },
+    {
+      "fill": "Tool panel fill tolerance",
+      "value": "70"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "top": "#ffffff 175, #1d4ed8 49, #3a2e4c 32"
+      },
+      "why": "At tolerance 70 the light gray speck (distance about 67.5) fills too; the border and outside are untouched."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=F"
+      }
+    },
+    {
+      "fill": "Tool panel fill tolerance",
+      "value": "0"
+    },
+    {
+      "clickText": "Connected pixels only",
+      "why": "Click the words of the Connected pixels only setting in the Tools panel; the row toggles the switch."
+    },
+    {
+      "unchecked": "/^Connected pixels only/",
+      "role": "checkbox"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "top": "#1d4ed8 223, #3a2e4c 32, #d8d8d8 1"
+      },
+      "why": "A global fill takes every exact white match, inside and outside, but not the speck or border."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=F"
+      }
+    },
+    {
+      "click": "Layers",
+      "nth": 0
+    },
+    {
+      "click": "Lock layer Base Layer"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "=F"
+      },
+      "why": "The locked layer refuses the fill."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "visible": "Lock layer Base Layer",
+      "why": "The refused fill added no Undo step: one Undo reverses the lock."
+    },
+    {
+      "readout": {
+        "digest": "=F"
+      }
+    }
   ]
 }

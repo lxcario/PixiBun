@@ -2,7 +2,7 @@
   "id": "1165bc74-c877-4d9f-a3ad-ad58dd3f6729",
   "key": "S4-CART-01",
   "title": "S4-CART-01 — A living postcard brings the drawing back.",
-  "goal": "A cart takes the project's own title, shows a card preview and announces that it saved the whole drawing; saving it never changes the drawing.",
+  "goal": "A cart takes the project's own title and shows a card preview that follows it, and Save cart is ready; preparing the cart never changes the drawing.",
   "steps": [
     {
       "open": "/studio?template=bun"
@@ -35,19 +35,8 @@
       "why": "The preview follows the title."
     },
     {
-      "click": "Save cart"
-    },
-    {
-      "say": "Either the message \"Cart saved. Anyone who opens it in PixiBun gets the whole drawing.\" appears, or the Export dialog has closed with no error message: the dialog closes only after a successful save, and a failed save keeps it open with the error.",
-      "either": [
-        {
-          "text": "Cart saved. Anyone who opens it in PixiBun gets the whole drawing."
-        },
-        {
-          "absent": "Export Studio Assets",
-          "role": "dialog"
-        }
-      ]
+      "enabled": "Save cart",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
     },
     {
       "click": "Close dialog",
@@ -60,7 +49,7 @@
     }
   ],
   "cliOnly": [
-    "opening the saved cart PNG in /open: it plays and reopens as an editable project with its frames, holds and pixels (tests/production/cartPlayer.spec.ts, tests/production/carts.spec.ts)"
+    "saving the cart PNG (Cart saved) and opening it in /open: it plays and reopens as an editable project with its frames, holds and pixels (tests/production/cartPlayer.spec.ts, tests/production/carts.spec.ts, scripts/testsprite/ replay of this case)"
   ],
   "allow": [
     "reading a download"

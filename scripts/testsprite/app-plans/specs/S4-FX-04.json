@@ -124,7 +124,8 @@
     },
     {
       "alert": "Normal export needs exactly one full-opacity Normal Facets or Normal Map layer",
-      "why": "The download is refused with the reason; no kit is written."
+      "why": "The download is refused with the reason; no kit is written.",
+      "say": "Immediately after clicking Download Godot kit, while the Export dialog is still open, read its alert: it says that normal export needs exactly one full-opacity Normal Facets or Normal Map layer. No kit is written."
     },
     {
       "click": "Close dialog"

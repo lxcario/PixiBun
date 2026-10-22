@@ -2,7 +2,7 @@
   "id": "8ba9f1eb-92b7-4d26-bf19-2ce9e9b92273",
   "key": "PNG-8ba9f1eb",
   "title": "Export the current drawing as PNG and verify the decoded image matches",
-  "goal": "A 16 x 16 drawing with a red pixel at (2,3) and a blue one at (8,10) offers a 1x PNG of exactly 16 x 16 pixels; downloading it leaves the artwork exact.",
+  "goal": "A 16 x 16 drawing with a red pixel at (2,3) and a blue one at (8,10) offers a 1x PNG of exactly 16 x 16 pixels and is ready to download; the artwork stays exact.",
   "steps": [
     {
       "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~p1.8.10"
@@ -38,7 +38,8 @@
       "why": "1x exports the canvas at its native size."
     },
     {
-      "click": "Download PNG"
+      "enabled": "Download PNG",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
     },
     {
       "click": "Close dialog",

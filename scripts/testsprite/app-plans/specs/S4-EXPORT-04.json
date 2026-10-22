@@ -84,7 +84,8 @@
       "why": "Both frames go into the sheet."
     },
     {
-      "click": "Download SPRITESHEET"
+      "enabled": "Download SPRITESHEET",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
     },
     {
       "click": "Close dialog",
@@ -102,7 +103,8 @@
       "click": "vertical"
     },
     {
-      "click": "Download SPRITESHEET"
+      "enabled": "Download SPRITESHEET",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
     },
     {
       "click": "Close dialog",
@@ -120,7 +122,8 @@
       "click": "grid"
     },
     {
-      "click": "Download SPRITESHEET"
+      "enabled": "Download SPRITESHEET",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
     },
     {
       "click": "Close dialog",

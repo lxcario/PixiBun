@@ -1,0 +1,52 @@
+{
+  "id": "270fa57f-a5d9-4b0e-aa99-c4158133a420",
+  "key": "S4-IMPORT-02",
+  "title": "S4-IMPORT-02 — A sheet becomes the right poses.",
+  "goal": "Importing is an explicit choice: the File menu offers Import... next to Projects, New drawing and Canvas size, and opening and closing the menu changes nothing. The import itself needs a test file, which this run does not supply.",
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^File/",
+      "nth": 0
+    },
+    {
+      "visible": "/^Import/",
+      "role": "menuitem",
+      "why": "Import is offered as its own explicit action."
+    },
+    {
+      "visible": "Projects",
+      "role": "menuitem"
+    },
+    {
+      "visible": "New drawing",
+      "role": "menuitem"
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "absent": "/^Import/",
+      "role": "menuitem"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      }
+    },
+    {
+      "disabled": "Undo last action"
+    }
+  ],
+  "cliOnly": [
+    "slicing a known 32 x 16 sprite sheet into two ordered 16 x 16 frames with holds, and Cancel (needs uploaded test files; tests/production/imageImportSafety.spec.ts, tests/production/remainingAuditSafety.spec.ts)"
+  ]
+}
