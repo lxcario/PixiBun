@@ -53,11 +53,11 @@
       "color": "#1D4ED8"
     },
     {
-      "key": "u"
+      "command": "Rectangle"
     },
     {
       "pressed": "Rectangle",
-      "why": "U selects Rectangle."
+      "why": "The command palette selected Rectangle."
     },
     {
       "canvas": "click"
@@ -76,7 +76,7 @@
       "color": "#E83A5C"
     },
     {
-      "key": "o"
+      "command": "Ellipse"
     },
     {
       "pressed": "Ellipse",

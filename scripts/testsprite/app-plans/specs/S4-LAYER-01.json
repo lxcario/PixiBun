@@ -39,7 +39,9 @@
       "value": "S4 Upper"
     },
     {
-      "key": "Enter"
+      "key": "Enter",
+      "inField": "Layer name",
+      "why": "Enter in the name field commits the rename; do not click another layer to commit it."
     },
     {
       "readout": {

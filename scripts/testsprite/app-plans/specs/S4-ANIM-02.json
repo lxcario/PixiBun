@@ -32,7 +32,7 @@
     },
     {
       "click": "Play",
-      "say": "Click the timeline's 'Play' button (the ▶ Play button at the bottom left of the Studio) with the mouse. Do not use the Space key: with a frame card focused, Space only selects that card."
+      "say": "Click the timeline's Play button with the mouse: the button at the bottom left showing a ▶ triangle and the word 'Play' (its tooltip reads 'Play / Pause Animation (Enter)'). Do not use the Space key."
     },
     {
       "visible": "Pause",
@@ -78,7 +78,7 @@
     },
     {
       "click": "Play",
-      "say": "Click the timeline's 'Play' button (the ▶ Play button at the bottom left of the Studio) with the mouse. Do not use the Space key: with a frame card focused, Space only selects that card."
+      "say": "Click the timeline's Play button with the mouse: the button at the bottom left showing a ▶ triangle and the word 'Play' (its tooltip reads 'Play / Pause Animation (Enter)'). Do not use the Space key."
     },
     {
       "readout": {

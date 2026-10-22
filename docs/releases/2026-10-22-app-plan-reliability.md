@@ -273,3 +273,16 @@ Fixes: download clicks are removed from App plans, which now check that each exp
 - S4-LEARN-06: my error, a heading pattern rendered literally as "Let.s make"; now the lesson-heading form S4-LEARN-01 uses.
 
 All five pass in the emulator against the `587da149` preview. 38 plans were republished (no credits used) and read back exactly; the two replay scripts were re-stored afterwards. 125.7 credits remain.
+
+## The App run on `2f33975e`: 115 / 4 / 2
+
+App execution counts (per case, source `github_action`); the Replay check's CLI replays passed again. Raw results under `artifacts/testsprite-app-run-2026-10-22-2f33975e/`.
+
+- **S4-NEW-06:** the URL the agent opened ended in an invisible zero-width non-joiner, so the Studio refused the replay link and opened a blank 32×32 canvas. The plan text carried no such character. Links copied from chats and documents pick these up, so replay links now ignore invisible formatting characters and surrounding spaces (`04acc9bb`, with a test that fails on the old parser).
+- **S4-PAL-03:** the agent pressed "+ Add 4 to palette" under *Shades of the main color*, a different four-shade tool, instead of *Shade ramp*; the step now names the right control and rules out the other.
+- **S4-DRAW-11:** its U and O presses did not select Rectangle and Ellipse (grouped tools with no rail button of their own); the tools are now chosen from the command palette.
+- **S4-LAYER-01:** it committed the rename by clicking Base Layer, which also changed the active layer; Enter is now pressed in the name field.
+- **S4-ANIM-02:** a third run without the Play click. The button's name is its text, "Play", but its tooltip reads "Play / Pause Animation (Enter)"; the step now cites both.
+- **S4-LEARN-06:** it checked for "Your tracing" before starting the lesson; that check is dropped.
+
+Separately, **Apply Cleanup** and **Live preview** now have accessible names that contain their visible labels (`1c494612`, WCAG 2.5.3); the e2e and production specs, the shared helper and three App plans moved to the new names (21 e2e tests and the three plans pass on the renamed build). All changed plans pass the emulator and were republished.
