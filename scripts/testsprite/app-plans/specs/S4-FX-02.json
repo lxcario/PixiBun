@@ -1,0 +1,29 @@
+{
+  "id": "76bbe317-2ce3-4643-b8a9-6649e732c91f",
+  "key": "S4-FX-02",
+  "title": "S4-FX-02 — Cancel leaves the lamp unlit.",
+  "goal": "After a real Pen stroke, a lighting preview with strong settings is cancelled: the artwork, layers and frames equal the stroked drawing exactly and no history is added, so one Undo removes the stroke and one Redo restores it.",
+  "steps": [
+    {"open": "/studio?template=bun"},
+    {"skip": true},
+    {"record": "A"},
+    {"color": "#4FA58A"},
+    {"key": "b"},
+    {"click": "1px brush preset"},
+    {"canvas": "click"},
+    {"readout": {"digest": "!=A", "pixels": "192", "colors": "7"}, "why": "The green pixel replaces Bun's centre pixel."},
+    {"record": "P"},
+    {"click": "/^Effects/", "nth": 0},
+    {"click": "Got it", "optional": true},
+    {"click": "/^Add light and depth/"},
+    {"click": "Preview lighting"},
+    {"click": "Light from top left"},
+    {"fill": "Light Strength Slider", "value": "2.5"},
+    {"click": "Cancel", "nth": 0},
+    {"readout": {"digest": "=P", "layers": "1", "frames": "1"}, "why": "Cancel leaves the stroked drawing, its layer and frame exactly as they were."},
+    {"click": "Undo last action"},
+    {"readout": {"digest": "=A"}, "why": "The preview added no history: one Undo removes the stroke."},
+    {"click": "Redo last action"},
+    {"readout": {"digest": "=P", "layers": "1"}, "why": "Redo restores the exact stroke."}
+  ]
+}

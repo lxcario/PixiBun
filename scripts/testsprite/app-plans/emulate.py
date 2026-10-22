@@ -77,7 +77,13 @@ def run_step(page, step, memory):
             except Exception:
                 pass
             return
-        named(page, step, "click").click(timeout=10000)
+        target = named(page, step, "click")
+        if step.get("role") in ("checkbox", "radio", "switch"):
+            # Visually hidden inputs inside their labels: the agent activates the
+            # element itself rather than the point under the cursor.
+            target.evaluate("element => element.click()")
+        else:
+            target.click(timeout=10000)
     elif "rightClick" in step:
         named(page, step, "rightClick").click(button="right", timeout=10000)
     elif "canvas" in step:

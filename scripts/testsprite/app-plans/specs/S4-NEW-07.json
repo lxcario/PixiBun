@@ -1,0 +1,88 @@
+{
+  "id": "f10cb6c5-a9fa-4223-b3b8-45eb48d6481e",
+  "key": "S4-NEW-07",
+  "title": "S4-NEW-07 — Animate means add a blank frame.",
+  "goal": "The reel-end action adds a new empty frame at the end, not a copy; the original frame's artwork and hold stay exact; Undo returns to the single original frame and Redo restores the blank second frame.",
+  "cliOnly": [
+    "keyboard activation (focus + Enter) of the reel-end action"
+  ],
+  "steps": [
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "frame": "1 of 1",
+        "pixels": "192"
+      }
+    },
+    {
+      "record": "A"
+    },
+    {
+      "visible": "/^Select frame 1. #1 125ms/",
+      "why": "The original hold is 125 ms."
+    },
+    {
+      "click": "/add a blank frame at the end/"
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "readout": {
+        "frame": "2 of 2",
+        "frames": "2",
+        "pixels": "0",
+        "layers": "=A"
+      },
+      "why": "The new last frame is selected and completely empty."
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "digest": "=A"
+      },
+      "why": "The original frame is untouched."
+    },
+    {
+      "visible": "/^Select frame 1. #1 125ms/"
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "frames": "1",
+        "digest": "=A"
+      },
+      "why": "Undo returns to the one original frame."
+    },
+    {
+      "click": "Redo last action"
+    },
+    {
+      "readout": {
+        "frames": "2"
+      },
+      "why": "Redo restores the second frame."
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "readout": {
+        "frame": "2 of 2",
+        "pixels": "0"
+      },
+      "why": "The restored last frame is still completely empty."
+    }
+  ]
+}
