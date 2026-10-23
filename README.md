@@ -90,7 +90,7 @@ Every theme has a **Night** and a **Day**. Ten of the twelve float the desk over
 
 ## Tested on every pull request
 
-*🧾 Little promises, kept on every push.* A lock should keep its promise. Undo should bring a pose back. A downloaded file should hold the pixels you drew. We wrote **121 TestSprite test cases** to follow those promises, and the **TestSprite GitHub App runs all of them by itself** on every push to [PR #6](https://github.com/lxcario/PixiBun/pull/6). Our latest run: **116 passed, 3 failed, 2 blocked**, up from 33 passed when we started.
+*🧾 Little promises, kept on every push.* A lock should keep its promise. Undo should bring a pose back. A downloaded file should hold the pixels you drew. We wrote **121 TestSprite test cases** to follow those promises, and the **TestSprite GitHub App runs all of them by itself** on every push to [PR #6](https://github.com/lxcario/PixiBun/pull/6). Our latest run: **118 passed, 2 failed, 1 blocked**, up from 33 passed when we started.
 
 TestSprite didn't just count checkmarks for us. It found bugs we didn't know we had, several of them inside tests that were looking for something else:
 

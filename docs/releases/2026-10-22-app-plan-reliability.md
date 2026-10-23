@@ -298,3 +298,13 @@ App execution counts per case (source `github_action`), in [app-run-2026-10-22-5
 - **S4-LEARN-06 (blocked):** the window was below 1024 px, so `/playground` showed the Pocket Doodle Pad. The plan accepts whichever Playground the width gives and checks its Pen, Fill, Eraser, swatches and frames.
 
 **Labs and the classic desk.** The step snapshots showed something the plans had never accounted for: the agent's browser starts with Studio Labs on, as people do, while our Playwright emulator (and every automated browser) starts on the classic desk. 101 plans now begin with a classic-desk step (Studio options → *Classic studio* when it is offered, which turns every Lab off; nothing when it reads *Turn all on*). The three Labs plans keep their own setup. The emulator runs every plan twice, with Labs seeded on and off, so both starting points are covered before anything is published.
+
+## The App run on `efed6fae`: 118 / 2 / 1 — 23 October, 07:51–08:34 UTC
+
+The first run with every spec plan starting on the classic desk and the five plans simplified after `53ac2afe`; all five passed. Per-case results in [app-run-2026-10-23-efed6fae.json](../testsprite/app-run-2026-10-23-efed6fae.json); the Stored Python Replay check passed on the same push (both scripts had been re-stored byte-identical after the plans were published). No product defect; the three non-passes were plan issues:
+
+- **S4-EXPORT-05 (failed):** the preflight flagged the missing normal source exactly as planned ("Needs attention (1)", "Missing or invalid on frame(s): 1"), and the drawing stayed exact, but the agent could not pin down the inline refusal's exact text after clicking Download. The plan now stops at the preflight, which already names the problem.
+- **S4-NEW-03 (failed):** Delete was disabled on the only frame, the duplicate was deleted and one frame remained with the original digest; the agent failed itself because the older plan's description still told it to use "actual artwork/file oracles". It is now a spec like the others, with readout checks and a clean description.
+- **S4-VIEW-02 (blocked):** saving, restoring and reopening the layout all passed; the agent skipped the workspace-preset steps and then failed to find Download PNG in Export. The plan now checks what its title promises: the saved layout returns after changes and after reopening, and the drawing is untouched.
+
+All three pass the emulator with Studio Labs on and off and were published (read back exactly).

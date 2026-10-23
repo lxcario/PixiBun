@@ -9,7 +9,7 @@ PixiBun is a cozy pixel-art studio. Our [121 TestSprite test cases](https://www.
 | | |
 | --- | --- |
 | Test cases | 121, run by the TestSprite GitHub App on every push to [PR #6](https://github.com/lxcario/PixiBun/pull/6) |
-| Latest automatic App run | **116 passed · 3 failed · 2 blocked** on `53ac2afe` ([per-case results](app-run-2026-10-22-53ac2afe.json)) |
+| Latest automatic App run | **118 passed · 2 failed · 1 blocked** on `efed6fae` ([per-case results](app-run-2026-10-23-efed6fae.json)) |
 | Where we started | 33 passed · 7 failed · 81 blocked on `b78fffb1`, 21 October |
 | Product bugs TestSprite led us to | **12**, each fixed with a regression test ([table below](#bugs-testsprite-led-us-to)) |
 | Stored Python replays | Run by our own GitHub workflow on every push; passing |
@@ -43,7 +43,7 @@ Alongside it, our [Stored Python Replay workflow](../../.github/workflows/testsp
 
 Smaller accessibility fixes came from the same runs: the Apply Cleanup and Live preview names now contain their visible labels (WCAG 2.5.3, [`1c494612`](https://github.com/lxcario/PixiBun/commit/1c494612)), and the canvas readout's summary names its layer count ([`1071bcb6`](https://github.com/lxcario/PixiBun/commit/1071bcb6)). The full PR ledger, with each first failure and fixing commit, is in [loop-ledger.md](loop-ledger.md).
 
-## From 33 to 116 passing
+## From 33 to 118 passing
 
 Automatic App runs on PR #6. Counts are each run's own per-case verdicts (`test result --history`, source `github_action`).
 
@@ -60,9 +60,10 @@ Automatic App runs on PR #6. Counts are each run's own per-case verdicts (`test 
 | `cc64dfd5` | 106 | 7 | 8 | |
 | `587da149` | 116 | 3 | 2 | Plans that needed a drag, upload, phone or offline rewritten to what the agent can see |
 | `2f33975e` | 115 | 4 | 2 | S4-NEW-06 finds the invisible-character link bug |
-| [`53ac2afe`](app-run-2026-10-22-53ac2afe.json) | **116** | **3** | **2** | Latest; the link fix passes |
+| [`53ac2afe`](app-run-2026-10-22-53ac2afe.json) | 116 | 3 | 2 | The link fix passes |
+| [`efed6fae`](app-run-2026-10-23-efed6fae.json) | **118** | **2** | **1** | Latest: every plan starts on the classic desk |
 
-Every non-pass in every run was traced from the run's step snapshots and video, and sorted into three honest piles: a PixiBun bug, a mistake in our plan, or a limit of the cloud runner. The [22 October record](../releases/2026-10-22-app-plan-reliability.md) has the per-run detail. The last five non-passes were plan and runner issues; their plans are simplified and pass our local emulator both with Studio Labs on and off.
+Every non-pass in every run was traced from the run's step snapshots and video, and sorted into three honest piles: a PixiBun bug, a mistake in our plan, or a limit of the cloud runner. The [22 October record](../releases/2026-10-22-app-plan-reliability.md) has the per-run detail. The three non-passes in the latest run were plan issues; their plans are simplified and pass our local emulator both with Studio Labs on and off.
 
 ## What the cloud agent can't do, and how we cover it
 

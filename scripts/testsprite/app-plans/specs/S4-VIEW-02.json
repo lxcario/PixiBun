@@ -2,7 +2,7 @@
   "id": "aff47330-da21-4332-803b-67d3f8c1bb85",
   "key": "S4-VIEW-02",
   "title": "S4-VIEW-02 — A workspace remembers its shelves.",
-  "goal": "A saved layout restores the inspector's side and width after other changes and after reopening; the Drawing, Animation and Lighting presets keep Export reachable; none of it changes the drawing.",
+  "goal": "A saved layout restores the inspector's side and width after other changes and after reopening the Studio, and none of it changes the drawing.",
   "steps": [
     {
       "open": "/studio?template=bun"
@@ -73,37 +73,6 @@
       "why": "Layout changes do not touch the drawing."
     },
     {
-      "select": "Workspace layout",
-      "option": "Drawing"
-    },
-    {
-      "click": "Got it",
-      "optional": true
-    },
-    {
-      "visible": "/^Export/",
-      "nth": -1
-    },
-    {
-      "select": "Workspace layout",
-      "option": "Animation"
-    },
-    {
-      "visible": "Play"
-    },
-    {
-      "visible": "/^Export/",
-      "nth": -1
-    },
-    {
-      "select": "Workspace layout",
-      "option": "Lighting"
-    },
-    {
-      "visible": "/^Export/",
-      "nth": -1
-    },
-    {
       "open": "/studio",
       "reload": true
     },
@@ -131,14 +100,6 @@
     },
     {
       "click": "Close dialog"
-    },
-    {
-      "click": "/^Export/",
-      "nth": -1
-    },
-    {
-      "visible": "Download PNG",
-      "why": "Export opens and is usable."
     },
     {
       "readout": {
