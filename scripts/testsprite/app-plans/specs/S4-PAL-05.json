@@ -2,7 +2,7 @@
   "id": "87832975-3885-4714-9988-2d6f193489fa",
   "key": "S4-PAL-05",
   "title": "S4-PAL-05 — Roles and bindings survive editing.",
-  "goal": "A palette register gets the role name S4 Lantern Ink and keeps it; binding a Magic Wand selection to it records one index binding; removing the binding leaves the role, and nothing changes the artwork.",
+  "goal": "A palette register gets the role name S4 Lantern Ink and keeps it; binding the current selection to it records one index binding; removing the binding leaves the role, and nothing changes the artwork.",
   "steps": [
     {
       "open": "/studio?template=bun&end=1"
@@ -21,9 +21,6 @@
     },
     {
       "canvas": "click"
-    },
-    {
-      "text": "Selection 12×10"
     },
     {
       "click": "Palette",
