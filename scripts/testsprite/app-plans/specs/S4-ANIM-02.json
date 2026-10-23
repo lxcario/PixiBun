@@ -2,7 +2,7 @@
   "id": "ac3e0785-bcf6-445d-a2a9-8ccef1464bec",
   "key": "S4-ANIM-02",
   "title": "S4-ANIM-02 — Holds and playback remain editable.",
-  "goal": "A two-frame animation held 100 and 200 ms can be stepped frame by frame (Next wraps from the last frame to the first), switches its loop mode from Repeat to Ping-Pong, and takes a 2x preview speed, while its stored holds and artwork stay exact.",
+  "goal": "A two-frame animation held 100 and 200 ms can be stepped frame by frame (Next wraps from the last frame to the first), cycles its loop mode through Repeat, Ping-Pong and Once, and takes a 2x preview speed, while its stored holds and artwork stay exact.",
   "steps": [
     {
       "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10&end=1"
@@ -70,8 +70,22 @@
       "click": "Loop mode: Repeat"
     },
     {
-      "visible": "Loop mode: Ping-Pong",
-      "why": "The loop mode changes."
+      "visible": "Loop mode: Ping-Pong"
+    },
+    {
+      "click": "Loop mode: Ping-Pong",
+      "say": "Click the 'Loop mode: Ping-Pong' button once now. This second loop-mode click is required; do not skip straight to changing preview speed."
+    },
+    {
+      "visible": "Loop mode: Once"
+    },
+    {
+      "click": "Loop mode: Once",
+      "say": "Click the 'Loop mode: Once' button once now. This third loop-mode click is required before checking that Repeat is back."
+    },
+    {
+      "visible": "Loop mode: Repeat",
+      "why": "The loop mode cycles back to Repeat."
     },
     {
       "click": "Preview 1× speed"
