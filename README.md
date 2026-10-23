@@ -13,7 +13,7 @@
   <a href="docs/testsprite/README.md">See how we test it</a>
 </p>
 
-<p align="center"><sub>No account. Works offline. Saves to your device. Every tool is algorithms and math: the app runs no AI model and never trains on your art (<a href="src/app/pledge/page.tsx">our pledge</a>).</sub></p>
+<p align="center"><sub>No account. Works offline. Saves to your device. Every tool is graphics algorithms and math, and nothing ever trains on your art (<a href="src/app/pledge/page.tsx">our pledge</a>). Made with love.</sub></p>
 
 ---
 
@@ -36,7 +36,7 @@ PixiBun is a desk for exactly that. It has a pixel pen and a timeline, a little 
 | 🤝 **Draw together** | Co-Draw connects two browsers directly so a friend can draw on your canvas with you. |
 | 🎮 **Straight into your game** | Sprite sheets, GIF and APNG, and a Godot kit with its frames and clips ready to drop into a project. |
 | 🌗 **A desk with a sky** | Twelve themes, each with a Night and a Day. Switch on the homepage and the moon sets behind the hills while the sun rises. |
-| 🤍 **Your art, on your terms** | No account, no tracking, works offline and saves to your device. The Lamp, cleanup, rotation and dithering are graphics algorithms and math you can tune: no AI model runs in the app, and nothing trains on your drawings. |
+| 🤍 **Your art, on your terms** | No account, no tracking, works offline and saves to your device. The Lamp, cleanup, rotation and dithering are graphics algorithms and math you can tune, and nothing trains on your drawings. |
 
 ## 🕯️ 7 pm · Light the lamp
 
@@ -158,8 +158,6 @@ For agent developers, **Nibbli** is a repository companion that drives the real 
 | See what's been checked, and when | [Current status](docs/current-status.md) · [TestSprite evidence](docs/testsprite/README.md) |
 | Understand the engine | [Architecture](ARCHITECTURE.md) · [rendering](docs/contracts/rendering.md) |
 | Dream a little | [v2 vision](V2_VISION.md) |
-
-<sub>How it was made: PixiBun was built with a lot of help from AI coding assistants. The app itself runs no AI: its engines are graphics algorithms and math.</sub>
 
 <sub>Screenshots and GIFs: Sakura theme by Day at 1920 × 1080, captured 22–23 October 2026 ([capture notes](docs/assets/screenshots/2026-10-23-sakura-day/run.json)). Thank you to Holly and the TestSprite team for patient answers through Season 4.</sub>
 

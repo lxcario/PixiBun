@@ -406,7 +406,7 @@ export const NightHero: React.FC = () => {
               className="inline-flex items-center gap-2 font-mono text-xs tracking-[0.2em] uppercase text-[var(--accent-gold)]"
             >
               <span aria-hidden="true" className="inline-block w-2 h-2 bg-[var(--accent-gold)] animate-pulse" />
-              hand-made, never generated
+              made with love
             </motion.p>
 
             <h1
@@ -439,7 +439,7 @@ export const NightHero: React.FC = () => {
               className="mt-6 max-w-md text-base sm:text-lg leading-relaxed text-[var(--text-body)] [text-shadow:0_1px_0_var(--desk-bg)] select-text"
             >
               A cozy pixel studio in your browser. Draw a little sprite, move the Lamp to light it, and loop a few
-              frames into something alive. Hand-made, never generated. No account.
+              frames into something alive. Made with love. No account.
             </motion.p>
 
             <motion.div {...reveal(2.35, skip)} className="mt-8 flex flex-wrap items-center gap-4">

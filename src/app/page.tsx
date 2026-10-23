@@ -16,7 +16,7 @@ import { SmoothScroll } from '@/components/landing/SmoothScroll';
 export const metadata: Metadata = {
   title: 'PixiBun — Pixels with a pulse',
   description:
-    'A cozy pixel art studio in your browser. Draw a sprite, light it with the Lamp and loop it into a little animation. Hand-made, never generated. No account.',
+    'A cozy pixel art studio in your browser. Draw a sprite, light it with the Lamp and loop it into a little animation. Made with love. No account.',
 };
 
 export default function Home() {

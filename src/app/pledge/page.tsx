@@ -4,7 +4,7 @@ import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
 
 export const metadata: Metadata = {
   title: 'Our pledge — PixiBun',
-  description: 'Every pixel placed by a person. PixiBun contains no generative AI model and never trains on anyone’s art.',
+  description: 'Made with love. PixiBun contains no generative AI model and never trains on anyone’s art.',
 };
 
 const PLEDGE_DATE = '2026-10-14';
@@ -25,7 +25,7 @@ export default function PledgePage() {
         </Link>
 
         <header className="flex flex-col gap-3">
-          <h1 className="font-display text-3xl sm:text-4xl leading-tight">Every pixel placed by a person.</h1>
+          <h1 className="font-display text-3xl sm:text-4xl leading-tight">Made with love.</h1>
           <p className="font-mono text-sm text-[var(--accent-gold)]">
             Our pledge, <time dateTime={PLEDGE_DATE}>14 October 2026</time>
             {' · '}wording clarified <time dateTime="2026-10-15">15 October 2026</time>
