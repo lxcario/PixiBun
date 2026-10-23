@@ -132,7 +132,9 @@ function description(spec) {
   return [
     spec.goal,
     'App plan: every step is a click, fill, select or a named key on a labelled control, and every artwork check reads the Studio\'s Canvas readout (painted pixels, colors with counts, frame digest), which is computed from the actual composite of the active frame.',
-    spec.cliOnly?.length ? `Byte-level checks kept in this test's stored Python replay: ${spec.cliOnly.join('; ')}.` : '',
+    // `cliOnlyOutOfScope`: the App agent failed S4-EXPORT-12 after every step passed because it read the note as a check it still had to make.
+    spec.cliOnly?.length && spec.cliOnlyOutOfScope ? `Not part of this App test: ${spec.cliOnly.join('; ')}. A separate stored Python replay covers that, so do not attempt it, and do not fail or block this test because it is not visible on the page.` : '',
+    spec.cliOnly?.length && !spec.cliOnlyOutOfScope ? `Byte-level checks kept in this test's stored Python replay: ${spec.cliOnly.join('; ')}.` : '',
     spec.uncovered?.length ? `Not covered by any independent script yet: ${spec.uncovered.join('; ')}.` : '',
     'A readout or control that differs from the stated value is a Failed result, not Blocked.',
   ].filter(Boolean).join(' ');

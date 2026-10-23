@@ -40,7 +40,7 @@ The same account generated all 121 cases, installed the GitHub App on `lxcario/P
 | | |
 | --- | --- |
 | TestSprite cases | **121**, every one run on every push |
-| Automatic runs on PR #6 | 16 since 21 October, from **33** passing to **118–119** **[FILL: final run]** |
+| Automatic runs on PR #6 | 17 since 21 October, from **33** passing to **120** (run 17) **[FILL: final run]** |
 | Product bugs TestSprite led us to | **13**, 12 with a regression test |
 | Artwork checks | 103 of 106 plan specs compare the Canvas readout (painted pixels, color counts and a 32-bit digest of the real canvas). Exact pixel and file checks run alongside in stored Python replays and Playwright |
 | Mutation proof | We planted 10 artist-harming bugs. **9** were caught by the same plans TestSprite runs, and the 10th by its regression test. Every catch was confirmed against the clean build |
