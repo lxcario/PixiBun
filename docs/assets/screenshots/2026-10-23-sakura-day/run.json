@@ -1,0 +1,27 @@
+{
+  "scope": "README illustrations only; not a test result or a qualification of any build",
+  "theme": "sakura",
+  "scheme": "light (Day)",
+  "viewport": "1920x1080",
+  "labs": "all on, as visitors get them by default",
+  "captures": [
+    {
+      "files": ["rainy-window.png", "campfire-palette.png", "playground-lesson.png", "tide.png"],
+      "origin": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app (testsprite-s4 preview)",
+      "capturedAt": "2026-10-22T22:55Z",
+      "method": "Playwright screenshots of the running app"
+    },
+    {
+      "files": ["liquid-tool-rail.gif", "liquid-panel.gif", "lamp-gizmo.gif", "rainy-window-cycle.gif"],
+      "origin": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app (testsprite-s4 preview)",
+      "capturedAt": "2026-10-22T22:59Z",
+      "method": "Playwright frame captures of real pointer moves, joined into GIFs with sharp (128 colours)"
+    },
+    {
+      "files": ["home-day.png"],
+      "origin": "local next dev build of claude/s4-reliability at 61d4abe8 (the Day homepage fix), dev overlay hidden",
+      "capturedAt": "2026-10-23T02:42+03:00",
+      "method": "Playwright screenshot after the hero intro settled"
+    }
+  ]
+}

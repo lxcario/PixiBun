@@ -27,7 +27,7 @@ Record: [Studio follow-up](docs/releases/2026-10-16-studio-follow-up.md).
 - [x] Apply each step as its own Undo step through the shared history edit (pixels) and the store's add-layer/add-frame actions; remove the parameter once opened.
 - [x] Five golden replays with exact readout values before and after one Undo ([replays.md](docs/testsprite/replays.md)), added to the [TestSprite PRD](docs/testsprite/PRD.md#13-replay-a-known-drawing-and-check-its-exact-pixels) as journeys.
 - [x] Vitest: format round-trip, validation table, fuzzing, step geometry, applier, goldens against an independent model and document parity. Playwright: one case per golden plus a broken link.
-- [ ] Run the PRD journeys in TestSprite against a deployment that includes replay links and record the result.
+- [x] Run the PRD journeys in TestSprite against a deployment that includes replay links and record the result: the App plans on PR #6 open replay links for their fixtures ([22 October record](docs/releases/2026-10-22-app-plan-reliability.md)).
 
 Record: [current status](docs/current-status.md#replay-links--16-october-2026), [testing guide](docs/guides/testing.md#replay-links).
 
@@ -37,7 +37,7 @@ Record: [current status](docs/current-status.md#replay-links--16-october-2026), 
 - [x] Re-read only after a commit settles, Undo or Redo; never during a held pointer or playback; keep it outside the Focus-mode hidden slot.
 - [x] Unit coverage for counts, ranking and an independent digest reference; browser cases for stroke, mid-drag, Undo/Redo, erase, hidden and locked layers, layer/frame changes and a starter template.
 - [x] Tell TestSprite to assert drawing outcomes through the readout ([PRD](docs/testsprite/PRD.md#canvas-readout-assert-what-was-drawn)).
-- [ ] Open as a TestSprite Season 4 loop PR inside the build window and record its check result.
+- [x] Open as a TestSprite Season 4 loop PR inside the build window and record its check result: [PR #6](https://github.com/lxcario/PixiBun/pull/6), every App run recorded in the [22 October record](docs/releases/2026-10-22-app-plan-reliability.md) (latest 116/3/2).
 - [ ] Day-theme and Graphite/Plum Night axe contrast findings in `themeAccessibility.spec.ts` predate this change (also failing without the readout mounted); fix separately.
 
 Record: [current status](docs/current-status.md#canvas-readout--16-october-2026), [hooks](docs/guides/testing.md#canvas-readout).
@@ -46,8 +46,8 @@ Record: [current status](docs/current-status.md#canvas-readout--16-october-2026)
 
 - [x] `/verified` route: the TestSprite loop, counts and the loop ledger, linked from the footer and pledge page.
 - [x] Committed, schema-validated [loop ledger](docs/testsprite/loop-ledger.json) with a generated [Markdown twin](docs/testsprite/loop-ledger.md); `npm run verify:docs` rejects an invalid or stale ledger.
-- [ ] Add the first real loop PR once TestSprite checks a pull request; fill `suiteCases` and the project link from the portal.
-- [ ] Add the README "Tested on every pull request" section the page links to (planned with the loop wiring PR).
+- [x] Add the first real loop PR once TestSprite checks a pull request; fill `suiteCases` and the project link from the portal (PR #6, 121 cases).
+- [x] Add the README "Tested on every pull request" section the page links to.
 
 ## Studio Labs motion integration — 15 October 2026
 

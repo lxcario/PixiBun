@@ -286,3 +286,15 @@ App execution counts (per case, source `github_action`); the Replay check's CLI 
 - **S4-LEARN-06:** it checked for "Your tracing" before starting the lesson; that check is dropped.
 
 Separately, **Apply Cleanup** and **Live preview** now have accessible names that contain their visible labels (`1c494612`, WCAG 2.5.3); the e2e and production specs, the shared helper and three App plans moved to the new names (21 e2e tests and the three plans pass on the renamed build). All changed plans pass the emulator and were republished.
+
+## The App run on `53ac2afe`: 116 / 3 / 2 — 22 October, 22:05–22:42 UTC
+
+App execution counts per case (source `github_action`), in [app-run-2026-10-22-53ac2afe.json](../testsprite/app-run-2026-10-22-53ac2afe.json). The Replay check's CLI replays of S4-NEW-02 and S4-CART-01 passed again. The four App cases that caught product bugs on this PR (S4-ANIM-03, S4-PAL-04, S4-RELATION-01, S4-HIST-03) and S4-NEW-06 (the invisible-character link) all passed on their fixed builds. No new product defect; the five non-passes:
+
+- **S4-FX-03 (failed):** Outline and its Undo worked and the artwork came back exactly, but the agent read the readout's "Layers in this frame" as blank (the third time this field fooled it). The plan no longer reads that field; the layer count comes from the Layers heading. Separately, the readout's summary sentence now says "of 1 layer" rather than a bare number (`1071bcb6`).
+- **S4-PAL-01 (failed):** the palette was created, kept exactly its two colours, the cancelled draft left no trace and the drawing never changed. The agent's browser had Studio Labs on, and the Paint Pot palette picker shows the palette's name with its count beside it ("S4 Lantern" and "2"), while the classic picker's option reads "S4 Lantern (2)". The check now accepts the name with or without the count.
+- **S4-HOME-01 (failed):** the agent's click on the homepage bench's art did not register. The plan now checks the bench's own radios (Bun and friends; Draw, Light, Turn and Hop) and that visiting the homepage leaves the saved Studio drawing exact.
+- **S4-ANIM-02 (blocked):** a fourth run in which Play was never pressed. Playback timing stays with the CI browser tests; the plan checks frame stepping (Next wraps to the first frame), the loop-mode cycle, the preview speed and the stored holds.
+- **S4-LEARN-06 (blocked):** the window was below 1024 px, so `/playground` showed the Pocket Doodle Pad. The plan accepts whichever Playground the width gives and checks its Pen, Fill, Eraser, swatches and frames.
+
+**Labs and the classic desk.** The step snapshots showed something the plans had never accounted for: the agent's browser starts with Studio Labs on, as people do, while our Playwright emulator (and every automated browser) starts on the classic desk. 101 plans now begin with a classic-desk step (Studio options → *Classic studio* when it is offered, which turns every Lab off; nothing when it reads *Turn all on*). The three Labs plans keep their own setup. The emulator runs every plan twice, with Labs seeded on and off, so both starting points are covered before anything is published.

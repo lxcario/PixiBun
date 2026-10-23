@@ -1,5 +1,9 @@
 # Current project status
 
+## Season 4 verification — 23 October 2026
+
+The latest automatic TestSprite App run on PR #6 (`53ac2afe`, 22 October 22:05–22:42 UTC) is **116 Passed / 3 Failed / 2 Blocked** of 121 ([per-case results](testsprite/app-run-2026-10-22-53ac2afe.json)); the Stored Python Replay check passed on the same push. Its five non-passes were plan or runner issues and are traced in the [22 October record](releases/2026-10-22-app-plan-reliability.md); their plans are simplified and every rewritten plan passes the emulator with Studio Labs on and off. The [evidence page](testsprite/README.md) lists the twelve product bugs TestSprite led us to, with fixes and regression tests. Since that run: the homepage paints a real daylight scene by Day, Sakura's Day accent is honey instead of royal blue, the canvas readout names its layer count, replay links ignore invisible characters, and export Output Info says "1 frame" ([changelog](../CHANGELOG.md)). The required `TestSprite V3` check stays red until a run passes all 121, and production still serves the older `main` (`92de6c74`).
+
 ## Current PR and portal verification — 21 October 2026
 
 The [22 October App-plan record](releases/2026-10-22-app-plan-reliability.md) supersedes the App counts below: the latest automatic App run on PR #6 (`0259f782`, 22 October) is **58 Passed /8 Failed /55 Blocked** (33/7/81 on `b78fffb1`, 55/7/59 on `48f9b999`). Fixes since: inert error toasts in dialogs, lost pixels after a key-lifted selection, unnamed transform/size/name controls, and practice refusing a just-saved starter.

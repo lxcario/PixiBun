@@ -14,6 +14,8 @@ All twelve Studio themes have a **Night** and a **Day** appearance. Open the **S
 
 Arcade's Night panels are near-black so they no longer read like Sakura's indigo. The Daylight switch changes Day/Night without changing the selected theme.
 
+Since 23 October, Sakura's Day keeps the honey of its Night instead of a royal-blue second accent (`#8a5a0c`, contrast-checked on every panel); the 18 October Day captures below predate that. The homepage paints its own daylight town by Day (a light sky, hazy far hills, cottages under rose roofs, white clouds and a soft sun) in every theme's colors, rather than inverting the night scene.
+
 The ten scene styles also offer [Studio Labs](studio-workspace.md#studio-labs). The Dynamic island, Liquid tabs, Liquid controls, Paint pot palette and Quick magic are separately switchable. Graphite and Plum stay classic. The automated captures below used Labs off; they do not show the latest experimental controls or establish animation smoothness.
 
 All twelve styles, Night and Day, from a local production build on **18 October 2026** at 1280 × 900 and device scale 1, with the Mochi starter open and reduced motion keeping the scenes still ([capture details](../assets/screenshots/2026-10-18-themes/run.json)). They replace the 15 October gallery, which predated Cocoa, Drizzle, Harvest and Harbor and the 16 October Sakura and Moonlit scenes. These illustrate appearance; browser/device qualification and contrast checks have their own scope in [current status](../current-status.md).
