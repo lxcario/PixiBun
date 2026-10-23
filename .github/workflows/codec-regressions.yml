@@ -33,7 +33,10 @@ jobs:
           node-version-file: '.nvmrc'
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Install Playwright browsers
+        # A stalled browser download once held a job until its 35-minute limit (23 October).
+        timeout-minutes: 15
+        run: for attempt in 1 2 3; do timeout 240 npx playwright install --with-deps chromium firefox webkit && exit 0; echo "::warning::Playwright install attempt $attempt stalled or failed; retrying"; done; exit 1
       - name: Build and seal the candidate
         run: |
           npm run build

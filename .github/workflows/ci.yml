@@ -107,7 +107,9 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium firefox webkit
+        # A stalled browser download once held a job until its 35-minute limit (23 October).
+        timeout-minutes: 15
+        run: for attempt in 1 2 3; do timeout 240 npx playwright install --with-deps chromium firefox webkit && exit 0; echo "::warning::Playwright install attempt $attempt stalled or failed; retrying"; done; exit 1
 
       - name: Enable native Linux WebRTC address resolution
         run: |
@@ -194,7 +196,10 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
       - run: npm ci
-      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Install Playwright browsers
+        # A stalled browser download once held a job until its 35-minute limit (23 October).
+        timeout-minutes: 15
+        run: for attempt in 1 2 3; do timeout 240 npx playwright install --with-deps chromium firefox webkit && exit 0; echo "::warning::Playwright install attempt $attempt stalled or failed; retrying"; done; exit 1
       - name: Checkout the pinned compatible application
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -269,7 +274,10 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
       - run: npm ci
-      - run: npx playwright install --with-deps webkit
+      - name: Install Playwright browsers
+        # A stalled browser download once held a job until its 35-minute limit (23 October).
+        timeout-minutes: 15
+        run: for attempt in 1 2 3; do timeout 240 npx playwright install --with-deps webkit && exit 0; echo "::warning::Playwright install attempt $attempt stalled or failed; retrying"; done; exit 1
       - run: npm run build
       - run: node scripts/checkProductionBuild.mjs --seal artifacts/browser-diagnostics/frozen-build.json
       - name: Retain native resolver baseline

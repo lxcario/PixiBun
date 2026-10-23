@@ -19,21 +19,54 @@ async function saved(page: Page) {
   await expect(page.locator('[role=status]').filter({ hasText: /Changes saved/ })).toBeVisible();
   await expect(page.getByTestId('save-button')).toHaveAttribute('title', 'All changes saved (Ctrl+S)');
 }
-async function stored(page: Page) {
-  return page.evaluate(async () => {
-    const opened = indexedDB.open('PixiBunDB');
-    const database = await new Promise<IDBDatabase>((resolve, reject) => { opened.onsuccess = () => resolve(opened.result); opened.onerror = () => reject(opened.error); });
-    const tx = database.transaction(['projects', 'layerBlobs']);
-    const projects = tx.objectStore('projects').getAll(), layers = tx.objectStore('layerBlobs').getAll();
-    const records = await Promise.all([projects, layers].map(request => new Promise<unknown[]>(resolve => { request.onsuccess = () => resolve(request.result); })));
-    database.close();
-    const project = records[0][0] as { id: string; dataJson: string };
-    const document = JSON.parse(project.dataJson) as ProjectFile;
-    return { id: project.id, document, layers: await Promise.all((records[1] as { projectId: string; layerId: string; blob: ArrayBuffer | Blob }[]).map(async layer => ({
-      projectId: layer.projectId, layerId: layer.layerId, representation: layer.blob instanceof Blob ? 'Blob' : 'ArrayBuffer',
-      bytes: Array.from(new Uint8Array(layer.blob instanceof Blob ? await layer.blob.arrayBuffer() : layer.blob)),
-    }))) };
-  });
+type StoredProject = { id: string; document: ProjectFile; layers: { projectId: string; layerId: string; representation: string; bytes: number[] }[] };
+/**
+ * Reads the stored project back. Every IndexedDB failure rejects with the stage it
+ * reached instead of waiting forever. On Linux CI, WebKit once stalled this read right
+ * after refusing the legacy Blob fixture (23 October, run 39927559408), so a stalled
+ * read is retried on a fresh connection. The comparisons made on the result are unchanged.
+ */
+async function stored(page: Page): Promise<StoredProject> {
+  let stalled: unknown;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      return await page.evaluate(async () => {
+        let stage = 'open';
+        const work = (async () => {
+          const opened = indexedDB.open('PixiBunDB');
+          const database = await new Promise<IDBDatabase>((resolve, reject) => {
+            opened.onsuccess = () => resolve(opened.result);
+            opened.onerror = () => reject(opened.error);
+            opened.onblocked = () => reject(new Error('IndexedDB open blocked'));
+          });
+          try {
+            stage = 'read';
+            const tx = database.transaction(['projects', 'layerBlobs']);
+            const done = new Promise<void>((resolve, reject) => { tx.oncomplete = () => resolve(); tx.onerror = tx.onabort = () => reject(tx.error ?? new Error('read transaction aborted')); });
+            done.catch(() => {});
+            const projects = tx.objectStore('projects').getAll(), layers = tx.objectStore('layerBlobs').getAll();
+            const records = await Promise.all([projects, layers].map(request => new Promise<unknown[]>((resolve, reject) => { request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); })));
+            await done;
+            return records;
+          } finally { database.close(); }
+        })();
+        let timer = 0;
+        const records = await Promise.race([work, new Promise<never>((_, reject) => { timer = window.setTimeout(() => reject(new Error(`IndexedDB read-back stalled at ${stage}`)), 15_000); })])
+          .finally(() => clearTimeout(timer));
+        stage = 'decode';
+        const project = records[0][0] as { id: string; dataJson: string };
+        const document = JSON.parse(project.dataJson) as ProjectFile;
+        return { id: project.id, document, layers: await Promise.all((records[1] as { projectId: string; layerId: string; blob: ArrayBuffer | Blob }[]).map(async layer => ({
+          projectId: layer.projectId, layerId: layer.layerId, representation: layer.blob instanceof Blob ? 'Blob' : 'ArrayBuffer',
+          bytes: Array.from(new Uint8Array(layer.blob instanceof Blob ? await layer.blob.arrayBuffer() : layer.blob)),
+        }))) };
+      });
+    } catch (error) {
+      if (!(error instanceof Error) || !/IndexedDB read-back stalled/.test(error.message)) throw error;
+      stalled = error;
+    }
+  }
+  throw stalled;
 }
 
 for (const legacyBlob of [false, true]) test(`two actual compatible builds update and roll back while preserving artwork and optional metadata (legacyBlob=${legacyBlob})`, async ({ context }, info) => {
@@ -117,13 +150,16 @@ for (const legacyBlob of [false, true]) test(`two actual compatible builds updat
           }
         };
       }
-      await new Promise<void>((resolve, reject) => {
-        tx.oncomplete = () => resolve();
-        tx.onerror = tx.onabort = event => {
-          const error = (event.target as IDBRequest).error ?? tx.error;
-          reject(fixtureError ?? new Error(`Fixture transaction ${error?.name}: ${error?.message}`));
-        };
-      }); database.close();
+      // Close the fixture's connection whether or not the engine accepted the write.
+      try {
+        await new Promise<void>((resolve, reject) => {
+          tx.oncomplete = () => resolve();
+          tx.onerror = tx.onabort = event => {
+            const error = (event.target as IDBRequest).error ?? tx.error;
+            reject(fixtureError ?? new Error(`Fixture transaction ${error?.name}: ${error?.message}`));
+          };
+        });
+      } finally { database.close(); }
     }, { legacyBlob, rgba: original }); } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (legacyBlob && info.project.name === 'webkit' &&
