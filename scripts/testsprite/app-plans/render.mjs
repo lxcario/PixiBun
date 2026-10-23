@@ -57,6 +57,7 @@ function render(step, spec) {
     const guard = spec.steps.some((s) => s.canvas) ? '' : ' Do not click the drawing canvas at any point in this test: a click paints a pixel and changes the artwork.';
     return [{ type: 'action', description: `Navigate directly to ${step.open} on the environment under test (the origin plus this path). This test needs no file: the page itself draws the fixture.${guard}` }];
   }
+  if (step.classic) return [{ type: 'action', description: `Start from the classic studio: click the ${q('Studio options')} button; if its Labs section shows a ${q('Classic studio')} button, click it so every Lab is off (if it shows ${q('Turn all on')} instead, leave it alone); then click ${q('Close studio options')}.` }];
   if (step.skip) return [{ type: 'action', description: `If a welcome dialog appears, click ${q('Skip setup')}; otherwise continue.` }];
   // The agent has repeatedly reported an Undo it never performed (Redo stayed disabled), so say it plainly.
   if ((step.click === 'Undo last action' || step.click === 'Redo last action') && !step.say) return [{ type: 'action', description: `Click the ${q(step.click)} button once now, with the mouse. This click is required: the checks that follow are about what ${step.click.startsWith('Undo') ? 'Undo' : 'Redo'} restores, so do not assert them without clicking it.` }];

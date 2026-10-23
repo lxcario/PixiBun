@@ -11,6 +11,9 @@
       "skip": true
     },
     {
+      "classic": true
+    },
+    {
       "readout": {
         "pixels": "1",
         "top": "#e83a5c 1"

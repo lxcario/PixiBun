@@ -73,6 +73,16 @@ def run_step(page, step, memory):
             state = "" if step.get("refused") else "[data-state=applied]"
             page.wait_for_selector(f"[data-testid=replay-status]{state}", state="attached", timeout=30000)
         return
+    if "classic" in step:
+        # The App agent's browser may start with Studio Labs on (as people get them) or off.
+        # "Classic studio" is shown only while some Lab is on; clicking it turns every Lab off.
+        page.get_by_role("button", name="Studio options", exact=True).click(timeout=10000)
+        try:
+            page.get_by_role("button", name="Classic studio", exact=True).click(timeout=2500)
+        except Exception:
+            pass
+        page.get_by_role("button", name="Close studio options").click(timeout=10000)
+        return
     if "skip" in step:
         try:
             page.get_by_role("button", name="Skip setup").click(timeout=8000)
@@ -154,7 +164,8 @@ def run_step(page, step, memory):
         expect(target).to_have_count(0, timeout=10000)
     elif "selected" in step:
         chosen = scope(page, step).get_by_label(step["selected"], exact=True).evaluate("select => select.selectedOptions[0]?.text ?? ''")
-        if chosen.strip() != step["option"]:
+        ok = chosen.strip().startswith(step["option"]) if step.get("startsWith") else chosen.strip() == step["option"]
+        if not ok:
             raise StepFailed(f"{step['selected']}: expected {step['option']!r} selected, got {chosen!r}")
     elif "enabled" in step:
         expect(named(page, step, "enabled")).to_be_enabled(timeout=10000)
@@ -217,12 +228,18 @@ def run_step(page, step, memory):
 def run_spec(browser, path):
     spec = json.loads(Path(path).read_text(encoding="utf-8"))
     context = browser.new_context(viewport={"width": 1920, "height": 1080}, accept_downloads=False)
+    if os.environ.get("LABS") == "1":
+        # The App agent's browser is not flagged as automated, so it gets the Studio Labs that
+        # people get by default; automated browsers get the classic Studio. LABS=1 emulates the agent.
+        # Seed Labs on like a visitor's first load, but only once: a browser remembers Labs the
+        # plan switched off (the classic step), so later reloads must not switch them back on.
+        context.add_init_script("if (localStorage.getItem('pixibun:labs:v1') === null) localStorage.setItem('pixibun:labs:v1', JSON.stringify({island:true,liquidTabs:true,liquidControls:true,paletteStudio:true,quickMagic:true}))")
     page = context.new_page()
     memory = {}
     print(f"\n{spec['key']} — {spec['title']}")
     ok = True
     for index, step in enumerate(spec["steps"], 1):
-        kind = next(k for k in step if k not in ("role", "within", "nth", "value", "option", "equals", "pot", "settle", "say", "why", "optional", "assert", "shown", "allow"))
+        kind = next(k for k in step if k not in ("role", "within", "nth", "value", "option", "startsWith", "equals", "pot", "settle", "say", "why", "optional", "assert", "shown", "allow"))
         try:
             run_step(page, step, memory)
             print(f"  {index:>2} ok   {kind}: {step.get(kind)}")

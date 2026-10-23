@@ -11,6 +11,9 @@
       "skip": true
     },
     {
+      "classic": true
+    },
+    {
       "readout": {
         "pixels": "28",
         "digest": "17d70505"

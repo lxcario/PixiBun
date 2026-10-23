@@ -11,6 +11,9 @@
       "skip": true
     },
     {
+      "classic": true
+    },
+    {
       "readout": {
         "pixels": "256",
         "colors": "1"

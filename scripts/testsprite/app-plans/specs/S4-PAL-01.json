@@ -11,6 +11,9 @@
       "skip": true
     },
     {
+      "classic": true
+    },
+    {
       "record": "A"
     },
     {
@@ -105,9 +108,10 @@
     },
     {
       "selected": "Color palette preset",
-      "option": "S4 Lantern (2)",
-      "why": "Exactly one committed two-color palette is selected.",
-      "say": "In the 'Color palette preset' dropdown, the selected palette is S4 Lantern; its option label adds its colour count, 'S4 Lantern (2)'. Exactly one committed two-color palette is selected.",
+      "option": "S4 Lantern",
+      "startsWith": true,
+      "why": "The new palette is selected.",
+      "say": "In the 'Color palette preset' dropdown, the selected palette's name starts with 'S4 Lantern' (some layouts add a colour count after it, such as ' (2)'; either is correct). The new palette is selected.",
       "assert": true
     },
     {
@@ -140,9 +144,10 @@
     },
     {
       "selected": "Color palette preset",
-      "option": "S4 Lantern (2)",
+      "option": "S4 Lantern",
+      "startsWith": true,
       "why": "Cancelling the draft keeps S4 Lantern selected.",
-      "say": "In the 'Color palette preset' dropdown, the selected palette is S4 Lantern; its option label adds its colour count, 'S4 Lantern (2)'. Cancelling the draft keeps S4 Lantern selected.",
+      "say": "In the 'Color palette preset' dropdown, the selected palette's name still starts with 'S4 Lantern' (a colour count such as ' (2)' may follow it; either is correct). Cancelling the draft keeps S4 Lantern selected.",
       "assert": true
     },
     {

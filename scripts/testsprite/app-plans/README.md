@@ -30,7 +30,10 @@ node scripts/testsprite/app-plans/render.mjs --check
 
 ```bash
 PIXIBUN_URL=http://localhost:3000 python scripts/testsprite/app-plans/emulate.py
+LABS=1 PIXIBUN_URL=http://localhost:3000 python scripts/testsprite/app-plans/emulate.py
 ```
+
+Run both. The App agent's browser is not flagged as automated, so it starts with Studio Labs on, as people do; Playwright starts on the classic desk. `LABS=1` seeds Labs on at the first load only, so a plan that turns them off stays off across reloads, as in a real browser. Pass spec paths to run only those plans.
 
 ```bash
 node scripts/testsprite/app-plans/apply.mjs
@@ -40,6 +43,6 @@ node scripts/testsprite/app-plans/apply.mjs
 
 ## Step vocabulary
 
-`open`, `skip`, `click` (`role`, `within`, `nth`, `optional`, `shown` for the visible label when it differs from the accessible name), `canvas`, `fill`, `select`, `key`, `color`, `record`, and assertions `readout` (exact, `=REF`, `!=REF`, or `top~` for ±1 per color component), `visible`, `absent`, `enabled`, `disabled`, `pressed`, `checked`, `unchecked`, `field`, `text`, `alert`. A name written `/…/` is a pattern; `/…/i` ignores case.
+`open`, `skip`, `classic` (Studio options → *Classic studio* when it is offered, so every plan starts on the same desk whether Labs were on or off), `click` (`role`, `within`, `nth`, `optional`, `shown` for the visible label when it differs from the accessible name), `canvas`, `fill`, `select`, `key`, `color`, `record`, and assertions `readout` (exact, `=REF`, `!=REF`, or `top~` for ±1 per color component), `selected` (with `option`; `startsWith` accepts a label that adds to it), `visible`, `absent`, `enabled`, `disabled`, `pressed`, `checked`, `unchecked`, `field`, `text`, `alert`. A name written `/…/` is a pattern; `/…/i` ignores case.
 
 `alert` also fails when the message sits outside an open modal dialog: Chrome removes that inert content from the accessibility tree the agent reads.

@@ -11,6 +11,9 @@
       "skip": true
     },
     {
+      "classic": true
+    },
+    {
       "readout": {
         "size": "32×20",
         "pixels": "336",

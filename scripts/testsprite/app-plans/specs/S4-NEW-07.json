@@ -14,6 +14,9 @@
       "skip": true
     },
     {
+      "classic": true
+    },
+    {
       "readout": {
         "frame": "1 of 1",
         "pixels": "192"

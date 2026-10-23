@@ -3,35 +3,126 @@
   "key": "S4-VIEW-03",
   "title": "S4-VIEW-03 — Quick tools follow the keymap.",
   "goal": "The Canvas tools quick menu opens from the focused canvas with Shift+F10, lists labelled tools and Swap colors, switches tool or swaps colors without touching artwork, closes with Escape, and never adds an artwork Undo step. The canvas is focused with the Eyedropper, which samples without editing. (With the Standard keymap a right-click on the artwork paints with the secondary color by design; only the space around the artwork opens the menu by mouse.)",
-  "cliOnly": ["right-click outside the artwork and the Classic keymap's right-click menu, by coordinates"],
+  "cliOnly": [
+    "right-click outside the artwork and the Classic keymap's right-click menu, by coordinates"
+  ],
   "steps": [
-    {"open": "/studio?template=bun"},
-    {"skip": true},
-    {"readout": {"size": "16×16", "pixels": "192", "colors": "6"}},
-    {"record": "A"},
-    {"key": "i"},
-    {"pressed": "Eyedropper", "why": "I selects the Eyedropper, which never edits pixels."},
-    {"canvas": "click"},
-    {"readout": {"digest": "=A"}, "why": "Sampling changed no artwork."},
-    {"visible": "/^Primary color #f2ecf7/", "why": "The Eyedropper sampled Bun's centre pixel."},
-    {"disabled": "Undo last action", "why": "Sampling adds no Undo step."},
-    {"key": "Shift+F10"},
-    {"visible": "Pen", "within": "Canvas tools", "why": "Shift+F10 on the focused canvas opens the Canvas tools menu."},
-    {"visible": "Eraser", "within": "Canvas tools"},
-    {"visible": "Flood Fill", "within": "Canvas tools"},
-    {"visible": "Swap primary and secondary colors", "within": "Canvas tools"},
-    {"click": "Eraser", "within": "Canvas tools"},
-    {"absent": "Swap primary and secondary colors", "why": "Choosing a tool closes the menu."},
-    {"pressed": "Eraser", "why": "The chosen tool is active."},
-    {"readout": {"digest": "=A"}, "why": "Choosing a tool changed no artwork."},
-    {"key": "Shift+F10"},
-    {"click": "Swap primary and secondary colors", "within": "Canvas tools"},
-    {"visible": "/^Secondary color #f2ecf7/", "why": "Swap moves the sampled color to the secondary well."},
-    {"key": "Shift+F10"},
-    {"visible": "Pen", "within": "Canvas tools"},
-    {"key": "Escape"},
-    {"absent": "Swap primary and secondary colors", "why": "Escape closes the menu."},
-    {"readout": {"digest": "=A", "pixels": "192"}, "why": "Opening, using and closing the menu changed no artwork."},
-    {"disabled": "Undo last action", "why": "No artwork history was added."}
+    {
+      "open": "/studio?template=bun"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "pixels": "192",
+        "colors": "6"
+      }
+    },
+    {
+      "record": "A"
+    },
+    {
+      "key": "i"
+    },
+    {
+      "pressed": "Eyedropper",
+      "why": "I selects the Eyedropper, which never edits pixels."
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Sampling changed no artwork."
+    },
+    {
+      "visible": "/^Primary color #f2ecf7/",
+      "why": "The Eyedropper sampled Bun's centre pixel."
+    },
+    {
+      "disabled": "Undo last action",
+      "why": "Sampling adds no Undo step."
+    },
+    {
+      "key": "Shift+F10"
+    },
+    {
+      "visible": "Pen",
+      "within": "Canvas tools",
+      "why": "Shift+F10 on the focused canvas opens the Canvas tools menu."
+    },
+    {
+      "visible": "Eraser",
+      "within": "Canvas tools"
+    },
+    {
+      "visible": "Flood Fill",
+      "within": "Canvas tools"
+    },
+    {
+      "visible": "Swap primary and secondary colors",
+      "within": "Canvas tools"
+    },
+    {
+      "click": "Eraser",
+      "within": "Canvas tools"
+    },
+    {
+      "absent": "Swap primary and secondary colors",
+      "why": "Choosing a tool closes the menu."
+    },
+    {
+      "pressed": "Eraser",
+      "why": "The chosen tool is active."
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Choosing a tool changed no artwork."
+    },
+    {
+      "key": "Shift+F10"
+    },
+    {
+      "click": "Swap primary and secondary colors",
+      "within": "Canvas tools"
+    },
+    {
+      "visible": "/^Secondary color #f2ecf7/",
+      "why": "Swap moves the sampled color to the secondary well."
+    },
+    {
+      "key": "Shift+F10"
+    },
+    {
+      "visible": "Pen",
+      "within": "Canvas tools"
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "absent": "Swap primary and secondary colors",
+      "why": "Escape closes the menu."
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      },
+      "why": "Opening, using and closing the menu changed no artwork."
+    },
+    {
+      "disabled": "Undo last action",
+      "why": "No artwork history was added."
+    }
   ]
 }
