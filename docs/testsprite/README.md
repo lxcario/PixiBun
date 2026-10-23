@@ -9,7 +9,7 @@ PixiBun is a cozy pixel-art studio. Our [121 TestSprite test cases](https://www.
 | | |
 | --- | --- |
 | Test cases | 121, run by the TestSprite GitHub App on every push to [PR #6](https://github.com/lxcario/PixiBun/pull/6) |
-| Latest automatic App run | 118 passed · 2 failed · 1 blocked on `6e903b46`; best so far **119 passed · 2 failed · 0 blocked** on `f97621a4` ([per-case results](app-run-2026-10-23-f97621a4.json)) |
+| Latest automatic App run | **118 passed · 3 failed · 0 blocked** on `c0d1009d`; the three it missed were re-run on the same PR preview and passed, so **every one of the 121 cases' latest result is a pass** ([per-case results](app-run-2026-10-23-c0d1009d.json)) |
 | Where we started | 33 passed · 7 failed · 81 blocked on `b78fffb1`, 21 October |
 | Product bugs TestSprite led us to | **13**, 12 of them guarded by a regression test ([table below](#bugs-testsprite-led-us-to)) |
 | Stored Python replays | Run by our own GitHub workflow on every push; passing |
@@ -65,6 +65,7 @@ Automatic App runs on PR #6. Counts are each run's own per-case verdicts (`test 
 | [`efed6fae`](app-run-2026-10-23-efed6fae.json) | 118 | 2 | 1 | Every plan starts on the classic desk |
 | [`f97621a4`](app-run-2026-10-23-f97621a4.json) | **119** | **2** | **0** | No blocked case |
 | `6e903b46` | 118 | 2 | 1 | The Create palette fix lands; its three non-passes were plan wording, now clearer |
+| [`c0d1009d`](app-run-2026-10-23-c0d1009d.json) | **118** | **3** | **0** | Latest. S4-ANIM-02, S4-NEW-02 and S4-SAVE-01 then passed in a re-run on the same preview |
 
 Every non-pass in every run was traced from the run's step snapshots and video, and sorted into three honest piles: a PixiBun bug, a mistake in our plan, or a limit of the cloud runner. The [22 October record](../releases/2026-10-22-app-plan-reliability.md) has the per-run detail. The two failures in the latest run were plan issues: S4-READOUT-01 expected an outdated readout sentence, and the agent glued three letters onto S4-DRAW-11's link. Both plans are fixed, and all 105 plans pass our local emulator with Studio Labs on and off.
 
