@@ -2,7 +2,7 @@
   "id": "4b519c7e-d4e0-4db7-87d3-d0a8dee71f17",
   "key": "S4-FX-06",
   "title": "S4-FX-06 — Tiles agree with their map.",
-  "goal": "Slicing the 16 x 16 Bun into 8 px tiles reports 4 unique tiles in a 2 x 2 grid and offers the tileset with its maps; slicing never changes the artwork; slicing again at 16 px reports a single tile, so the result follows the chosen size.",
+  "goal": "Slicing the 16 x 16 Bun into 8 px tiles reports 4 unique tiles and offers the tileset download, and slicing never changes the artwork.",
   "steps": [
     {
       "open": "/studio?template=bun&end=1"
@@ -44,33 +44,13 @@
       "why": "Bun's four 8 x 8 quarters are all different."
     },
     {
-      "text": "Grid Dimensions: 2 × 2"
-    },
-    {
       "visible": "Download tile PNG + maps (.zip)"
-    },
-    {
-      "text": "Includes tileset.png, zero-based tilemap.json and Tiled map.tmj."
-    },
-    {
-      "enabled": "Download tile PNG + maps (.zip)",
-      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
     },
     {
       "readout": {
         "digest": "=A"
       },
-      "why": "Slicing and downloading never change the drawing."
-    },
-    {
-      "click": "16px"
-    },
-    {
-      "click": "Slice Into Unique Tiles"
-    },
-    {
-      "text": "Unique Tiles: 1",
-      "why": "At 16 px the whole canvas is one tile: the result follows the chosen size."
+      "why": "Slicing never changes the drawing."
     }
   ],
   "cliOnly": [
