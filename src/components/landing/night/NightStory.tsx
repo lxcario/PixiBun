@@ -461,9 +461,8 @@ const StoryLine: React.FC<{ index: number; resting: MotionValue<number>; slot: M
   const y = useTransform([distance, slot], ([d, s]: number[]) => d * s);
   const scale = useTransform(away, (a) => 1 - a * 0.06);
   const opacity = useTransform(away, (a) => 1 - a * 0.88);
-  const filter = useTransform(away, (a) => `blur(${a * 3}px)`);
   return (
-    <motion.div className="absolute inset-x-0 top-1/2 -translate-y-1/2 origin-left will-change-transform" style={{ y, scale, opacity, filter }}>
+    <motion.div className="absolute inset-x-0 top-1/2 -translate-y-1/2 origin-left will-change-transform" style={{ y, scale, opacity }}>
       {children}
     </motion.div>
   );

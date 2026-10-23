@@ -3,6 +3,12 @@
 All notable changes and architectural enhancements to the PixiBun codebase are documented below.
 ## Unreleased
 
+- Homepage: sunrise, speed and a Mona Bunny (23 October).
+  - **Day/Night is a sunrise or a sunset.** Instead of a circle widening out of the switch, the hero's own moon sinks behind the hills as the sun rises from behind them (or the reverse), and the painting, the hero's text, buttons and vignettes blend to the new colors together on one smoothstep curve while the rest of the page crossfades. Nothing is laid over the page (`src/lib/theme/themeTransition.ts`, `src/app/theme-transition.css`, `MoonlitScene` `timeChange`).
+  - **Smoother scrolling.** The homepage no longer replaces wheel scrolling with a main-thread glide (`scrollTo` every frame), which stuttered whenever a scene painted; scrolling is native again and in-page links still glide (`SmoothScroll.tsx`).
+  - **Lighter frames.** The hero paints straight in the theme's colors (`sceneColor`) instead of reading back and recoloring every frame, its sky is a stamped canvas, and its sun and moon are cached sprites. The time change went from 60–80 ms of script per frame to about 3 ms in a development build, and the pause before a switch fell from about 130–180 ms to 60–90 ms there. The other landing scenes' per-frame recolor reads packed pixels and reuses the last color. The tour's text lines no longer blur with scroll.
+  - **The sun is golden** with pixel rays, and Bun's easel holds the Mona Lisa with Bun's face, in colors every theme leaves as painted.
+
 - Homepage by Day, and Sakura's colors (23 October). The hero used to make Day by inverting its night painting, which washed out the town and Bun and left a muddy band behind the hills. It now paints its own daylight landscape (lightest at the horizon, hazy far hills, light cottages under rose roofs, white clouds and a soft sun; no stars or fireflies) and the theme recolor keeps those values (`src/components/landing/night/moonlitScene.ts`, `src/lib/theme/sceneRecolor.ts`). Sakura's Day second accent is honey `#8a5a0c` instead of royal blue, matching its Night. Accent colors used as text are deepened by Day where they are fills (Sakura's button pink), and the tour stage's colored glow stays faint in daylight.
 
 - Fixes found through TestSprite's App runs on PR #6, 22–23 October ([evidence page](docs/testsprite/README.md), [record](docs/releases/2026-10-22-app-plan-reliability.md)):

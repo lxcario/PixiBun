@@ -7,7 +7,8 @@ import { BUN_ACTIONS, INTRO_MS, MoonlitScene, type BunAction, type Constellation
 import { useLiveThemeChoice } from '@/stores/themeStore';
 import { isSceneTheme } from '@/lib/theme/registry';
 import { buildScene, paintSceneParticles, type BuiltScene } from '@/lib/theme/scenes';
-import { recolorCanvas, sceneRecolor } from '@/lib/theme/sceneRecolor';
+import { sceneColor } from '@/lib/theme/sceneRecolor';
+import { CROSSFADE_MS, TIME_CHANGE_MS } from '@/lib/theme/themeTransition';
 import { nextConstellationName, placeConstellationLabels } from './constellationLabels';
 import { ambientTicker, tickWhileVisible, type AmbientTicker } from '../ambientClock';
 
@@ -109,10 +110,9 @@ export const NightHero: React.FC = () => {
   const [labels, setLabels] = useState<Label[]>([]);
   const [announce, setAnnounce] = useState('');
   const labelId = useRef(0);
-  // The painted night follows the studio theme: recolored into its palette, by day or night,
-  // with the theme's own drifting particles (petals, bubbles, sparks...) on top.
-  // The scene keeps its built world across Day/Night: only the recolor and the theme's
-  // particle layer change, so switching never rebuilds the town.
+  // The painted night follows the studio theme: painted in its palette, by day or night,
+  // with the theme's own drifting particles (petals, bubbles, sparks...) on top. The scene
+  // paints its colors directly (sceneColor), so no frame is read back and recolored.
   const { studioTheme, colorScheme } = useLiveThemeChoice();
   const day = colorScheme === 'light';
   const themeRef = useRef({ studioTheme, day });
@@ -158,18 +158,23 @@ export const NightHero: React.FC = () => {
     if (skipIntro === null) return;
     const section = sectionRef.current;
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d', { willReadFrequently: true });
+    const ctx = canvas?.getContext('2d');
     if (!section || !canvas || !ctx) return;
 
     const frozen = reduceMotion;
-    let recolor = sceneRecolor(themeRef.current.studioTheme, themeRef.current.day, true);
     let motes: BuiltScene | null = null;
     const buildMotes = (w: number, h: number) => {
       const { studioTheme: theme, day: isDay } = themeRef.current;
       motes = isSceneTheme(theme) ? buildScene(theme, isDay, w, h) : null;
     };
 
+    // Switching Day/Night changes the time inside the painting: for a moment both
+    // landscapes render, the old one fading over the new, while the old sun or
+    // moon sets behind the hills and the new one rises (MoonlitScene timeChange).
+    let change: { start: number; toDay: boolean; from: MoonlitScene; layer: CanvasRenderingContext2D } | null = null;
+
     const build = () => {
+      change = null;
       const rect = section.getBoundingClientRect();
       const PX = rect.width >= 1024 ? 4 : 3;
       pxRef.current = PX;
@@ -182,7 +187,8 @@ export const NightHero: React.FC = () => {
       canvas.style.width = `${w * PX}px`;
       canvas.style.height = `${h * PX}px`;
       ctx.imageSmoothingEnabled = false;
-      sceneRef.current = new MoonlitScene(w, h, ctx, themeRef.current.day);
+      const { studioTheme: theme, day: isDay } = themeRef.current;
+      sceneRef.current = new MoonlitScene(w, h, ctx, isDay, sceneColor(theme, isDay, true));
       buildMotes(w, h);
     };
 
@@ -193,7 +199,9 @@ export const NightHero: React.FC = () => {
       l.x += (l.tx - l.x) * 0.06;
       l.y += (l.ty - l.y) * 0.06;
       const t = frozen ? INTRO_MS + 1200 : now();
-      scene.render(ctx, {
+      const p = change ? (now() - change.start) / TIME_CHANGE_MS : 1;
+      if (change && p >= 1) change = null;
+      const input = {
         t,
         lookX: frozen ? 0 : l.x,
         lookY: frozen ? 0 : l.y,
@@ -201,17 +209,38 @@ export const NightHero: React.FC = () => {
         constellations: drawing.current ? [...constellations.current, drawing.current] : constellations.current,
         bunAction: bunAction.current,
         bunHover: bunHover.current,
-      });
-      recolorCanvas(ctx, recolor);
+        timeChange: change ? { p, toDay: change.toDay } : undefined,
+      };
+      scene.render(ctx, input);
+      if (change) {
+        // The old time of day fades out over the new one as the sun and moon trade places. The
+        // colors finish with the page's crossfade; the sun and moon keep moving a little longer.
+        change.from.render(change.layer, input);
+        const fade = Math.min(1, Math.max(0, (p * TIME_CHANGE_MS) / CROSSFADE_MS));
+        ctx.globalAlpha = 1 - fade * fade * (3 - 2 * fade);
+        ctx.drawImage(change.layer.canvas, 0, 0);
+        ctx.globalAlpha = 1;
+      }
       // The hero paints its own stars; add only the theme's other particles.
       if (motes) paintSceneParticles(ctx, motes, t, ['stars']);
     };
     renderNow.current = draw;
     retheme.current = () => {
-      recolor = sceneRecolor(themeRef.current.studioTheme, themeRef.current.day, true);
-      // Day and Night paint different landscapes; the town is seeded, so rebuilding keeps it.
-      if (sceneRef.current && sceneRef.current.day !== themeRef.current.day) build();
-      else if (sceneRef.current) buildMotes(canvas.width, canvas.height);
+      const old = sceneRef.current;
+      if (!old) return;
+      // A new theme or time of day repaints the landscape in its colors; the town is seeded, so it stays.
+      build();
+      if (old.day !== themeRef.current.day && !frozen && sceneRef.current) {
+        const layer = document.createElement('canvas');
+        layer.width = canvas.width;
+        layer.height = canvas.height;
+        const layerCtx = layer.getContext('2d');
+        if (layerCtx) {
+          layerCtx.imageSmoothingEnabled = false;
+          change = { start: now(), toDay: themeRef.current.day, from: old, layer: layerCtx };
+          tickerRef.current?.boost(TIME_CHANGE_MS + 100);
+        }
+      }
       draw();
     };
 
@@ -338,7 +367,7 @@ export const NightHero: React.FC = () => {
     <section
       ref={sectionRef}
       aria-label="Welcome to PixiBun"
-      className="relative min-h-[max(100svh,640px)] overflow-hidden bg-[var(--desk-bg)] text-[var(--text-heading)] select-none"
+      className="landing-hero relative min-h-[max(100svh,640px)] overflow-hidden bg-[var(--desk-bg)] text-[var(--text-heading)] select-none"
       style={{ touchAction: 'pan-y' }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -359,10 +388,10 @@ export const NightHero: React.FC = () => {
       {/* Constellation names float with the sky */}
       <ConstellationNames labels={labels} reduceMotion={reduceMotion} />
 
-      {/* Soft vignette so the copy always reads */}
+      {/* Soft vignette so the copy always reads; its color blends with the theme on Day/Night (theme-transition.css) */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 pointer-events-none"
+        className="hero-vignette absolute inset-0 pointer-events-none"
         style={{ background: 'radial-gradient(ellipse 58% 72% at 20% 50%, color-mix(in srgb, var(--desk-bg) 72%, transparent) 0%, color-mix(in srgb, var(--desk-bg) 35%, transparent) 45%, transparent 72%)' }}
       />
 

@@ -4,19 +4,94 @@ import { flushSync } from 'react-dom';
 import { useThemeStore, type ColorScheme } from '@/stores/themeStore';
 
 /**
- * Day/Night with motion: the new scheme spreads out from the switch as a
- * widening circle (a View Transition), with a small burst of sparkles at the
- * switch. The switch's own knob carries the sun or moon. Browsers without View
- * Transitions, and anyone who prefers reduced motion, switch instantly.
+ * Day/Night with motion: the page crossfades to its new colors (a View
+ * Transition) while the homepage hero changes time inside its own painting,
+ * the moon sinking behind the hills as the sun rises, or the reverse
+ * (NightHero.tsx). The switch's knob carries its own little sun and moon.
+ * Nothing covers the page. Browsers without View Transitions, and anyone who
+ * prefers reduced motion, switch instantly.
  *
- * An earlier version also flew a large sun or moon from the switch into the
- * middle of the page and spun a viewport-sized glowing ring over a dimmed page;
- * the sun seemed to come from nowhere, and the ring and full-page filter were
- * costly to paint on every frame of the switch.
+ * Earlier versions widened the new scheme out of the switch as a circle with a
+ * burst of sparkles (until 23 October), and before that flew a large sun into
+ * the page past a spinning glowing ring (until 18 October).
  */
 
-const REVEAL_MS = 900;
-const SKY_MS = 800;
+/** How long the page's colors take to crossfade; the hero's sunrise runs a little longer. */
+export const CROSSFADE_MS = 900;
+/** How long the hero takes to change time when Day/Night switches. */
+export const TIME_CHANGE_MS = 1500;
+
+/** The theme colors the homepage hero blends between, instead of switching them at once. */
+const BLENDED_COLORS = [
+  '--desk-bg', '--desk-surface', '--desk-border', '--text-heading', '--text-body', '--text-muted',
+  '--primary-bg', '--primary-fg', '--primary-shade', '--primary-shine',
+  '--accent-gold', '--accent-plum', '--accent-wisteria', '--accent-sage', '--ink',
+];
+
+/** The same smoothstep the hero's painting fades on (NightHero.tsx). */
+export const smoothstep = (p: number) => {
+  const x = p < 0 ? 0 : p > 1 ? 1 : p;
+  return x * x * (3 - 2 * x);
+};
+
+type Rgba = [number, number, number, number];
+
+function parseColor(css: string): Rgba | null {
+  const v = css.trim();
+  if (/^#[0-9a-f]{6}$/i.test(v)) {
+    const n = parseInt(v.slice(1), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255, 1];
+  }
+  if (/^#[0-9a-f]{3}$/i.test(v)) {
+    return [1, 2, 3].map((i) => parseInt(v[i] + v[i], 16)).concat(1) as Rgba;
+  }
+  const m = /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)$/i.exec(v);
+  if (!m) return null;
+  const a = m[4] === undefined ? 1 : m[4].endsWith('%') ? parseFloat(m[4]) / 100 : parseFloat(m[4]);
+  return [+m[1], +m[2], +m[3], a];
+}
+
+function readColors(): Map<string, Rgba> {
+  const style = getComputedStyle(document.documentElement);
+  const out = new Map<string, Rgba>();
+  for (const name of BLENDED_COLORS) {
+    const c = parseColor(style.getPropertyValue(name));
+    if (c) out.set(name, c);
+  }
+  return out;
+}
+
+/**
+ * Blends the hero's theme colors from the old scheme to the new over `ms`, by
+ * writing the in-between colors onto the hero itself; then hands it back to the
+ * theme. CSS transitions do not start for changes made inside a View Transition.
+ */
+function blendHero(from: Map<string, Rgba>, ms: number) {
+  const hero = document.querySelector<HTMLElement>('.landing-hero');
+  if (!hero) return;
+  const to = readColors();
+  const names = [...from.keys()].filter((name) => to.has(name));
+  const paint = (k: number) => {
+    for (const name of names) {
+      const a = from.get(name)!;
+      const b = to.get(name)!;
+      const mix = (i: number) => a[i] + (b[i] - a[i]) * k;
+      hero.style.setProperty(name, `rgba(${Math.round(mix(0))}, ${Math.round(mix(1))}, ${Math.round(mix(2))}, ${mix(3).toFixed(3)})`);
+    }
+  };
+  paint(0);
+  const start = performance.now();
+  const step = (now: number) => {
+    const p = (now - start) / ms;
+    if (p >= 1) {
+      for (const name of names) hero.style.removeProperty(name);
+      return;
+    }
+    paint(smoothstep(p));
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
 
 type ViewTransitionLike = { ready: Promise<void>; finished: Promise<void> };
 type StartViewTransition = (update: () => void) => ViewTransitionLike;
@@ -27,28 +102,8 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-/** The sky layer: a burst of sparkles at the switch, above both pictures. */
-function mountSky(x: number, y: number, toDay: boolean): HTMLElement {
-  // A quick second switch replaces the sky still fading from the first; transition names must be unique.
-  document.querySelectorAll('.theme-sky').forEach((old) => old.remove());
-  const sky = document.createElement('div');
-  sky.className = `theme-sky ${toDay ? 'theme-sky--day' : 'theme-sky--night'}`;
-  sky.setAttribute('aria-hidden', 'true');
-  sky.style.setProperty('--sky-x', `${x}px`);
-  sky.style.setProperty('--sky-y', `${y}px`);
-  const sparkles = Array.from({ length: 10 }, (_, i) => {
-    const angle = (i / 10) * Math.PI * 2 + 0.3;
-    const reach = 46 + (i % 3) * 18;
-    return `<i style="--dx:${Math.round(Math.cos(angle) * reach)}px;--dy:${Math.round(Math.sin(angle) * reach)}px;--d:${(i % 4) * 40}ms"></i>`;
-  }).join('');
-  sky.innerHTML = `<span class="theme-sky__burst">${sparkles}</span>`;
-  document.body.appendChild(sky);
-  window.setTimeout(() => sky.remove(), SKY_MS + 100);
-  return sky;
-}
-
-/** Switches Day/Night with the reveal starting at (x, y) in viewport pixels. */
-export function switchColorScheme(next: ColorScheme, origin?: { x: number; y: number }) {
+/** Switches Day/Night with a gentle crossfade. */
+export function switchColorScheme(next: ColorScheme) {
   const store = useThemeStore.getState();
   if (store.colorScheme === next) return;
   const start = (document as Document & { startViewTransition?: StartViewTransition }).startViewTransition;
@@ -58,21 +113,14 @@ export function switchColorScheme(next: ColorScheme, origin?: { x: number; y: nu
   }
 
   const root = document.documentElement;
-  const x = origin?.x ?? window.innerWidth - 40;
-  const y = origin?.y ?? 32;
-  const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
-  const toDay = next === 'light';
-  root.style.setProperty('--theme-x', `${x}px`);
-  root.style.setProperty('--theme-y', `${y}px`);
-  root.style.setProperty('--theme-r', `${Math.ceil(radius)}px`);
-  root.style.setProperty('--theme-ms', `${REVEAL_MS}ms`);
-  root.dataset.themeSwitch = toDay ? 'to-day' : 'to-night';
+  root.style.setProperty('--theme-ms', `${CROSSFADE_MS}ms`);
+  root.dataset.themeSwitch = next === 'light' ? 'to-day' : 'to-night';
   running = true;
 
+  const before = readColors();
   const transition = start.call(document, () => {
-    // The sky joins the new picture, on its own transition layer above both pictures.
-    mountSky(x, y, toDay);
     flushSync(() => useThemeStore.getState().setColorScheme(next));
+    blendHero(before, CROSSFADE_MS);
   });
   const done = () => {
     running = false;
@@ -83,9 +131,7 @@ export function switchColorScheme(next: ColorScheme, origin?: { x: number; y: nu
   transition.finished.then(done, done);
 }
 
-/** Flips Day/Night from a control, revealing from its center. */
-export function toggleColorSchemeFrom(el: Element | null) {
-  const rect = el?.getBoundingClientRect();
-  const origin = rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : undefined;
-  switchColorScheme(useThemeStore.getState().colorScheme === 'dark' ? 'light' : 'dark', origin);
+/** Flips Day/Night. */
+export function toggleColorScheme() {
+  switchColorScheme(useThemeStore.getState().colorScheme === 'dark' ? 'light' : 'dark');
 }

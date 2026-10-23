@@ -14,7 +14,7 @@ All twelve Studio themes have a **Night** and a **Day** appearance. Open the **S
 
 Arcade's Night panels are near-black so they no longer read like Sakura's indigo. The Daylight switch changes Day/Night without changing the selected theme.
 
-Since 23 October, Sakura's Day keeps the honey of its Night instead of a royal-blue second accent (`#8a5a0c`, contrast-checked on every panel); the 18 October Day captures below predate that. The homepage paints its own daylight town by Day (a light sky, hazy far hills, cottages under rose roofs, white clouds and a soft sun) in every theme's colors, rather than inverting the night scene.
+Since 23 October, Sakura's Day keeps the honey of its Night instead of a royal-blue second accent (`#8a5a0c`, contrast-checked on every panel); the 18 October Day captures below predate that. The homepage paints its own daylight town by Day (a light sky, hazy far hills, cottages under rose roofs, white clouds and a golden sun) in every theme's colors, rather than inverting the night scene. Its Day/Night switch plays a sunrise or a sunset: the moon sinks behind the hills as the sun rises, while the page's colors blend.
 
 The ten scene styles also offer [Studio Labs](studio-workspace.md#studio-labs). The Dynamic island, Liquid tabs, Liquid controls, Paint pot palette and Quick magic are separately switchable. Graphite and Plum stay classic. The automated captures below used Labs off; they do not show the latest experimental controls or establish animation smoothness.
 

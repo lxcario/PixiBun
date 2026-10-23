@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { useThemeStore } from '@/stores/themeStore';
-import { toggleColorSchemeFrom } from '@/lib/theme/themeTransition';
+import { toggleColorScheme } from '@/lib/theme/themeTransition';
 
 const STARS = [
   { x: 9, y: 6, d: 0 },
@@ -15,13 +15,12 @@ const STARS = [
 /**
  * The landing's Day/Night switch: a little window onto the sky. At night the
  * moon rests on the left among twinkling stars; by day the knob slides right and
- * the moon fades into the sun, past a drifting cloud. Pressing it spreads the new
- * sky out of the switch.
+ * the moon fades into the sun, past a drifting cloud. Pressing it crossfades the
+ * page while the hero's own moon sets and its sun rises.
  */
 export const DayNightSwitch: React.FC = () => {
   const colorScheme = useThemeStore((s) => s.colorScheme);
   const reduceMotion = Boolean(useReducedMotion());
-  const ref = useRef<HTMLButtonElement | null>(null);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -33,13 +32,12 @@ export const DayNightSwitch: React.FC = () => {
 
   return (
     <button
-      ref={ref}
       type="button"
       role="switch"
       aria-checked={day}
       aria-label="Daylight"
       title={day ? 'Switch to night' : 'Switch to day'}
-      onClick={() => toggleColorSchemeFrom(ref.current)}
+      onClick={toggleColorScheme}
       className="daynight-switch group relative w-[52px] h-[28px] shrink-0 rounded-[3px] border-2 border-[var(--ink)] overflow-hidden cursor-pointer shadow-[0_2px_0_var(--ink)] active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--desk-bg)]"
       data-day={day ? 'true' : 'false'}
     >

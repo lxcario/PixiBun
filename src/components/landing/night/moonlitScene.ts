@@ -1,6 +1,6 @@
 import { BAYER_4X4 } from '@/lib/canvas/ditherMatrix';
 import { drawBun, type BunPose } from '@/lib/art/bunSprite';
-import { STARTER_TEMPLATES, TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
+import type { SceneColor } from '@/lib/theme/sceneRecolor';
 
 /**
  * Moonlit Hill — the landing hero's living pixel scene.
@@ -120,6 +120,11 @@ export interface SceneInput {
   constellations: Constellation[];
   bunAction: { type: BunAction; start: number } | null;
   bunHover: boolean;
+  /**
+   * Day and Night changing, 0 → 1: the old sun or moon sinks behind the hills on
+   * the right while the new one rises from behind them and arcs up to its place.
+   */
+  timeChange?: { p: number; toDay: boolean };
 }
 
 interface Win {
@@ -225,20 +230,51 @@ function cloudSprite(rand: () => number, width: number, [top, rim, body, under]:
   return c;
 }
 
-const GHOST = STARTER_TEMPLATES.find((t) => t.id === 'bun')!;
-const GHOST_PIXELS: Array<[number, number, string]> = [];
-GHOST.rows.forEach((row, y) => {
-  for (let x = 0; x < row.length; x++) {
-    const c = TEMPLATE_PALETTE[row[x]];
-    if (c) GHOST_PIXELS.push([x, y, c]);
-  }
+/**
+ * What Bun is painting on the easel: the Mona Lisa, with Bun's face. Long dark
+ * hair framing the face, a dark dress with amber sleeves and a light neckline,
+ * paws folded, and a hazy green landscape with a winding road behind. 18 × 16,
+ * the easel's canvas. Browns and greens stay as painted under every theme's recolor.
+ */
+const MONA_BUN = [
+  'kkkkkkopkkpokkkkkk',
+  'kkkkkkopkkpokkkkkk',
+  'mmmkkhophhpohkkmmm',
+  'mmmmhhoooooohhmmmm',
+  'mmmmhowwwwwwohmmmm',
+  'mmmmhowowwowohmmmm',
+  'llllhopwwwwpohllll',
+  'lrllhhoooooohhllll',
+  'llrdhhdnnnndhhdrll',
+  'lldhhhddnnddhhhdrl',
+  'lrdhhhddddddhhhdll',
+  'ldeeeeddddddeeeedl',
+  'leeeeeewwwwweeeeel',
+  'deeeeeeewwwwweeeed',
+  'dddddddddddddddddd',
+  'dddddddddddddddddd',
+];
+const MONA_COLORS: Record<string, string> = {
+  k: '#bdb57e', // hazy sky
+  m: '#6e9a8c', // blue-green hills
+  l: '#8f7a3c', // land
+  r: '#c8a15c', // the winding road
+  h: '#3b210c', // hair
+  d: '#4c2c10', // dress
+  e: '#a8692a', // amber sleeves
+  n: '#e8c59a', // neckline
+  w: '#f2ecf7', // Bun's face and paws
+  o: '#3a2e4c', // Bun's outline and eyes
+  p: '#f0b7cf', // ears and cheeks
+};
+/** Painting order, like a person would: the landscape, then the figure, then the face. */
+const MONA_ORDER = 'kmlrhdenowp';
+const PAINT_PIXELS: Array<[number, number, string]> = [];
+MONA_BUN.forEach((row, y) => {
+  for (let x = 0; x < row.length; x++) PAINT_PIXELS.push([x, y, row[x]]);
 });
-// Paint order: outline sweeps first, then the fill, like a person would ink it.
-GHOST_PIXELS.sort((a, b) => {
-  const ao = a[2] === TEMPLATE_PALETTE.o ? 0 : 1;
-  const bo = b[2] === TEMPLATE_PALETTE.o ? 0 : 1;
-  return ao - bo || a[1] - b[1] || a[0] - b[0];
-});
+PAINT_PIXELS.sort((a, b) => MONA_ORDER.indexOf(a[2]) - MONA_ORDER.indexOf(b[2]) || a[1] - b[1] || a[0] - b[0]);
+for (const px of PAINT_PIXELS) px[2] = MONA_COLORS[px[2]];
 
 const M = 16; // layer margin so parallax never reveals an edge
 
@@ -247,7 +283,7 @@ export class MoonlitScene {
   readonly h: number;
   readonly horizon: number;
   readonly bunX: number;
-  private sky: ImageData;
+  private sky: HTMLCanvasElement;
   private mountains: Int16Array;
   private townHill: Int16Array;
   private nearHill: Int16Array;
@@ -265,6 +301,9 @@ export class MoonlitScene {
   private doorHalo: HTMLCanvasElement;
   private lanternHalo: HTMLCanvasElement;
   private shroomHalo: HTMLCanvasElement;
+  private bodies = new Map<string, HTMLCanvasElement>();
+  /** Every color the scene paints passes through the theme's palette here, so no frame needs recoloring. */
+  private readonly c: SceneColor;
   /** Painted for daylight: a sun instead of the moon, no stars or fireflies. */
   readonly day: boolean;
   private land: Landscape;
@@ -274,19 +313,20 @@ export class MoonlitScene {
   private turnFrom = 1;
   private turnStart = -1e9;
 
-  constructor(w: number, h: number, ctx: CanvasRenderingContext2D, day = false) {
+  constructor(w: number, h: number, ctx: CanvasRenderingContext2D, day = false, color: SceneColor = (css) => css) {
     this.w = w;
     this.h = h;
     this.day = day;
+    this.c = color;
     const land = (this.land = day ? DAY : NIGHT);
     this.horizon = Math.round(h * 0.8);
     const rand = mulberry(7);
     const LW = w + M * 2;
 
     // Dithered dusk sky, baked once.
-    this.sky = ctx.createImageData(w, h);
-    const rgb = land.sky.map(hexToRgb);
-    const d = this.sky.data;
+    const skyImage = ctx.createImageData(w, h);
+    const rgb = land.sky.map((c) => hexToRgb(this.c(c)));
+    const d = skyImage.data;
     for (let y = 0; y < h; y++) {
       const pos = Math.pow(y / this.horizon, 1.35) * (land.sky.length - 1);
       const band = Math.min(land.sky.length - 2, Math.floor(pos));
@@ -301,6 +341,11 @@ export class MoonlitScene {
         d[i + 3] = 255;
       }
     }
+
+    // Stamped once into a canvas: drawing it each frame is cheaper than putImageData.
+    const skyLayer = layer(w, h);
+    skyLayer.ctx.putImageData(skyImage, 0, 0);
+    this.sky = skyLayer.c;
 
     const ridge = (base: number, amp: number, f: number[], phase: number) => {
       const out = new Int16Array(LW);
@@ -330,13 +375,13 @@ export class MoonlitScene {
     const ml = layer(LW, h);
     for (let x = 0; x < LW; x++) {
       const top = this.mountains[x];
-      ml.ctx.fillStyle = land.mountainRim;
+      ml.ctx.fillStyle = this.c(land.mountainRim);
       ml.ctx.fillRect(x, top, 1, 1);
-      ml.ctx.fillStyle = land.mountain;
+      ml.ctx.fillStyle = this.c(land.mountain);
       ml.ctx.fillRect(x, top + 1, 1, h - top);
       // Moonlit snow-ish rim on the upslopes
       if (x > 0 && this.mountains[x - 1] > top && (x & 1) === 0) {
-        ml.ctx.fillStyle = land.mountainRim;
+        ml.ctx.fillStyle = this.c(land.mountainRim);
         ml.ctx.fillRect(x, top + 1, 1, 1);
       }
     }
@@ -346,12 +391,12 @@ export class MoonlitScene {
     const tl = layer(LW, h);
     const t = tl.ctx;
     for (let x = 0; x < LW; x++) {
-      t.fillStyle = land.townHill;
+      t.fillStyle = this.c(land.townHill);
       t.fillRect(x, this.townHill[x], 1, h);
     }
     const pine = (px: number, ph: number) => {
       const base = this.townHill[Math.min(LW - 1, Math.max(0, px))] + 1;
-      t.fillStyle = land.pine;
+      t.fillStyle = this.c(land.pine);
       for (let r = 0; r < ph; r++) {
         const half = Math.floor((r / ph) * (ph / 2.4)) + (r % 3 === 2 ? 1 : 0);
         t.fillRect(px - half, base - ph + r, half * 2 + 1, 1);
@@ -396,24 +441,24 @@ export class MoonlitScene {
       };
       // Body with a shaded right wall
       const top = base - hh;
-      t.fillStyle = land.house;
+      t.fillStyle = this.c(land.house);
       t.fillRect(x, top, hw, hh);
-      t.fillStyle = land.houseSide;
+      t.fillStyle = this.c(land.houseSide);
       t.fillRect(x + hw - 2, top, 2, hh);
       // Stepped roof, moonlit on the left slope
       const roof = Math.ceil(hw / 2);
       for (let r = 0; r < roof; r++) {
-        t.fillStyle = land.roof;
+        t.fillStyle = this.c(land.roof);
         t.fillRect(x - 1 + r, top - r - 1, hw + 2 - r * 2, 1);
-        t.fillStyle = land.roofRim;
+        t.fillStyle = this.c(land.roofRim);
         t.fillRect(x - 1 + r, top - r - 1, 1, 1);
       }
       if (house.chimney >= 0) {
-        t.fillStyle = land.houseSide;
+        t.fillStyle = this.c(land.houseSide);
         t.fillRect(x + house.chimney, top - roof + 1, 2, 3);
       }
       if (house.door >= 0) {
-        t.fillStyle = land.door;
+        t.fillStyle = this.c(land.door);
         t.fillRect(x + house.door, base - 3, 2, 3);
       }
       this.houses.push(house);
@@ -436,19 +481,19 @@ export class MoonlitScene {
     const nl = layer(LW, h);
     for (let x2 = 0; x2 < LW; x2++) {
       const top = this.nearHill[x2];
-      nl.ctx.fillStyle = land.nearRim;
+      nl.ctx.fillStyle = this.c(land.nearRim);
       nl.ctx.fillRect(x2, top, 1, 1);
-      nl.ctx.fillStyle = land.nearHill;
+      nl.ctx.fillStyle = this.c(land.nearHill);
       nl.ctx.fillRect(x2, top + 1, 1, h - top);
       const realX = x2 - M;
       if (rand() < 0.035 && Math.abs(realX - this.bunX) > 22) {
         // Little flowers
-        nl.ctx.fillStyle = land.grass;
+        nl.ctx.fillStyle = this.c(land.grass);
         nl.ctx.fillRect(x2, top - 3, 1, 3);
-        nl.ctx.fillStyle = rand() < 0.5 ? '#f2b8c6' : '#c792df';
+        nl.ctx.fillStyle = this.c(rand() < 0.5 ? '#f2b8c6' : '#c792df');
         nl.ctx.fillRect(x2 - 1, top - 4, 3, 1);
         nl.ctx.fillRect(x2, top - 5, 1, 3);
-        nl.ctx.fillStyle = '#ffd285';
+        nl.ctx.fillStyle = this.c('#ffd285');
         nl.ctx.fillRect(x2, top - 4, 1, 1);
       }
     }
@@ -457,17 +502,17 @@ export class MoonlitScene {
       const sx = M + this.bunX - 46 + s * 7;
       if (sx < 0 || sx >= LW) continue;
       const top = this.nearHill[sx] + 2 + (s % 2);
-      nl.ctx.fillStyle = land.stone;
+      nl.ctx.fillStyle = this.c(land.stone);
       nl.ctx.fillRect(sx, top, 4, 1);
-      nl.ctx.fillStyle = land.stoneTop;
+      nl.ctx.fillStyle = this.c(land.stoneTop);
       nl.ctx.fillRect(sx + 1, top, 2, 1);
     }
     this.nearLayer = nl.c;
 
-    this.windowHalo = haloStamp(5, 'rgba(255, 196, 120, 0.2)', 0.7);
-    this.doorHalo = haloStamp(4, 'rgba(255, 210, 133, 0.28)', 0.8);
-    this.lanternHalo = haloStamp(24, 'rgba(255, 200, 130, 0.2)', 0.95);
-    this.shroomHalo = haloStamp(4, 'rgba(220, 171, 223, 0.22)', 0.8);
+    this.windowHalo = haloStamp(5, this.c('rgba(255, 196, 120, 0.2)'), 0.7);
+    this.doorHalo = haloStamp(4, this.c('rgba(255, 210, 133, 0.28)'), 0.8);
+    this.lanternHalo = haloStamp(24, this.c('rgba(255, 200, 130, 0.2)'), 0.95);
+    this.shroomHalo = haloStamp(4, this.c('rgba(220, 171, 223, 0.22)'), 0.8);
 
     const starCount = Math.round((w * h) / 260);
     for (let i = 0; i < starCount; i++) {
@@ -493,7 +538,7 @@ export class MoonlitScene {
       this.grass.push({ x: gx, h: 1 + Math.floor(rand() * 3), phase: rand() * 6 });
     }
     for (let i = 0; i < 4; i++) {
-      const sprite = cloudSprite(rand, 26 + Math.floor(rand() * 22), land.cloud);
+      const sprite = cloudSprite(rand, 26 + Math.floor(rand() * 22), land.cloud.map((c) => this.c(c)) as Landscape['cloud']);
       this.clouds.push({ x: rand() * w, y: h * (0.08 + rand() * 0.3), w: sprite.width, speed: 0.0012 + rand() * 0.0016, sprite });
     }
   }
@@ -526,9 +571,9 @@ export class MoonlitScene {
     const skyShift = Math.round(scroll * 0.5);
 
     // ---- Sky -------------------------------------------------------------
-    ctx.putImageData(this.sky, 0, skyShift);
+    ctx.drawImage(this.sky, 0, skyShift);
     if (skyShift > 0) {
-      ctx.fillStyle = this.land.sky[0];
+      ctx.fillStyle = this.c(this.land.sky[0]);
       ctx.fillRect(0, 0, w, skyShift);
     }
 
@@ -541,10 +586,10 @@ export class MoonlitScene {
       const pop = t - s.appear < 220;
       const sx = s.x + px(-1);
       const sy = s.y + skyShift;
-      ctx.fillStyle = tw > 0.6 || pop ? '#fff3c4' : tw > 0 ? '#d8c6e8' : '#8d76ad';
+      ctx.fillStyle = this.c(tw > 0.6 || pop ? '#fff3c4' : tw > 0 ? '#d8c6e8' : '#8d76ad');
       ctx.fillRect(sx, sy, 1, 1);
       if ((s.big && tw > 0.2) || pop) {
-        ctx.fillStyle = 'rgba(255, 243, 196, 0.45)';
+        ctx.fillStyle = this.c('rgba(255, 243, 196, 0.45)');
         ctx.fillRect(sx - 1, sy, 1, 1);
         ctx.fillRect(sx + 1, sy, 1, 1);
         ctx.fillRect(sx, sy - 1, 1, 1);
@@ -566,40 +611,35 @@ export class MoonlitScene {
         const hx = this.shooting.x + 0.09 * age;
         const hy = this.shooting.y + 0.045 * age + skyShift;
         for (let i = 0; i < 9; i++) {
-          ctx.fillStyle = `rgba(255, 243, 196, ${(1 - i / 9) * (1 - age / 900)})`;
+          ctx.fillStyle = this.c(`rgba(255, 243, 196, ${(1 - i / 9) * (1 - age / 900)})`);
           ctx.fillRect(Math.round(hx - i * 2), Math.round(hy - i), 1, 1);
         }
       }
     }
 
-    // ---- Moon ------------------------------------------------------------
+    // ---- Moon, or the sun by day -----------------------------------------
     const narrow = w < 200;
     const moonR = narrow ? Math.max(7, Math.round(w * 0.07)) : Math.max(7, Math.round(h * 0.075));
-    const moonRise = easeOut(span(t, 350, 1700));
-    const mx = Math.round(w * (narrow ? 0.86 : 0.82)) + px(-2);
-    const my = Math.round((narrow ? moonR + 22 : h * 0.2) + (1 - moonRise) * h * 0.55) + skyShift + py(-2);
-    for (let dy = -moonR - 12; dy <= moonR + 12; dy++) {
-      for (let dx = -moonR - 12; dx <= moonR + 12; dx++) {
-        const dist = Math.hypot(dx, dy);
-        if (dist <= moonR) {
-          const shade = Math.hypot(dx + moonR * 0.35, dy - moonR * 0.25) > moonR * 1.05;
-          const crater =
-            Math.hypot(dx - moonR * 0.3, dy + moonR * 0.25) < moonR * 0.22 ||
-            Math.hypot(dx + moonR * 0.25, dy - moonR * 0.35) < moonR * 0.15 ||
-            Math.hypot(dx + moonR * 0.1, dy + moonR * 0.55) < moonR * 0.1;
-          // By day it is a soft sun: no craters, a warm rim instead of the shaded side.
-          if (this.day) ctx.fillStyle = shade ? '#ffd98a' : '#ffecb8';
-          else ctx.fillStyle = shade ? (crater ? '#e2bf88' : '#f3d9a6') : crater ? '#f0d7a8' : '#fff1cf';
-          ctx.fillRect(mx + dx, my + dy, 1, 1);
-        } else if (dist <= moonR + 12) {
-          const density = 1 - (dist - moonR) / 12;
-          const threshold = (BAYER_4X4[(my + dy) & 3][(mx + dx) & 3] + 0.5) / 16;
-          if (density * (this.day ? 0.7 : 0.55) > threshold) {
-            ctx.fillStyle = this.day ? 'rgba(255, 214, 140, 0.32)' : 'rgba(255, 214, 160, 0.13)';
-            ctx.fillRect(mx + dx, my + dy, 1, 1);
-          }
-        }
-      }
+    const homeX = Math.round(w * (narrow ? 0.86 : 0.82)) + px(-2);
+    const homeY = Math.round(narrow ? moonR + 22 : h * 0.2) + skyShift + py(-2);
+    const change = input.timeChange;
+    if (change) {
+      // Drawn before the hills, so the setting body slips behind them and the rising one climbs out.
+      const set = easeInOut(span(change.p, 0, 0.75));
+      const rise = easeOut(span(change.p, 0.22, 1));
+      this.drawBody(ctx, change.toDay ? 'moon' : 'sun', Math.round(homeX + (w * 0.98 - homeX) * set), Math.round(homeY + (h * 0.88 - homeY) * set), moonR);
+      const startX = w * 0.46;
+      const startY = h * 0.92;
+      this.drawBody(
+        ctx,
+        change.toDay ? 'sun' : 'moon',
+        Math.round(startX + (homeX - startX) * rise),
+        Math.round(startY + (homeY - startY) * rise - Math.sin(Math.PI * rise) * h * 0.08),
+        moonR,
+      );
+    } else {
+      const moonRise = easeOut(span(t, 350, 1700));
+      this.drawBody(ctx, this.day ? 'sun' : 'moon', homeX, Math.round(homeY + (1 - moonRise) * h * 0.55), moonR);
     }
 
     // ---- Drifting clouds, moonlit on top ---------------------------------
@@ -623,7 +663,7 @@ export class MoonlitScene {
         const grow = clamp01((t - b.born) / 260);
         for (let s = 1; s < steps * grow; s++) {
           if (s % 2) continue;
-          ctx.fillStyle = 'rgba(220, 171, 223, 0.6)';
+          ctx.fillStyle = this.c('rgba(220, 171, 223, 0.6)');
           ctx.fillRect(Math.round(a.x + ((b.x - a.x) * s) / steps), Math.round(a.y + ((b.y - a.y) * s) / steps) + skyShift, 1, 1);
         }
       }
@@ -633,9 +673,9 @@ export class MoonlitScene {
         const pop = age < 300 ? Math.round(2 * Math.sin((age / 300) * Math.PI)) : 0;
         const tw = Math.sin(t / 300 + s.hue * 7) > 0.2;
         const sy = s.y + skyShift;
-        ctx.fillStyle = s.hue > 0.5 ? '#ffd285' : '#fff3c4';
+        ctx.fillStyle = this.c(s.hue > 0.5 ? '#ffd285' : '#fff3c4');
         ctx.fillRect(s.x, sy, 1, 1);
-        ctx.fillStyle = tw ? 'rgba(255, 210, 133, 0.8)' : 'rgba(220, 171, 223, 0.7)';
+        ctx.fillStyle = this.c(tw ? 'rgba(255, 210, 133, 0.8)' : 'rgba(220, 171, 223, 0.7)');
         const arm = 1 + pop + (tw ? 1 : 0);
         for (let k = 1; k <= arm; k++) {
           ctx.globalAlpha = 1 - (k - 1) / (arm + 0.5);
@@ -668,7 +708,7 @@ export class MoonlitScene {
         const fy = Math.round(f.y0 + (f.y1 - f.y0) * p + Math.sin(p * Math.PI) * f.sag) + tY;
         const i = (s >> 1) + f.x0;
         const lit = t > 2400 + i * 15 && Math.sin(t / 500 + i * 1.3) > -0.6;
-        ctx.fillStyle = lit ? FAIRY[i % FAIRY.length] : this.land.fairyOff;
+        ctx.fillStyle = this.c(lit ? FAIRY[i % FAIRY.length] : this.land.fairyOff);
         ctx.fillRect(fx, fy, 1, 1);
       }
     }
@@ -680,7 +720,7 @@ export class MoonlitScene {
       if (house.chimney >= 0) {
         for (let p = 0; p < 4; p++) {
           const age = (t / 1900 + p / 4 + house.x * 0.13) % 1;
-          ctx.fillStyle = `rgba(205, 185, 225, ${0.25 * (1 - age)})`;
+          ctx.fillStyle = this.c(`rgba(205, 185, 225, ${0.25 * (1 - age)})`);
           ctx.fillRect(
             hx + house.chimney + Math.round(Math.sin(age * 4 + p) * 1.5 + age * 4),
             top - Math.ceil(house.w / 2) - 1 - Math.round(age * 10),
@@ -697,12 +737,12 @@ export class MoonlitScene {
         const justOn = t - win.on < 180;
         // Slow candle breathing between warm tones
         const breath = Math.sin(t / (900 + win.tone * 700) + win.tone * 9);
-        ctx.fillStyle = justOn ? '#fff3c4' : WARM[breath > 0.5 ? 1 : breath < -0.6 ? 2 : 0];
+        ctx.fillStyle = this.c(justOn ? '#fff3c4' : WARM[breath > 0.5 ? 1 : breath < -0.6 ? 2 : 0]);
         ctx.fillRect(wx, wy, 2, 2);
-        ctx.fillStyle = '#fff3c4';
+        ctx.fillStyle = this.c('#fff3c4');
         ctx.fillRect(wx, wy, 1, 1);
         if (win.plant) {
-          ctx.fillStyle = '#3a5a33';
+          ctx.fillStyle = this.c('#3a5a33');
           ctx.fillRect(wx + 1, wy + 1, 1, 1);
         }
       }
@@ -710,7 +750,7 @@ export class MoonlitScene {
         const lx = hx + house.door + 2;
         const ly = house.base - 3 + tY;
         ctx.drawImage(this.doorHalo, lx - 4, ly - 4);
-        ctx.fillStyle = Math.sin(t / 120 + house.x) > -0.8 ? '#ffd285' : '#f0be7c';
+        ctx.fillStyle = this.c(Math.sin(t / 120 + house.x) > -0.8 ? '#ffd285' : '#f0be7c');
         ctx.fillRect(lx, ly, 1, 1);
       }
     }
@@ -719,7 +759,7 @@ export class MoonlitScene {
     if (this.cat && t > 2600) {
       const cx = ox + this.cat.x;
       const cy = this.cat.y + tY;
-      ctx.fillStyle = '#0e0818';
+      ctx.fillStyle = this.c('#0e0818');
       ctx.fillRect(cx, cy - 3, 4, 3);
       ctx.fillRect(cx, cy - 5, 1, 2);
       ctx.fillRect(cx + 3, cy - 5, 1, 2);
@@ -728,7 +768,7 @@ export class MoonlitScene {
       ctx.fillRect(cx + 4, cy - 1, 2, 1);
       ctx.fillRect(cx + 5 + (swish ? 1 : 0), cy - 3, 1, 2);
       if (Math.floor(t / 140) % 24 !== 0) {
-        ctx.fillStyle = '#c6f08a';
+        ctx.fillStyle = this.c('#c6f08a');
         ctx.fillRect(cx + 1, cy - 3, 1, 1);
         ctx.fillRect(cx + 3, cy - 3, 1, 1);
       }
@@ -743,7 +783,7 @@ export class MoonlitScene {
       const gx = nx + g.x;
       const top = this.nearHill[g.x] + nShift;
       const sway = Math.sin(t / 700 + g.phase + g.x * 0.08) > 0.3 ? 1 : 0;
-      ctx.fillStyle = this.land.grass;
+      ctx.fillStyle = this.c(this.land.grass);
       ctx.fillRect(gx, top - g.h, 1, g.h);
       if (g.h > 2) ctx.fillRect(gx + sway, top - g.h - 1, 1, 1);
     }
@@ -763,26 +803,26 @@ export class MoonlitScene {
       ctx.globalAlpha = 1;
     }
     if (t > 2400) {
-      ctx.fillStyle = '#3a2e4c';
+      ctx.fillStyle = this.c('#3a2e4c');
       ctx.fillRect(lx - 2, ly - 3, 5, 7);
       ctx.fillRect(lx - 1, ly - 5, 3, 1);
       ctx.fillRect(lx, ly - 6, 1, 1);
-      ctx.fillStyle = lanternLit ? (flick > 0.3 ? '#fff3c4' : '#ffd285') : '#6b5470';
+      ctx.fillStyle = this.c(lanternLit ? (flick > 0.3 ? '#fff3c4' : '#ffd285') : '#6b5470');
       ctx.fillRect(lx - 1, ly - 2, 3, 4);
-      ctx.fillStyle = '#d89a55';
+      ctx.fillStyle = this.c('#d89a55');
       ctx.fillRect(lx - 2, ly + 4, 5, 1);
 
       // Teacup with a lazy curl of steam
       const tx = lx + 6;
       const ty = ground - 2;
-      ctx.fillStyle = '#ede8f4';
+      ctx.fillStyle = this.c('#ede8f4');
       ctx.fillRect(tx, ty, 3, 2);
       ctx.fillRect(tx + 3, ty, 1, 1);
-      ctx.fillStyle = '#b9a8d2';
+      ctx.fillStyle = this.c('#b9a8d2');
       ctx.fillRect(tx - 1, ty + 2, 5, 1);
       for (let s = 0; s < 3; s++) {
         const age = (t / 1400 + s / 3) % 1;
-        ctx.fillStyle = `rgba(237, 232, 244, ${0.5 * (1 - age)})`;
+        ctx.fillStyle = this.c(`rgba(237, 232, 244, ${0.5 * (1 - age)})`);
         ctx.fillRect(tx + 1 + Math.round(Math.sin(age * 6 + s) * 1), ty - 1 - Math.round(age * 6), 1, 1);
       }
     }
@@ -795,43 +835,44 @@ export class MoonlitScene {
         ctx.globalAlpha = pulse;
         ctx.drawImage(this.shroomHalo, sx - 3, sy - tall - 5);
         ctx.globalAlpha = 1;
-        ctx.fillStyle = '#ede8f4';
+        ctx.fillStyle = this.c('#ede8f4');
         ctx.fillRect(sx, sy - tall, 1, tall);
         // Domed cap with a glowing spot
-        ctx.fillStyle = '#b07cc6';
+        ctx.fillStyle = this.c('#b07cc6');
         ctx.fillRect(sx - 2, sy - tall - 1, 5, 1);
-        ctx.fillStyle = '#dcabdf';
+        ctx.fillStyle = this.c('#dcabdf');
         ctx.fillRect(sx - 1, sy - tall - 2, 3, 1);
         ctx.fillRect(sx - 2, sy - tall - 1, 1, 1);
-        ctx.fillStyle = '#fff3c4';
+        ctx.fillStyle = this.c('#fff3c4');
         ctx.fillRect(sx + 1, sy - tall - 1, 1, 1);
       }
     }
 
-    // ---- Easel with Bun being painted ---------------------------
+    // ---- Easel with Bun's Mona Lisa being painted ----------------
     const easelShow = span(t, 1700, 2050);
     if (easelShow > 0) {
       const ex = bx - 31;
       const ey = ground - 26 + Math.round((1 - easeBack(easelShow)) * 26);
-      ctx.fillStyle = '#5b3a2a';
+      ctx.fillStyle = this.c('#5b3a2a');
       ctx.fillRect(ex + 2, ey + 18, 1, ground - (ey + 18));
       ctx.fillRect(ex + 17, ey + 18, 1, ground - (ey + 18));
       ctx.fillRect(ex + 9, ey - 2, 1, 3);
-      ctx.fillStyle = '#7a5038';
+      ctx.fillStyle = this.c('#7a5038');
       ctx.fillRect(ex, ey + 18, 20, 1);
-      ctx.fillStyle = '#3a2e4c';
+      ctx.fillStyle = this.c('#3a2e4c');
       ctx.fillRect(ex, ey, 20, 18);
-      ctx.fillStyle = '#fbe9c6';
+      ctx.fillStyle = this.c('#fbe9c6');
       ctx.fillRect(ex + 1, ey + 1, 18, 16);
-      const painted = Math.floor(span(t, 2700, 3900) * GHOST_PIXELS.length);
+      const painted = Math.floor(span(t, 2700, 3900) * PAINT_PIXELS.length);
       for (let i = 0; i < painted; i++) {
-        const [gx, gy, c] = GHOST_PIXELS[i];
-        ctx.fillStyle = c;
-        ctx.fillRect(ex + 2 + gx, ey + 1 + gy, 1, 1);
+        const [gx, gy, c] = PAINT_PIXELS[i];
+        ctx.fillStyle = this.c(c);
+        ctx.fillRect(ex + 1 + gx, ey + 1 + gy, 1, 1);
       }
-      if (painted === GHOST_PIXELS.length && Math.sin(t / 400) > 0.4) {
-        ctx.fillStyle = '#fff3c4';
-        ctx.fillRect(ex + 2 + 8, ey + 1 + 9, 1, 1);
+      // A knowing glint in the Mona Bun's eye.
+      if (painted === PAINT_PIXELS.length && Math.sin(t / 400) > 0.4) {
+        ctx.fillStyle = this.c('#fff3c4');
+        ctx.fillRect(ex + 1 + 10, ey + 1 + 5, 1, 1);
       }
     }
 
@@ -847,10 +888,10 @@ export class MoonlitScene {
         const glow = Math.sin(ft * 3);
         if (glow < -0.2) continue;
         ctx.globalAlpha = fAlpha * (0.5 + glow * 0.5);
-        ctx.fillStyle = glow > 0.5 ? '#fff3a8' : '#ffd285';
+        ctx.fillStyle = this.c(glow > 0.5 ? '#fff3a8' : '#ffd285');
         ctx.fillRect(fx, fy, 1, 1);
         if (glow > 0.5) {
-          ctx.fillStyle = 'rgba(255, 230, 140, 0.35)';
+          ctx.fillStyle = this.c('rgba(255, 230, 140, 0.35)');
           ctx.fillRect(fx - 1, fy, 1, 1);
           ctx.fillRect(fx + 1, fy, 1, 1);
           ctx.fillRect(fx, fy - 1, 1, 1);
@@ -863,7 +904,7 @@ export class MoonlitScene {
     // ---- Intro: the sky dithers in from black, top to bottom -----------------
     const reveal = span(t, 0, 1100);
     if (reveal < 1) {
-      ctx.fillStyle = this.land.curtain;
+      ctx.fillStyle = this.c(this.land.curtain);
       for (let y = 0; y < h; y += 2) {
         for (let x = 0; x < w; x += 2) {
           const threshold = (BAYER_4X4[(y >> 1) & 3][(x >> 1) & 3] + 0.5) / 16;
@@ -871,6 +912,55 @@ export class MoonlitScene {
         }
       }
     }
+  }
+
+  /** Eight short pixel rays around the sun: longer on the axes, shorter on the diagonals. */
+  private isRay(dx: number, dy: number, r: number) {
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+    if ((ax === 0 && ay >= r + 2 && ay <= r + 5) || (ay === 0 && ax >= r + 2 && ax <= r + 5)) return true;
+    return ax === ay && ax >= Math.round(r * 0.72) + 1 && ax <= Math.round(r * 0.72) + 3;
+  }
+
+  /** A pixel moon with craters and a faint halo, or a golden sun with rays, centred on (mx, my). */
+  private drawBody(ctx: CanvasRenderingContext2D, kind: 'sun' | 'moon', mx: number, my: number, moonR: number) {
+    // Drawn once per look and kept: the halo's dither depends on where the body sits within the 4×4 grid.
+    const key = `${kind}|${moonR}|${mx & 3}|${my & 3}`;
+    let body = this.bodies.get(key);
+    const pad = moonR + 12;
+    if (!body) {
+      const sun = kind === 'sun';
+      body = layer(pad * 2 + 1, pad * 2 + 1).c;
+      const g = body.getContext('2d')!;
+      for (let dy = -moonR - 12; dy <= moonR + 12; dy++) {
+        for (let dx = -moonR - 12; dx <= moonR + 12; dx++) {
+          const dist = Math.hypot(dx, dy);
+          if (dist <= moonR) {
+            const shade = Math.hypot(dx + moonR * 0.35, dy - moonR * 0.25) > moonR * 1.05;
+            const crater =
+              Math.hypot(dx - moonR * 0.3, dy + moonR * 0.25) < moonR * 0.22 ||
+              Math.hypot(dx + moonR * 0.25, dy - moonR * 0.35) < moonR * 0.15 ||
+              Math.hypot(dx + moonR * 0.1, dy + moonR * 0.55) < moonR * 0.1;
+            // The sun is golden with a warmer rim and a bright cheek; the moon keeps its craters.
+            if (sun) g.fillStyle = this.c(shade ? '#ffc35c' : Math.hypot(dx + moonR * 0.3, dy + moonR * 0.3) < moonR * 0.35 ? '#fff3c4' : '#ffdc7a');
+            else g.fillStyle = this.c(shade ? (crater ? '#e2bf88' : '#f3d9a6') : crater ? '#f0d7a8' : '#fff1cf');
+            g.fillRect(pad + dx, pad + dy, 1, 1);
+          } else if (sun && this.isRay(dx, dy, moonR)) {
+            g.fillStyle = this.c('#ffcf66');
+            g.fillRect(pad + dx, pad + dy, 1, 1);
+          } else if (dist <= moonR + 12) {
+            const density = 1 - (dist - moonR) / 12;
+            const threshold = (BAYER_4X4[(my + dy) & 3][(mx + dx) & 3] + 0.5) / 16;
+            if (density * (sun ? 0.7 : 0.55) > threshold) {
+              g.fillStyle = this.c(sun ? 'rgba(255, 214, 140, 0.32)' : 'rgba(255, 214, 160, 0.13)');
+              g.fillRect(pad + dx, pad + dy, 1, 1);
+            }
+          }
+        }
+      }
+      this.bodies.set(key, body);
+    }
+    ctx.drawImage(body, mx - pad, my - pad);
   }
 
   /** Bun: smooth turns toward the pointer, a hover greeting, and five click reactions. */
@@ -945,7 +1035,7 @@ export class MoonlitScene {
     // Shadow under Bun shrinks while airborne
     const airborne = Math.max(0, -Math.min(0, lift));
     const shadowW = Math.max(6, 14 - airborne);
-    ctx.fillStyle = 'rgba(8, 4, 16, 0.45)';
+    ctx.fillStyle = this.c('rgba(8, 4, 16, 0.45)');
     ctx.fillRect(bx - (shadowW >> 1) + dx, ground, shadowW, 1);
 
     const by = ground - 17 + lift + squash;
@@ -956,15 +1046,15 @@ export class MoonlitScene {
     ctx.translate(bx + dx, 0);
     ctx.scale(sx, 1);
     ctx.translate(-(bx + dx), 0);
-    drawBun(ctx, bx + dx - 8, by, pose);
+    drawBun(ctx, bx + dx - 8, by, pose, true, this.c);
     ctx.restore();
 
     // Brush in Bun's paw while painting
     if (painting) {
       const dab = Math.sin(t / 90) > 0 ? 1 : 0;
-      ctx.fillStyle = '#d89a55';
+      ctx.fillStyle = this.c('#d89a55');
       ctx.fillRect(bx - 12 - dab, ground - 8, 3, 1);
-      ctx.fillStyle = '#c792df';
+      ctx.fillStyle = this.c('#c792df');
       ctx.fillRect(bx - 13 - dab, ground - 8, 1, 1);
     }
 
@@ -974,7 +1064,7 @@ export class MoonlitScene {
       const fx = bx - 1 + Math.round((i - 1) * spread + Math.sin(a * 6 + i) * 1.5);
       const fy = by - 3 - Math.round(a * 12);
       ctx.globalAlpha = Math.sin(a * Math.PI);
-      glyph(ctx, rows, fx, fy, color);
+      glyph(ctx, rows, fx, fy, this.c(color));
       ctx.globalAlpha = 1;
     };
     if (action) {
@@ -987,20 +1077,20 @@ export class MoonlitScene {
         for (let i = 0; i < 3; i++) {
           const a = ((t - action.start) / 1100 + i / 3) % 1;
           ctx.globalAlpha = Math.sin(a * Math.PI) * fade;
-          glyph(ctx, GLYPH.z, bx + 6 + Math.round(a * 6), by - Math.round(a * 12), '#cdbfdf');
+          glyph(ctx, GLYPH.z, bx + 6 + Math.round(a * 6), by - Math.round(a * 12), this.c('#cdbfdf'));
         }
       }
       if (action.type === 'spin') {
         for (let i = 0; i < 4; i++) {
           const ang = p * Math.PI * 4 + (i * Math.PI) / 2;
-          glyph(ctx, GLYPH.spark, bx - 1 + Math.round(Math.cos(ang) * 12), by + 7 + Math.round(Math.sin(ang) * 6), i % 2 ? '#ffd285' : '#dcabdf');
+          glyph(ctx, GLYPH.spark, bx - 1 + Math.round(Math.cos(ang) * 12), by + 7 + Math.round(Math.sin(ang) * 6), this.c(i % 2 ? '#ffd285' : '#dcabdf'));
         }
       }
       ctx.restore();
     } else if (input.bunHover) {
       const a = (t / 900) % 1;
       ctx.globalAlpha = Math.sin(a * Math.PI);
-      glyph(ctx, GLYPH.heart, bx - 1, by - 4 - Math.round(a * 5), '#f2b8c6');
+      glyph(ctx, GLYPH.heart, bx - 1, by - 4 - Math.round(a * 5), this.c('#f2b8c6'));
       ctx.globalAlpha = 1;
     }
   }
