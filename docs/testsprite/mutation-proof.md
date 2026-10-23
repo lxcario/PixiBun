@@ -6,14 +6,14 @@ Passing tests only mean something if they fail when the app breaks. So we broke 
 
 **How it was run.** Each bug is a single small edit ([mutants.json](../../scripts/testsprite/mutation-proof/mutants.json)), applied to a local `next dev` build and never committed to a shared branch or deployed. Plans ran through our [plan emulator](../../scripts/testsprite/app-plans/emulate.py), which uses only the gestures the App agent performs (navigate, named click, fill, key) and reads the same Canvas readout. For each bug we ran every plan whose text touches the feature, stopping after three failures.
 
-**What counts as caught.** A plan must fail with the bug in place **and pass on the clean build**. That way a flaky plan can't take credit. S4-HOME-01 failed on the clean development build as well (it passes against the deployed preview), and S4-LEARN-05 crashed printing its results to a Windows console, so neither is counted anywhere below.
+**What counts as caught.** A plan must fail with the bug in place **and pass on the clean build**. One clean pass can't rule out an intermittent failure on its own, but every catching plan also passed the full baseline against the deployed preview, with Studio Labs off and on. S4-HOME-01 failed on the clean development build as well (it passes against the deployed preview), and S4-LEARN-05 crashed printing its results to a Windows console, so neither is counted anywhere below.
 
 ## Results
 
 | # | Planted bug | Caught by (fails with the bug, passes clean) | What the plan saw |
 | ---: | --- | --- | --- |
 | 1 | Deleting a frame can't be undone | **S4-NEW-02** | After Undo, frame 3 (300 ms) never came back |
-| 2 | A locked layer accepts paint | **S4-DRAW-03**, **S4-DRAW-06**, LOCK-f9fbb1e0 | The frame digest read `8e17ca1e` instead of the recorded `b5f36134` |
+| 2 | A locked layer accepts paint | **S4-DRAW-03**, **S4-DRAW-06** | The frame digest read `8e17ca1e` instead of the recorded `b5f36134` |
 | 3 | Autosave forgets frame holds | **S4-SAVE-01** | After a full reload the 175 ms hold was gone |
 | 4 | Loop mode never offers Once | **S4-ANIM-02** | "Loop mode: Once" never appeared |
 | 5 | Typing 24 into Canvas size gives 44 | Not by an App plan in the emulator; **caught by** `tests/components/CanvasResizeModal.test.tsx` ("expected '44' to be '24'") | See note below |
