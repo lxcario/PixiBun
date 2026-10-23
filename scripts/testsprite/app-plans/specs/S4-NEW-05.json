@@ -5,7 +5,7 @@
   "goal": "Keyboard shortcuts act on the focused frame card: Alt+Left and Alt+Right move it, Ctrl+D duplicates it and Delete removes it, keeping the other holds and the artwork exact. Typing the same keys into a text field never changes the timeline.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

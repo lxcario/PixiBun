@@ -5,7 +5,7 @@
   "goal": "Importing is an explicit choice: the File menu offers Import... next to Projects, New drawing and Canvas size, and opening and closing the menu changes nothing. The import itself needs a test file, which this run does not supply.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

@@ -5,7 +5,7 @@
   "goal": "A new palette is named, gets two colors, is reordered and has a temporary color removed in its draft; creating it selects exactly that two-color palette; a second, cancelled draft leaves no trace; the drawing never changes.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

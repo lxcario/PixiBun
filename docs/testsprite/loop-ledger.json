@@ -6,7 +6,7 @@
   "entries": [
     {
       "pr": 6,
-      "title": "Automatic App runs: 33/7/81 on b78fffb1 to 118/2/1 on efed6fae",
+      "title": "Automatic App runs: 33/7/81 on b78fffb1 to 119/2/0 on f97621a4",
       "prUrl": "https://github.com/lxcario/PixiBun/pull/6",
       "checkedOn": "2026-10-19",
       "testspriteRunUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/ba8a1a0c-18da-4534-990d-435efe23aece",
@@ -50,6 +50,11 @@
           "case": "Latest automatic App run, efed6fae (118/2/1)",
           "cause": "test-fix",
           "note": "All five plans simplified after 53ac2afe passed. The two failures and one block were plan issues: S4-EXPORT-05 could not read the inline refusal text after a Download click (the preflight already names the problem), S4-NEW-03 still carried an older description asking for file oracles the agent cannot use, and S4-VIEW-02 skipped its workspace-preset steps. Their plans were simplified and republished; the required PR check stays red until a run passes all 121."
+        },
+        {
+          "case": "Latest automatic App run, f97621a4 (119/2/0)",
+          "cause": "test-fix",
+          "note": "No blocked case. S4-READOUT-01 still expected the readout sentence from before the layer count was added; S4-DRAW-11 failed because the agent opened its replay link with three letters glued on. Every plan now ends its links with a harmless end=1 parameter."
         }
       ],
       "fixCommit": null,

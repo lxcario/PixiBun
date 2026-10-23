@@ -5,7 +5,7 @@
   "goal": "The Eyedropper takes the exact color of the sampled artwork pixel into the Primary well, without changing artwork or adding an Undo step. The fixture is a replay with a known #2a9d8f pixel at the canvas centre.",
   "steps": [
     {
-      "open": "/studio?replay=1_16x16_ffffff.2a9d8f_R0.0.0.15.15~p1.8.8"
+      "open": "/studio?replay=1_16x16_ffffff.2a9d8f_R0.0.0.15.15~p1.8.8&end=1"
     },
     {
       "skip": true

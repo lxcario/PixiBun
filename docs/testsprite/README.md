@@ -9,9 +9,9 @@ PixiBun is a cozy pixel-art studio. Our [121 TestSprite test cases](https://www.
 | | |
 | --- | --- |
 | Test cases | 121, run by the TestSprite GitHub App on every push to [PR #6](https://github.com/lxcario/PixiBun/pull/6) |
-| Latest automatic App run | **118 passed · 2 failed · 1 blocked** on `efed6fae` ([per-case results](app-run-2026-10-23-efed6fae.json)) |
+| Latest automatic App run | **119 passed · 2 failed · 0 blocked** on `f97621a4` ([per-case results](app-run-2026-10-23-f97621a4.json)) |
 | Where we started | 33 passed · 7 failed · 81 blocked on `b78fffb1`, 21 October |
-| Product bugs TestSprite led us to | **12**, each fixed with a regression test ([table below](#bugs-testsprite-led-us-to)) |
+| Product bugs TestSprite led us to | **13**, 12 of them guarded by a regression test ([table below](#bugs-testsprite-led-us-to)) |
 | Stored Python replays | Run by our own GitHub workflow on every push; passing |
 
 ## The tests run themselves
@@ -40,10 +40,11 @@ Alongside it, our [Stored Python Replay workflow](../../.github/workflows/testsp
 | A 4 px Dither Brush stamp painted solid, ignoring its pattern | Rewriting a blocked plan to check dithering with one click | [`88ba8cde`](https://github.com/lxcario/PixiBun/commit/88ba8cde) | `tests/e2e/ditherBrushSize.spec.ts` |
 | The Teaching Board announced a load even when it failed | Found while redesigning a Teaching Board plan | [`1e68955a`](https://github.com/lxcario/PixiBun/commit/1e68955a) | — |
 | A replay link with an invisible character glued on opened a blank canvas | Automatic App run on `2f33975e`, S4-NEW-06; **passed on the fixed build** | [`04acc9bb`](https://github.com/lxcario/PixiBun/commit/04acc9bb) | `tests/replayLink.test.ts` |
+| Clicking Create palette again right after saving one could leave the button dead until the panel was reopened | Our emulator running the S4-PAL-01 App plan before a push (1 run in 6) | [`c6e42784`](https://github.com/lxcario/PixiBun/commit/c6e42784) | `tests/production/paletteDialogReopen.spec.ts` |
 
 Smaller accessibility fixes came from the same runs: the Apply Cleanup and Live preview names now contain their visible labels (WCAG 2.5.3, [`1c494612`](https://github.com/lxcario/PixiBun/commit/1c494612)), and the canvas readout's summary names its layer count ([`1071bcb6`](https://github.com/lxcario/PixiBun/commit/1071bcb6)). The full PR ledger, with each first failure and fixing commit, is in [loop-ledger.md](loop-ledger.md).
 
-## From 33 to 118 passing
+## From 33 to 119 passing
 
 Automatic App runs on PR #6. Counts are each run's own per-case verdicts (`test result --history`, source `github_action`).
 
@@ -61,9 +62,10 @@ Automatic App runs on PR #6. Counts are each run's own per-case verdicts (`test 
 | `587da149` | 116 | 3 | 2 | Plans that needed a drag, upload, phone or offline rewritten to what the agent can see |
 | `2f33975e` | 115 | 4 | 2 | S4-NEW-06 finds the invisible-character link bug |
 | [`53ac2afe`](app-run-2026-10-22-53ac2afe.json) | 116 | 3 | 2 | The link fix passes |
-| [`efed6fae`](app-run-2026-10-23-efed6fae.json) | **118** | **2** | **1** | Latest: every plan starts on the classic desk |
+| [`efed6fae`](app-run-2026-10-23-efed6fae.json) | 118 | 2 | 1 | Every plan starts on the classic desk |
+| [`f97621a4`](app-run-2026-10-23-f97621a4.json) | **119** | **2** | **0** | Latest: no blocked case |
 
-Every non-pass in every run was traced from the run's step snapshots and video, and sorted into three honest piles: a PixiBun bug, a mistake in our plan, or a limit of the cloud runner. The [22 October record](../releases/2026-10-22-app-plan-reliability.md) has the per-run detail. The three non-passes in the latest run were plan issues; their plans are simplified and pass our local emulator both with Studio Labs on and off.
+Every non-pass in every run was traced from the run's step snapshots and video, and sorted into three honest piles: a PixiBun bug, a mistake in our plan, or a limit of the cloud runner. The [22 October record](../releases/2026-10-22-app-plan-reliability.md) has the per-run detail. The two failures in the latest run were plan issues: S4-READOUT-01 expected an outdated readout sentence, and the agent glued three letters onto S4-DRAW-11's link. Both plans are fixed, and all 105 plans pass our local emulator with Studio Labs on and off.
 
 ## What the cloud agent can't do, and how we cover it
 

@@ -11,7 +11,7 @@
   ],
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

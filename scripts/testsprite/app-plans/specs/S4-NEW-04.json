@@ -5,7 +5,7 @@
   "goal": "With three frames held 100, 200 and 300 ms, moving the middle frame earlier gives 200, 100, 300 and the first frame cannot move earlier; moving it back and selecting the last frame gives 100, 200, 300 and the last cannot move later; the artwork never changes.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

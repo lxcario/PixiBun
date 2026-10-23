@@ -3,6 +3,12 @@
 All notable changes and architectural enhancements to the PixiBun codebase are documented below.
 ## Unreleased
 
+- Steadier palettes and CI, and early tester feedback on the record (23 October).
+  - **Create palette always reopens.** Clicking **Create palette** again within about 50 ms of saving a palette could leave the button dead until the panel remounted: the closing dialog was revived, then removed while the panel still thought it was open. Each opening of the Create palette and palette library dialogs is now a fresh dialog (`PalettePanel.tsx`, `c6e42784`). Found by the TestSprite plan emulator (S4-PAL-01 failed 1 run in 6); reproduced 3 times in 6 fast reopens before the fix, 0 in 10 after. `tests/production/paletteDialogReopen.spec.ts` fails on the previous build and passes in all three engines on the fixed one; a development build does not reproduce the race.
+  - **The two-build rollback check no longer hangs.** After WebKit refuses the legacy-Blob fixture, its read-back once waited until the 2-minute timeout (CI run 39927559408). The fixture now closes its database connection, the read-back reports which step failed and retries a stall on a fresh connection; its comparisons are unchanged (`tests/release/updateRollback.spec.ts`).
+  - **Browser installs in CI are bounded.** A stalled Playwright download held the native-codecs job until its 35-minute limit. Every install step now gives each attempt 4 minutes, up to three times.
+  - **Early tester feedback.** Six testers' survey answers (29 September–13 October) and what changed because of them are now in [early tester feedback](docs/research/2026-10-user-feedback.md). It is a survey, not an observed study.
+
 - Homepage: sunrise, speed and a Mona Bunny (23 October).
   - **Day/Night is a sunrise or a sunset.** Instead of a circle widening out of the switch, the hero's own moon sinks behind the hills as the sun rises from behind them (or the reverse), and the painting, the hero's text, buttons and vignettes blend to the new colors together on one smoothstep curve while the rest of the page crossfades. Nothing is laid over the page (`src/lib/theme/themeTransition.ts`, `src/app/theme-transition.css`, `MoonlitScene` `timeChange`).
   - **Smoother scrolling.** The homepage no longer replaces wheel scrolling with a main-thread glide (`scrollTo` every frame), which stuttered whenever a scene painted; scrolling is native again and in-page links still glide (`SmoothScroll.tsx`).

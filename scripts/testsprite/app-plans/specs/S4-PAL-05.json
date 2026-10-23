@@ -5,7 +5,7 @@
   "goal": "A palette register gets the role name S4 Lantern Ink and keeps it; binding a Magic Wand selection to it records one index binding; removing the binding leaves the role, and nothing changes the artwork.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

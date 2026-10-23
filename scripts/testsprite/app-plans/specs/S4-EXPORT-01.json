@@ -5,7 +5,7 @@
   "goal": "With a different Studio style, Day light and the Rule of thirds guide showing, the PNG export of Bun is still 16 x 16 at 1x and the drawing itself is unchanged: theme and guides are not artwork.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

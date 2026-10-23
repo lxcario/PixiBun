@@ -5,7 +5,7 @@
   "goal": "Light Sweep is its own export: it describes a 540 x 960 phone video at 12 frames a second and offers Save video, and the drawing stays exact.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

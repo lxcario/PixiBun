@@ -5,7 +5,7 @@
   "goal": "Adding, renaming, duplicating and deleting layers change only the layer stack; Undo after a delete restores the exact three layers; the artwork never changes; the last layer cannot be deleted.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

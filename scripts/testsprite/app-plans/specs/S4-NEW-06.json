@@ -5,7 +5,7 @@
   "goal": "A frame card's menu, opened with Shift+F10, offers Duplicate, Move earlier (disabled for the first frame), Move later and Delete; Escape closes it without changing any frame or adding history.",
   "steps": [
     {
-      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10"
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10&end=1"
     },
     {
       "skip": true

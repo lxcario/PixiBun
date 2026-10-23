@@ -5,7 +5,7 @@
   "goal": "Try a new look prepares a 2px Simplify preview without touching the drawing; only Apply changes the artwork, and one Undo restores it exactly.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

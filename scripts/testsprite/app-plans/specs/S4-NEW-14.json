@@ -5,7 +5,7 @@
   "goal": "The Live Preview opens, takes 1x, 2x and 4x scales and a different backdrop, folds and unfolds; none of it changes the drawing or adds history.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

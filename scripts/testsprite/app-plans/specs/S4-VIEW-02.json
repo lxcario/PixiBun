@@ -5,7 +5,7 @@
   "goal": "A saved layout restores the inspector's side and width after other changes and after reopening the Studio, and none of it changes the drawing.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true
@@ -73,7 +73,7 @@
       "why": "Layout changes do not touch the drawing."
     },
     {
-      "open": "/studio",
+      "open": "/studio?end=1",
       "reload": true
     },
     {

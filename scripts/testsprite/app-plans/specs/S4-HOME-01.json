@@ -5,7 +5,7 @@
   "goal": "The homepage bench is its own little world: it offers Bun and its friends, paint colours and its Draw, Light, Turn and Hop tools, its Undo starts disabled, and visiting it leaves the saved Studio drawing exactly as it was.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true
@@ -20,7 +20,7 @@
       "click": "Save now"
     },
     {
-      "open": "/",
+      "open": "/?end=1",
       "reload": true
     },
     {
@@ -65,7 +65,7 @@
       "why": "Choosing tools is not an edit."
     },
     {
-      "open": "/studio",
+      "open": "/studio?end=1",
       "reload": true
     },
     {

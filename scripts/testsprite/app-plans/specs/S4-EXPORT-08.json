@@ -5,7 +5,7 @@
   "goal": "Shader export offers Godot and Unity targets, states that it is shader code only and that textures must be supplied separately, and is ready to export without changing the drawing.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

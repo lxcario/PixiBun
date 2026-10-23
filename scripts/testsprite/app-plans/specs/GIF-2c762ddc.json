@@ -5,7 +5,7 @@
   "goal": "A two-frame drawing (red pixel, then blue pixel, held 100 and 200 ms) offers a 1x GIF of 16 x 16 pixels and 2 frames; the export is ready and both frames, their holds and their exact artwork stay unchanged.",
   "steps": [
     {
-      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10"
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10&end=1"
     },
     {
       "skip": true

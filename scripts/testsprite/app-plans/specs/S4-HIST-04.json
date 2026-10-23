@@ -5,7 +5,7 @@
   "goal": "The canvas size fields admit only 4 to 512 pixels: a typed 0 becomes 4 when the field is left, a typed 513 becomes 512 when Enter is pressed, and Cancel leaves the 16x16 Bun exactly as it was without allocating anything.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

@@ -5,7 +5,7 @@
   "goal": "The Playground fits the window it is given: below 1024 px it is the Pocket Doodle Pad, at desktop width the full practice workspace. Either way it opens on the Bouncy Mochi lesson with Pen, Fill and Eraser tools, colour swatches and the lesson's frames.",
   "steps": [
     {
-      "open": "/playground"
+      "open": "/playground?end=1"
     },
     {
       "skip": true

@@ -5,7 +5,7 @@
   "goal": "Keeping a traced practice in Studio creates a new 'Practice Drawing' project, while the saved original stays in Projects and reopens with its exact artwork.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

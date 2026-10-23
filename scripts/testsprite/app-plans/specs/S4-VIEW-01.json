@@ -5,7 +5,7 @@
   "goal": "Color-vision lens, rule of thirds, iso grid, 3x3 tiling and silhouette can all be switched on and back off; none of them changes the artwork or the 16 x 16 PNG export size.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

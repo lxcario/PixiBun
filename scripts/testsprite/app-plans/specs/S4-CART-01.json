@@ -5,7 +5,7 @@
   "goal": "A cart takes the project's own title and shows a card preview that follows it, and Save cart is ready; preparing the cart never changes the drawing.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

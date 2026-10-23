@@ -5,7 +5,7 @@
   "goal": "A Magic Wand selection of Bun becomes a rigid part: its END pose takes a small move that pose Undo and Redo step through; Cancel returns to drawing with nothing added; a 2-pose Bake adds editable frames while the original frame stays exact.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

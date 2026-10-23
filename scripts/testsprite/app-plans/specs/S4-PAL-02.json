@@ -5,7 +5,7 @@
   "goal": "Previewing a library palette changes nothing; Use palette selects the palette but not the brush color; clicking one of its swatches sets the Primary color; Bun's artwork never changes.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

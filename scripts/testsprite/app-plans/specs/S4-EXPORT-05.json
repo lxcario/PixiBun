@@ -5,7 +5,7 @@
   "goal": "The Godot kit preflight describes a valid atlas for Bun; asking for a normal-map atlas without a normal layer is flagged in the preflight, naming the frame that lacks one; without it the kit is ready again, and the artwork stays exact.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

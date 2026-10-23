@@ -5,7 +5,7 @@
   "goal": "Duplicating Bun's frame keeps the artwork exact; each frame keeps its own hold; Undo and Redo move only the edited hold. A hold edit is one Undo step from focus to blur, so typed digits never flood history; separate edits are separated by clicking away.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

@@ -5,7 +5,7 @@
   "goal": "Hiding Bun's layer removes it from the composite without losing data, showing it brings back the exact artwork, locking refuses an edit without adding history, and unlocking makes the layer editable again.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

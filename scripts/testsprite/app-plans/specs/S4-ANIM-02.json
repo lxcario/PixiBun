@@ -5,7 +5,7 @@
   "goal": "A two-frame animation held 100 and 200 ms can be stepped frame by frame (Next wraps from the last frame to the first), cycles its loop mode through Repeat, Ping-Pong and Once, and takes a 2x preview speed, while its stored holds and artwork stay exact.",
   "steps": [
     {
-      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10"
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10&end=1"
     },
     {
       "skip": true

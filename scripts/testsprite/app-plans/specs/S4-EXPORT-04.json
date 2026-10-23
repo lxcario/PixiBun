@@ -5,7 +5,7 @@
   "goal": "The sprite sheet offers horizontal, vertical and grid packing with engine metadata for both frames; each layout can be chosen and downloaded without changing the drawing.",
   "steps": [
     {
-      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10"
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10&end=1"
     },
     {
       "skip": true

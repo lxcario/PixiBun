@@ -5,7 +5,7 @@
   "goal": "Each of the seventeen tools is selected by its keyboard shortcut and shows as the pressed tool, including the ones folded into shared toolbar slots; choosing tools changes no artwork and adds no history. Operability only: each tool's pixels are covered by its own case.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

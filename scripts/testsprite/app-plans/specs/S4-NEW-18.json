@@ -5,7 +5,7 @@
   "goal": "Cocoa, Drizzle, Harvest and Harbor each take Night and Day without touching the drawing, and Harbor Day persists with the exact drawing after reopening.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true
@@ -176,7 +176,7 @@
       "click": "Save now"
     },
     {
-      "open": "/studio",
+      "open": "/studio?end=1",
       "reload": true
     },
     {

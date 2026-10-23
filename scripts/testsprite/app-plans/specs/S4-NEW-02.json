@@ -5,7 +5,7 @@
   "goal": "Deleting the middle of three frames leaves 100 and 300 ms; one Undo brings back all three frames in their original order with the exact artwork.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

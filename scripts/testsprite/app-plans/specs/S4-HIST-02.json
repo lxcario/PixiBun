@@ -5,7 +5,7 @@
   "goal": "A new edit after an Undo discards only the redo branch; the saved drawing reopens exactly, with Undo and Redo both unavailable on the reopened desk.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true
@@ -76,7 +76,7 @@
       "click": "Save now"
     },
     {
-      "open": "/studio",
+      "open": "/studio?end=1",
       "reload": true
     },
     {

@@ -5,7 +5,7 @@
   "goal": "Each of the twelve Studio styles can be chosen and is shown as the selected style; with Graphite and with Plum the Studio panel states that they keep the classic studio; and after all twelve changes the Bun artwork is exactly as it was.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

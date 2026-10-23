@@ -5,7 +5,7 @@
   "goal": "A two-frame drawing held 100 and 200 ms exports as a 2-frame GIF at native size; the dialog states it, and frames, holds and artwork stay unchanged.",
   "steps": [
     {
-      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10"
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10&end=1"
     },
     {
       "skip": true

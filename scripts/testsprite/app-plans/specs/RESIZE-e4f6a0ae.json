@@ -5,7 +5,7 @@
   "goal": "The File > Canvas size dialog clamps typed sizes to 4-512 pixels once each entry is committed (a typed 0 becomes 4 when the field is left, a typed 513 becomes 512 on Enter), and Cancel keeps the original 16 x 16 drawing exactly.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

@@ -86,11 +86,15 @@ Export a **PNG**, a **sprite sheet**, a looping **GIF** or **APNG**, a video whe
 
 <p align="center"><img src="docs/assets/screenshots/2026-10-23-sakura-day/home-day.png" alt="The PixiBun homepage by day in the Sakura theme: a pink sky with a soft sun, a little town of cottages and Bun at an easel on the hill." width="840" /></p>
 
-Every theme has a **Night** and a **Day**. Ten of the twelve float the desk over a little animated world: a sleepy town, a blossom festival under Mt. Fuji, a glowing reef, fireflies, a neon grid, snowed-in cabins, a rainy café street, harvest fields, a lighthouse bay. [Meet all twelve](docs/guides/themes.md).
+Every theme has a **Night** and a **Day**. Ten of the twelve float the desk over a little animated world: a sleepy town, a blossom festival under Mt. Fuji, a glowing reef, a hearth with drifting sparks, fireflies, a neon grid, snowed-in cabins, a rainy café street, harvest fields, a lighthouse bay. [Meet all twelve](docs/guides/themes.md).
+
+## Shaped by early testers
+
+Six people tried PixiBun between 29 September and 13 October and told us what they thought. Four were drawing pixel art for the first time, and five of the six would recommend it at 9 or 10 out of 10. Their answers shaped the 5 October workspace release: the triangle color picker, a palette library with previews, workspace layouts, composition guides, a whole-canvas navigator, gradients inside a selection, custom onion skin and Canvas only (Shift+Tab). Friends sent bug reports over Discord too. [What they said, and what changed](docs/research/2026-10-user-feedback.md).
 
 ## Tested on every pull request
 
-*🧾 Little promises, kept on every push.* A lock should keep its promise. Undo should bring a pose back. A downloaded file should hold the pixels you drew. We wrote **121 TestSprite test cases** to follow those promises, and the **TestSprite GitHub App runs all of them by itself** on every push to [PR #6](https://github.com/lxcario/PixiBun/pull/6). Our latest run: **118 passed, 2 failed, 1 blocked**, up from 33 passed when we started.
+*🧾 Little promises, kept on every push.* A lock should keep its promise. Undo should bring a pose back. A downloaded file should hold the pixels you drew. We wrote **121 TestSprite test cases** to follow those promises, and the **TestSprite GitHub App runs all of them by itself** on every push to [PR #6](https://github.com/lxcario/PixiBun/pull/6). Our latest run: **119 passed, 2 failed, 0 blocked**, up from 33 passed when we started.
 
 TestSprite didn't just count checkmarks for us. It found bugs we didn't know we had, several of them inside tests that were looking for something else:
 
@@ -103,7 +107,7 @@ TestSprite didn't just count checkmarks for us. It found bugs we didn't know we 
 | A palette loop trusts its own default. | The App run found a loop marking its own 6 Hz default speed as invalid. | The rate field accepts real fractions ([`f2f13f3c`](https://github.com/lxcario/PixiBun/commit/f2f13f3c)). |
 | A warning over a dialog is heard. | An error shown over an open dialog was invisible to screen readers (and to the test agent). | Messages now appear inside the open dialog ([`e43248c0`](https://github.com/lxcario/PixiBun/commit/e43248c0)); the very next automatic run passed the same case. |
 
-Each fix came with a regression test so it can't sneak back. All twelve bugs, the run-by-run climb, the stored Python replays and what the cloud agent can't do are in **[the evidence page](docs/testsprite/README.md)**.
+Each of these fixes came with a regression test so it can't sneak back. All thirteen bugs, the run-by-run climb, the stored Python replays and what the cloud agent can't do are in **[the evidence page](docs/testsprite/README.md)**.
 
 > **Season 4 judges, start here:** [▶ demo video](https://youtu.be/ic4LoLqSFvA) · [live app](https://pixibun.vercel.app/) · [evidence page](docs/testsprite/README.md) · [PR #6 and its checks](https://github.com/lxcario/PixiBun/pull/6) · [121 cases in TestSprite](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/test-cases) · [loop ledger](docs/testsprite/loop-ledger.md)
 
@@ -156,6 +160,7 @@ For agent developers, **Nibbli** is a repository companion that drives the real 
 | Keep an editable copy of your work | [Artwork safety and backup](docs/guides/artwork-safety.md) |
 | Choose an export format | [Export guide](docs/guides/exporting.md) |
 | See what's been checked, and when | [Current status](docs/current-status.md) · [TestSprite evidence](docs/testsprite/README.md) |
+| Read what early testers said | [Early tester feedback](docs/research/2026-10-user-feedback.md) |
 | Understand the engine | [Architecture](ARCHITECTURE.md) · [rendering](docs/contracts/rendering.md) |
 | Dream a little | [v2 vision](V2_VISION.md) |
 

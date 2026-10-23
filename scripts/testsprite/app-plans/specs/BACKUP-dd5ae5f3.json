@@ -5,7 +5,7 @@
   "goal": "A named two-frame project with its own holds asks for an editable backup: either the file is saved and the dialog closes, or the app says plainly that no backup was created. Either way the project stays open and exact.",
   "steps": [
     {
-      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10"
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10&end=1"
     },
     {
       "skip": true

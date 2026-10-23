@@ -5,7 +5,7 @@
   "goal": "Shade ramp turns the selected seed #3A2E4C into five shades that keep the seed and join the palette; choosing a generated shade is an explicit action that sets the Primary color; Undo removes the ramp; the artwork never changes.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

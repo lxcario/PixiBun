@@ -5,7 +5,7 @@
   "goal": "A renamed, saved Bun goes Home, into Playground practice, gets a traced practice pose, and Return to drawing brings back the same project name, frame and layer structure and exact artwork.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

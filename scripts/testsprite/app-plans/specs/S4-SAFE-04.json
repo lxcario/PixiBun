@@ -5,7 +5,7 @@
   "goal": "Work is kept locally: an edit saved with Save now is reported as saved to local storage and comes back exactly after a full reload, where a panel not opened before still loads and the history starts empty.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true
@@ -42,7 +42,7 @@
       "why": "The save is kept on this device, not sent over the network."
     },
     {
-      "open": "/studio",
+      "open": "/studio?end=1",
       "reload": true
     },
     {

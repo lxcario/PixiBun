@@ -5,7 +5,7 @@
   "goal": "A two-frame drawing gets a real Pen edit and new 175/325 ms holds, is saved, and comes back exactly after two full reloads, each starting with an empty Undo history.",
   "steps": [
     {
-      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10"
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10&end=1"
     },
     {
       "skip": true
@@ -69,7 +69,7 @@
       "click": "Save now"
     },
     {
-      "open": "/studio",
+      "open": "/studio?end=1",
       "reload": true
     },
     {
@@ -103,7 +103,7 @@
       }
     },
     {
-      "open": "/studio",
+      "open": "/studio?end=1",
       "reload": true
     },
     {

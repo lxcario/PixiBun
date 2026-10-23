@@ -308,3 +308,12 @@ The first run with every spec plan starting on the classic desk and the five pla
 - **S4-VIEW-02 (blocked):** saving, restoring and reopening the layout all passed; the agent skipped the workspace-preset steps and then failed to find Download PNG in Export. The plan now checks what its title promises: the saved layout returns after changes and after reopening, and the drawing is untouched.
 
 All three pass the emulator with Studio Labs on and off and were published (read back exactly).
+
+## The App run on `f97621a4`: 119 / 2 / 0 — 23 October, 08:51–09:34 UTC
+
+No blocked case, and the three plans fixed after `efed6fae` passed. [Per-case results](../testsprite/app-run-2026-10-23-f97621a4.json). Both failures were plan issues:
+
+- **S4-READOUT-01:** my error. The plan still expected the readout's summary sentence from before `1071bcb6`, which added the layer count ("layer Base Layer of 1 layer"). Undo and Redo restored the heart exactly; the plan now expects the current sentence.
+- **S4-DRAW-11:** the agent opened its 32×20 replay link with three letters glued to the end (`…31.0iva`), so the last drawing step could not be read, as with the invisible character in the `2f33975e` run. Every navigation in every plan now ends with a harmless `end=1` parameter, so anything appended lands there and the app ignores it.
+
+All 105 spec plans were emulated with Studio Labs on and off before publishing.

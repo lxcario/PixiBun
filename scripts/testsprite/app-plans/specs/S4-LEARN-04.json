@@ -5,7 +5,7 @@
   "goal": "In a lesson, a partial tracing gives a score above zero and below Matched and offers What's missing?; using it does not change the tracing; Trace it for me matches only the current pose, and the next pose is still unfinished.",
   "steps": [
     {
-      "open": "/playground"
+      "open": "/playground?end=1"
     },
     {
       "skip": true

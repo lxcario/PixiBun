@@ -5,7 +5,7 @@
   "goal": "Two corrupted links (not a replay at all, and one with an impossible 0-pixel width) are refused in plain words; the saved original stays in Projects, reopens exactly and is still editable with exact Undo.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true
@@ -27,7 +27,7 @@
       "click": "Save now"
     },
     {
-      "open": "/studio?replay=this-is-not-a-replay",
+      "open": "/studio?replay=this-is-not-a-replay&end=1",
       "reload": true,
       "refused": true
     },
@@ -45,7 +45,7 @@
       "click": "Dismiss replay message"
     },
     {
-      "open": "/studio?replay=1_0x16_ff0000_p0.1.1",
+      "open": "/studio?replay=1_0x16_ff0000_p0.1.1&end=1",
       "reload": true,
       "refused": true
     },

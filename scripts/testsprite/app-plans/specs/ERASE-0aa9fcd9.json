@@ -8,7 +8,7 @@
   ],
   "steps": [
     {
-      "open": "/studio?replay=1_16x16_1d4ed8_R0.6.6.9.9"
+      "open": "/studio?replay=1_16x16_1d4ed8_R0.6.6.9.9&end=1"
     },
     {
       "skip": true

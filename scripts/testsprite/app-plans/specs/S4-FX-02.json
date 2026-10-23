@@ -5,7 +5,7 @@
   "goal": "After a real Pen stroke, a lighting preview with strong settings is cancelled: the artwork, layers and frames equal the stroked drawing exactly and no history is added, so one Undo removes the stroke and one Redo restores it.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

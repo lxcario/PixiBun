@@ -5,7 +5,7 @@
   "goal": "The Teaching Board shows the Bun and Gel Slime examples and loads one into the Playground timeline as practice; the saved Studio drawing is not touched.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true
@@ -20,7 +20,7 @@
       "click": "Save now"
     },
     {
-      "open": "/playground",
+      "open": "/playground?end=1",
       "reload": true
     },
     {

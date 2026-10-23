@@ -5,7 +5,7 @@
   "goal": "Each of the five Studio Labs can be turned on and shows as on; Classic studio turns all five off; the drawing and its history are untouched and the editor stays usable.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

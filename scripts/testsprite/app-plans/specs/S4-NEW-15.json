@@ -5,7 +5,7 @@
   "goal": "The Live Preview window opens on the desk with its header controls reachable, stays reachable when its scale grows to 4x (the window keeps itself inside the drawing area), folds, unfolds and closes, and never changes the artwork.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

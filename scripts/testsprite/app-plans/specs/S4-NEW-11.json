@@ -5,7 +5,7 @@
   "goal": "Colors edits the pot it was opened from: a swatch chosen from the Primary well changes only the primary color, one chosen from the Secondary well changes only the secondary; the artwork never changes.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

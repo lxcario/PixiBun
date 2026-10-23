@@ -5,7 +5,7 @@
   "goal": "Slicing the 16 x 16 Bun into 8 px tiles reports 4 unique tiles in a 2 x 2 grid and offers the tileset with its maps; slicing never changes the artwork, and after an edit a fresh slice reflects the new source.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

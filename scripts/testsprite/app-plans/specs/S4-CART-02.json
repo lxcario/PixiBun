@@ -5,7 +5,7 @@
   "goal": "A broken cart link is refused clearly with a way home, sends nothing anywhere, and the saved Studio project is still there afterwards.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true
@@ -30,7 +30,7 @@
       "visible": "Rename project S4 Postcard Keep"
     },
     {
-      "open": "/open#this-is-not-a-cart",
+      "open": "/open#this-is-not-a-cart?end=1",
       "reload": true
     },
     {
@@ -46,7 +46,7 @@
       "text": "Nothing here leaves your device."
     },
     {
-      "open": "/studio",
+      "open": "/studio?end=1",
       "reload": true
     },
     {

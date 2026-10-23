@@ -5,7 +5,7 @@
   "goal": "After two strokes the timelapse reports the recorded stroke snapshots and is ready to download; exporting it does not use up Undo, which still steps back exactly one stroke.",
   "steps": [
     {
-      "open": "/studio?replay=1_16x16_ffffff_R0.0.0.15.15"
+      "open": "/studio?replay=1_16x16_ffffff_R0.0.0.15.15&end=1"
     },
     {
       "skip": true

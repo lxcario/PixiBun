@@ -5,7 +5,7 @@
   "goal": "Menus and the color flyout work from the keyboard: File opens with Enter and closes with Escape, the Primary well opens Colors with Enter and Escape closes it and returns focus so Enter reopens it; nothing changes the artwork.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

@@ -5,7 +5,7 @@
   "goal": "A rig saved from Bun reopens after a reload while the artwork is unchanged; after a real Pen edit is saved and reloaded, opening the same rig is refused because its source artwork changed, and the drawing stays exactly as edited.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true
@@ -47,7 +47,7 @@
       "click": "Save now"
     },
     {
-      "open": "/studio",
+      "open": "/studio?end=1",
       "reload": true
     },
     {
@@ -96,7 +96,7 @@
       "click": "Save now"
     },
     {
-      "open": "/studio",
+      "open": "/studio?end=1",
       "reload": true
     },
     {

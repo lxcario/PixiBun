@@ -5,7 +5,7 @@
   "goal": "Each of the twelve lessons can be chosen in the Playground and then shows its own title and pose strip. This is lesson operability, not learning gains.",
   "steps": [
     {
-      "open": "/playground"
+      "open": "/playground?end=1"
     },
     {
       "skip": true

@@ -5,7 +5,7 @@
   "goal": "Bun gets one deliberate new colour; a lamp preview cancelled leaves it exact; the same lamp applied changes it; the lit pose is duplicated with its own holds; the GIF states both frames, and the backup is either saved or honestly not created.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

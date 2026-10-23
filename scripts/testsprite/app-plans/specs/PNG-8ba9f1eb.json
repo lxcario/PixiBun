@@ -5,7 +5,7 @@
   "goal": "A 16 x 16 drawing with a red pixel at (2,3) and a blue one at (8,10) offers a 1x PNG of exactly 16 x 16 pixels and is ready to download; the artwork stays exact.",
   "steps": [
     {
-      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~p1.8.10"
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~p1.8.10&end=1"
     },
     {
       "skip": true

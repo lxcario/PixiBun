@@ -5,7 +5,7 @@
   "goal": "After one Pen pixel, changing a view setting and the desk theme adds no history: one Undo removes exactly the pixel, Redo returns it, and the theme choice stays.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

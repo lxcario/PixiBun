@@ -5,7 +5,7 @@
   "goal": "A single-frame project cannot delete its only frame; duplicating it and deleting the duplicate returns to exactly one frame with Bun's artwork exact, and Delete is unavailable again.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

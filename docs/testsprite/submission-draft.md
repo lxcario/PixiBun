@@ -5,8 +5,9 @@
 ## 23 October evidence update — still a draft
 
 - **Demo video:** [youtu.be/ic4LoLqSFvA](https://youtu.be/ic4LoLqSFvA). The README opens with its thumbnail.
-- **Judge-facing evidence page:** [docs/testsprite/README.md](README.md): twelve product bugs TestSprite led us to, each with its fix commit and regression test; the run-by-run climb; what the cloud agent can't do.
-- **Latest automatic App run:** 116 Passed / 3 Failed / 2 Blocked on `53ac2afe` (from 33/7/81 on `b78fffb1`). GitHub's statuses show the App starting nine seconds after Vercel's preview was ready, with no manual trigger. The five non-passes were plan or runner issues; their plans are simplified and pass the emulator with Studio Labs on and off. Four App cases that caught product bugs (S4-ANIM-03, S4-PAL-04, S4-RELATION-01, S4-HIST-03) now pass on their fixed builds.
+- **Judge-facing evidence page:** [docs/testsprite/README.md](README.md): thirteen product bugs TestSprite led us to, each with its fix commit and twelve with a regression test; the run-by-run climb; what the cloud agent can't do.
+- **Latest automatic App run:** 119 Passed / 2 Failed / 0 Blocked on `f97621a4` (from 33/7/81 on `b78fffb1`). Its two failures were plan issues, now fixed; all 105 plans pass the emulator with Studio Labs on and off. On `53ac2afe` GitHub's statuses showed the App starting nine seconds after Vercel's preview was ready, with no manual trigger. Four App cases that caught product bugs (S4-ANIM-03, S4-PAL-04, S4-RELATION-01, S4-HIST-03) now pass on their fixed builds.
+- **Early tester feedback:** six people answered a feedback survey between 29 September and 13 October; their requests shaped the 5 October workspace release ([record](../research/2026-10-user-feedback.md)). It is a survey, not an observed study.
 - **Still open:** the PR check is red until one run passes all 121, and production still serves the older `main`.
 
 ## 22 October evidence update — still a draft

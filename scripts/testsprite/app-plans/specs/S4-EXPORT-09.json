@@ -5,7 +5,7 @@
   "goal": "With a cycle track over Bun's colors 2 to 5, Cycle Loop is ready to export a loop (no warning, download enabled) and is ready without changing the stored artwork.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

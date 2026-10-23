@@ -5,7 +5,7 @@
   "goal": "At the desktop size the agent uses, every timeline action is present and named: Play, frame time, add, duplicate, delete and move; using them keeps the artwork exact.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

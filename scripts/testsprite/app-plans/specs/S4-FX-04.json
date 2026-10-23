@@ -5,7 +5,7 @@
   "goal": "With exactly one surface (normal) layer the Godot kit's normal atlas is ready; a lighting preview cancelled leaves both layers and the artwork exact; with a second surface layer the normal atlas is refused with its reason.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

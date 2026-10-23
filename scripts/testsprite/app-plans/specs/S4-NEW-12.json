@@ -5,7 +5,7 @@
   "goal": "In Colors, arrow keys and End move along the palette swatches and Enter applies the swatch reached, which shows in the Primary well; Escape closes Colors and returns focus to the Primary well, so Enter reopens Colors. The artwork never changes.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

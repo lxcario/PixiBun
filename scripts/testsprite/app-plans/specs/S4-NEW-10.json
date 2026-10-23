@@ -5,7 +5,7 @@
   "goal": "A valid hex commits with Enter; an invalid one is never committed, with Enter or with Escape; the primary stays #FF0000 and the drawing is unchanged.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

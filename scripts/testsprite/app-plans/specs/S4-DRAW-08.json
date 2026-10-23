@@ -5,7 +5,7 @@
   "goal": "A Magic Wand click selects a 12 x 10 region of Bun without changing any pixel, and Escape clears the selection, still without changing any pixel.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

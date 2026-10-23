@@ -5,7 +5,7 @@
   "goal": "The Bezier Curve tool offers its stroke presets and curve tightness; a click without a drag commits nothing, so the artwork and history stay exactly as they were (a curve is only committed from its draft).",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

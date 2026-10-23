@@ -8,7 +8,7 @@
   ],
   "steps": [
     {
-      "open": "/studio?replay=1_16x16_e83a5c.ffd6e0.ffffff_l0.3.3.5.3~l0.10.3.12.3~l0.2.4.6.4~l0.9.4.13.4~l0.1.5.14.5~l0.1.6.14.6~l0.1.7.14.7~l0.2.8.13.8~l0.3.9.12.9~l0.4.10.11.10~l0.5.11.10.11~l0.6.12.9.12~l0.7.13.8.13~f1.0.0~p2.4.4.3.5.3.6"
+      "open": "/studio?replay=1_16x16_e83a5c.ffd6e0.ffffff_l0.3.3.5.3~l0.10.3.12.3~l0.2.4.6.4~l0.9.4.13.4~l0.1.5.14.5~l0.1.6.14.6~l0.1.7.14.7~l0.2.8.13.8~l0.3.9.12.9~l0.4.10.11.10~l0.5.11.10.11~l0.6.12.9.12~l0.7.13.8.13~f1.0.0~p2.4.4.3.5.3.6&end=1"
     },
     {
       "skip": true
@@ -17,7 +17,7 @@
       "classic": true
     },
     {
-      "text": "16×16 canvas, frame 1 of 1, layer Base Layer: 256 painted pixels in 3 colors.",
+      "text": "16×16 canvas, frame 1 of 1, layer Base Layer of 1 layer: 256 painted pixels in 3 colors.",
       "why": "The readout summary describes the drawing in words."
     },
     {

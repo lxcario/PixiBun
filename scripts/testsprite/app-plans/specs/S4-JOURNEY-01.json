@@ -5,7 +5,7 @@
   "goal": "A two-frame animation with its own holds survives Duplicate and Undo exactly, offers PNG, GIF and APNG exports that state the right size and frame count, and asks for a backup honestly; the animation stays exact throughout.",
   "steps": [
     {
-      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10"
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10&end=1"
     },
     {
       "skip": true

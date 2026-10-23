@@ -5,7 +5,7 @@
   "goal": "With a half-transparent upper layer, a red stroke on the lower layer shows through at exactly one pixel blended about halfway (all other 255 cells stay #808080); a locked upper layer refuses a stroke; Undo restores the exact composite.",
   "steps": [
     {
-      "open": "/studio?replay=1_16x16_4080c0.c08040_R0.0.0.15.15~L~R1.0.0.15.15"
+      "open": "/studio?replay=1_16x16_4080c0.c08040_R0.0.0.15.15~L~R1.0.0.15.15&end=1"
     },
     {
       "skip": true

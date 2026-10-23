@@ -5,7 +5,7 @@
   "goal": "Control+K opens the command palette; searching Eraser and choosing it selects the Eraser and closes the palette; reopening and pressing Escape closes it; nothing changes the artwork or adds history.",
   "steps": [
     {
-      "open": "/studio?template=bun"
+      "open": "/studio?template=bun&end=1"
     },
     {
       "skip": true

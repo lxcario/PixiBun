@@ -5,7 +5,7 @@
   "goal": "An asymmetric L selected with one Magic Wand click can be lifted and rotated: Cancel puts back the exact original, Rotate 90 degrees clockwise and Commit changes it once, and one Undo restores the exact original.",
   "steps": [
     {
-      "open": "/studio?replay=1_16x16_e83a5c_R0.8.3.9.12~R0.10.11.13.12"
+      "open": "/studio?replay=1_16x16_e83a5c_R0.8.3.9.12~R0.10.11.13.12&end=1"
     },
     {
       "skip": true
