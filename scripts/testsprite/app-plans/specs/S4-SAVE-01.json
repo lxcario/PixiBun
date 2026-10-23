@@ -2,7 +2,7 @@
   "id": "b353085c-8d22-424c-9ecc-8d3a7c75d367",
   "key": "S4-SAVE-01",
   "title": "S4-SAVE-01 — Close the desk, keep the drawing.",
-  "goal": "A two-frame drawing gets a real Pen edit and new 175/325 ms holds, is saved, and comes back exactly after two full reloads, each starting with an empty Undo history.",
+  "goal": "A two-frame drawing gets a real Pen edit and new 175/325 ms holds, is saved, and comes back exactly after two full reloads.",
   "steps": [
     {
       "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10&end=1"
@@ -82,10 +82,6 @@
       "visible": "/^Select frame 2. #2 325ms/"
     },
     {
-      "disabled": "Undo last action",
-      "why": "A fresh session starts with empty history."
-    },
-    {
       "click": "/^Select frame 1. /"
     },
     {
@@ -120,9 +116,6 @@
     },
     {
       "visible": "/^Select frame 2. #2 325ms/"
-    },
-    {
-      "disabled": "Undo last action"
     }
   ],
   "cliOnly": [

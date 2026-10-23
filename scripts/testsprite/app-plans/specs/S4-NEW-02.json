@@ -72,6 +72,10 @@
       "say": "Click the 'Undo last action' button once now. This click is required: the checks that follow are about what Undo brings back, so do not assert them without clicking it."
     },
     {
+      "enabled": "Redo last action",
+      "why": "Undo ran, so Redo is now available."
+    },
+    {
       "readout": {
         "digest": "=A"
       },
