@@ -21,7 +21,22 @@
 
 Some evenings you want to make something small. A bunny sixteen pixels tall. A campfire that flickers. A window with rain on it and a cat asleep on the sill.
 
-PixiBun is a desk for exactly that. It has a pixel pen and a timeline, a little Lamp you can drag around your sprite, palettes that breathe, and a mascot called **Bun** who will happily sit for a portrait. Here is how an evening at the desk tends to go.
+PixiBun is a desk for exactly that. It has a pixel pen and a timeline, a little Lamp you can drag around your sprite, palettes that breathe, and a mascot called **Bun** who will happily sit for a portrait (on the homepage, Bun is painting itself as the Mona Lisa). Here is how an evening at the desk tends to go.
+
+### Things you won't find in other pixel editors
+
+| | |
+| --- | --- |
+| 🕯️ **A Lamp for your sprite** | Drag a light bulb around your drawing and watch real shading and a cast shadow follow it, built from your own colors. Preview first, keep it only if you like it. |
+| 🌧️ **Animation without frames** | Six living postcards (rain on a window, a campfire, a waterfall…) move through *palette cycling*: a few colors taking turns. Change one color and your change moves too. |
+| 🃏 **A drawing you can hand to a friend** | **Export → Cart** makes a trading-card PNG with the whole editable drawing inside it. Anyone can open the card, watch your making-of replay and light it with a lamp on their phone. Nothing is uploaded. |
+| 🧾 **A receipt for your patience** | PixiBun quietly counts your strokes and drawing time, and can add a making-of replay to your cart, if you choose. |
+| 🎬 **Light Sweep** | A five-second phone video of a lamp drifting over your drawing at night, ready to share. |
+| 📖 **Lessons with a ghost pen** | Twelve coached lessons show one pose at a time and point at the pixels you missed. Practice never touches your real drawing. |
+| 🤝 **Draw together** | Co-Draw connects two browsers directly so a friend can draw on your canvas with you. |
+| 🎮 **Straight into your game** | Sprite sheets, GIF and APNG, and a Godot kit with its frames and clips ready to drop into a project. |
+| 🌗 **A desk with a sky** | Twelve themes, each with a Night and a Day. Switch on the homepage and the moon sets behind the hills while the sun rises. |
+| 🤍 **Hand-made, on your terms** | No account, no tracking, works offline, saves to your device, and no generative AI anywhere in it. |
 
 ## 🕯️ 7 pm · Light the lamp
 
@@ -77,16 +92,16 @@ Every theme has a **Night** and a **Day**. Ten of the twelve float the desk over
 
 *🧾 Little promises, kept on every push.* A lock should keep its promise. Undo should bring a pose back. A downloaded file should hold the pixels you drew. We wrote **121 TestSprite test cases** to follow those promises, and the **TestSprite GitHub App runs all of them by itself** on every push to [PR #6](https://github.com/lxcario/PixiBun/pull/6). Our latest run: **116 passed, 3 failed, 2 blocked**, up from 33 passed when we started.
 
-Some promises we only learned to keep because a test caught us breaking them:
+TestSprite didn't just count checkmarks for us. It found bugs we didn't know we had, several of them inside tests that were looking for something else:
 
-| The promise | What TestSprite caught | Fixed in |
+| The promise | What TestSprite caught | How we fixed it |
 | --- | --- | --- |
-| Lock a layer, and it stays locked. | Deleting a selection on a locked layer still changed its pixels. | [`37b37191`](https://github.com/lxcario/PixiBun/commit/37b37191) |
-| Lift a piece of your drawing, change your mind, and it goes home. | Flip a selection, press Escape: the pixels vanished, with no Undo. | [`c534cc99`](https://github.com/lxcario/PixiBun/commit/c534cc99) |
-| Bun keeps its colors. | Normal Chisel could paint surface-map colors into ordinary paint. | [`2c9cf43f`](https://github.com/lxcario/PixiBun/commit/2c9cf43f) |
-| Type 24, get 24. | The canvas-size field turned a typed 24 into 44. | [`4d838ca9`](https://github.com/lxcario/PixiBun/commit/4d838ca9) |
-| A palette loop trusts its own default. | The loop marked its own 6 Hz default speed as invalid. | [`f2f13f3c`](https://github.com/lxcario/PixiBun/commit/f2f13f3c) |
-| A warning over a dialog is heard. | Screen readers never heard an error shown over an open dialog. | [`e43248c0`](https://github.com/lxcario/PixiBun/commit/e43248c0) |
+| Lift a piece of your drawing, change your mind, and it goes home. | A test couldn't find the transform buttons (their names were only arrow glyphs). Retracing its steps by hand: flip a selection, press Escape, and the pixels were **gone, with no Undo**. | The buttons got real names, and a lifted selection now remembers where it came from ([`ff320663`](https://github.com/lxcario/PixiBun/commit/ff320663), [`c534cc99`](https://github.com/lxcario/PixiBun/commit/c534cc99)). Five browser tests guard every way home. |
+| Lock a layer, and it stays locked. | A cloud run locked a layer and pressed Delete on a selection: 768 color channels changed anyway. | Selection edits now check the lock before touching a pixel ([`37b37191`](https://github.com/lxcario/PixiBun/commit/37b37191)). |
+| Bun keeps its colors. | Following a Normal Chisel case showed it could paint surface-map colors into ordinary paint. | The canvas refuses that stroke and explains why ([`2c9cf43f`](https://github.com/lxcario/PixiBun/commit/2c9cf43f)). |
+| Type 24, get 24. | The automatic App run typed 24 into the canvas size and got **44**: each keystroke was clamped before the next one arrived. | Values are checked when you finish typing ([`4d838ca9`](https://github.com/lxcario/PixiBun/commit/4d838ca9)); later automatic runs pass it. |
+| A palette loop trusts its own default. | The App run found a loop marking its own 6 Hz default speed as invalid. | The rate field accepts real fractions ([`f2f13f3c`](https://github.com/lxcario/PixiBun/commit/f2f13f3c)). |
+| A warning over a dialog is heard. | An error shown over an open dialog was invisible to screen readers (and to the test agent). | Messages now appear inside the open dialog ([`e43248c0`](https://github.com/lxcario/PixiBun/commit/e43248c0)); the very next automatic run passed the same case. |
 
 Each fix came with a regression test so it can't sneak back. All twelve bugs, the run-by-run climb, the stored Python replays and what the cloud agent can't do are in **[the evidence page](docs/testsprite/README.md)**.
 
