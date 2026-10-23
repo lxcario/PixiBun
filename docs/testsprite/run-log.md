@@ -1,0 +1,44 @@
+# PR #6 run log: every automatic TestSprite run, in order
+
+*Judges: start here. One row per automatic run since 21 October. Each push deployed a Vercel preview, and the TestSprite GitHub App ran all 121 cases against it by itself, with nobody pressing Run. Counts are each run's own per-case verdicts. Cross-check any row against [PR #6's commit statuses](https://github.com/lxcario/PixiBun/pull/6) and the [per-run JSON records](.).*
+
+**Read each row as:** what we pushed → what TestSprite reported → what broke and why → the commit that fixed it → the run that confirmed the fix.
+
+Every non-pass went into one of three piles, decided from the run's step snapshots and video:
+
+- **bug**: PixiBun was wrong. Fixed in the app, with a regression test.
+- **plan**: our test plan asked for something unclear or impossible. Rewritten, and checked first in our local emulator.
+- **agent** or **runner**: the cloud agent skipped or misread a step it then reported doing, or hit a limit of its browser. The plan stays as strict as before.
+
+| # | Push | Passed / Failed / Blocked | What broke, and why | Fixed in | Confirmed |
+| ---: | --- | --- | --- | --- | --- |
+| 1 | `b78fffb1` · 21 Oct | 33 / 7 / 81 | **bug**: S4-ANIM-03, an error over an open dialog was inert, so screen readers never heard it. **plan**: of the other non-passes, 75 demanded what the agent can't do (read raw pixels, open a downloaded file, drag, upload) and 7 were plan errors ([triage](app-cohort-triage-2026-10-22.json)) | [`e43248c0`](https://github.com/lxcario/PixiBun/commit/e43248c0) | Run 2 passes S4-ANIM-03 |
+| 2 | `48f9b999` · 22 Oct | 55 / 7 / 59 | 28 plans redesigned around the Canvas readout. **bug**: S4-RELATION-01, the transform buttons were named only with arrow glyphs, so the agent couldn't find them. Reproducing it by hand exposed data loss: flip a selection, press Escape, and the pixels were gone with no Undo | [`ff320663`](https://github.com/lxcario/PixiBun/commit/ff320663), [`c534cc99`](https://github.com/lxcario/PixiBun/commit/c534cc99) | Run 3 passes S4-RELATION-01 |
+| 3 | `0259f782` | 58 / 8 / 55 | 34 of 37 redesigned plans passed. **agent**: three sequencing slips. Investigating a newly blocked lesson case found a **bug**: practice refused to start right after a save | [`53eb033b`](https://github.com/lxcario/PixiBun/commit/53eb033b) | |
+| 4 | `89d7041b` | 63 / 2 / 56 | 40 of 41 redesigned plans passed. **agent**: S4-NEW-01 skipped the click that finishes a hold edit. **runner**: S4-EXPORT-10 can't complete the browser's native save dialog | plan finishes the edit by selecting another frame | |
+| 5 | `c5e0ebf9` | 59 / 8 / 54 | Docs-only push, same app: this run measures the agent's run-to-run variation | — | |
+| 6 | `9c2197d2` | 68 / 7 / 46 | **bug**: S4-HIST-03, typing 24 into the canvas-size field gave 44, because the field clamped on every keystroke. **plan**: S4-NEW-19 was vague and was redesigned | [`4d838ca9`](https://github.com/lxcario/PixiBun/commit/4d838ca9) | Run 12 passes S4-HIST-03 |
+| 7 | `3c61db42` | 68 / 9 / 44 | **plan**: four plans not yet redesigned. **agent**: four slips, e.g. S4-NEW-02's video ends on the Delete click, so Undo was never pressed. We then rewrote the last 43 plans, which exposed two **bugs**: a 4 px Dither Brush stamp painted solid, and the Teaching Board announced loads that had failed | [`88ba8cde`](https://github.com/lxcario/PixiBun/commit/88ba8cde), [`1e68955a`](https://github.com/lxcario/PixiBun/commit/1e68955a) | Run 8 |
+| 8 | `2d76837b` | 99 / 8 / 14 | First run with every plan redesigned and the Dither fix. Seven cases stay honestly blocked: their essence needs a drag, an upload, a phone viewport or offline mode, which Playwright CI covers instead | — | |
+| 9 | `cc64dfd5` | 106 / 7 / 8 | **agent**: skipped actions it then reported doing (S4-NEW-02's Undo, S4-ANIM-02's Play) and incomplete reads. **runner**: a 3.5 s toast and a hanging download click | download clicks removed from App plans; Undo and Play spelled out | Run 10 |
+| 10 | `587da149` | 116 / 3 / 2 | First run with those fixes in every plan | — | |
+| 11 | `2f33975e` | 115 / 4 / 2 | **bug**: S4-NEW-06, a replay link with an invisible character glued on opened a blank canvas. **plan**: S4-PAL-03, S4-DRAW-11, S4-LAYER-01 and S4-LEARN-06 named the wrong control or order | [`04acc9bb`](https://github.com/lxcario/PixiBun/commit/04acc9bb) | Run 12 passes S4-NEW-06 |
+| 12 | `53ac2afe` · 22 Oct | 116 / 3 / 2 | **plan**: S4-FX-03 read a readout field as blank, S4-PAL-01 expected a colour count the Labs picker shows differently, S4-LEARN-06 ran below 1024 px. **agent**: S4-HOME-01's click didn't register; S4-ANIM-02 never pressed Play. The snapshots also showed the agent's browser starts with Studio Labs on, so every plan now starts on the classic desk | [`1f408f3b`](https://github.com/lxcario/PixiBun/commit/1f408f3b), [`ad05c5b7`](https://github.com/lxcario/PixiBun/commit/ad05c5b7) | Run 13 |
+| 13 | `efed6fae` · 23 Oct | 118 / 2 / 1 | **plan**: S4-EXPORT-05 couldn't read a refusal after a Download click, S4-NEW-03 carried an old description, and S4-VIEW-02 skipped its preset steps | [`f97621a4`](https://github.com/lxcario/PixiBun/commit/f97621a4) | Run 14 |
+| 14 | `f97621a4` | **119 / 2 / 0** | **plan**: S4-READOUT-01 expected the readout sentence from before the layer count was added. **agent**: S4-DRAW-11 opened its link with three letters glued on, so every link now ends in a harmless `end=1` | [`6e903b46`](https://github.com/lxcario/PixiBun/commit/6e903b46) | Run 15 |
+| 15 | `6e903b46` | 118 / 2 / 1 | **plan**: S4-FX-06, S4-PAL-05 and S4-SAVE-02 were worded loosely. Meanwhile our emulator found a **bug** before any credit was spent: Create palette could stop reopening right after a save | [`a1f5b479`](https://github.com/lxcario/PixiBun/commit/a1f5b479), [`9798d1c0`](https://github.com/lxcario/PixiBun/commit/9798d1c0), [`c0d1009d`](https://github.com/lxcario/PixiBun/commit/c0d1009d), [`c6e42784`](https://github.com/lxcario/PixiBun/commit/c6e42784) | Run 16 passes all three |
+| 16 | `c0d1009d` · 23 Oct | 118 / 3 / 0 | **agent**: S4-NEW-02 skipped its Undo click (Redo is still disabled in the snapshot), S4-SAVE-01 read a disabled Undo as enabled after a reload, and S4-ANIM-02 clicked the loop mode once too few. All three pass our emulator 18/18 against this exact preview | Plans unchanged in strictness; required clicks spelled out, and SAVE-01 waits for the save confirmation before reloading ([scope note](retry-plan-scope-2026-10-23.md)) | Next run |
+
+## What the climb from 33 to 118 does and doesn't mean
+
+- It does **not** mean we deleted hard tests. All 121 cases are still in the suite. When a case asked for something the agent physically can't do (drag, upload, decode a file), the App plan checks what the agent can see. The deep check moved to a stored Python replay or a Playwright test that runs on every push. [What the cloud agent can't do](README.md#what-the-cloud-agent-cant-do-and-how-we-cover-it) lists each move.
+- It **does** mean the checks are exact. 103 of the 106 plan specs compare the Studio's Canvas readout, which is computed from the real canvas. A frame digest that matches is an exact artwork match, not "something was drawn".
+- A failed run stays a failed run. Retries and manual passes are labelled as such and never replace an automatic verdict ([why](retry-plan-scope-2026-10-23.md)).
+
+## Tallies
+
+| | |
+| --- | --- |
+| Automatic App runs on PR #6 | 16 since 21 October, listed above, each triggered by a push. Earlier automatic runs from 19 October (when the App began running PR checks on our plan) are in the [dated records](../releases/2026-10-21-testsprite-verification-and-pr-story.md); one of them caught S4-PAL-04's 6 Hz bug |
+| Product bugs TestSprite led us to | 13 across the season, 12 with a regression test ([table](README.md#bugs-testsprite-led-us-to)). Eight surfaced during the runs above: in a run, while reproducing a failure, or while rewriting a plan the run had blocked. One more came from our emulator running an App plan before a push |
+| Merge gate | `TestSprite V3` and `validate` are required on `main`, with no bypass, not even for admins. PR #6 has stayed unmergeable while red |

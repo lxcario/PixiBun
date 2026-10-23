@@ -94,7 +94,7 @@ Six people tried PixiBun between 29 September and 13 October and told us what th
 
 ## Tested on every pull request
 
-*🧾 Little promises, kept on every push.* A lock should keep its promise. Undo should bring a pose back. A downloaded file should hold the pixels you drew. We wrote **121 TestSprite test cases** to follow those promises, and the **TestSprite GitHub App runs all of them by itself** on every push to [PR #6](https://github.com/lxcario/PixiBun/pull/6). Our latest run: **119 passed, 2 failed, 0 blocked**, up from 33 passed when we started.
+*🧾 Little promises, kept on every push.* A lock should keep its promise. Undo should bring a pose back. A downloaded file should hold the pixels you drew. We wrote **121 TestSprite test cases** to follow those promises, and the **TestSprite GitHub App runs all of them by itself** on every push to [PR #6](https://github.com/lxcario/PixiBun/pull/6). Our best automatic run so far: **119 passed, 2 failed, 0 blocked**, up from 33 passed when we started; the latest, 118 passed and 3 failed, is explained in the [run log](docs/testsprite/run-log.md).
 
 TestSprite didn't just count checkmarks for us. It found bugs we didn't know we had, several of them inside tests that were looking for something else:
 
@@ -109,7 +109,7 @@ TestSprite didn't just count checkmarks for us. It found bugs we didn't know we 
 
 Each of these fixes came with a regression test so it can't sneak back. All thirteen bugs, the run-by-run climb, the stored Python replays and what the cloud agent can't do are in **[the evidence page](docs/testsprite/README.md)**.
 
-> **Season 4 judges, start here:** [▶ demo video](https://youtu.be/ic4LoLqSFvA) · [live app](https://pixibun.vercel.app/) · [evidence page](docs/testsprite/README.md) · [PR #6 and its checks](https://github.com/lxcario/PixiBun/pull/6) · [121 cases in TestSprite](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/test-cases) · [loop ledger](docs/testsprite/loop-ledger.md)
+> **Season 4 judges, start here:** [▶ demo video](https://youtu.be/ic4LoLqSFvA) · [live app](https://pixibun.vercel.app/) · [evidence page](docs/testsprite/README.md) · [PR #6 and its checks](https://github.com/lxcario/PixiBun/pull/6) · [121 cases in TestSprite](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/test-cases) · [run log](docs/testsprite/run-log.md) · [mutation proof](docs/testsprite/mutation-proof.md)
 
 ## Your first few pixels
 

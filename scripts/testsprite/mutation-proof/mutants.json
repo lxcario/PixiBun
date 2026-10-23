@@ -1,0 +1,82 @@
+[
+ {
+  "id": "m01-delete-frame-no-undo",
+  "harm": "Deleting a frame cannot be undone",
+  "file": "src/stores/slices/createAnimationSlice.ts",
+  "old": "    if (!pushStructuralHistoryStep('Delete Frame', {",
+  "new": "    if (false && !pushStructuralHistoryStep('Delete Frame', {",
+  "plans": "Delete frame"
+ },
+ {
+  "id": "m02-locked-layer-paints",
+  "harm": "A locked layer accepts paint",
+  "file": "src/hooks/viewport/useViewportPointerEvents.ts",
+  "old": "    if (currentLayer?.locked && tools.activeTool !== 'eyedropper') {",
+  "new": "    if (false && currentLayer?.locked && tools.activeTool !== 'eyedropper') {",
+  "plans": "[Ll]ock"
+ },
+ {
+  "id": "m03-holds-not-saved",
+  "harm": "Autosave forgets frame holds",
+  "file": "src/lib/project/serialize.ts",
+  "old": "    const frames = state.frames.map(frame => ({ id: frame.id, durationMs: frame.durationMs,",
+  "new": "    const frames = state.frames.map(frame => ({ id: frame.id, durationMs: undefined,",
+  "plans": "\"reload\": true"
+ },
+ {
+  "id": "m04-loop-skips-once",
+  "harm": "Loop mode never offers Once",
+  "file": "src/components/layout/BottomTimeline.tsx",
+  "old": "    const modes: LoopMode[] = ['repeat', 'ping-pong', 'once'];",
+  "new": "    const modes: LoopMode[] = ['repeat', 'ping-pong'];",
+  "plans": "Loop mode"
+ },
+ {
+  "id": "m05-resize-clamps-keystrokes",
+  "harm": "Typing 24 into Canvas size gives 44",
+  "file": "src/components/modals/CanvasResizeModal.tsx",
+  "old": "    setWidthText(text);\n    const n = parseInt(text, 10);",
+  "new": "    const raw = parseInt(text, 10);\n    const n = Number.isFinite(raw) ? clampSize(raw) : raw;\n    setWidthText(Number.isFinite(raw) ? String(n) : text);",
+  "plans": "Canvas size|[Ww]idth"
+ },
+ {
+  "id": "m06-eyedropper-wrong-slot",
+  "harm": "Eyedropper fills the wrong color slot",
+  "file": "src/hooks/viewport/useViewportPointerEvents.ts",
+  "old": "    if (secondary) useStudioStore.getState().setSecondaryColor(hex);\n    else props.setPrimaryColor(hex);",
+  "new": "    if (!secondary) useStudioStore.getState().setSecondaryColor(hex);\n    else props.setPrimaryColor(hex);",
+  "plans": "[Ee]yedropper|\"key\": \"i\""
+ },
+ {
+  "id": "m07-strokes-not-undoable",
+  "harm": "Pen strokes skip the Undo history",
+  "file": "src/hooks/viewport/useViewportDrawing.ts",
+  "old": "      historyEngineRef.current.push(stored, snapshot.type !== 'structural' ? snapshot.imageData : undefined);",
+  "new": "      if (snapshot.type === 'structural') historyEngineRef.current.push(stored, undefined);",
+  "plans": "Undo last action"
+ },
+ {
+  "id": "m08-eraser-click-noop",
+  "harm": "A single eraser click erases nothing",
+  "file": "src/hooks/viewport/useBrushPointerHandler.ts",
+  "old": "    if (tools.activeTool === 'pen' || tools.activeTool === 'eraser') {\n      drawPointsOnActiveLayer(points, drawColor, isErase);",
+  "new": "    if (tools.activeTool === 'pen' || tools.activeTool === 'eraser') {\n      if (!isErase) drawPointsOnActiveLayer(points, drawColor, isErase);",
+  "plans": "[Ee]raser|\"key\": \"e\""
+ },
+ {
+  "id": "m09-gallery-copy-overwrites",
+  "harm": "A gallery copy overwrites the original",
+  "file": "src/lib/storage/db.ts",
+  "old": "        ...source,\n        id: newId,",
+  "new": "        ...source,\n        id: source.id,",
+  "plans": "[Gg]allery|Duplicate project|Copy of|Projects"
+ },
+ {
+  "id": "m10-holds-snap-to-10ms",
+  "harm": "Frame holds snap to 10 ms steps",
+  "file": "src/stores/slices/createAnimationSlice.ts",
+  "old": "Math.min(ANIMATION_TIMING_LIMITS.durationMaxMs, Math.round(durationMs)));",
+  "new": "Math.min(ANIMATION_TIMING_LIMITS.durationMaxMs, Math.round(durationMs / 10) * 10));",
+  "plans": "Active frame duration"
+ }
+]

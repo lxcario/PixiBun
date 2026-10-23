@@ -13,6 +13,8 @@ PixiBun is a cozy pixel-art studio. Our [121 TestSprite test cases](https://www.
 | Where we started | 33 passed · 7 failed · 81 blocked on `b78fffb1`, 21 October |
 | Product bugs TestSprite led us to | **13**, 12 of them guarded by a regression test ([table below](#bugs-testsprite-led-us-to)) |
 | Stored Python replays | Run by our own GitHub workflow on every push; passing |
+| Every automatic run, in order | [Run log](run-log.md): what each push broke, why, and the commit that fixed it |
+| Do the plans catch real damage? | [Mutation proof](mutation-proof.md): of 10 planted artist-harming bugs, the App plans caught 9 and a regression test caught the 10th |
 
 ## The tests run themselves
 
