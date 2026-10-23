@@ -48,8 +48,8 @@ def wait_ready(url):
 
 
 def run_plan(url, plan):
-    env = dict(os.environ, PIXIBUN_URL=url, LABS='0', PYTHONIOENCODING='utf-8')
-    p = subprocess.run([sys.executable, '-I', 'emulate.py', plan], cwd=PLANS, env=env,
+    env = dict(os.environ, PIXIBUN_URL=url, LABS='0')
+    p = subprocess.run([sys.executable, '-X', 'utf8', '-I', 'emulate.py', plan], cwd=PLANS, env=env,
                        capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=900)
     text = p.stdout + p.stderr
     passed = 'PASS ' in text and 'FAIL ' not in text

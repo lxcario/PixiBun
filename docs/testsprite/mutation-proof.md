@@ -6,7 +6,7 @@ Passing tests only mean something if they fail when the app breaks. So we broke 
 
 **How it was run.** Each bug is a single small edit ([mutants.json](../../scripts/testsprite/mutation-proof/mutants.json)), applied to a local `next dev` build and never committed to a shared branch or deployed. Plans ran through our [plan emulator](../../scripts/testsprite/app-plans/emulate.py), which uses only the gestures the App agent performs (navigate, named click, fill, key) and reads the same Canvas readout. For each bug we ran every plan whose text touches the feature, stopping after three failures.
 
-**What counts as caught.** A plan must fail with the bug in place **and pass on the clean build**. That way a flaky plan can't take credit. Two plans, S4-HOME-01 and S4-LEARN-05, also failed on the clean development build, so they aren't counted anywhere below.
+**What counts as caught.** A plan must fail with the bug in place **and pass on the clean build**. That way a flaky plan can't take credit. S4-HOME-01 failed on the clean development build as well, and S4-LEARN-05 crashed printing its results to a Windows console, so neither is counted anywhere below.
 
 ## Results
 
