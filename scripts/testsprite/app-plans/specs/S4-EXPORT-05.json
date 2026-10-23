@@ -64,7 +64,8 @@
     },
     {
       "enabled": "Download Godot kit",
-      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run).",
+      "say": "While the Export dialog is still open, before you close it, check that the 'Download Godot kit' button is enabled. Do not click it. This check is required; do not close the dialog until you have read the button's state."
     },
     {
       "click": "Close dialog",
@@ -83,5 +84,6 @@
   ],
   "allow": [
     "reading a download"
-  ]
+  ],
+  "cliOnlyOutOfScope": true
 }
