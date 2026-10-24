@@ -1,6 +1,6 @@
 # PixiBun — Season 4 submission draft
 
-**Not ready to submit.** Use the official Discord channel's actual template. This draft keeps the story and evidence together; it is not an entry posted on the participant's behalf.
+**Superseded on 24 October by [SUBMISSION.md](../../SUBMISSION.md).** The dated sections below are kept as history. **Not ready to submit.** Use the official Discord channel's actual template. This draft keeps the story and evidence together; it is not an entry posted on the participant's behalf.
 
 ## 23 October evidence update — still a draft
 
