@@ -24,7 +24,7 @@ Nobody presses Run. GitHub's commit statuses for `53ac2afe` show the whole loop:
 2. **22:05:19 UTC:** the TestSprite GitHub App posts the `TestSprite V3` status "121 tests queued" and runs all 121 plans against that preview.
 3. **22:42:28 UTC:** the same status reads "116/121 passed · 3 failed · 2 blocked".
 
-Alongside it, our [Stored Python Replay workflow](../../.github/workflows/testsprite-replay.yml) asks the TestSprite CLI to replay two deep scripts that decode real pixels and the downloaded PNG, so both TestSprite paths check every push. `TestSprite V3` is a required status on `main`, with no admin bypass. On the Free plan the App did not run PR checks until 19 October; results from before then are portal runs, labelled as such in the dated records.
+Alongside it, our [Stored Python Replay workflow](../../.github/workflows/testsprite-replay.yml) asks the TestSprite CLI to replay two deep scripts that decode real pixels and the downloaded PNG, so both TestSprite paths check every push. `TestSprite V3` is a required status on `main`, with no admin bypass; the [run log](run-log.md) notes the one documentation-only exception, PR #14, which couldn't run for lack of credits. On the Free plan the App did not run PR checks until 19 October; results from before then are portal runs, labelled as such in the dated records.
 
 ## Bugs TestSprite led us to
 

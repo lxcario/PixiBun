@@ -1,6 +1,6 @@
 # PixiBun × TestSprite Hackathon S4
 
-> **121 of 121 TestSprite cases passing. Merged through a required check with no bypass. Live at [pixibun.vercel.app](https://pixibun.vercel.app).**
+> **121 of 121 TestSprite cases passing. PR #6 merged through a required check with no bypass. Live at [pixibun.vercel.app](https://pixibun.vercel.app).**
 
 ## 🐰 In one breath
 
@@ -36,7 +36,7 @@ The same account generated all 121 cases, installed the GitHub App on `lxcario/P
 | Final automatic run | **121 passed · 0 failed · 0 blocked** on `c2670d1c` |
 | The climb | 19 automatic runs on PR #6, from **33** passing on 21 October to **121** on 23 October |
 | Bugs TestSprite led us to | **13**, each with a fix commit, 12 with a regression test |
-| Merge gate | `TestSprite V3` and `validate` required on `main`, **no bypass, not even for admins**. PR #6 stayed unmergeable through every red run |
+| Merge gate | `TestSprite V3` and `validate` required on `main`, with no admin bypass. PR #6 stayed unmergeable through every red run and merged only after 121/121. (The one exception was the documentation-only PR #14, which couldn't run for lack of credits: see the run log.) |
 | Do the tests catch real damage? | We planted 10 artist-harming bugs. The same plans caught **9**, and a regression test caught the 10th |
 | Alongside | 3,053 unit tests and 564 production browser checks in Chromium, Firefox and WebKit, all green on the PR's final commit |
 
@@ -45,7 +45,7 @@ The same account generated all 121 cases, installed the GitHub App on `lxcario/P
 1. Every push to a ready-for-review PR deploys a Vercel preview. Draft PRs are skipped.
 2. The **TestSprite GitHub App** sees the deployment and queues all 121 cases against that exact preview, usually within ten seconds, with nobody pressing Run.
 3. In parallel, a **Stored Python Replay** workflow uses the TestSprite CLI to replay two deep scripts that decode real canvas pixels and the downloaded PNG.
-4. `main` requires the TestSprite check. When it's red, nothing merges, including for the repository's admin.
+4. `main` requires the TestSprite check, with no admin bypass. PR #6, which carried all of this season's code, merged only after it was green.
 5. Before a plan costs a credit, a small local **emulator** runs it with only the gestures the cloud agent uses. That rehearsal caught one real bug before any run was spent.
 
 ## What's inside PixiBun
