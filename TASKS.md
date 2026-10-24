@@ -21,6 +21,34 @@ Maintenance update — 13 October 2026: see the [current status](docs/current-st
 
 Record: [Studio follow-up](docs/releases/2026-10-16-studio-follow-up.md).
 
+## Replay links — 16 October 2026
+
+- [x] `/studio?replay=` recipe format: versioned, URL-safe, strict validation with size, palette, step, path, layer and frame limits; clear messages, never a throw.
+- [x] Apply each step as its own Undo step through the shared history edit (pixels) and the store's add-layer/add-frame actions; remove the parameter once opened.
+- [x] Five golden replays with exact readout values before and after one Undo ([replays.md](docs/testsprite/replays.md)), added to the [TestSprite PRD](docs/testsprite/PRD.md#13-replay-a-known-drawing-and-check-its-exact-pixels) as journeys.
+- [x] Vitest: format round-trip, validation table, fuzzing, step geometry, applier, goldens against an independent model and document parity. Playwright: one case per golden plus a broken link.
+- [x] Run the PRD journeys in TestSprite against a deployment that includes replay links and record the result: the App plans on PR #6 open replay links for their fixtures ([22 October record](docs/releases/2026-10-22-app-plan-reliability.md)).
+
+Record: [current status](docs/current-status.md#replay-links--16-october-2026), [testing guide](docs/guides/testing.md#replay-links).
+
+## Canvas readout — 16 October 2026
+
+- [x] Describe the active frame as text for screen readers and black-box tests: size, frame/layer, counts, painted pixels, top colors and a composite digest, behind `canvas-readout-*` hooks.
+- [x] Re-read only after a commit settles, Undo or Redo; never during a held pointer or playback; keep it outside the Focus-mode hidden slot.
+- [x] Unit coverage for counts, ranking and an independent digest reference; browser cases for stroke, mid-drag, Undo/Redo, erase, hidden and locked layers, layer/frame changes and a starter template.
+- [x] Tell TestSprite to assert drawing outcomes through the readout ([PRD](docs/testsprite/PRD.md#canvas-readout-assert-what-was-drawn)).
+- [x] Open as a TestSprite Season 4 loop PR inside the build window and record its check result: [PR #6](https://github.com/lxcario/PixiBun/pull/6), every App run recorded in the [22 October record](docs/releases/2026-10-22-app-plan-reliability.md) (latest 116/3/2).
+- [ ] Day-theme and Graphite/Plum Night axe contrast findings in `themeAccessibility.spec.ts` predate this change (also failing without the readout mounted); fix separately.
+
+Record: [current status](docs/current-status.md#canvas-readout--16-october-2026), [hooks](docs/guides/testing.md#canvas-readout).
+
+## TestSprite loop page — 16 October 2026
+
+- [x] `/verified` route: the TestSprite loop, counts and the loop ledger, linked from the footer and pledge page.
+- [x] Committed, schema-validated [loop ledger](docs/testsprite/loop-ledger.json) with a generated [Markdown twin](docs/testsprite/loop-ledger.md); `npm run verify:docs` rejects an invalid or stale ledger.
+- [x] Add the first real loop PR once TestSprite checks a pull request; fill `suiteCases` and the project link from the portal (PR #6, 121 cases).
+- [x] Add the README "Tested on every pull request" section the page links to.
+
 ## Studio Labs motion integration — 15 October 2026
 
 - [x] Integrate the scene-theme Labs behind saved switches and retain classic Graphite/Plum controls.
@@ -47,7 +75,7 @@ Source: the Strategy and Audit & Roadmap documents of 13 October 2026, summarize
 - [x] Phase 0: precache every Studio file, contain lazy-panel failures, save before claiming saved on the crash screen.
 - [x] Phase 0.5: product name PixiBun, no user-facing AI wording, landing copy, dated `/pledge`.
 - [x] Requested addition: eight Night/Day studio styles, theme hydration fix, first-run welcome and level-based tips.
-- [ ] Rename `src/lib/ai` to `src/lib/graphics`.
+- [x] Rename `src/lib/ai` to `src/lib/graphics` (18 October).
 - [x] Phase 1: selection masks for every raster tool, transparency checkerboard, co-draw selective undo, quick fixes, standard keymap, tool flyouts and fit-to-view, byte-budgeted undo.
 - [x] Implement carts, phone cart player, Light Sweep, Handmade Receipt and Living Postcards. Launch and per-platform sharing survival remain separate qualification.
 - [x] Clarify the color dock's edge-alignment fixture to select the flat Graphite desk; retain its original geometry and color-interaction assertions. Scene desks intentionally use margins.
@@ -122,7 +150,7 @@ This audit's six phases are separate from the historical product phase numbering
 
 ## Phase 78 — Contextual Tool Motion Previews, Usability Baseline, and Regression Hardening (2026-09-28)
 
-- [x] Build interactive animated micro-previews with 4-beat rhythm loops (`ToolMotionPreview.tsx`, `ToolPreviewCanvas.tsx`, `ToolMotionPreview.module.css`) for all drawing tools in `LeftToolbar` and AI/shading actions in `AiToolsPanel`.
+- [x] Build interactive animated micro-previews with 4-beat rhythm loops (`ToolMotionPreview.tsx`, `ToolPreviewCanvas.tsx`, `ToolMotionPreview.module.css`) for all drawing tools in `LeftToolbar` and AI/shading actions in `PixiToolsPanel`.
 - [x] Enable preview inspection on disabled actions by adjusting `TactileButton` to `disabled:cursor-not-allowed`.
 - [x] Add user preview preferences: persistent toggle in `AppearancePopover` and quick dismiss controls (Escape, close button, and "Don't show again").
 - [x] Expand E2E Chromium test coverage to 86 tests across 21 suites with dedicated tests in `tests/e2e/toolMotionPreview.spec.ts` and multi-frame animation verification in `tests/e2e/eraseColor.spec.ts`.
@@ -224,10 +252,10 @@ This audit's six phases are separate from the historical product phase numbering
 ---
 
 ## Phase 72 — PixiBun v1.14.1 H1 Hardening: Content-Aware Heightmap Algorithmic Work & Allocation Bounding
-**Goal:** Implement canonical HIGH finding H1: `computeContentAwareHeightmap` has repeated component × canvas-area work and per-component full-canvas temporary allocations. Bound per-component analysis in `computeContentAwareHeightmap` (`src/lib/ai/math/edtNormalMap.ts`) by recording component bounding boxes `[minX, minY, maxX, maxY]` during the linear connected-component labeling pass in Stage 4, bounding Stage 6 micro-distance BFS loops and per-component temporary array allocations strictly to component-local bounding-box area (`compW * compH = localArea`) rather than full canvas pixel count (`width * height = N`). This removes unconditional $K \times N$ full-canvas per-component scanning and allocation, reducing cumulative temporary Float32Array allocations from $K \times N$ to $\sum \text{localArea}$ (over 4000× element reduction on a 64×64 1024-component fragmented fixture; note that $\sum \text{bboxArea}$ is not bounded by $N$ in general and may still be super-linear for pathological overlapping bounds, while $cDist$ peak temporary allocation is bounded by the maximum component bounding-box area), eliminating full-canvas temporary buffer allocations during Stage 6 while maintaining bitwise identical component maps, height fields, normal vectors, cavity AO, and final photometric render outputs across all fixtures.
+**Goal:** Implement canonical HIGH finding H1: `computeContentAwareHeightmap` has repeated component × canvas-area work and per-component full-canvas temporary allocations. Bound per-component analysis in `computeContentAwareHeightmap` (`src/lib/graphics/math/edtNormalMap.ts`) by recording component bounding boxes `[minX, minY, maxX, maxY]` during the linear connected-component labeling pass in Stage 4, bounding Stage 6 micro-distance BFS loops and per-component temporary array allocations strictly to component-local bounding-box area (`compW * compH = localArea`) rather than full canvas pixel count (`width * height = N`). This removes unconditional $K \times N$ full-canvas per-component scanning and allocation, reducing cumulative temporary Float32Array allocations from $K \times N$ to $\sum \text{localArea}$ (over 4000× element reduction on a 64×64 1024-component fragmented fixture; note that $\sum \text{bboxArea}$ is not bounded by $N$ in general and may still be super-linear for pathological overlapping bounds, while $cDist$ peak temporary allocation is bounded by the maximum component bounding-box area), eliminating full-canvas temporary buffer allocations during Stage 6 while maintaining bitwise identical component maps, height fields, normal vectors, cavity AO, and final photometric render outputs across all fixtures.
 
 **Deliverables:**
-- [x] **Component-Local Bounding Box Tracking & Bounded Distance Work (`src/lib/ai/math/edtNormalMap.ts`)**: In `computeContentAwareHeightmap`, recorded component bounds `[minX, minY, maxX, maxY]` during the linear connected-component labeling pass in Stage 4, bounding Stage 6 micro-distance BFS loops and per-component temporary array allocations strictly to component-local bounding-box area (`compW * compH = localArea`) rather than full canvas pixel count (`width * height = N`). This eliminates redundant full-canvas scanning across all components and drops cumulative temporary Float32Array allocations from $K \times N$ to $\sum \text{localArea}$.
+- [x] **Component-Local Bounding Box Tracking & Bounded Distance Work (`src/lib/graphics/math/edtNormalMap.ts`)**: In `computeContentAwareHeightmap`, recorded component bounds `[minX, minY, maxX, maxY]` during the linear connected-component labeling pass in Stage 4, bounding Stage 6 micro-distance BFS loops and per-component temporary array allocations strictly to component-local bounding-box area (`compW * compH = localArea`) rather than full canvas pixel count (`width * height = N`). This eliminates redundant full-canvas scanning across all components and drops cumulative temporary Float32Array allocations from $K \times N$ to $\sum \text{localArea}$.
 - [x] **Comprehensive Test Verification (`tests/h1ContentAwarePerformance.test.ts`)**: Added 17 unit tests covering exact bit-for-bit equivalence across 12 representative fixtures (transparent, single pixel, large solid block, checkerboard, 2 distant blobs, narrow 1xN/Nx1 lines, edge-touching shapes, asymmetric character, appendage character, noisy fragmented sprite, donut ring with interior hole, and nested concentric square rings with overlapping bounding boxes), deterministic allocation and work reduction on adversarial fragmented fixtures (over 4000× element reduction on 64×64 1024-component canvas), adversarial overlapping bounding box complexity truth proof ($\sum \text{bboxArea} > N$), large component non-regression, and final photometric render equivalence across character and prop artwork compared against independent pre-H1 legacy baseline executions.
 - [x] **Canonical Audit Finding H5 (Resolved)**: Resolved in Phase 73. WFC resource demand is modeled and admitted against MAX_WFC_WORKING_SET_BYTES. M1 remains OPEN and unchanged.
 - [ ] **Phase 2+ Deferred Capabilities (Not Started)**: Dynamic brush engine, Smart Effect schema expansion, and high-frequency pointer ergonomics deferred to Phase 2+.
@@ -245,10 +273,10 @@ This audit's six phases are separate from the historical product phase numbering
 ---
 
 ## Phase 71 — PixiBun v1.14.1 H6 Hardening: Photometric Pipeline Deduplication & Hoisted Analysis
-**Goal:** Implement canonical HIGH finding H6: The affected photometric render path reuses one content-aware analysis instead of recomputing the same full analysis twice, while retaining the separate specular silhouette cushion. Hoist geometric analysis in `renderParametric2p5DLighting` (`src/lib/ai/math/photometricLighting.ts`) to execute `computePhotometricAnalysis` once per invocation (threading precomputed inference and pixel data buffer) and feed the result into `executePhotometricPipeline` via `precomputedAnalysis`; the optimization remains entirely local without exposing unnecessary external injection surfaces. This eliminates redundant duplicate invocation of the expensive `computeContentAwareHeightmap` pipeline on character and prop artwork, while preserving bit-exact diffuse, specular, and rim pixel output across all materials.
+**Goal:** Implement canonical HIGH finding H6: The affected photometric render path reuses one content-aware analysis instead of recomputing the same full analysis twice, while retaining the separate specular silhouette cushion. Hoist geometric analysis in `renderParametric2p5DLighting` (`src/lib/graphics/math/photometricLighting.ts`) to execute `computePhotometricAnalysis` once per invocation (threading precomputed inference and pixel data buffer) and feed the result into `executePhotometricPipeline` via `precomputedAnalysis`; the optimization remains entirely local without exposing unnecessary external injection surfaces. This eliminates redundant duplicate invocation of the expensive `computeContentAwareHeightmap` pipeline on character and prop artwork, while preserving bit-exact diffuse, specular, and rim pixel output across all materials.
 
 **Deliverables:**
-- [x] **Hoisted Photometric Analysis & Zero-Allocation Buffer Threading (`src/lib/ai/math/photometricLighting.ts`)**: Hoisted analysis execution in `renderParametric2p5DLighting` so `computePhotometricAnalysis` runs once locally, threads `inferred` and `data` buffers to bypass redundant `inferPhotometricSettings` and `getImageData` calls, extracts facial feature and ink line masks for specular exclusion, and supplies `precomputedAnalysis` directly to `executePhotometricPipeline` without external injection surfaces.
+- [x] **Hoisted Photometric Analysis & Zero-Allocation Buffer Threading (`src/lib/graphics/math/photometricLighting.ts`)**: Hoisted analysis execution in `renderParametric2p5DLighting` so `computePhotometricAnalysis` runs once locally, threads `inferred` and `data` buffers to bypass redundant `inferPhotometricSettings` and `getImageData` calls, extracts facial feature and ink line masks for specular exclusion, and supplies `precomputedAnalysis` directly to `executePhotometricPipeline` without external injection surfaces.
 - [x] **Comprehensive Test Verification (`tests/photometricPipelineDeduplication.test.ts`)**: Added 13 unit tests proving call-count reduction from 2 to 1 on character branch, exact 100% byte-identical pixel equivalence with legacy output across matte and metallic materials, non-character orb/prop behavior preservation, empty/small input durability, specular mask feature exclusion, bit-for-bit mask equivalence across fixtures and azimuths, cavity parameter invariance, and buffer length safety.
 - [ ] **Canonical Audit Findings H1, H5 (Open)**: Deferred to subsequent targeted passes. H1 remains OPEN and concerns intrinsic `computeContentAwareHeightmap` repeated component × canvas-area work and per-component full-sized Float32Array allocation complexity. H5 remains OPEN and concerns unbounded WFC pattern/compatibility resource growth. M1 remains OPEN and unchanged.
 - [ ] **Phase 2+ Deferred Capabilities (Not Started)**: Dynamic brush engine, Smart Effect schema expansion, and high-frequency pointer ergonomics deferred to Phase 2+.
@@ -516,7 +544,7 @@ This audit's six phases are separate from the historical product phase numbering
 **Evidence & Rationale:**
 - In studio relighting, full-body characters with head, torso, arms, and drooping ears shaded as a single undifferentiated silhouette blob. At high key light elevations (e.g. 81°), camera-facing normals ($N \approx (0, 0, 1)$) caused the entire front of the character to render with flat, identical diffuse tones without sculpting chest curvature, arms, or chin occlusion.
 - Root Cause: `computeSeparableEDT(isOpaque)` only considered outer alpha boundaries, ignoring all internal structural ink strokes (arm seams, jawline). Furthermore, the character bevel cushion flattened everything deeper than 2.8px into a level camera-facing plateau ($H = \text{maxMacroD}$), forcing $\nabla H = (0, 0)$ across head, throat, chest, and arms.
-- Anatomical Decomposition Solution: Implemented `computeAnatomicalCharacterHeightmap()` in `src/lib/ai/math/edtNormalMap.ts`:
+- Anatomical Decomposition Solution: Implemented `computeAnatomicalCharacterHeightmap()` in `src/lib/graphics/math/edtNormalMap.ts`:
   1. Row profile scanning (`rowLeft`, `rowRight`, `rowWidth`).
   2. Chin/jawline detection: locates internal transverse ink strokes strictly below facial features with verified torso depth below.
   3. Longitudinal arm seam detection: tracks vertical ink strokes spanning multiple torso rows between chest and arms.
@@ -525,9 +553,9 @@ This audit's six phases are separate from the historical product phase numbering
   6. Refined feature classification to separate compact facial islands (eyes, snout, mouth) from structural longitudinal arm seams and transverse chin strokes.
 
 **Deliverables:**
-- [x] Anatomical Decomposition Engine (`src/lib/ai/math/edtNormalMap.ts`): Implemented `computeAnatomicalCharacterHeightmap` synthesizing head dome, chin depth step, chest barrel, and arm cylinders.
-- [x] Precision Feature vs Structural Seam Classification (`src/lib/ai/math/edtNormalMap.ts`): Filtered out longitudinal arm seams and transverse chin strokes from facial feature masking, ensuring structural lines carve crevices properly.
-- [x] Regressive Safety for Head-Only Creatures (`src/lib/ai/math/edtNormalMap.ts`): Maintained baseline multi-scale cushion for head-only creatures / busts when `!hasTorsoBelow`.
+- [x] Anatomical Decomposition Engine (`src/lib/graphics/math/edtNormalMap.ts`): Implemented `computeAnatomicalCharacterHeightmap` synthesizing head dome, chin depth step, chest barrel, and arm cylinders.
+- [x] Precision Feature vs Structural Seam Classification (`src/lib/graphics/math/edtNormalMap.ts`): Filtered out longitudinal arm seams and transverse chin strokes from facial feature masking, ensuring structural lines carve crevices properly.
+- [x] Regressive Safety for Head-Only Creatures (`src/lib/graphics/math/edtNormalMap.ts`): Maintained baseline multi-scale cushion for head-only creatures / busts when `!hasTorsoBelow`.
 - [x] Dedicated Unit Test Suite (`tests/anatomicalPhotometricShading.test.ts`): Added 3 comprehensive tests verifying chin depth step, downward chin normals ($N_y > 0$), throat crevice AO ($ao < 0.48$), chest barrel curvature, arm cylinders, and dynamic light rotation.
 - [x] Zero Regressions Across Full Test Suite: All 642 tests across 91 test files pass.
 
@@ -546,8 +574,8 @@ This audit's six phases are separate from the historical product phase numbering
 **Goal:** Fix a correctness regression in the Phase-59-adjacent photometric drag-caching optimization: the geometry analysis cached at gizmo-drag-start goes stale as the user rotates the light mid-drag, and the staleness gets permanently committed to the artwork.
 
 **Evidence & Rationale:**
-- `computePhotometricAnalysis()` (`src/lib/ai/math/photometricLighting.ts`) is computed once in `handlePhotometricGizmoStartEvent` and cached on `photometricSessionRef.current.analysis`. Every subsequent `handlePhotometricLightingLiveEvent` call (`src/hooks/viewport/events/usePhotometricEvents.ts`) reuses it via `precomputedAnalysis`, while feeding the *live* `lightAzimuth`/`lightElevation` to the Blinn-Phong shading pass only.
-- For `formType: 'character'`, that cached analysis is not azimuth-independent: `computeContentAwareHeightmap()` (`src/lib/ai/math/edtNormalMap.ts`) takes `lightAzimuth` directly and uses it (`lightDirX = Math.sin(azRad)`) to decide which side of thin appendages (ears, whiskers, hair spikes) gets normal-flattened. Caching it at the drag's starting azimuth freezes that decision for the rest of the drag.
+- `computePhotometricAnalysis()` (`src/lib/graphics/math/photometricLighting.ts`) is computed once in `handlePhotometricGizmoStartEvent` and cached on `photometricSessionRef.current.analysis`. Every subsequent `handlePhotometricLightingLiveEvent` call (`src/hooks/viewport/events/usePhotometricEvents.ts`) reuses it via `precomputedAnalysis`, while feeding the *live* `lightAzimuth`/`lightElevation` to the Blinn-Phong shading pass only.
+- For `formType: 'character'`, that cached analysis is not azimuth-independent: `computeContentAwareHeightmap()` (`src/lib/graphics/math/edtNormalMap.ts`) takes `lightAzimuth` directly and uses it (`lightDirX = Math.sin(azRad)`) to decide which side of thin appendages (ears, whiskers, hair spikes) gets normal-flattened. Caching it at the drag's starting azimuth freezes that decision for the rest of the drag.
 - Verified empirically, not just by code inspection: built the project's own cat-sprite fixture (`tests/photometricAutoAnalysis.test.ts`'s `catData`) and compared (a) `computePhotometricAnalysis()` at azimuth 45° vs 225° — 20 of 40 ear-region normal samples differ — and (b) shading with a cache built at 45° but live azimuth 225° vs. a full fresh recompute at 225° — 3 pixels differ by up to 71/255 in a channel.
 - `handlePhotometricGizmoCommitEvent` does not recompute anything fresh on drag-release; it calls `commitSnapshot()` on whatever the last live frame already painted. So this is not a transient mid-drag artifact — whatever azimuth staleness exists at mouseup is what gets saved.
 - `photometricNonDestructive.test.ts`'s "byte-identical, 0 mutations" regression test does not catch this: it only checks non-destructiveness and single-azimuth byte-identity between "compute once, pass as precomputed" and "compute inline," never a changing-azimuth-mid-cache scenario.
@@ -577,9 +605,9 @@ This audit's six phases are separate from the historical product phase numbering
 - `highlight` measuring exactly 0% is separately explained (and already correctly gated by design) by `isShinyMaterial = mat.ks > 0.1 && material !== 'matte' && material !== 'fabric'` — not in scope for this phase, just noted so it isn't conflated with the AO finding.
 
 **Deliverables:**
-- [x] Silhouette-Complexity Metric (`src/lib/ai/math/photometricAuto.ts`): Calculated circularity deficiency (`1 / circularity`) and upper-region multi-segment appendage density (`maxUpperSegments`).
-- [x] Adaptive Cavity AO Scaling (`src/lib/ai/math/photometricAuto.ts`): Added `cavityStrength` to `InferredPhotometricSettings`, smoothly scaling default from 1.0 down to 0.40 on complex silhouettes while keeping 1.0 for spherical orbs.
-- [x] Proportional Crevice Threshold Tuning (`src/lib/ai/math/photometricLighting.ts`): Dynamically scaled `creviceAOThresh` with `cavityStrength` to eliminate hair spike tone-locking.
+- [x] Silhouette-Complexity Metric (`src/lib/graphics/math/photometricAuto.ts`): Calculated circularity deficiency (`1 / circularity`) and upper-region multi-segment appendage density (`maxUpperSegments`).
+- [x] Adaptive Cavity AO Scaling (`src/lib/graphics/math/photometricAuto.ts`): Added `cavityStrength` to `InferredPhotometricSettings`, smoothly scaling default from 1.0 down to 0.40 on complex silhouettes while keeping 1.0 for spherical orbs.
+- [x] Proportional Crevice Threshold Tuning (`src/lib/graphics/math/photometricLighting.ts`): Dynamically scaled `creviceAOThresh` with `cavityStrength` to eliminate hair spike tone-locking.
 - [x] Inspector Integration (`src/hooks/viewport/events/usePhotometricEvents.ts`): Bound inferred `cavityStrength` on auto-analysis click (`state.setCavityStrength`) while preserving manual slider override.
 - [x] Tone-Bucket Recovery Regression Test (`tests/photometricAutoAnalysis.test.ts`): Verified deep-crevice tone coverage plunges from 50% to <2% on hair-spike character, restoring >90% directional lighting.
 
@@ -608,7 +636,7 @@ This audit's six phases are separate from the historical product phase numbering
 - [x] Boundary Enforcement Alignment (`src/lib/project/schema.ts`, `src/lib/sync/p2pSync.ts`, `src/components/modals/export/PngExportTab.tsx`, `src/components/modals/ExportModal.tsx`): Bound schema and P2P payloads to canonical 2048px workspace limits.
 - [x] Subsystem Hardening (`src/lib/safety/safeJson.ts`, `src/lib/safety/safeCanvas.ts`, `src/lib/safety/imageHeaderProbe.ts`): UTF-8 byte counting, plain `{}` sanitization, `byteOffset` passing, and multi-window JPEG paging.
 - [x] Canonical Versioning (`src/config/version.ts`, `src/lib/diagnostics/capture.ts`, `src/app/api/diagnostics/relay/route.ts`, `package-lock.json`): Single source of truth at `1.13.1`.
-- [x] Photometric Live Drag Decoupling (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`, `src/hooks/viewport/events/usePhotometricEvents.ts`): Decoupled EDT geometry passes from light azimuth via `applyAppendageStabilization` and explicit commit-time re-rendering.
+- [x] Photometric Live Drag Decoupling (`src/lib/graphics/math/edtNormalMap.ts`, `src/lib/graphics/math/photometricLighting.ts`, `src/hooks/viewport/events/usePhotometricEvents.ts`): Decoupled EDT geometry passes from light azimuth via `applyAppendageStabilization` and explicit commit-time re-rendering.
 - [x] Cross-Boundary Regression Suite (`tests/crossBoundaryEnvelope.test.ts`, `tests/photometricNonDestructive.test.ts`): Verified envelope invariants and zero-drift live light dragging, bringing coverage to 637 unit tests across 90 suites.
 
 **Acceptance criteria:**
@@ -630,9 +658,9 @@ This audit's six phases are separate from the historical product phase numbering
 - Inverted Shadow Tones: In `photometricLighting.ts`, `shadowL` was clamped with `Math.max(0.18, lch.L * 0.78)`. When base color luminance fell below $0.18$, the clamped shadow was lighter than the base color, inverting the shadow tone. Clamping relative to base luminance restores monotonic shadow contrast.
 
 **Deliverables:**
-- [x] Proportional Bevel Scaling (`src/lib/ai/math/edtNormalMap.ts`): Dynamic `scaleFactor` for bevel radius, macro distance, and appendage width bounds.
-- [x] Boundary-Aware Line Art Classification (`src/lib/ai/math/edtNormalMap.ts`): Replaced naive $lum < 0.22$ check with boundary adjacency, local contrast, and deep black checks.
-- [x] Monotonic Cel Ramp Luminance (`src/lib/ai/math/photometricLighting.ts`): Clamped shadow and deep shadow luminance relative to base color.
+- [x] Proportional Bevel Scaling (`src/lib/graphics/math/edtNormalMap.ts`): Dynamic `scaleFactor` for bevel radius, macro distance, and appendage width bounds.
+- [x] Boundary-Aware Line Art Classification (`src/lib/graphics/math/edtNormalMap.ts`): Replaced naive $lum < 0.22$ check with boundary adjacency, local contrast, and deep black checks.
+- [x] Monotonic Cel Ramp Luminance (`src/lib/graphics/math/photometricLighting.ts`): Clamped shadow and deep shadow luminance relative to base color.
 - [x] Photometric Regression Test (`tests/photometricAutoAnalysis.test.ts`): Added automated test validating $128\times128$ dark palette shading and normal variance.
 
 **Acceptance criteria:**
@@ -739,9 +767,9 @@ This audit's six phases are separate from the historical product phase numbering
 **Deliverables:**
 - [x] P2P Guest Mutation Locking (`src/hooks/useCoDrawStatus.ts`, `src/components/layout/inspector/LayersPanel.tsx`, `src/components/layout/BottomTimeline.tsx`): Disabled structural controls for guests with clear tooltips.
 - [x] Undo Structural Actions Engine (`src/types/canvas.ts`, `src/lib/engine/historyEngine.ts`, `src/lib/engine/structuralHistory.ts`, `src/hooks/viewport/useViewportDrawing.ts`, `src/stores/slices/createLayerSlice.ts`, `src/stores/slices/createAnimationSlice.ts`, `tests/historyEngineStructural.test.ts`): Implemented structural undo/redo command pattern.
-- [x] Worker EDT & Normal Map Offloading (`src/lib/ai/math/edtNormalMap.ts`, `src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `src/hooks/viewport/events/usePhotometricEvents.ts`, `tests/workerEdtNormalMap.test.ts`): Zero-copy transferable worker execution with synchronous fallback.
+- [x] Worker EDT & Normal Map Offloading (`src/lib/graphics/math/edtNormalMap.ts`, `src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `src/hooks/viewport/events/usePhotometricEvents.ts`, `tests/workerEdtNormalMap.test.ts`): Zero-copy transferable worker execution with synchronous fallback.
 - [x] Desktop File System Access API (`src/lib/storage/desktopFileSystem.ts`, `src/components/layout/StudioLayout.tsx`, `src/components/modals/ExportModal.tsx`, `tests/desktopFileSystem.test.ts`): Native save/open with `Ctrl+S` in-place overwriting and browser fallback.
-- [x] 47-Blob Autotile Interactive Engine (`src/lib/ai/math/autotileEngine.ts`, `tests/autotileEngine.test.ts`): $O(1)$ bitmask lookup table, $3\times3$ dirty neighborhood reactive updater, and procedural tile renderer.
+- [x] 47-Blob Autotile Interactive Engine (`src/lib/graphics/math/autotileEngine.ts`, `tests/autotileEngine.test.ts`): $O(1)$ bitmask lookup table, $3\times3$ dirty neighborhood reactive updater, and procedural tile renderer.
 - [x] Pure-TypeScript ISOBMFF MP4 Muxer (`src/lib/export/isobmffWriter.ts`, `src/lib/export/mp4Encoder.ts`, `tests/isobmffWriter.test.ts`): Scratch Fast-Start MP4 muxer integrating hardware WebCodecs `VideoEncoder` and backpatched `stco`.
 
 **Acceptance criteria:**
@@ -765,7 +793,7 @@ This audit's six phases are separate from the historical product phase numbering
 - Documentation Truthfulness: Calibrated showcase models, 5 materials, 6-canvas stack, 100-state history capacity, $Nz \ge 0.88$, and benchmark conclusions across README, MAIN, ARCHITECTURE, and BENCHMARKS.
 
 **Deliverables:**
-- [x] Dimetric Ray Projection Line Tool (`src/lib/ai/math/curvesAndLines.ts`, `tests/curvesAndLines.test.ts`): Snapped arbitrary endpoints to true 2:1 lines with comprehensive unit tests for off-axis points and negative quadrants.
+- [x] Dimetric Ray Projection Line Tool (`src/lib/graphics/math/curvesAndLines.ts`, `tests/curvesAndLines.test.ts`): Snapped arbitrary endpoints to true 2:1 lines with comprehensive unit tests for off-axis points and negative quadrants.
 - [x] Tab-Isolated Export Scales (`src/components/modals/ExportModal.tsx`, `tests/components/ExportModal.test.tsx`): Replaced shared scale with `tabScales: Record<ExportType, number>` preventing cross-tab clamping.
 - [x] Scale2x Border Sentinel (`src/lib/canvas/rotSprite.ts`, `tests/rotSpriteSymmetryAndThinLines.test.ts`): Out-of-bounds coordinates return non-matching sentinel preventing transparent corner erosion on border-touching sprites.
 - [x] Canonical DPaint CRNG Format (`src/lib/color/paletteCycling.ts`, `tests/paletteCycling.test.ts`): Removed `rateRaw !== 36` check, aligning with official Amiga IFF ILBM spec.
@@ -795,7 +823,7 @@ This audit's six phases are separate from the historical product phase numbering
 **Deliverables:**
 - [x] Canvas Safety Ceilings & Isolation (`src/components/modals/export/PngExportTab.tsx`, `src/components/modals/ExportModal.tsx`, `tests/exportCanvasScaleBounds.test.ts`): Enforced 4096px / 16.7MP limits; disabled out-of-bounds scales dynamically with tooltips and in-card notices; isolated scale per modal tab.
 - [x] Persistent Storage Eviction Banner (`src/components/layout/StudioLayout.tsx`): Added dismissible amber warning banner with instant "Export Backup" action.
-- [x] Quadratic Bézier Precision (`src/lib/ai/math/curvesAndLines.ts`, `PIXIBUN_DEEP_DIVE.md`, `README.md`, `MAIN.md`, `LOGS.md`): Corrected nomenclature across all files.
+- [x] Quadratic Bézier Precision (`src/lib/graphics/math/curvesAndLines.ts`, `PIXIBUN_DEEP_DIVE.md`, `README.md`, `MAIN.md`, `LOGS.md`): Corrected nomenclature across all files.
 - [x] Codebase Hyperbole Calibration (`src/components/landing/showcase/RotSpriteShowcase.tsx`, `src/lib/art/playgroundLessons.ts`, `src/lib/audio/lofiRadio.ts`, `src/components/modals/export/ShaderExportTab.tsx`, `src/lib/color/paletteCycling.ts`, `src/components/modals/export/AnimatedExportTab.tsx`, `src/components/modals/ImportModal.tsx`, `src/components/modals/CoDrawModal.tsx`, `src/components/modals/ShortcutsModal.tsx`): Replaced marketing puffery with calibrated technical descriptions.
 - [x] Version Synchronization & Automated Check (`package.json`, `package-lock.json`, `scripts/verifyDocIntegrity.mjs`, `src/lib/diagnostics/capture.ts`, `src/app/api/diagnostics/relay/route.ts`, `tests/diagnostics.test.ts`): Bumped to 1.12.1 and added automated check 6.
 
@@ -816,7 +844,7 @@ This audit's six phases are separate from the historical product phase numbering
 - Independent Audit Finding: External review noted that while underlying engineering was solid, claims of "100% leak-proof", "completely eliminates 45° distortion", "never vanish", and "100% On-Device" across documentation introduced hyperbole that damaged project credibility.
 - Algorithmic Calibration: RotSprite mitigates and substantially reduces 45° stair-stepping and outline erosion via 8x Scale2x and parabolic majority voting, but discrete raster rotation cannot guarantee zero loss in arbitrary geometric edge cases.
 - Stylized 2D Optics: Volumetric subsurface scattering and Cauchy dispersion are stylized 2D screen-space approximations designed for pixel art rather than 3D path tracing.
-- Attribution Synchronization: Historical logs misattributed the Euclidean Distance Transform to Meijster; standardized on Felzenszwalb-Huttenlocher (2012 / 2004) matching `src/lib/ai/math/edtNormalMap.ts`.
+- Attribution Synchronization: Historical logs misattributed the Euclidean Distance Transform to Meijster; standardized on Felzenszwalb-Huttenlocher (2012 / 2004) matching `src/lib/graphics/math/edtNormalMap.ts`.
 - Unicode Glitch Remediation: Fixed corrupted replacement characters in `LOGS.md`.
 
 **Deliverables:**
@@ -850,7 +878,7 @@ This audit's six phases are separate from the historical product phase numbering
 - [x] P2P Co-Draw Modal Network Default (`src/components/modals/CoDrawModal.tsx`): Defaulted to `'lan'`.
 - [x] Lossless PNG Export 32× Resolution Option (`src/components/modals/export/PngExportTab.tsx`): Added `32` to scale array.
 - [x] Eradication of "Wu" Attribution (`README.md`, `ARCHITECTURE.md`, `PIXIBUN_DEEP_DIVE.md`, `CHANGELOG.md`, `TASKS.md`, `LOGS.md`).
-- [x] Citation Cleanup (`src/lib/ai/math/rotSprite.ts`): Removed "Xenowoz".
+- [x] Citation Cleanup (`src/lib/graphics/math/rotSprite.ts`): Removed "Xenowoz".
 - [x] Benchmark Memory Arithmetic (`BENCHMARKS.md`, `tests/benchmark.test.ts`): Aligned to 13.11 MB / 26.21 MB.
 - [x] 6-Canvas Stack Diagram (`ARCHITECTURE.md`): Documented all 6 hardware-accelerated canvas layers.
 - [x] File Tree Alignment (`PIXIBUN_DEEP_DIVE.md`): Added `curvesAndLines.ts` and `morphology.ts`.
@@ -870,22 +898,22 @@ This audit's six phases are separate from the historical product phase numbering
 **Goal:** Remediate verified bugs, algorithmic discrepancies, documentation untruths, and untested edge cases identified in deep code audits. Implement rectangular canvas transpositions for RotSprite orthogonal rotations, $O(W \times H)$ multi-source BFS color sampling and fraction forwarding for SDF morphing, history engine popped-step guard, 14-test complete flood fill verification, diagnostics relay version synchronization, portable test artifact output paths, and strict academic documentation truthfulness.
 
 **Evidence & Rationale:**
-- RotSprite Rectangular Canvas Constraint (BUG-05): `src/lib/ai/math/rotSprite.ts` and `src/lib/canvas/rotSprite.ts` previously enforced `w === h` on 90° and 270° rotations, forcing rectangular non-square canvases into slow 8x Scale2x fallback cascades. Transposing output bounds ($W' = H, H' = W$) and updating coordinate indexing enables instant $O(1)$ orthogonal rotation on arbitrary rectangular sprites.
+- RotSprite Rectangular Canvas Constraint (BUG-05): `src/lib/graphics/math/rotSprite.ts` and `src/lib/canvas/rotSprite.ts` previously enforced `w === h` on 90° and 270° rotations, forcing rectangular non-square canvases into slow 8x Scale2x fallback cascades. Transposing output bounds ($W' = H, H' = W$) and updating coordinate indexing enables instant $O(1)$ orthogonal rotation on arbitrary rectangular sprites.
 - Morph In-Between Fraction Ignored & Spiral Search Complexity (TASK-001 / TASK-007): `morphInBetweenFrames` previously discarded its fraction parameter $t$. Furthermore, color lookup evaluated concentric spiral rings per pixel ($O(W \times H \times R^2)$). Replacing this with an 8-connected multi-source BFS seeded from opaque pixels guarantees exact $O(W \times H)$ color mapping across the grid.
 - History Engine Ghost State Loop (BUG-02): Calling `undo()` or `redo()` without supplying `currentState` popped the active step and pushed it onto the opposite stack, creating circular phantom transitions.
 - FloodFill Contract & Coverage (BUG-03): Native HTML `<input type="color">` pickers mandate strict 6-digit `#RRGGBB` strings. Verifying all 5 `hexToRgba` tests, 4 `performFloodFill` algorithm tests, and 5 `rgbaToHex`/`rgbToHex` contract tests guarantees zero regressions across 554 unit tests.
 - Documentation Integrity: Mathematical descriptions across `ARCHITECTURE.md`, `README.md`, `MAIN.md`, `PIXIBUN_DEEP_DIVE.md`, and `SKILL.md` must truthfully match source implementations (SDF morphing, forward-difference gradient salience, harmonic rational retuning, and parabolic RotSprite majority voting).
 
 **Deliverables:**
-- [x] RotSprite Rectangular 90°/270° Fast Path (`src/lib/ai/math/rotSprite.ts`, `src/lib/canvas/rotSprite.ts`, `tests/rotSpriteRectangular.test.ts`):
+- [x] RotSprite Rectangular 90°/270° Fast Path (`src/lib/graphics/math/rotSprite.ts`, `src/lib/canvas/rotSprite.ts`, `tests/rotSpriteRectangular.test.ts`):
   - Transposed output dimensions ($W' = H, H' = W$) and corrected coordinate mapping ($y' \cdot H + x'$).
   - Corrected downsampling kernel documentation to Xenowhirl's parabolic center-weighted majority voting: $w(u, v) = 1.0 + 0.01 \cdot (25 - (u^2 + v^2))$.
   - Created 5 unit tests in `tests/rotSpriteRectangular.test.ts` verifying rectangular rotations.
-- [x] Morph Fraction Forwarding & Multi-Source BFS Color Map (`src/lib/ai/pixelAiEngine.ts`, `src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `tests/pixelAiEngineMorphFraction.test.ts`):
+- [x] Morph Fraction Forwarding & Multi-Source BFS Color Map (`src/lib/graphics/pixelRasterEngine.ts`, `src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `tests/pixelRasterEngineMorphFraction.test.ts`):
   - Implemented `computeNearestColorMap` using 8-connected multi-source BFS in $O(W \times H)$ time.
   - Exported `morphInBetweenFrameAtFraction` and forwarded parameter $t$ in `morphInBetweenFrames`.
   - Added `fraction` property support across worker messages and dispatchers.
-  - Created 5 unit tests in `tests/pixelAiEngineMorphFraction.test.ts`.
+  - Created 5 unit tests in `tests/pixelRasterEngineMorphFraction.test.ts`.
 - [x] History Engine Popped Step Loop Elimination (`src/lib/engine/historyEngine.ts`, `tests/historyEngine.test.ts`):
   - Guarded opposite stack push to execute only when `currentState !== undefined`.
   - Added unit test in `tests/historyEngine.test.ts`.
@@ -1011,7 +1039,7 @@ This audit's six phases are separate from the historical product phase numbering
   - Shallow spherical rivet/stud stamp: $\mathbf{N} = \text{normalize}\left(h \frac{dx}{R}, h \frac{dy}{R}, \sqrt{1 - (r/R)^2}\right)$ with flattening factor $h \in (0, 1]$ and inverted dimple.
   - Reoriented Normal Mapping (RNM) and UDN detail normal blending.
   - Two-phase `ChiselStrokeSession` envelope buffer preventing intra-stroke angular accumulation artifacts.
-- [x] Studio Integration for Normal Sculpting (`src/types/tools.ts`, `src/stores/slices/createToolSlice.ts`, `src/components/layout/LeftToolbar.tsx`, `src/components/ui/PixelIcon.tsx`, `src/components/layout/inspector/NormalSculptorSection.tsx`, `src/components/layout/inspector/AiToolsPanel.tsx`, `src/components/layout/CenterViewport.tsx`):
+- [x] Studio Integration for Normal Sculpting (`src/types/tools.ts`, `src/stores/slices/createToolSlice.ts`, `src/components/layout/LeftToolbar.tsx`, `src/components/ui/PixelIcon.tsx`, `src/components/layout/inspector/NormalSculptorSection.tsx`, `src/components/layout/inspector/PixiToolsPanel.tsx`, `src/components/layout/CenterViewport.tsx`):
   - Added `'normal-chisel'` and `'rivet-stamp'` tool modes.
   - Interactive 3D normal vector sphere gizmo displaying real-time normal vector orientation.
   - Chisel and rivet icons on LeftToolbar with keyboard shortcuts.
@@ -1116,7 +1144,7 @@ This audit's six phases are separate from the historical product phase numbering
 - Root cause 2: Double brightness multiplication — `effectiveAmbient` already incorporated `brightness`, then `lightLevel` multiplied by `brightness` again.
 
 **Deliverables:**
-- [x] Shadow Terminator Fix (`src/lib/ai/math/photometricLighting.ts`):
+- [x] Shadow Terminator Fix (`src/lib/graphics/math/photometricLighting.ts`):
   - Removed ambient signal (`ambSignal`) from shadow placement decision entirely.
   - Shadow termination now driven purely by directional diffuse signal: `diffSignal = wrapNdotL * effectiveFalloff`.
   - Shadow threshold set to `0.55` (was `0.58`), placing ~40-50% of visible surface in shadow for typical side-lit sprites.
@@ -1142,11 +1170,11 @@ This audit's six phases are separate from the historical product phase numbering
 - Lack of User Sovereignty: Artists had no manual toggle to bypass or enforce Minecraft skin mode on 64x64 or 64x32 canvases.
 
 **Deliverables:**
-- [x] Deep Topological Discriminator (`src/lib/ai/math/minecraftSkin.ts`):
+- [x] Deep Topological Discriminator (`src/lib/graphics/math/minecraftSkin.ts`):
   - Implemented `analyzeMinecraftSkinTopology(isOpaque, width, height): MinecraftTopologyAnalysis` with 8-connected component flood analysis, dominant component ratio (`largestComponentRatio`), dual lateral limb verification ($x \in [0, 16)$ Right Leg and $x \in [40, 56)$ Right Arm), canonical void zone integrity (<20% pollution), and bounding box margins.
   - Centered sprites with empty lateral margins ($x < 10$ or $x > 48$) or contiguous single-body silhouettes ($\ge 68\%$ opaque pixels in a single component) are decisively classified as 2.5D Sprites.
   - Updated `detectMinecraftSkin` to consume topological analysis results.
-- [x] Photometric Pipeline Integration (`src/lib/ai/math/photometricLighting.ts`):
+- [x] Photometric Pipeline Integration (`src/lib/graphics/math/photometricLighting.ts`):
   - Updated `executePhotometricPipeline` and `renderParametric2p5DLighting` to check `params.minecraftSkinMode`.
   - When mode is `'disabled'` or `formType` is explicitly `'character' | 'orb' | 'prop'`, Minecraft skin hijacking is completely bypassed.
 - [x] Viewport & Tool Store Synchronization (`src/types/tools.ts`, `src/stores/slices/createToolSlice.ts`, `src/hooks/viewport/useViewportStudioEvents.ts`):
@@ -1364,8 +1392,8 @@ This audit's six phases are separate from the historical product phase numbering
   - Decomposed `CenterViewport.tsx` (2,328 lines → 1,176 lines + 1,972 lines across 5 hooks).
 - [x] Zustand Store Slices Migration (`src/stores/slices/`): Split `studioStore.ts` into 5 modular slices (`createToolSlice`, `createLayerSlice`, `createAnimationSlice`, `createViewportSlice`, `createHistorySlice`) composed in a 44-line root store while maintaining 100% public API compatibility.
 - [x] Lazy Modal Code-Splitting (`StudioLayout.tsx`): Dynamically import `ExportModal`, `CanvasResizeModal`, `ProjectsGalleryModal`, `ShortcutsModal`, and `ImportModal` via `next/dynamic(..., { ssr: false })`.
-- [x] Smart Math Modularization (`src/lib/ai/math/`): Split `smartMathEngine.ts` into `edtNormalMap.ts`, `photometricLighting.ts`, `sobelNormalMap.ts`, `rotSprite.ts`, and `minecraftSkin.ts`.
-- [x] Inspector God-Component Decomposition (`src/components/layout/inspector/`): Extracted `RightInspector.tsx` (1,540 lines) into 8 focused subcomponents (<300 lines each): `LayersPanel.tsx`, `PalettePanel.tsx`, `PhotometricLightingSection.tsx`, `RaymarchedShadowSection.tsx`, `VolumetricOpticsSection.tsx`, `TilesetDecomposerSection.tsx`, `PixiBudAssistanceSection.tsx`, and `AiToolsPanel.tsx`, reducing `RightInspector.tsx` to a 61-line orchestrator.
+- [x] Smart Math Modularization (`src/lib/graphics/math/`): Split `smartMathEngine.ts` into `edtNormalMap.ts`, `photometricLighting.ts`, `sobelNormalMap.ts`, `rotSprite.ts`, and `minecraftSkin.ts`.
+- [x] Inspector God-Component Decomposition (`src/components/layout/inspector/`): Extracted `RightInspector.tsx` (1,540 lines) into 8 focused subcomponents (<300 lines each): `LayersPanel.tsx`, `PalettePanel.tsx`, `PhotometricLightingSection.tsx`, `RaymarchedShadowSection.tsx`, `VolumetricOpticsSection.tsx`, `TilesetDecomposerSection.tsx`, `RasterActionsSection.tsx`, and `PixiToolsPanel.tsx`, reducing `RightInspector.tsx` to a 61-line orchestrator.
 
 **Acceptance criteria:**
 - Public API of `useStudioStore` and `CenterViewport` remains 100% backward-compatible: Verified.
@@ -1451,8 +1479,8 @@ This audit's six phases are separate from the historical product phase numbering
 **Goal:** Replace the infinite 2D planar cone-tracing wedge that covered the canvas floor with professional length-bounded 2.5D sprite cast shadows and classic pixel art ground drop shadows.
 
 **Deliverables:**
-- [x] **Smart Canvas Shadow Analysis (`src/lib/ai/math/shadowAuto.ts`)**: Auto-infers light source coordinates, elevation, radius, opacity, and shadow style (`cast` vs `drop`) by analyzing sprite bounds, contact baseline, and silhouette mass (`tests/shadowAutoAnalysis.test.ts`).
-- [x] **Bounded 2.5D Sprite Cast Shadow Engine (`src/lib/ai/shadowRayMarcher.ts`)**: Exact 1-to-1 sheared silhouette projection ($h = y_{\text{base}} - y_s \ge 0$, $\text{projX} = \text{round}(x_s + h \cdot \text{shear}_x)$, $\text{projY} = \text{round}(y_{\text{ground}} + h \cdot \text{shear}_y)$) anchored at the sprite contact baseline ($y_{\text{base}}$). Preserves hollow leg arches without bounding-box bloat or muddy groin puddles (`tests/shadowRayMarcher.test.ts`).
+- [x] **Smart Canvas Shadow Analysis (`src/lib/graphics/math/shadowAuto.ts`)**: Auto-infers light source coordinates, elevation, radius, opacity, and shadow style (`cast` vs `drop`) by analyzing sprite bounds, contact baseline, and silhouette mass (`tests/shadowAutoAnalysis.test.ts`).
+- [x] **Bounded 2.5D Sprite Cast Shadow Engine (`src/lib/graphics/shadowRayMarcher.ts`)**: Exact 1-to-1 sheared silhouette projection ($h = y_{\text{base}} - y_s \ge 0$, $\text{projX} = \text{round}(x_s + h \cdot \text{shear}_x)$, $\text{projY} = \text{round}(y_{\text{ground}} + h \cdot \text{shear}_y)$) anchored at the sprite contact baseline ($y_{\text{base}}$). Preserves hollow leg arches without bounding-box bloat or muddy groin puddles (`tests/shadowRayMarcher.test.ts`).
 - [x] **Ground Contact Drop Shadow Mode (`shadowStyle: 'drop'`)**: Stylized Bresenham pixel ellipse/capsule centered under the character contact baseline.
 - [x] **Authentic Pixel Art Flat Opacity (`ditherMode: 'none'`)**: Uniform opacity $\text{round}(\text{shadowOpacity} \times 255)$ when `ditherMode === 'none'`, eliminating blurry continuous float alpha gradients.
 - [x] **Default Dither Mode**: Default `ditherMode` changed to `'none'` across the shadow engine and inspector UI.
@@ -1470,9 +1498,9 @@ This audit's six phases are separate from the historical product phase numbering
 **Goal:** Eliminate "bowling-ball" face inflation, diffuse mud, feature obliteration, and specular glare on character and animal sprites by implementing intelligent art morphology classification, facial feature segmentation, frontal face cushion normals, and stepped OKLCH cel-shading.
 
 **Deliverables:**
-- [x] **Anatomical Form Classification (`src/lib/ai/math/photometricAuto.ts`)**: Classifies drawings into `character` (ears, horns, facial features, limbs) vs. `orb` (geometric spheres) vs. `prop`. Connected-component clustering isolates eyes, pupils, mouth, snout, and lateral whiskers (`isFeature`, `isInkLine`).
-- [x] **Frontal Face Cushion Plateau & Ridge Normals (`src/lib/ai/math/edtNormalMap.ts`)**: For characters, face height within 2.8px of silhouette bevels smoothly while interior remains flat facing camera ($N_z \ge 0.85$). Confines form shadows to unlit silhouette bevel while keeping the face lit and legible. Preserves independent 3D cone/ridge geometry for ears and horns. Stabilizes feature and whisker normals to $N = (0, 0, 1)$.
-- [x] **100% Feature Preservation & Stepped OKLCH Cel-Shading (`src/lib/ai/math/photometricLighting.ts`)**: Pixels marked `isFeature` and `isInkLine` bypass diffuse/ambient lighting multipliers entirely, keeping artist colors 100% intact. Flat base colors receive discrete stepped cel-shading with perceptual hue shifts toward 260° (skylight cool shadows) and 65° (sunlight warm highlights). Excludes features and line art from receiving specular highlights.
+- [x] **Anatomical Form Classification (`src/lib/graphics/math/photometricAuto.ts`)**: Classifies drawings into `character` (ears, horns, facial features, limbs) vs. `orb` (geometric spheres) vs. `prop`. Connected-component clustering isolates eyes, pupils, mouth, snout, and lateral whiskers (`isFeature`, `isInkLine`).
+- [x] **Frontal Face Cushion Plateau & Ridge Normals (`src/lib/graphics/math/edtNormalMap.ts`)**: For characters, face height within 2.8px of silhouette bevels smoothly while interior remains flat facing camera ($N_z \ge 0.85$). Confines form shadows to unlit silhouette bevel while keeping the face lit and legible. Preserves independent 3D cone/ridge geometry for ears and horns. Stabilizes feature and whisker normals to $N = (0, 0, 1)$.
+- [x] **100% Feature Preservation & Stepped OKLCH Cel-Shading (`src/lib/graphics/math/photometricLighting.ts`)**: Pixels marked `isFeature` and `isInkLine` bypass diffuse/ambient lighting multipliers entirely, keeping artist colors 100% intact. Flat base colors receive discrete stepped cel-shading with perceptual hue shifts toward 260° (skylight cool shadows) and 65° (sunlight warm highlights). Excludes features and line art from receiving specular highlights.
 - [x] **Matte Character Specular Suppression (`src/hooks/viewport/useViewportStudioEvents.ts`)**: Automatically skips generating specular glint overlays on matte/fabric character fur and skin.
 - [x] **Comprehensive Regression Testing (`tests/photometricAutoAnalysis.test.ts`)**: 32x32 cat sprite test verifying character classification, eye/mouth preservation, frontal cushion $N_z \ge 0.85$, and contour shadow stepping.
 
@@ -1496,14 +1524,14 @@ This audit's six phases are separate from the historical product phase numbering
   - Decoupled bulb orbit from center reticle so dragging the bulb rotates azimuth/elevation around the stationary center reticle without moving the focus anchor (`tests/components/PixelLightBulbGizmo.test.tsx`).
   - Dynamic directional vector calculation aligning azimuth directly with on-canvas pointer position.
   - Mouse wheel and hotkey strength adjustments (`+` / `-` or wheel scroll), quick commit with Enter, cancel with Escape, and focus reset with R.
-- [x] **Uncapped Asymmetrical Ear & Appendage Scanning (`src/lib/ai/math/photometricAuto.ts`, `src/lib/ai/math/edtNormalMap.ts`)**:
+- [x] **Uncapped Asymmetrical Ear & Appendage Scanning (`src/lib/graphics/math/photometricAuto.ts`, `src/lib/graphics/math/edtNormalMap.ts`)**:
   - Removed 8-pixel cap on silhouette scanning. Scans up to 45% of sprite dimensions across horizontal and vertical sweeps, reliably identifying asymmetrical ears, horns, and tufts on sprites of any resolution (`tests/photometricAutoAnalysis.test.ts`).
-- [x] **Expressive Facial Feature Recognition (`src/lib/ai/math/photometricAuto.ts`)**:
+- [x] **Expressive Facial Feature Recognition (`src/lib/graphics/math/photometricAuto.ts`)**:
   - Expanded cluster limits to support up to 32 facial feature clusters and improved contrast thresholds for darker and red fur tones, protecting eyes, eyebrows, nose, mouth, and whiskers from diffuse crush.
-- [x] **Prop & Complex Shape Content-Aware Decomposition (`src/lib/ai/math/photometricLighting.ts`)**:
+- [x] **Prop & Complex Shape Content-Aware Decomposition (`src/lib/graphics/math/photometricLighting.ts`)**:
   - Extended `computeContentAwareHeightmap` decomposition to props and general objects, isolating pure spherical dome EDT strictly to geometric orbs (`formType === 'orb'`).
   - Unified `formType` inference in `src/hooks/viewport/useViewportStudioEvents.ts` across Auto and Manual studio modes.
-- [x] **Calibrated Spherical Convex Dome Normal Mathematics (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`)**:
+- [x] **Calibrated Spherical Convex Dome Normal Mathematics (`src/lib/graphics/math/edtNormalMap.ts`, `src/lib/graphics/math/photometricLighting.ts`)**:
   - Calibrated spherical dome heightmap inflation blends a spherical profile with a gamma profile, retaining a nonzero apex slope (`tests/orbPhotometricCelShading.test.ts`).
   - Decoupled direct key light from cavity ambient occlusion on convex slopes to eliminate center-locked apex highlight glitches.
 
@@ -1563,7 +1591,7 @@ This audit's six phases are separate from the historical product phase numbering
   - Enhanced frame duration text contrast to $>6:1$ against dark panel surfaces.
   - Configured dark color scheme parity in `playwright.config.ts` and `themeStore.ts`.
   - Verified 17 Playwright E2E tests pass with 0 axe violations.
-- [x] **Photometric & Tangent-Space Normal Map Optimization (`src/lib/ai/math/edtNormalMap.ts`, `src/components/layout/CenterViewport.tsx`)**:
+- [x] **Photometric & Tangent-Space Normal Map Optimization (`src/lib/graphics/math/edtNormalMap.ts`, `src/components/layout/CenterViewport.tsx`)**:
   - Precomputed 2D spatial Gaussian distance lookup table (`spatialLUT`) in `applyBilateralFilter`, eliminating 50% of inner-loop `Math.exp()` calls, with bounds guards for non-positive dimensions and sigmas.
   - Memoized normal map preview canvas in `CenterViewport.tsx` using an offscreen canvas ref cache invalidated only when `bufferVersion`, `activeFrameIndex`, layer structure signature, or floating selection key changes.
   - Removed inert `isDrawingRef` dependency from `CenterViewport.tsx`'s `useEffect`.
@@ -1655,7 +1683,7 @@ The following claims from preliminary inspection were investigated and confirmed
 **Goal:** Implement a GPU-independent, deterministic on-device 2D Ray Marching and Physically Accurate Soft Shadows engine. Operates over $O(N)$ Euclidean Distance Fields (EDT) utilizing Sebastian Aaltonen's contact-hardening tangent correction and physical area light cone tracing ($r_{\text{cone}} = R_L \frac{t_{\text{closest}}}{T}$) with cubic Hermite smoothstep falloff, Bayer matrix ordered dithering stippling, and non-destructive tagged layer output (`Layer.tag = 'cast-shadow'`).
 
 **Deliverables:**
-- [x] Mathematical Core Engine (`src/lib/ai/shadowRayMarcher.ts`):
+- [x] Mathematical Core Engine (`src/lib/graphics/shadowRayMarcher.ts`):
   - Branchless $C^0$ continuous bilinear sampling `sampleEDTBilinear(edt, width, height, x, y)`.
   - Aaltonen tangent geometric correction and physical cone tracing `tracePhysical2DSoftShadow(edt, width, height, px, py, lx, ly, lightRadius)`.
   - Zero-allocation full grid generator `generateRaymarchedShadowMap(...)` utilizing `acquireFloat32Buffer` / `releaseFloat32Buffer`.
@@ -1679,7 +1707,7 @@ The following claims from preliminary inspection were investigated and confirmed
 
 **Deliverables:**
 - [x] Optical Shading Types & Store State (`src/types/tools.ts`, `src/stores/studioStore.ts`): Added `OpticalPresetType`, `AnisoFlowPreset`, `VolumetricOpticsParams`, and tool state controls (`opticalPreset`, `translucencyDepth`, `fresnelPower`, `anisoAngle`, `anisoFlow`).
-- [x] Mathematical Volumetric Optics Engine (`src/lib/ai/smartMathEngine.ts`):
+- [x] Mathematical Volumetric Optics Engine (`src/lib/graphics/smartMathEngine.ts`):
   - 2D Henyey-Greenstein phase function `phaseHG2D(cosTheta, g)` with forward/backscattering anisotropy and singularity protection.
   - Dielectric Schlick Fresnel reflectance with Cauchy chromatic dispersion `evaluateDielectricFresnel(cosTheta, etaBase, dispersion, roughness, fresnelPower)`.
   - Anisotropic curvature and directional tangent field generator `computeAnisotropicTangentField(normalField, width, height, flowPreset, angleDeg)`.

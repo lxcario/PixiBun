@@ -75,13 +75,21 @@ for (const scenario of [
       const state = (window as unknown as StudioWindow).__studioStore.getState();
       state.mergeLayerDown(state.activeLayerId);
     });
-    await expect.poll(() => page.evaluate(() => (window as unknown as StudioWindow).__studioStore.getState().frames[0].layers.length)).toBe(1);
+    const layerCount = () => page.evaluate(() => (window as unknown as StudioWindow).__studioStore.getState().frames[0].layers.length);
+    if (!scenario.lowerVisible || !scenario.upperVisible) {
+      // Audit defect 6 (14 October): Merge Down refuses a hidden layer rather than discard its pixels.
+      await expect(page.getByTestId('studio-toast')).toContainText('before merging, so its pixels are kept');
+      expect(await layerCount()).toBe(2);
+      expect(await artwork(page)).toEqual(before);
+      return;
+    }
+    await expect.poll(layerCount).toBe(1);
     await expect.poll(() => artwork(page)).toEqual(before);
     await page.keyboard.press('Control+z');
-    await expect.poll(() => page.evaluate(() => (window as unknown as StudioWindow).__studioStore.getState().frames[0].layers.length)).toBe(2);
+    await expect.poll(layerCount).toBe(2);
     await expect.poll(() => artwork(page)).toEqual(before);
     await page.keyboard.press('Control+Shift+z');
-    await expect.poll(() => page.evaluate(() => (window as unknown as StudioWindow).__studioStore.getState().frames[0].layers.length)).toBe(1);
+    await expect.poll(layerCount).toBe(1);
     await expect.poll(() => artwork(page)).toEqual(before);
   });
 }

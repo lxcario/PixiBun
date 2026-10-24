@@ -205,8 +205,8 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
         <span className="font-bold">Output Info:</span>
         <span className="text-[var(--accent-gold)] font-bold">
           {getOutputDimensions(scale).outW} × {getOutputDimensions(scale).outH} px
-          {exportType === 'gif' && `, ${totalFrames} frames at ${fps} FPS`}
-          {exportType === 'apng' && `, ${totalFrames} frames (RGBA)`}
+          {exportType === 'gif' && `, ${totalFrames} ${totalFrames === 1 ? 'frame' : 'frames'} at ${fps} FPS`}
+          {exportType === 'apng' && `, ${totalFrames} ${totalFrames === 1 ? 'frame' : 'frames'} (RGBA)`}
           {exportType === 'webm' && ` WebM (VP9/VP8)`}
           {exportType === 'mp4' && ` MP4 (H.264 / ISOBMFF)`}
         </span>

@@ -31,8 +31,13 @@ test('large flyout color controls support taps without changing canvas pixels', 
   await flyout.evaluate(element => Promise.all(element.getAnimations({ subtree: true })
     .filter(animation => animation.effect?.getComputedTiming().endTime !== Infinity)
     .map(animation => animation.finished.catch(() => undefined))));
-  for (const button of await flyout.getByRole('button').all()) {
-    const box = (await button.boundingBox())!;
+  // Measure in CSS pixels from the page. Firefox's protocol boundingBox() rounds fractional
+  // positions to float32, so a 44 px button at x = 230.3 reads 43.99998 px there.
+  const sizes = await flyout.getByRole('button').evaluateAll(buttons => buttons.map(button => {
+    const box = button.getBoundingClientRect(); return { width: box.width, height: box.height };
+  }));
+  expect(sizes.length).toBeGreaterThan(0);
+  for (const box of sizes) {
     expect(box.width).toBeGreaterThanOrEqual(44); expect(box.height).toBeGreaterThanOrEqual(44);
   }
   const primary = dock.getByRole('button', { name: /^Primary color / });

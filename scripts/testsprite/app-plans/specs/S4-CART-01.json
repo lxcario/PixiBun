@@ -1,0 +1,60 @@
+{
+  "id": "1165bc74-c877-4d9f-a3ad-ad58dd3f6729",
+  "key": "S4-CART-01",
+  "title": "S4-CART-01 — A living postcard brings the drawing back.",
+  "goal": "A cart takes the project's own title and shows a card preview that follows it, and Save cart is ready; preparing the cart never changes the drawing.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Cart",
+      "within": "Export Studio Assets"
+    },
+    {
+      "visible": "Card preview: Bun",
+      "role": "img"
+    },
+    {
+      "fill": "Title",
+      "value": "S4 Postcard"
+    },
+    {
+      "visible": "Card preview: S4 Postcard",
+      "role": "img",
+      "why": "The preview follows the title."
+    },
+    {
+      "enabled": "Save cart",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      }
+    }
+  ],
+  "cliOnly": [
+    "saving the cart PNG (Cart saved) and opening it in /open: it plays and reopens as an editable project with its frames, holds and pixels (tests/production/cartPlayer.spec.ts, tests/production/carts.spec.ts, scripts/testsprite/ replay of this case)"
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

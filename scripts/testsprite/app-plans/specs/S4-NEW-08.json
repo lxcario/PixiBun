@@ -1,0 +1,71 @@
+{
+  "id": "fd0f5e17-76da-47d0-942b-ddd752997e9c",
+  "key": "S4-NEW-08",
+  "title": "S4-NEW-08 — The timeline fits the desk.",
+  "goal": "At the desktop size the agent uses, every timeline action is present and named: Play, frame time, add, duplicate, delete and move; using them keeps the artwork exact.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "visible": "Play"
+    },
+    {
+      "visible": "Active frame duration in milliseconds",
+      "role": "spinbutton"
+    },
+    {
+      "visible": "/^Add/"
+    },
+    {
+      "visible": "Duplicate frame"
+    },
+    {
+      "visible": "Delete frame"
+    },
+    {
+      "visible": "Move frame earlier"
+    },
+    {
+      "visible": "Move frame later"
+    },
+    {
+      "click": "Duplicate frame"
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "visible": "/^Select frame 2. /"
+    },
+    {
+      "click": "Move frame earlier"
+    },
+    {
+      "click": "Delete frame"
+    },
+    {
+      "absent": "/^Select frame 2. /"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "frames": "1"
+      },
+      "why": "The actions are reachable and change only the timeline."
+    }
+  ],
+  "cliOnly": [
+    "the same checks at 1024, 1280, 1536 and 1920 pixels wide, which needs viewport control (tests/production/stableStudioGeometry.spec.ts)"
+  ]
+}

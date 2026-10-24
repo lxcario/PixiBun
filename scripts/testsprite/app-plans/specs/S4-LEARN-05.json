@@ -1,0 +1,69 @@
+{
+  "id": "1ab5748d-2918-4ee6-9992-12d01a3cdd1b",
+  "key": "S4-LEARN-05",
+  "title": "S4-LEARN-05 — The teaching board is an example.",
+  "goal": "The Teaching Board shows the Bun and Gel Slime examples and loads one into the Playground timeline as practice; the saved Studio drawing is not touched.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "open": "/playground?end=1",
+      "reload": true
+    },
+    {
+      "skip": true
+    },
+    {
+      "click": "Open Teaching Board"
+    },
+    {
+      "visible": "/Bun \\(Mascot\\)/"
+    },
+    {
+      "click": "/Bun \\(Mascot\\)/"
+    },
+    {
+      "click": "/Gel Slime/"
+    },
+    {
+      "click": "Load into Playground Timeline"
+    },
+    {
+      "text": "Loaded 10-frame Gel Slime jump into Playground timeline!",
+      "why": "The chosen example was loaded, and the board says so."
+    },
+    {
+      "click": "✕"
+    },
+    {
+      "visible": "/^Frame 10/",
+      "why": "The practice timeline now holds the example's ten frames."
+    },
+    {
+      "click": "Return to drawing"
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      },
+      "why": "The saved Studio drawing was not overwritten."
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, fireEvent, screen, cleanup } from '@testing-library/react';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelLightBulbGizmo } from '@/components/studio/PixelLightBulbGizmo';
+import { DEFAULT_LIGHT_LOOK, useLightLook } from '@/lib/canvas/lightLook';
 
 describe('PixelLightBulbGizmo Component', () => {
   afterEach(() => {
@@ -310,5 +311,40 @@ describe('PixelLightBulbGizmo Component', () => {
     const [, , centerX, centerY] = lastCall;
     expect(centerX).toBe(25);
     expect(centerY).toBe(6);
+  });
+
+  it('aims from the compass, sets height, and sends tint and material with the live light', () => {
+    useLightLook.setState({ ...DEFAULT_LIGHT_LOOK });
+    useStudioStore.getState().setLightElevation(40);
+    const onLightChange = vi.fn(), onCommit = vi.fn();
+    render(<PixelLightBulbGizmo canvasWidth={32} canvasHeight={32} zoom={1600}
+      mainCanvasRef={dummyCanvasRef} onCommit={onCommit} onCancel={vi.fn()} onLightChange={onLightChange} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Light from the right' }));
+    fireEvent.click(screen.getByTestId('pixel-light-apply'));
+    expect(onLightChange.mock.calls.at(-1)?.[0]).toBe(90);
+
+    fireEvent.change(screen.getByTestId('pixel-light-height'), { target: { value: '20' } });
+    fireEvent.click(screen.getByTestId('pixel-light-more'));
+    fireEvent.click(screen.getByTestId('pixel-light-tint-candle'));
+    fireEvent.click(screen.getByTestId('pixel-light-material-gold'));
+    fireEvent.click(screen.getByTestId('pixel-light-apply'));
+    const [, elevation, , , , look] = onLightChange.mock.calls.at(-1)!;
+    expect(elevation).toBe(20);
+    expect(look).toMatchObject({ lightColor: '#FFD49A', material: 'gold' });
+    expect(useStudioStore.getState().tools.materialPreset).toBe('gold');
+    expect(screen.getByTestId('pixel-light-material-gold').getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('resets the look to daylight, default fill, normal edges and no dither', () => {
+    useLightLook.setState({ lightColor: '#B8CCFF', ambientIntensity: 0.2, material: 'matte' });
+    useStudioStore.getState().setCavityStrength(1.8);
+    useStudioStore.getState().setDitherModulation(0.6);
+    render(<PixelLightBulbGizmo canvasWidth={32} canvasHeight={32} zoom={1600}
+      mainCanvasRef={dummyCanvasRef} onCommit={vi.fn()} onCancel={vi.fn()} />);
+    fireEvent.click(screen.getByTestId('pixel-light-reset-look'));
+    expect(useLightLook.getState()).toMatchObject({ lightColor: '#FFFFFF', ambientIntensity: 0.48 });
+    expect(useStudioStore.getState().tools.cavityStrength).toBe(1);
+    expect(useStudioStore.getState().tools.ditherModulation).toBe(0);
   });
 });

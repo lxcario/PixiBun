@@ -44,8 +44,16 @@ function hueChroma(r: number, g: number, b: number): [number, number] {
 
 export type Recolor = ((image: ImageData) => void) | null;
 
-/** Returns null when the scene should keep its original colors (Moonlit at night). */
-export function sceneRecolor(themeId: string, day: boolean): Recolor {
+/** Maps one sRGB color to the theme's; packed 0xRRGGBB in and out. */
+type ColorMapper = (r: number, g: number, b: number) => number;
+
+/**
+ * The per-color mapping behind both recolor styles below. Null when the scene
+ * keeps its original colors (Moonlit at night). `paintedForDay` is for a scene
+ * that paints its own daylight values: by day its lightness is kept as painted
+ * instead of inverted, and only near-white highlights stay unthemed.
+ */
+function colorMapper(themeId: string, day: boolean, paintedForDay: boolean): ColorMapper | null {
   const theme = getStudioTheme(themeId);
   if (theme.id === 'moonlit' && !day) return null;
   const palette = day ? theme.day : theme.night;
@@ -65,9 +73,12 @@ export function sceneRecolor(themeId: string, day: boolean): Recolor {
     // Keep warm light, plants and the brightest highlights as painted.
     const warm = chroma > 0.18 && hue >= 12 && hue <= 75;
     const green = chroma > 0.15 && hue > 75 && hue < 170;
-    const highlight = l > (day ? 74 : 82);
+    const highlight = l > (paintedForDay && day ? 98.5 : day ? 74 : 82);
     if (!warm && !green && !highlight) {
-      const target = day ? 97 - l * 0.85 : l;
+      // By day the ramp is inverted gently: a full inversion turned the night painting's pale far
+      // ridge into a dark band and the near hills nearly white. Compressed, the sky stays lightest
+      // and distant shapes fade towards it, the way hills look in daylight haze.
+      const target = day && !paintedForDay ? 97 - l * 0.5 : l;
       let lo = stops[0];
       let hi = stops[stops.length - 1];
       for (let i = 0; i < stops.length - 1; i++) {
@@ -85,15 +96,31 @@ export function sceneRecolor(themeId: string, day: boolean): Recolor {
     cache.set(key, out);
     return out;
   };
+  return map;
+}
 
+/** Recolors a whole frame of pixels. Null when the scene keeps its original colors. */
+export function sceneRecolor(themeId: string, day: boolean, paintedForDay = false): Recolor {
+  const map = colorMapper(themeId, day, paintedForDay);
+  if (!map) return null;
+  // Scenes recolor every animation frame, so the loop reads whole pixels at once and reuses the
+  // last answer: pixel art is long runs of one color, so most pixels skip the lookup entirely.
+  // Packed pixels are little-endian (0xAABBGGRR), as on every platform browsers run on.
   return (image: ImageData) => {
     const d = image.data;
-    for (let i = 0; i < d.length; i += 4) {
-      if (d[i + 3] === 0) continue;
-      const c = map(d[i], d[i + 1], d[i + 2]);
-      d[i] = (c >> 16) & 255;
-      d[i + 1] = (c >> 8) & 255;
-      d[i + 2] = c & 255;
+    const px = new Uint32Array(d.buffer, d.byteOffset, d.byteLength >> 2);
+    let lastIn = -1;
+    let lastOut = 0;
+    for (let i = 0; i < px.length; i++) {
+      const v = px[i];
+      if (v >>> 24 === 0) continue;
+      const bgr = v & 0xffffff;
+      if (bgr !== lastIn) {
+        const c = map(v & 255, (v >>> 8) & 255, (v >>> 16) & 255);
+        lastIn = bgr;
+        lastOut = ((c >>> 16) & 255) | (c & 0xff00) | ((c & 255) << 16);
+      }
+      px[i] = (v & 0xff000000) | lastOut;
     }
   };
 }
@@ -106,4 +133,47 @@ export function recolorCanvas(ctx: CanvasRenderingContext2D, recolor: Recolor) {
   const image = ctx.getImageData(0, 0, width, height);
   recolor(image);
   ctx.putImageData(image, 0, 0);
+}
+
+/** A CSS color in the theme's palette: `#rrggbb`, `rgb()` and `rgba()` in, the same form out. */
+export type SceneColor = (css: string) => string;
+
+const identity: SceneColor = (css) => css;
+
+/**
+ * The same recolor as a color function, for a scene that paints in the theme's
+ * colors directly instead of reading back and recoloring every frame. Hex colors
+ * are cached whole; rgb()/rgba() keep their alpha and cache only the color.
+ */
+export function sceneColor(themeId: string, day: boolean, paintedForDay = false): SceneColor {
+  const map = colorMapper(themeId, day, paintedForDay);
+  if (!map) return identity;
+  const hex = new Map<string, string>();
+  const rgbCache = new Map<number, string>();
+  const mapped = (r: number, g: number, b: number) => {
+    const key = (r << 16) | (g << 8) | b;
+    let out = rgbCache.get(key);
+    if (out === undefined) {
+      const c = map(r, g, b);
+      out = `${(c >> 16) & 255}, ${(c >> 8) & 255}, ${c & 255}`;
+      rgbCache.set(key, out);
+    }
+    return out;
+  };
+  return (css) => {
+    if (css.charCodeAt(0) === 35) {
+      let out = hex.get(css);
+      if (out === undefined) {
+        const [r, g, b] = hexRgb(css);
+        const c = map(r, g, b);
+        out = `#${((1 << 24) | c).toString(16).slice(1)}`;
+        hex.set(css, out);
+      }
+      return out;
+    }
+    const m = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)$/.exec(css);
+    if (!m) return css;
+    const rgb = mapped(+m[1], +m[2], +m[3]);
+    return m[4] === undefined ? `rgb(${rgb})` : `rgba(${rgb}, ${m[4]})`;
+  };
 }

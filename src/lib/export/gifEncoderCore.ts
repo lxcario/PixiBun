@@ -242,7 +242,7 @@ class DynamicByteArray {
 
   private ensureCapacity(needed: number) {
     if (this.length + needed <= this.buffer.length) return;
-    let nextCapacity = this.buffer.length * 2;
+    let nextCapacity = Math.max(65536, this.buffer.length * 2);
     while (this.length + needed > nextCapacity) {
       nextCapacity *= 2;
     }
@@ -298,6 +298,63 @@ export function gifFrameDelays(exactCentiseconds: number[]): number[] {
   });
 }
 
+/**
+ * Validates raw frame array and frame properties before GIF encoding.
+ * Ensures all frames have consistent, positive integer dimensions,
+ * matching payload byte lengths (width * height * 4), and valid structure.
+ */
+export function validateRawFrames(frames: RawFrameData[]): void {
+  if (!Array.isArray(frames)) {
+    throw new TypeError('encodeGifRawFrames requires an array of frames.');
+  }
+  if (frames.length === 0) {
+    throw new Error('encodeGifRawFrames requires at least 1 frame.');
+  }
+
+  const firstFrame = frames[0];
+  if (!firstFrame || typeof firstFrame !== 'object') {
+    throw new TypeError('Frame 0 is not a valid frame object.');
+  }
+
+  const { width, height } = firstFrame;
+  if (!Number.isFinite(width) || !Number.isInteger(width) || width <= 0 || width > 65535) {
+    throw new RangeError(
+      `Invalid canvas width: ${width}. Frame width must be a positive integer between 1 and 65535.`
+    );
+  }
+  if (!Number.isFinite(height) || !Number.isInteger(height) || height <= 0 || height > 65535) {
+    throw new RangeError(
+      `Invalid canvas height: ${height}. Frame height must be a positive integer between 1 and 65535.`
+    );
+  }
+
+  const expectedBytes = width * height * 4;
+
+  for (let i = 0; i < frames.length; i++) {
+    const frame = frames[i];
+    if (!frame || typeof frame !== 'object') {
+      throw new TypeError(`Frame ${i} is not a valid frame object.`);
+    }
+    if (frame.width !== width || frame.height !== height) {
+      throw new RangeError(
+        `Frame ${i} dimensions (${frame.width}x${frame.height}) do not match canvas dimensions (${width}x${height}).`
+      );
+    }
+    const data = (frame as unknown as { data?: unknown }).data;
+    if (
+      !data ||
+      !(data instanceof Uint8ClampedArray || data instanceof Uint8Array)
+    ) {
+      throw new TypeError(`Frame ${i} data must be a Uint8ClampedArray or Uint8Array.`);
+    }
+    if (data.byteLength !== expectedBytes) {
+      throw new RangeError(
+        `Frame ${i} payload length (${data.byteLength} bytes) does not match expected RGBA byte length (${expectedBytes} bytes for ${width}x${height}).`
+      );
+    }
+  }
+}
+
 export function encodeGifRawFrames(
   frames: RawFrameData[],
   fps: number,
@@ -305,9 +362,7 @@ export function encodeGifRawFrames(
   delays?: number[],
   repeat: boolean = true
 ): Uint8Array {
-  if (frames.length === 0) {
-    throw new Error('encodeGifRawFrames requires at least 1 frame.');
-  }
+  validateRawFrames(frames);
 
   const width = frames[0].width;
   const height = frames[0].height;

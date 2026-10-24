@@ -120,7 +120,7 @@ export function ViewOptionsPanel({ open, anchorRef, onClose, onArrange }: {
       <Reveal>
         <p className="pb-eyebrow">Check your art</p>
         <div className="pb-tiles">
-          <Tile on={s.showFloatingPreview} onClick={s.toggleFloatingPreview} aria-label="Toggle Live PiP Preview Window"
+          <Tile on={s.showFloatingPreview} onClick={s.toggleFloatingPreview} title="Toggle the floating Live Preview window"
             icon={<PixelIcon name="preview" size={13} />} label="Live preview" sub="Floating window" />
           <Tile on={s.squintMode} onClick={s.toggleSquintMode} title="Silhouette / Squint Mode (S)"
             icon={<PixelIcon name="select-box" size={13} />} label="Silhouette" kbd="S" />

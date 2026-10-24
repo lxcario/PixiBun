@@ -91,4 +91,15 @@ describe('Recent Colors LRU Logic', () => {
       vi.useRealTimers();
     }
   });
+
+  it('loads only valid, distinct colors from storage, at most eight', () => {
+    localStorage.setItem('pixibun_recent_colors', JSON.stringify([
+      '#abcdef', 'url(javascript:alert(1))', '#ABCDEF', 7, '#12345', 'red', ...Array.from({ length: 12 }, (_, i) => `#0000${String(i).padStart(2, '0')}`),
+    ]));
+    useStudioStore.getState().loadRecentColors();
+    const colors = useStudioStore.getState().recentColors;
+    expect(colors[0]).toBe('#ABCDEF');
+    expect(colors).toHaveLength(8);
+    expect(colors.every(color => /^#[0-9A-F]{6}$/.test(color))).toBe(true);
+  });
 });

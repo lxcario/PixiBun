@@ -4,6 +4,7 @@ import { importGameDeliveryFixture } from '../helpers/gameDeliveryFixture';
 import AxeBuilder from '@axe-core/playwright';
 import { verifyAnimatedDownloadOrder } from '../helpers/gameAnimationDownload';
 import { chooseTool } from '../helpers/tools';
+import { settleAnimations } from '../helpers/settle';
 const pixels = (page: Page) => page.getByTestId('main-composite-canvas').evaluate((c: HTMLCanvasElement) => Array.from(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data));
 test('animated downloads preserve reverse and bounce pose holds and play-once settings', async ({ page }) => {
   test.setTimeout(60_000);
@@ -77,7 +78,9 @@ test('visible selection bindings resolve duplicate register identity on every ex
   await chooseTool(page, 'select-box');
   for (let i = 1; i <= 3; i++) {
     await page.getByRole('button', { name: new RegExp(`^Select frame ${i}\\.`) }).click();
-    // A drag inside the previous marquee moves artwork. Start a new selection.
+    // A drag inside the previous marquee moves artwork. Start a new selection. Ctrl+D on the
+    // focused frame card duplicates the frame, so deselect from the canvas area.
+    await page.locator('#main-content').focus();
     await page.keyboard.press('Control+d');
     await expect.poll(() => page.evaluate(() => (window as unknown as { __studioStore: { getState(): import('../../src/stores/studioStore').StudioState } }).__studioStore.getState().selection)).toBeNull();
     const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
@@ -103,5 +106,10 @@ test('new palette roles and game-kit controls remain accessible without inspecto
   await page.getByRole('textbox', { name: 'Palette role name' }).fill('a'.repeat(64)); await page.getByRole('button', { name: 'Save palette role' }).click();
   expect(await page.getByTestId('right-inspector').evaluate(e => e.scrollWidth > e.clientWidth + 1)).toBe(false);
   expect((await new AxeBuilder({ page }).include('[data-testid="right-inspector"]').analyze()).violations).toEqual([]);
-  await openKit(page); expect((await new AxeBuilder({ page }).include('dialog').analyze()).violations).toEqual([]);
+  const kit = await openKit(page);
+  // Scan at rest: the dialog blooms and the Godot tab's controls fade in, and a
+  // contrast check mid-fade reads their text as nearly the background colour.
+  await expect(kit.getByRole('combobox', { name: 'Godot sprite anchor' })).toBeVisible();
+  await settleAnimations(kit);
+  expect((await new AxeBuilder({ page }).include('dialog').analyze()).violations).toEqual([]);
 });

@@ -1,0 +1,84 @@
+{
+  "id": "c84e8e84-b8ea-48a9-9a45-cbdcb7304c59",
+  "key": "S4-DRAW-09",
+  "title": "S4-DRAW-09 — A transformed detail can come back.",
+  "goal": "An asymmetric L selected with one Magic Wand click can be lifted and rotated: Cancel puts back the exact original, Rotate 90 degrees clockwise and Commit changes it once, and one Undo restores the exact original.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_e83a5c_R0.8.3.9.12~R0.10.11.13.12&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "readout": {
+        "pixels": "28",
+        "digest": "17d70505"
+      },
+      "why": "The replay draws exactly the L."
+    },
+    {
+      "key": "w"
+    },
+    {
+      "pressed": "Magic Wand"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "key": "h"
+    },
+    {
+      "visible": "Cancel Transform (Escape)",
+      "why": "The selection is lifted for transforming."
+    },
+    {
+      "click": "Cancel Transform (Escape)"
+    },
+    {
+      "readout": {
+        "pixels": "28",
+        "digest": "17d70505"
+      },
+      "why": "Cancel puts back the exact original."
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "key": "h"
+    },
+    {
+      "key": "h"
+    },
+    {
+      "click": "Rotate 90° CW"
+    },
+    {
+      "click": "Commit Transform (Enter)"
+    },
+    {
+      "readout": {
+        "pixels": "28",
+        "digest": "!=17d70505"
+      },
+      "why": "The rotated L is committed with the same number of pixels."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "17d70505"
+      },
+      "why": "One Undo restores the exact original."
+    }
+  ],
+  "cliOnly": [
+    "dragging the selection to move it and canvas-edge clipping (tests/e2e/selectionTransformUndo.spec.ts, tests/production/selectionLimitsTools.spec.ts)"
+  ]
+}

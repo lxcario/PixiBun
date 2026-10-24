@@ -1,0 +1,110 @@
+{
+  "id": "5398500f-34a3-4661-ad5e-ed2dcbe9be7a",
+  "key": "S4-RELATION-01",
+  "title": "S4-RELATION-01 — Turn it around, and bring it back.",
+  "goal": "An asymmetric red L (replay link: a bar at x 8-9, y 3-12 and a foot at x 10-13, y 11-12) is selected with one Magic Wand click. H then V turns it 180 degrees inside its box, Commit keeps it, Undo returns the exact original and Redo the exact turn. A horizontal flip alone is also exact and undoable. Expected composites are drawn independently by replay links: 180 degrees f3f88505, horizontal flip bb308505.",
+  "cliOnly": [
+    "four 90-degree RotSprite turns with backups of every layer between them"
+  ],
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_e83a5c_R0.8.3.9.12~R0.10.11.13.12&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "readout": {
+        "pixels": "28",
+        "colors": "1",
+        "top": "#e83a5c 28",
+        "digest": "17d70505"
+      },
+      "why": "The replay draws exactly the L."
+    },
+    {
+      "key": "w"
+    },
+    {
+      "pressed": "Magic Wand"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "key": "h"
+    },
+    {
+      "key": "v"
+    },
+    {
+      "visible": "Commit Transform (Enter)",
+      "why": "The selection is lifted and the transform toolbar is shown."
+    },
+    {
+      "click": "Commit Transform (Enter)"
+    },
+    {
+      "readout": {
+        "pixels": "28",
+        "digest": "f3f88505"
+      },
+      "why": "H then V turned the L exactly 180 degrees within its box."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "pixels": "28",
+        "digest": "17d70505"
+      },
+      "why": "One Undo returns the exact original L."
+    },
+    {
+      "click": "Redo last action"
+    },
+    {
+      "readout": {
+        "digest": "f3f88505"
+      },
+      "why": "Redo returns the exact turn."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "17d70505"
+      }
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "key": "h"
+    },
+    {
+      "click": "Commit Transform (Enter)"
+    },
+    {
+      "readout": {
+        "pixels": "28",
+        "digest": "bb308505"
+      },
+      "why": "A horizontal flip alone mirrors the L exactly."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "17d70505"
+      },
+      "why": "Undo returns the exact original again."
+    }
+  ]
+}

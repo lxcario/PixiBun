@@ -1,0 +1,99 @@
+{
+  "id": "bbb8f684-adbc-43aa-87f0-6a41913bda05",
+  "key": "S4-LAYER-01",
+  "title": "S4-LAYER-01 — Layer structure is reversible.",
+  "goal": "Adding, renaming, duplicating and deleting layers change only the layer stack; Undo after a delete restores the exact three layers; the artwork never changes; the last layer cannot be deleted.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Layers",
+      "nth": 0
+    },
+    {
+      "disabled": "Delete Layer",
+      "why": "The only layer cannot be deleted."
+    },
+    {
+      "click": "Add New Layer"
+    },
+    {
+      "readout": {
+        "layers": "2",
+        "layer": "Layer 2",
+        "digest": "=A"
+      }
+    },
+    {
+      "click": "Rename layer Layer 2"
+    },
+    {
+      "fill": "Layer name",
+      "value": "S4 Upper"
+    },
+    {
+      "key": "Enter",
+      "inField": "Layer name",
+      "why": "Enter in the name field commits the rename; do not click another layer to commit it."
+    },
+    {
+      "readout": {
+        "layer": "S4 Upper"
+      },
+      "why": "The rename is committed."
+    },
+    {
+      "click": "Duplicate Layer"
+    },
+    {
+      "readout": {
+        "layers": "3",
+        "layer": "S4 Upper (Copy)",
+        "digest": "=A"
+      },
+      "why": "Three distinct layers; empty layers do not change the artwork."
+    },
+    {
+      "click": "Delete Layer"
+    },
+    {
+      "readout": {
+        "layers": "2",
+        "layer": "S4 Upper"
+      }
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "layers": "3",
+        "layer": "S4 Upper (Copy)",
+        "digest": "=A"
+      },
+      "why": "Undo restores the deleted copy as the active layer."
+    },
+    {
+      "visible": "/^Select layer S4 Upper \\(Copy\\)/"
+    },
+    {
+      "visible": "/^Select layer S4 Upper. /"
+    },
+    {
+      "visible": "/^Select layer Base Layer/"
+    }
+  ],
+  "uncovered": [
+    "merge down and drag reordering"
+  ]
+}

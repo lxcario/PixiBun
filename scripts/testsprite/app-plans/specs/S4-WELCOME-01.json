@@ -1,0 +1,109 @@
+{
+  "id": "813350a7-4390-4ecc-8ab3-2298787696cf",
+  "key": "S4-WELCOME-01",
+  "title": "S4-WELCOME-01 — A welcome you can leave.",
+  "goal": "The welcome can be replayed from Studio options, a theme chosen inside it sticks, Skip setup always returns to a usable editor, the choice persists after reopening, and the drawing never changes.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Studio/",
+      "nth": 0
+    },
+    {
+      "click": "/^Replay welcome/",
+      "settle": 0.8
+    },
+    {
+      "click": "/^Set up my Desk/",
+      "settle": 0.8
+    },
+    {
+      "click": "/^I've made a few sprites/",
+      "role": "radio",
+      "shown": "I've made a few sprites"
+    },
+    {
+      "click": "Next →",
+      "settle": 0.8
+    },
+    {
+      "click": "/^Sakura/",
+      "role": "radio"
+    },
+    {
+      "click": "Skip setup"
+    },
+    {
+      "visible": "Undo last action",
+      "why": "Skip setup returns to the editor."
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "The welcome does not touch the drawing."
+    },
+    {
+      "click": "/^Studio/",
+      "nth": 0
+    },
+    {
+      "checked": "/^Sakura:/",
+      "role": "radio",
+      "why": "The theme chosen in the welcome is active."
+    },
+    {
+      "click": "Close studio options"
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "open": "/studio?end=1",
+      "reload": true
+    },
+    {
+      "skip": true
+    },
+    {
+      "click": "/^Studio/",
+      "nth": 0
+    },
+    {
+      "checked": "/^Sakura:/",
+      "role": "radio",
+      "why": "Sakura persists after reopening."
+    },
+    {
+      "click": "/^Replay welcome/",
+      "settle": 0.8
+    },
+    {
+      "visible": "Skip setup",
+      "why": "The welcome reopens cleanly."
+    },
+    {
+      "click": "Skip setup"
+    },
+    {
+      "visible": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "The same drawing is restored and still unchanged."
+    }
+  ]
+}

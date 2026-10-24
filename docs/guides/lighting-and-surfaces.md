@@ -11,7 +11,7 @@ Open **Effects → Add light and depth**. The three sections are **Light your sp
 ![Auto lighting on Bun with live bulb, angle and Apply/Cancel controls.](../assets/screenshots/2026-10-15-current-ui/lighting-live.png)
 
 1. Keep the sprite's source artwork available and open **Light your sprite**. **Auto setup** estimates a form, material and existing light cues from the visible artwork. Read **Detected lighting settings** when available; they are estimates you can revise.
-2. Choose **Preview lighting**. Move the bulb around the canvas to change direction. The live toolbar offers direction/height/strength and shading/glint choices. Keyboard controls are labeled on the preview; use its **Apply** or **Cancel** deliberately.
+2. Choose **Preview lighting**. Move the bulb around the canvas to change direction. The light bar opens where the status pill sits: compass presets around **Recenter**, **Height**, and **Shade** and **Glint** choices. **More** opens Tint (six presets or a custom color), Fill, Material, Edges, Dither and Reset. With **Studio → Labs → Liquid controls** on, press and hold (or press and slide) a Shade, Glint or Material choice to lift a glass lens, slide it over the options and release on the one you want; a plain click still chooses. Keyboard controls are labeled on the preview; use its **Apply** or **Cancel** deliberately.
 3. Compare the original and preview, especially the face, silhouette and darkest pixels. Confirm only when the new lighting reads well. **Enter** applies a live preview and **Esc** cancels it when that preview owns the interaction.
 4. After applying, inspect the generated effect layer and keep a portable backup. Undo restores an admitted effect change while it remains in history.
 

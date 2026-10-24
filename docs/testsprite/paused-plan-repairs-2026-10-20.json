@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-20T08:00:02.021Z",
+  "sourceCommit": "efb223ae92a0411613d215430b52628cb3f0a427",
+  "scope": "Six saved portal definition repairs. No application-code change, new test execution, generated-code update, new pass, merge, push or deployment.",
+  "testRunsStarted": 0,
+  "codeGenerationsRequested": 0,
+  "automaticTrigger": "Disabled; independently read in dashboard after saves",
+  "staticValidation": "Official CLI offline test lint: six plans valid, no issues. This is not execution qualification.",
+  "originalCohort": {
+    "executionId": "38207a10-bdfb-463a-99ea-10d3cd934d80",
+    "passed": 37,
+    "failed": 9,
+    "blocked": 75
+  },
+  "changes": [
+    {
+      "testId": "dc365ace-40a4-4567-a6c5-7d199b58658c",
+      "name": "S4-DRAW-11 — Rectangles and ellipses keep their promises.",
+      "reason": "The action log clicked Line twice; it never opened the folded Lines and shapes menu. The previous boundary assertion also failed to distinguish existing Bun pixels from new shape pixels.",
+      "sourceReferences": [
+        "src/components/layout/ToolSlotButton.tsx:112",
+        "src/components/layout/inspector/ToolSettingsPanel.tsx:79",
+        "tests/production/toolShelf.spec.ts:35"
+      ],
+      "originalRunId": "193481a8-1248-4b24-9b51-372e5c4181b6",
+      "beforePlanSha256": "6cdb82013ada35f932083486d0c0373fa75cacd4c764e719f08bc71b333ea3b2",
+      "afterPlanSha256": "39d29cff6b216d7933f965b2e981967b25e4fdbd5e198c076f856f135329e0cd",
+      "beforeStepCount": 9,
+      "afterStepCount": 9,
+      "originalReportSha256": "80c9e01abc2030fb6be8f76608ea6ab37e47e58992a65d4273e2980146e998bf",
+      "savedCodeVersion": "v1.0",
+      "savedCodeSha256": "c318cdc2e779d6ae9c0f2da8ec4bad595f981390c8cc3b0db7659e198ab6f344",
+      "savedCodeUnchanged": true,
+      "lastRunIdBefore": "593465fe-a97d-4750-a6e5-fb3df8246700",
+      "lastRunIdAfter": "593465fe-a97d-4750-a6e5-fb3df8246700",
+      "lastRunStatus": "cancelled",
+      "qualification": "NOT RUN; preserved scripts are not certified against revised definitions"
+    },
+    {
+      "testId": "ffedf7d1-5b19-4552-993a-fe63e56e9f19",
+      "name": "S4-PAL-01 — A named palette is a keepsake.",
+      "reason": "The description promises reorder/remove, but neither operation existed in the plan or recorded actions. Reopening Create palette creates a new draft, not the committed palette.",
+      "sourceReferences": [
+        "src/components/modals/CreatePaletteModal.tsx:50",
+        "src/components/modals/CreatePaletteModal.tsx:120",
+        "src/components/layout/inspector/PalettePanel.tsx:166"
+      ],
+      "originalRunId": "b1f8264d-885c-4275-83e2-e78abab7710a",
+      "beforePlanSha256": "fc0f2a3030c7236db50be3c5173f4eb883899bd2f98183a0f021174b2e1aa4b5",
+      "afterPlanSha256": "faaa2718e5cd16d308d80dcd2f5d39f49eba8bc4f682c393b0c62b20964f43b8",
+      "beforeStepCount": 9,
+      "afterStepCount": 11,
+      "originalReportSha256": "19f4ada24c57a82401dfc1027f0ac5b732f14be4d1289dd54c79ac77456b0713",
+      "savedCodeVersion": "v1.0",
+      "savedCodeSha256": "036f0a17d51bb0b407886d8c69b571bc0ea15df87f8c8247b7096cead4073a0b",
+      "savedCodeUnchanged": true,
+      "lastRunIdBefore": "582e59c2-e143-4978-8250-f69538b4341d",
+      "lastRunIdAfter": "582e59c2-e143-4978-8250-f69538b4341d",
+      "lastRunStatus": "cancelled",
+      "qualification": "NOT RUN; preserved scripts are not certified against revised definitions"
+    },
+    {
+      "testId": "f9fbb1e0-03fb-4d5a-90a0-4ab44ccfa8a6",
+      "name": "Draw on an unlocked layer, lock it, and verify drawing is blocked until unlocked",
+      "reason": "The trace records generic canvas clicks with no proof that the unlocked click reached a distinct empty cell; refusal feedback lasts 1600 ms and must be observed before unlocking.",
+      "sourceReferences": [
+        "src/hooks/viewport/useViewportPointerEvents.ts:257",
+        "src/components/layout/CenterViewport.tsx:1040"
+      ],
+      "originalRunId": "add34c54-40a8-473a-afd5-dcba9fb586a6",
+      "beforePlanSha256": "308b66d5eda9aaaff9cbe2e806ff1fecb77775fecf9ba7609db05504f09b227f",
+      "afterPlanSha256": "5da76bb7dcb7a3321155de9731687d8ce13b0e6bb9da14a10335496470c2f408",
+      "beforeStepCount": 12,
+      "afterStepCount": 12,
+      "originalReportSha256": "bd282d5a06e4404ab170ec05f6076196ef29e7bab9034f3ac88d99e36358b126",
+      "savedCodeVersion": null,
+      "savedCodeSha256": null,
+      "savedCodeUnchanged": null,
+      "lastRunIdBefore": "af048dc4-fe94-4afc-8b13-ffd21d9563b7",
+      "lastRunIdAfter": "af048dc4-fe94-4afc-8b13-ffd21d9563b7",
+      "lastRunStatus": "cancelled",
+      "qualification": "NOT RUN; preserved scripts are not certified against revised definitions"
+    },
+    {
+      "testId": "e65d4b15-428d-430e-bbbb-4c8f0e7e917c",
+      "name": "S4-VIEW-03 — Quick tools follow the keymap.",
+      "reason": "The recorded setup clicked the artwork while Pen was active and then compared to the earlier digest; the plan also omitted its stated text-editing checkpoint.",
+      "sourceReferences": [
+        "scripts/testsprite/pixibun-ui-reports-integrity.py:54",
+        "tests/production/canvasContextMenu.spec.ts:51"
+      ],
+      "originalRunId": "d49c1395-52dc-4e2c-bcce-a775affa35f5",
+      "beforePlanSha256": "d018a1b17d258a48cb74d60de7fb575e46a99187c37e905e65b16171872feaf1",
+      "afterPlanSha256": "e9205d9302740e1ac63ef5eb8a12b322ae9ea64bcf690e9e5bc9f6d461b47688",
+      "beforeStepCount": 9,
+      "afterStepCount": 11,
+      "originalReportSha256": "ecaf1776b4ed87cfd7c5a0f331ef19839593623bac5362666939a73f842d8142",
+      "savedCodeVersion": "v-c64954b9177e",
+      "savedCodeSha256": "ee606074af69caaf88b0ca388e2365cf0b19208c697158f4280b7c2b4e256e86",
+      "savedCodeUnchanged": true,
+      "lastRunIdBefore": "8d5a0c21-a566-4a34-9368-759250394cb0",
+      "lastRunIdAfter": "8d5a0c21-a566-4a34-9368-759250394cb0",
+      "lastRunStatus": "cancelled",
+      "qualification": "NOT RUN; preserved scripts are not certified against revised definitions"
+    },
+    {
+      "testId": "b5cab687-77f4-4ba1-8df6-5def1766b4f4",
+      "name": "S4-MOTION-01 — A rigid part takes two poses.",
+      "reason": "The trace inspected Effects animation-stability review rather than the rigid-part creation controls in Tools.",
+      "sourceReferences": [
+        "src/components/layout/inspector/ToolSettingsPanel.tsx:305",
+        "src/components/layout/inspector/PixiMotionPanel.tsx:139"
+      ],
+      "originalRunId": "3f82801e-02b8-4f62-b295-f9465d01379e",
+      "beforePlanSha256": "2f53cd5decac9f3f934a1a742b0f03cc9de0f3ba61d2bc08798ffcbb74bf85e2",
+      "afterPlanSha256": "e7f84eb3a41e63295be607dc255d367815603280145d9a4425117c6916b85c6d",
+      "beforeStepCount": 9,
+      "afterStepCount": 9,
+      "originalReportSha256": "4b1ff25024ad7c9743d366265a5b745b3528e1af4f5898d19cfa1c254901ffb8",
+      "savedCodeVersion": null,
+      "savedCodeSha256": null,
+      "savedCodeUnchanged": null,
+      "lastRunIdBefore": "0abed052-38ef-43c9-a47e-91fdfa3396df",
+      "lastRunIdAfter": "0abed052-38ef-43c9-a47e-91fdfa3396df",
+      "lastRunStatus": "cancelled",
+      "qualification": "NOT RUN; preserved scripts are not certified against revised definitions"
+    },
+    {
+      "testId": "df8bdde4-3afe-4f0d-8d06-eecc3a00e058",
+      "name": "S4-EXPORT-07 — SVG explains its approximation.",
+      "reason": "The trace repeatedly reopened Export/Vector SVG and never recorded clicking Download SVG. Its summary cannot establish a download regression.",
+      "sourceReferences": [
+        "src/components/modals/export/VectorSvgExportTab.tsx:67",
+        "src/components/modals/ExportModal.tsx:625",
+        "src/components/modals/ExportModal.tsx:1056"
+      ],
+      "originalRunId": "673c9389-fcc8-4b96-af6f-2cf537eced2e",
+      "beforePlanSha256": "d27b1a3f88f5117ee4374ea96924abca774ad1b8eb3b4e9e408d30ed65960b4a",
+      "afterPlanSha256": "081c21dcfeec25fed6e2dc10d0111b79112fa2d70c5db0e824c3e2f8d6db3864",
+      "beforeStepCount": 6,
+      "afterStepCount": 6,
+      "originalReportSha256": "abef88f9e6224ae757dc163f5ba61d556d1f645384e6999b835f66bdff20ece6",
+      "savedCodeVersion": null,
+      "savedCodeSha256": null,
+      "savedCodeUnchanged": null,
+      "lastRunIdBefore": "17a48be4-653e-42a3-8d23-d11baeb79481",
+      "lastRunIdAfter": "17a48be4-653e-42a3-8d23-d11baeb79481",
+      "lastRunStatus": "cancelled",
+      "qualification": "NOT RUN; preserved scripts are not certified against revised definitions"
+    }
+  ]
+}

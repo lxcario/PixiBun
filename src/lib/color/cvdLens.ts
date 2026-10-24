@@ -61,8 +61,6 @@ export const CVD_LENS_MATRICES: Readonly<
 
 /** Silhouette ink color #140C1E (DESIGN.md Section 13). */
 export const SQUINT_SILHOUETTE_RGB: readonly [number, number, number] = [0x14, 0x0c, 0x1e];
-/** Squint mode background: solid white. */
-export const SQUINT_BACKGROUND_RGB: readonly [number, number, number] = [0xff, 0xff, 0xff];
 
 /** SVG filter element ids used by the viewport lens defs. */
 export const CVD_FILTER_IDS: Readonly<Record<Exclude<CvdLensMode, 'none'>, string>> = {

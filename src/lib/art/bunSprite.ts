@@ -89,16 +89,18 @@ export function drawBun(
   ox: number,
   oy: number,
   pose: BunPose,
-  outline = true
+  outline = true,
+  /** Maps each color, for scenes that paint directly in a theme's palette. */
+  color: (css: string) => string = (css) => css
 ): void {
   if (outline) {
-    ctx.fillStyle = BUN_INK;
+    ctx.fillStyle = color(BUN_INK);
     for (const [x, y] of bunOutline(pose)) {
       ctx.fillRect(ox + x, oy + y, 1, 1);
     }
   }
   for (const [x, y, w, h, fill] of bunPixels(pose)) {
-    ctx.fillStyle = fill;
+    ctx.fillStyle = color(fill);
     ctx.fillRect(ox + x, oy + y, w, h);
   }
 }

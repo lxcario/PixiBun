@@ -1,8 +1,11 @@
 import { expect, test } from '@playwright/test';
 
 test('drawing tools show a short visual preview on hover and keyboard focus', async ({ page }, testInfo) => {
+  // Tall enough that the tool shelf shows every tool as its own button (796px of shelf).
+  await page.setViewportSize({ width: 1600, height: 1440 });
   await page.goto('/studio');
   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
+  await expect(page.locator('[data-shelf]')).toHaveAttribute('data-shelf', 'full');
   await page.evaluate(() => localStorage.removeItem('pixibun:tool-previews-disabled'));
   const pen = page.getByTestId('pen-tool');
   await page.mouse.move(400, 200);
@@ -12,8 +15,10 @@ test('drawing tools show a short visual preview on hover and keyboard focus', as
   await expect(preview).toBeVisible();
   await expect(preview.getByText('Draw crisp, pixel-perfect strokes and contours.')).toBeVisible();
   await expect(preview.locator('canvas')).toBeVisible();
-  await expect(preview).toHaveCSS('width', '304px');
-  await expect(preview.locator('p')).toHaveCSS('font-size', '13px');
+  await expect(preview).toHaveCSS('width', '246px');
+  await expect(preview.locator('p').first()).toHaveCSS('font-size', '12px');
+  // The clip plays at the stage's full 224×168, never squeezed.
+  await expect(preview.locator('canvas')).toHaveCSS('width', '224px');
   await page.waitForTimeout(600);
   await preview.screenshot({ path: testInfo.outputPath('pen-preview.png') });
   await page.keyboard.press('Escape');
@@ -93,7 +98,7 @@ test('drawing tools show a short visual preview on hover and keyboard focus', as
   await page.getByTestId('select-lasso-tool').hover();
   const lassoPreview = page.getByRole('group', { name: 'Lasso Select preview' });
   await expect(lassoPreview.locator('canvas[data-scene="select-lasso"]')).toBeVisible();
-  await expect(lassoPreview.locator('[data-step-label]')).toHaveAttribute('data-step-label', /TRACE ARTWORK|FREEFORM SELECTED/);
+  await expect(lassoPreview.locator('[data-step-label]')).toHaveAttribute('data-step-label', /lasso|trace freehand|freeform selection/);
   await expect(lassoPreview.locator('canvas')).toHaveAttribute('data-preview-phase', 'result', { timeout: 3000 });
   await lassoPreview.screenshot({ path: testInfo.outputPath('lasso-preview.png') });
 
@@ -188,7 +193,7 @@ test('PixiTools actions preview their effect without changing the project', asyn
   await scanPreview.screenshot({ path: testInfo.outputPath('scan-preview.png') });
 
   // Verify Apply Cleanup preview (even when temporarily disabled)
-  const applyCleanup = page.getByRole('button', { name: /Apply analyzed artwork cleanup/i });
+  const applyCleanup = page.getByRole('button', { name: 'Apply Cleanup', exact: true });
   await applyCleanup.hover();
   const applyPreview = page.getByRole('group', { name: 'Apply Cleanup preview' });
   await expect(applyPreview).toBeVisible();

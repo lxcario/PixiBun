@@ -1,0 +1,61 @@
+{
+  "id": "e603c521-4772-4767-b258-2ec4e0e6973b",
+  "key": "S4-NEW-03",
+  "title": "S4-NEW-03 — The last frame stays.",
+  "goal": "A single-frame project cannot delete its only frame; duplicating it and deleting the duplicate returns to exactly one frame with Bun's artwork exact, and Delete is unavailable again.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "readout": {
+        "frames": "1"
+      }
+    },
+    {
+      "disabled": "Delete frame",
+      "why": "The only frame cannot be deleted."
+    },
+    {
+      "click": "Duplicate frame"
+    },
+    {
+      "visible": "/^Select frame 2. /",
+      "why": "The duplicate is frame 2."
+    },
+    {
+      "readout": {
+        "frames": "2",
+        "digest": "=A"
+      },
+      "why": "The duplicate shows the same artwork."
+    },
+    {
+      "click": "Delete frame"
+    },
+    {
+      "absent": "/^Select frame 2. /",
+      "why": "The duplicate is gone."
+    },
+    {
+      "readout": {
+        "frames": "1",
+        "digest": "=A"
+      },
+      "why": "Exactly one frame remains, with the original artwork."
+    },
+    {
+      "disabled": "Delete frame",
+      "why": "With one frame left, Delete is unavailable again."
+    }
+  ]
+}

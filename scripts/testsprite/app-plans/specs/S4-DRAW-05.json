@@ -1,0 +1,76 @@
+{
+  "id": "5185d7a0-c55b-4bd4-bdac-87ccd1daef0b",
+  "key": "S4-DRAW-05",
+  "title": "S4-DRAW-05 — Dither leaves the gaps alone.",
+  "goal": "One 4 x 4 Dither Brush stamp at Bayer 2x2 and 50% density paints exactly half of its sixteen cells in the active color and leaves the other eight untouched; Undo restores the exact original.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_e83a5c_p0.0.0&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "readout": {
+        "pixels": "1",
+        "top": "#e83a5c 1"
+      },
+      "why": "The link drew one red pixel in the corner, far from the stamp."
+    },
+    {
+      "record": "A"
+    },
+    {
+      "color": "#1D4ED8"
+    },
+    {
+      "key": "d"
+    },
+    {
+      "pressed": "Dither Brush"
+    },
+    {
+      "click": "Tools",
+      "nth": 0
+    },
+    {
+      "select": "Tool panel dither pattern",
+      "option": "Bayer 2×2"
+    },
+    {
+      "click": "4 pixel brush"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "pixels": "9",
+        "colors": "2"
+      },
+      "why": "Of the sixteen cells under the 4 x 4 stamp exactly eight are painted; the gaps stay empty."
+    },
+    {
+      "readout": {
+        "top": "#1d4ed8 8, #e83a5c 1"
+      },
+      "why": "All eight painted cells are the active blue; the corner pixel is untouched."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "pixels": "1",
+        "digest": "=A"
+      },
+      "why": "Undo restores the exact original."
+    }
+  ],
+  "cliOnly": [
+    "a dragged 16-cell row stroke painting exactly the eight even columns, by native RGBA (scripts/testsprite/pixibun-ui-reports-integrity.py dither)"
+  ]
+}

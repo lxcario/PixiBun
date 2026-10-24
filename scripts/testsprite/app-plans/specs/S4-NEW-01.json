@@ -1,0 +1,98 @@
+{
+  "id": "acc0d53a-3bfd-455f-938a-27c91a99882c",
+  "key": "S4-NEW-01",
+  "title": "S4-NEW-01 — A tiny loop keeps its place.",
+  "goal": "Duplicating Bun's frame keeps the artwork exact; each frame keeps its own hold; Undo and Redo move only the edited hold. A hold edit is one Undo step from focus to blur, so typed digits never flood history; separate edits are separated by clicking away.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Duplicate frame"
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "readout": {
+        "frames": "2",
+        "frame": "2 of 2",
+        "digest": "=A"
+      },
+      "why": "The duplicate is the active frame and holds the exact Bun artwork."
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "200"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "100"
+    },
+    {
+      "click": "/^Select frame 2. /",
+      "why": "Moving to another frame finishes the hold edit, so the next edit is its own Undo step."
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/",
+      "why": "Frame 2 keeps its own hold."
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "150"
+    },
+    {
+      "visible": "/^Select frame 1. #1 150ms/"
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/",
+      "why": "Undo returns frame 1 to 100 ms."
+    },
+    {
+      "click": "Redo last action"
+    },
+    {
+      "visible": "/^Select frame 1. #1 150ms/",
+      "why": "Redo returns frame 1 to 150 ms."
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "readout": {
+        "frame": "2 of 2",
+        "digest": "=A"
+      },
+      "why": "Frame 2 is selected with the exact Bun artwork."
+    },
+    {
+      "field": "Active frame duration in milliseconds",
+      "equals": "200"
+    }
+  ]
+}

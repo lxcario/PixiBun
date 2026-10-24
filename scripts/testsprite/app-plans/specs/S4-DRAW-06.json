@@ -1,0 +1,107 @@
+{
+  "id": "5ccfecc6-b4bc-4017-9184-6e76f51b4e98",
+  "key": "S4-DRAW-06",
+  "title": "S4-DRAW-06 — Replace only the requested color.",
+  "goal": "Color Replace at tolerance 0 recolors only exact matches on the active layer; tolerance 10 also takes a near match (RGBA distance about 3.5) but not an unrelated green; the gold pixel on the other layer never changes; a locked layer refuses. The fixture is a replay: gold at (0,0) on Base Layer, then on Layer 2 red #e83a5c at (8,8) and (2,2), near-red #ea3c5e at (3,3) and green #2a9d4b at (4,4).",
+  "cliOnly": [
+    "imported Glow/Ink fixture and native RGBA per layer"
+  ],
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_ffd166.e83a5c.ea3c5e.2a9d4b_p0.0.0~L~p1.8.8~p1.2.2~p2.3.3~p3.4.4&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "readout": {
+        "layer": "Layer 2",
+        "layers": "2",
+        "pixels": "5",
+        "colors": "4"
+      }
+    },
+    {
+      "record": "F"
+    },
+    {
+      "color": "#1D4ED8"
+    },
+    {
+      "key": "r"
+    },
+    {
+      "pressed": "Color Replace"
+    },
+    {
+      "click": "Tools",
+      "nth": 0
+    },
+    {
+      "fill": "Tool panel color tolerance",
+      "value": "0"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "pixels": "5",
+        "colors": "4",
+        "top": "#1d4ed8 2, #2a9d4b 1, #ea3c5e 1, #ffd166 1"
+      },
+      "why": "Both exact red pixels become blue; near-red, green and gold are unchanged."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=F"
+      },
+      "why": "Undo restores the exact fixture."
+    },
+    {
+      "fill": "Tool panel color tolerance",
+      "value": "10"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "pixels": "5",
+        "colors": "3",
+        "top": "#1d4ed8 3, #2a9d4b 1, #ffd166 1"
+      },
+      "why": "Red and near-red become blue; green and the gold pixel on Base Layer stay."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=F"
+      }
+    },
+    {
+      "click": "Layers",
+      "nth": 0
+    },
+    {
+      "click": "Lock layer Layer 2"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "=F"
+      },
+      "why": "The locked layer refuses the replacement."
+    }
+  ]
+}

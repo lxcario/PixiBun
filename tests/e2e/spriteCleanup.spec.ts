@@ -16,7 +16,7 @@ test('cleanup requires a fresh scan after the artwork changes', async ({ page })
 
   await page.getByTestId('tab-ai').click();
   await page.getByTestId('pixitools-task-polish').click();
-  const apply = page.getByRole('button', { name: 'Apply analyzed artwork cleanup' });
+  const apply = page.getByRole('button', { name: 'Apply Cleanup', exact: true });
   await page.getByRole('button', { name: 'Scan artwork for cleanup' }).click();
   await expect(apply).toBeEnabled();
 
@@ -123,7 +123,7 @@ test('PixiTools scans before cleanup, cleans matching animation layers, and undo
   if (await section.getAttribute('aria-expanded') === 'false') await section.click();
   await page.getByRole('button', { name: 'Cleanup frame scope' }).click();
   await expect(page.getByRole('button', { name: 'Cleanup thin dark lines' })).toHaveAttribute('aria-pressed', 'false');
-  const apply = page.getByRole('button', { name: 'Apply analyzed artwork cleanup' });
+  const apply = page.getByRole('button', { name: 'Apply Cleanup', exact: true });
   await expect(apply).toBeDisabled();
   await page.getByRole('button', { name: 'Scan artwork for cleanup' }).click();
   await expect(page.getByText(/Found \d+ pixels in 2 frames/)).toBeVisible();
@@ -189,7 +189,7 @@ test('cleanup detects opaque gray artifacts when the alpha slider cannot', async
   await page.getByRole('button', { name: 'Scan artwork for cleanup' }).click();
   await expect(page.getByText(/0 faint removed, 0 alpha hardened/)).toBeVisible();
   await expect(page.getByText(/No translucent pixels found/)).toBeVisible();
-  await page.getByRole('button', { name: 'Apply analyzed artwork cleanup' }).click();
+  await page.getByRole('button', { name: 'Apply Cleanup', exact: true }).click();
   await expect.poll(() => pixel(page, 2, 2)).toEqual([255, 255, 255, 255]);
   expect((await pixel(page, 14, 14)).slice(0, 3)).toEqual([236, 73, 126]);
 });

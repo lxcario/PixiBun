@@ -217,7 +217,7 @@ beforeEach(() => {
 describe('Photometric non-destructiveness', () => {
   it('renders 10 times with varying light angles and leaves the source layer byte-identical', async () => {
     // We import inside the test so the global document mock is in place.
-    const { executePhotometricPipeline } = await import('@/lib/ai/smartMathEngine');
+    const { executePhotometricPipeline } = await import('@/lib/graphics/smartMathEngine');
     const { clearAllBuffers, getOrCreateBuffer } = await import('@/lib/engine/bufferRegistry');
 
     clearAllBuffers();
@@ -268,7 +268,7 @@ describe('Photometric non-destructiveness', () => {
   });
 
   it('precomputedAnalysis produces byte-identical output while bypassing geometry recomputation for live drags', async () => {
-    const { executePhotometricPipeline, computePhotometricAnalysis } = await import('@/lib/ai/smartMathEngine');
+    const { executePhotometricPipeline, computePhotometricAnalysis } = await import('@/lib/graphics/smartMathEngine');
     const { clearAllBuffers, getOrCreateBuffer } = await import('@/lib/engine/bufferRegistry');
 
     clearAllBuffers();
@@ -335,7 +335,7 @@ describe('Photometric non-destructiveness', () => {
   });
 
   it('dynamically updates character appendage normals during live light azimuth drag, matching fresh single-shot recompute 100% byte-for-byte', async () => {
-    const { executePhotometricPipeline, computePhotometricAnalysis } = await import('@/lib/ai/smartMathEngine');
+    const { executePhotometricPipeline, computePhotometricAnalysis } = await import('@/lib/graphics/smartMathEngine');
     const { clearAllBuffers, getOrCreateBuffer } = await import('@/lib/engine/bufferRegistry');
 
     clearAllBuffers();
@@ -455,7 +455,7 @@ describe('Photometric non-destructiveness', () => {
   });
 
   it('invalidates and recomputes analysis when azimuth drifts past threshold during live drag sessions, guaranteeing 0 staleness on commit', async () => {
-    const { executePhotometricPipeline, computePhotometricAnalysis } = await import('@/lib/ai/smartMathEngine');
+    const { executePhotometricPipeline, computePhotometricAnalysis } = await import('@/lib/graphics/smartMathEngine');
     const { clearAllBuffers, getOrCreateBuffer } = await import('@/lib/engine/bufferRegistry');
 
     clearAllBuffers();
@@ -742,7 +742,7 @@ describe('bufferVersion live sync signal', () => {
 
 describe('Photometric correctness', () => {
   it('produces a silhouette-following symmetric shading for Az=0, El=90', async () => {
-    const { executePhotometricPipeline } = await import('@/lib/ai/smartMathEngine');
+    const { executePhotometricPipeline } = await import('@/lib/graphics/smartMathEngine');
     const { clearAllBuffers, getOrCreateBuffer } = await import('@/lib/engine/bufferRegistry');
 
     clearAllBuffers();
@@ -817,7 +817,7 @@ describe('Photometric correctness', () => {
   });
 
   it('evaluates directional highlight quadrant for Azimuth=315, 135, 45, 225', async () => {
-    const { executePhotometricPipeline } = await import('@/lib/ai/smartMathEngine');
+    const { executePhotometricPipeline } = await import('@/lib/graphics/smartMathEngine');
     const { clearAllBuffers, getOrCreateBuffer } = await import('@/lib/engine/bufferRegistry');
 
     clearAllBuffers();
@@ -1008,7 +1008,7 @@ describe('Bake Normals layer index', () => {
   });
 
   it('generates 47-blob edge contours on a sprite silhouette', async () => {
-    const { generate47BlobEdgeData } = await import('@/lib/ai/pixelAiEngine');
+    const { generate47BlobEdgeData } = await import('@/lib/graphics/pixelRasterEngine');
     const { clearAllBuffers, getOrCreateBuffer } = await import('@/lib/engine/bufferRegistry');
 
     clearAllBuffers();
@@ -1024,7 +1024,7 @@ describe('Bake Normals layer index', () => {
   });
 
   it('detects Minecraft skin and generates true 3D cuboid face normals', async () => {
-    const { detectMinecraftSkin, computeMinecraftSkinNormalField } = await import('@/lib/ai/smartMathEngine');
+    const { detectMinecraftSkin, computeMinecraftSkinNormalField } = await import('@/lib/graphics/smartMathEngine');
 
     // Simulate 64x64 Minecraft skin with head, torso, and limbs filled
     const isOpaque = (x: number, y: number) => {
@@ -1081,7 +1081,7 @@ describe('Bake Normals layer index', () => {
   });
 
   it('executes Minecraft skin shading with hue-shifting and contact occlusion', async () => {
-    const { executeMinecraftSkinShadingPipeline } = await import('@/lib/ai/smartMathEngine');
+    const { executeMinecraftSkinShadingPipeline } = await import('@/lib/graphics/smartMathEngine');
     const { getOrCreateBuffer, clearAllBuffers } = await import('@/lib/engine/bufferRegistry');
 
     clearAllBuffers();
@@ -1124,7 +1124,7 @@ describe('Bake Normals layer index', () => {
   });
 
   it('shades a portable synthetic Minecraft skin with opaque output and preserved transparency', async () => {
-    const { executeMinecraftSkinShadingPipeline } = await import('@/lib/ai/smartMathEngine');
+    const { executeMinecraftSkinShadingPipeline } = await import('@/lib/graphics/smartMathEngine');
     const input = new Uint8ClampedArray(64 * 64 * 4);
     for (let y = 8; y < 16; y++) for (let x = 8; x < 16; x++) {
       input.set([240, 160, 100, 255], (y * 64 + x) * 4);

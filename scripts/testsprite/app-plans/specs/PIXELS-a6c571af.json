@@ -1,0 +1,111 @@
+{
+  "id": "a6c571af-6e7d-4a40-bbdf-2d0f196bd9be",
+  "key": "PIXELS-UNDO-REDO",
+  "title": "Draw distinct pixels, then undo and redo",
+  "goal": "On a new transparent 16×16 drawing, a 2 px red stamp and a 1 px blue stamp produce exactly four painted pixels (three red, one blue). Undo removes only the blue stamp, restoring the exact red artwork, and Redo restores the exact two-color result.",
+  "cliOnly": [
+    "separate pixels at (2,3) and (8,10) placed by coordinate and their native RGBA"
+  ],
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "click": "/^File/",
+      "nth": 0
+    },
+    {
+      "click": "New drawing",
+      "role": "menuitem"
+    },
+    {
+      "click": "16 by 16 pixels, Tiny icon",
+      "role": "radio",
+      "shown": "16×16 Tiny icon"
+    },
+    {
+      "click": "Start New Drawing"
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "frames": "1",
+        "layers": "1",
+        "pixels": "0",
+        "colors": "0"
+      },
+      "why": "The new drawing is fully transparent."
+    },
+    {
+      "color": "#FF0000"
+    },
+    {
+      "key": "b"
+    },
+    {
+      "click": "2px brush preset"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "pixels": "4",
+        "colors": "1",
+        "top": "#ff0000 4",
+        "digest": "51ca6ebd"
+      },
+      "why": "A 2 px stamp paints exactly pixels (7,7), (8,7), (7,8) and (8,8) red."
+    },
+    {
+      "record": "R"
+    },
+    {
+      "color": "#0000FF"
+    },
+    {
+      "click": "1px brush preset"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "pixels": "4",
+        "colors": "2",
+        "top": "#ff0000 3, #0000ff 1",
+        "digest": "9fceb495"
+      },
+      "why": "The 1 px blue stamp replaces exactly pixel (8,8)."
+    },
+    {
+      "record": "B"
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "top": "#ff0000 4",
+        "digest": "=R"
+      },
+      "why": "Undo removes only the blue pixel; the red artwork returns exactly."
+    },
+    {
+      "click": "Redo last action"
+    },
+    {
+      "readout": {
+        "top": "#ff0000 3, #0000ff 1",
+        "digest": "=B"
+      },
+      "why": "Redo restores the exact two-color result."
+    }
+  ]
+}

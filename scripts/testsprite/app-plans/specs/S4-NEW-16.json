@@ -1,0 +1,79 @@
+{
+  "id": "9e95f9a5-6af7-402f-80d8-0fd14784b17f",
+  "key": "S4-NEW-16",
+  "title": "S4-NEW-16 — A pan is never a stroke.",
+  "goal": "Zooming in, zooming out and Fit never change the artwork or add history, and afterwards a click at the centre of the 16 x 16 canvas still paints exactly native pixel (8,8) (independent digest f99d82e7); Undo restores the original.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_ffffff_R0.0.0.15.15&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "readout": {
+        "pixels": "256",
+        "colors": "1"
+      }
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Zoom In"
+    },
+    {
+      "click": "Zoom In"
+    },
+    {
+      "click": "Zoom Out"
+    },
+    {
+      "click": "Fit Canvas to Viewport (Ctrl+0)"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Navigating the view is not an edit."
+    },
+    {
+      "color": "#1D4ED8"
+    },
+    {
+      "key": "b"
+    },
+    {
+      "click": "1px brush preset"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "f99d82e7",
+        "pixels": "256",
+        "colors": "2"
+      },
+      "why": "The click lands on native pixel (8,8): the digest equals an independently computed white field with one blue pixel there."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Undo restores every original pixel."
+    }
+  ],
+  "cliOnly": [
+    "middle-button panning and wheel zoom, which need pointer gestures (tests/production/drawingResponse.spec.ts, tests/production/inputOwnership.spec.ts)"
+  ],
+  "allow": [
+    "changing the viewport"
+  ]
+}

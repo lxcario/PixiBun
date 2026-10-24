@@ -1,0 +1,89 @@
+{
+  "id": "87220cbb-74de-4287-8bc4-f5b34179289c",
+  "key": "S4-EXPORT-05",
+  "title": "S4-EXPORT-05 — A Godot kit opens as a bundle.",
+  "goal": "The Godot kit preflight describes a valid atlas for Bun; asking for a normal-map atlas without a normal layer is flagged in the preflight, naming the frame that lacks one; without it the kit is ready again, and the artwork stays exact.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Godot Kit",
+      "within": "Export Studio Assets"
+    },
+    {
+      "select": "Godot sprite anchor",
+      "option": "Center"
+    },
+    {
+      "text": "Atlas layout: 18×18 px across 1 frame.",
+      "why": "The preflight describes the atlas it will write."
+    },
+    {
+      "text": "Ready (3)"
+    },
+    {
+      "text": "Normal export needs exactly one Normal Facets or Normal Map layer in every frame",
+      "why": "The normal atlas states what it requires."
+    },
+    {
+      "click": "Include normal-map atlas",
+      "role": "checkbox"
+    },
+    {
+      "checked": "Include normal-map atlas",
+      "role": "checkbox"
+    },
+    {
+      "text": "Needs attention (1)"
+    },
+    {
+      "text": "Missing or invalid on frame(s): 1.",
+      "why": "The preflight names the frame that lacks a normal source."
+    },
+    {
+      "click": "Include normal-map atlas",
+      "role": "checkbox"
+    },
+    {
+      "text": "Ready (3)",
+      "why": "Without the normal atlas the kit is ready again."
+    },
+    {
+      "enabled": "Download Godot kit",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run).",
+      "say": "While the Export dialog is still open, before you close it, check that the 'Download Godot kit' button is enabled. Do not click it. This check is required; do not close the dialog until you have read the button's state."
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "layers": "1"
+      },
+      "why": "Preflight and refusal never change the drawing."
+    }
+  ],
+  "cliOnly": [
+    "opening the ZIP: manifest, atlas, animation resources and the normal atlas when one valid source exists (tests/production/gameDelivery.spec.ts, scripts/testsprite/pixibun-explicit-normal-sources-integrity.py)"
+  ],
+  "allow": [
+    "reading a download"
+  ],
+  "cliOnlyOutOfScope": true
+}

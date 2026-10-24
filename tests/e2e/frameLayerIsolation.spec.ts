@@ -23,9 +23,9 @@ test('a new blank frame keeps layer names but not the prior frame artwork', asyn
     state.setActiveTool('pen');
     state.setPrimaryColor('#ff0000');
   });
-  const stage = await page.locator('#center-canvas-area').boundingBox();
-  expect(stage).not.toBeNull();
-  const at = (x: number, y: number) => ({ x: stage!.x + (x + 0.5) * 16, y: stage!.y + (y + 0.5) * 16 });
+  // Aim from the artwork's own box: its place in the stage depends on the desk layout.
+  const box = (await canvas.boundingBox())!, size = await canvas.evaluate((c: HTMLCanvasElement) => [c.width, c.height]);
+  const at = (x: number, y: number) => ({ x: box.x + (x + 0.5) * box.width / size[0], y: box.y + (y + 0.5) * box.height / size[1] });
   const pixel = (x: number, y: number) => canvas.evaluate((element: HTMLCanvasElement, point: [number, number]) =>
     Array.from(element.getContext('2d')!.getImageData(point[0], point[1], 1, 1).data), [x, y] as [number, number]);
 
@@ -40,7 +40,7 @@ test('a new blank frame keeps layer names but not the prior frame artwork', asyn
   await expect.poll(() => pixel(16, 16)).toEqual([0, 0, 255, 255]);
   const firstLayers = await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => StudioState } }).__studioStore!.getState().frames[0].layers.map(({ id, name }) => ({ id, name })));
 
-  await page.getByTitle(/Add blank frame with the current layer names/i).click();
+  await page.getByTestId('add-frame-button').click();
   const second = await page.evaluate(() => {
     const state = (window as Window & { __studioStore?: { getState: () => StudioState } }).__studioStore!.getState();
     return { activeFrameIndex: state.activeFrameIndex, layers: state.frames[1].layers.map(({ id, name }) => ({ id, name })) };

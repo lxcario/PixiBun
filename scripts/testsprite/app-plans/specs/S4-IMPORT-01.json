@@ -1,0 +1,55 @@
+{
+  "id": "86e87409-b0d0-4575-aca7-881510dca77a",
+  "key": "S4-IMPORT-01",
+  "title": "S4-IMPORT-01 — Image import is explicit.",
+  "goal": "Importing is an explicit choice: the File menu offers Import... next to Projects, New drawing and Canvas size, and opening and closing the menu changes nothing. The import itself needs a test file, which this run does not supply.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^File/",
+      "nth": 0
+    },
+    {
+      "visible": "/^Import/",
+      "role": "menuitem",
+      "why": "Import is offered as its own explicit action."
+    },
+    {
+      "visible": "Projects",
+      "role": "menuitem"
+    },
+    {
+      "visible": "New drawing",
+      "role": "menuitem"
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "absent": "/^Import/",
+      "role": "menuitem"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      }
+    },
+    {
+      "disabled": "Undo last action"
+    }
+  ],
+  "cliOnly": [
+    "image import as a new layer, a replaced layer and a new frame, Cancel and Undo with known PNG fixtures (needs uploaded test files; tests/production/imageImportSafety.spec.ts, tests/production/remainingAuditSafety.spec.ts)"
+  ]
+}

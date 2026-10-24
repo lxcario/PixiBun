@@ -28,7 +28,8 @@ test('compiled four-pixel brush agrees with detailed settings and guides stay ou
   expect(occupied.length).toBe((Math.max(...xs) - Math.min(...xs) + 1) * 4);
 
   await page.getByRole('button', { name: 'View options menu', exact: true }).click();
-  await page.getByRole('combobox', { name: /Composition/ }).selectOption('diagonals');
+  // The inspector has its own Composition guide select; use the one in the View menu just opened.
+  await page.getByRole('region', { name: 'View options menu' }).getByRole('combobox', { name: /Composition/ }).selectOption('diagonals');
   await page.keyboard.press('Escape');
   await expect(page.getByTestId('diagonal-composition-guide')).toBeVisible();
   expect(await pixels()).toEqual(drawn);

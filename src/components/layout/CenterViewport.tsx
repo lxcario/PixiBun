@@ -22,7 +22,7 @@ import {
   applyBilateralFilter,
   computeTangentNormalField,
   bakeNormalMapToCanvas,
-} from '@/lib/ai/smartMathEngine';
+} from '@/lib/graphics/smartMathEngine';
 import { decodeNormalRGB, blendNormalsRNM } from '@/lib/art/normalSculptor';
 import { buildCycleRegisterMask, updateLivePaletteLUT32 } from '@/lib/color/paletteCycling';
 import { buildCanvasPaletteIndexMap } from '@/lib/export/shaderExporter';
@@ -677,7 +677,7 @@ export const CenterViewport = React.memo(function CenterViewport({
         ) {
           void commitGizmoTransform();
         } else {
-          commitFloatingSelection();
+          return commitFloatingSelection();
         }
       },
       createBoxMask,
@@ -1282,13 +1282,14 @@ export const CenterViewport = React.memo(function CenterViewport({
             mainCanvasRef={mainCanvasRef}
             onCommit={() => studioEvents.emit('pixibun:photometric-gizmo-commit')}
             onCancel={() => studioEvents.emit('pixibun:photometric-gizmo-cancel')}
-            onLightChange={(azimuth, elevation, cx, cy, brightness) => {
+            onLightChange={(azimuth, elevation, cx, cy, brightness, look) => {
               studioEvents.emit('pixibun:photometric-lighting-live', {
                 lightAzimuth: azimuth,
                 lightElevation: elevation,
                 lightCenterX: cx,
                 lightCenterY: cy,
                 lightBrightness: brightness,
+                ...look,
               });
             }}
           />

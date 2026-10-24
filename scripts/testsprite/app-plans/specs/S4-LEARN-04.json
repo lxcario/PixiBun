@@ -1,0 +1,70 @@
+{
+  "id": "b914aaa8-21d5-4906-ab63-6e39bd356301",
+  "key": "S4-LEARN-04",
+  "title": "S4-LEARN-04 — A coach teaches one pose at a time.",
+  "goal": "In a lesson, a partial tracing gives a score above zero and below Matched and offers What's missing?; using it does not change the tracing; Trace it for me matches only the current pose, and the next pose is still unfinished.",
+  "steps": [
+    {
+      "open": "/playground?end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "click": "Let's start"
+    },
+    {
+      "visible": "Floating at the top",
+      "role": "heading",
+      "why": "The first pose is the one being traced."
+    },
+    {
+      "text": "Your tracing"
+    },
+    {
+      "text": "0%"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "text": "7%",
+      "why": "One traced cell gives a partial score, well below a match."
+    },
+    {
+      "notext": "Matched"
+    },
+    {
+      "visible": "What's missing?",
+      "why": "A partial tracing offers the gap overlay."
+    },
+    {
+      "click": "What's missing?"
+    },
+    {
+      "text": "7%",
+      "why": "Showing the gaps does not change the tracing."
+    },
+    {
+      "click": "Trace it for me"
+    },
+    {
+      "text": "Matched",
+      "why": "The current pose is now matched."
+    },
+    {
+      "click": "Next: Falling fast"
+    },
+    {
+      "visible": "Falling fast",
+      "role": "heading"
+    },
+    {
+      "text": "0%",
+      "why": "The next pose was not completed for you."
+    }
+  ],
+  "cliOnly": [
+    "learning gains are never claimed; Show me's ghost demonstration timing (tests/production/practiceIsolation.spec.ts)"
+  ]
+}

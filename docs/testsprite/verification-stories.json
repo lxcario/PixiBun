@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-10-19",
+  "automationNote": "On 19 October a manual Run Now retry of PR #6’s matched deployment event executed the App suite on the integration preview: 32 Passed /13 Failed /76 Blocked. The ledger records this real failed PR check. Thirteen plans were corrected and independent follow-ups remain separately source-labelled in the dated triage. A fresh unattended fixing-commit → passing required check loop and production release remain unproven; the three genuine product stories retain their original sources.",
+  "stories": [
+    {
+      "id": "bun-keeps-its-colors",
+      "title": "Bun gets to keep its colors.",
+      "promise": "A tool for shaping light should leave an artist’s paint alone.",
+      "discovery": "A TestSprite journey sent us to the Normal Chisel. Its setup had the wrong kind of layer. Trying the toolbar on Bun’s ordinary drawing revealed a green patch where the coat had been: surface-map colors had reached the paint.",
+      "repair": "The surface panel already knew that boundary. The canvas now checks it before a stroke touches pixels or history, and offers a small instruction. The corrected cloud test failed on production; a controlled replay on the fixing preview preserved the artwork and passed.",
+      "status": "preview-passed",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa",
+      "fixCommit": "aab9da89559ebe5ac395e49258419c494e1c6280",
+      "prUrl": "https://github.com/lxcario/PixiBun/pull/5",
+      "redUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/216f659a-4736-4e92-93e7-5d525d33bddf",
+      "redRunId": "e8e80ba7-7e08-4644-a0c7-40df6c0daa09",
+      "followUpUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/19a2bcb6-3cf3-4f41-a3dc-3e52bfd7179f",
+      "scope": "Exact artwork, history and refusal assertions on an explicitly checked preview origin. The automatic PR suite remains pending."
+    },
+    {
+      "id": "a-lock-keeps-its-promise",
+      "title": "A lock should keep its promise.",
+      "promise": "Some pixels are finished for today. The padlock should look after them.",
+      "discovery": "We asked TestSprite to select part of Bun, prove Delete worked, and bring it back with Undo. Then it selected again and locked the layer. Delete still erased it: the cloud comparison found 768 changed RGBA channels after the lock was on.",
+      "repair": "Drawing tools checked the lock; selection edits had another route in. The repair checks the live layer before destructive selection operations and keeps a refused floating paste available. The same exact-pixel cloud assertion now passes on the fixing preview. Bun’s selected pixels stay put.",
+      "status": "preview-passed",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa",
+      "fixCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9",
+      "prUrl": "https://github.com/lxcario/PixiBun/pull/7",
+      "redUrl": "https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/deb3794c-8831-4e5d-8720-8af739122e15",
+      "redRunId": "092822f6-152c-44b2-9a18-a09a52a4a92e",
+      "followUpUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/0a1d9522-9cea-410d-9988-7fa49c610016",
+      "scope": "Real marquee and keyboard Delete, observed lock control, unlocked sensitivity and exact Undo restoration. Controlled replay pinned the actual preview origin and full fixing source; automatic PR execution and production release remain separate."
+    },
+    {
+      "id": "colors-find-their-way-back",
+      "title": "Every color has a way back.",
+      "promise": "A keyboard user should come back to the control that welcomed them in.",
+      "discovery": "The Colors journey moved among real palette swatches, chose foreground and background separately, then pressed Escape. The flyout closed, but focus went to a different swatches button. The same cloud check and local browser regressions reproduced it for the color wells.",
+      "repair": "The flyout had one fixed return address even though three controls could open it. It now remembers the actual opening button. All three opener regressions pass in Chromium, Firefox and WebKit; the same strict cloud scenario now passes on the fixing preview.",
+      "status": "preview-passed",
+      "sourceCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9",
+      "fixCommit": "77a40070cd1351a2c8f794d6b2d74dbd0eb428d9",
+      "prUrl": "https://github.com/lxcario/PixiBun/pull/7",
+      "redUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/710237ce-f346-4d2b-9a05-a13dd4dbd7bb",
+      "redRunId": "c6ce306c-caf8-4488-b1a2-904b2198397a",
+      "followUpUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/f10b4575-8258-4048-86ee-6fb0dd175928",
+      "scope": "The controlled cloud scenario opens from Primary, chooses both colors and checks exact focus return with protected artwork. Three-browser production cases separately cover Primary, Secondary and the dedicated swatches opener. Automatic PR execution and production release remain separate."
+    }
+  ],
+  "checks": [
+    {
+      "id": "png",
+      "title": "A drawing that really leaves the desk.",
+      "scope": "A real native-scale PNG download decoded independently and matched all 1,024 canvas channels.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/00a633fe-5731-44f7-8676-7c9299764e74",
+      "runId": "d0b63477-6adb-4f00-8c34-4ca58b23dd8e",
+      "codeVersion": "v-afa1b62983af",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+    },
+    {
+      "id": "timeline",
+      "title": "A little pause, kept.",
+      "scope": "Two frame holds, a change to 150 ms, Undo to 100 and Redo to 150, with exact artwork preserved.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/980d6012-88f0-456b-9015-f105c6774341",
+      "runId": "500a7b0f-8825-4a3e-ba89-0cc78381bdba",
+      "codeVersion": "v-6e218f037ed0",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+    },
+    {
+      "id": "backup",
+      "title": "The parcel opens somewhere new.",
+      "scope": "A downloaded two-frame, two-layer backup reopened in a fresh browser; layers, holds, palette and clip checked, then edited and undone. Browser download fallback only.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/26c4ff80-6bd7-4f5a-9c5d-4606576f41e2",
+      "runId": "ecc08821-fa84-4669-9b97-c41e2ee63564",
+      "codeVersion": "v-b20bf08e43d6",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+    },
+    {
+      "id": "palette",
+      "title": "A palette is an invitation.",
+      "scope": "All 12 ordered Sakura Night colors checked; browsing preserves the foreground, an explicit swatch chooses it, and the drawing stays unchanged.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/6b208e87-bf11-4ea1-be00-c9448f1b3fec",
+      "runId": "07108812-10d2-4d2b-896d-0b543907dfbb",
+      "codeVersion": "v-478c1fe74b04",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+    },
+    {
+      "id": "clips",
+      "title": "This pause belongs to this clip.",
+      "scope": "Actual project archives establish inclusive clip bounds and refusal of a backward range while frame identities, holds and decoded pixels stay unchanged. Playback/export ranges remain separate.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/392eb050-0927-40d3-8000-8207deb037b4",
+      "runId": "f5226127-54e7-4195-9b12-3d0beb6e22aa",
+      "codeVersion": "v-f0db4915b998",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+    },
+    {
+      "id": "journey",
+      "title": "A little animation comes safely home.",
+      "scope": "Actual PNG, GIF and APNG downloads decoded against two known poses and 100/200 ms holds; actual layered backup reopened in a fresh browser, edited and undone. Known imported 16×16 fixture and download fallback.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/ba62e217-35cf-4cbf-a78a-4740e3e200ce",
+      "runId": "25db8bf3-1f17-4464-a0bf-1a733ee1ae29",
+      "codeVersion": "v-2497e01ad86f",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+    },
+    {
+      "id": "relations",
+      "title": "Turn it around, and bring it back.",
+      "scope": "Real selection/HUD actions: two mirrors and four quarter-turns restore exact artwork. Intermediate pixels match independent permutations; downloaded layers, frames and holds stay intact.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/3dfee777-d654-4f35-b1ab-f61432b5c537",
+      "runId": "2b5daf60-f4ff-4641-b4fa-a364964b5063",
+      "codeVersion": "v-55d860ff165f",
+      "sourceCommit": "92de6c74b259eafcf73cc986b1def6c69f5566aa"
+    },
+    {
+      "id": "painted-lighting",
+      "title": "First, paint something worth keeping.",
+      "scope": "From a blank canvas, 13 real red brush drags and three white clicks paint a literal heart. Actual PNG decoding and exact lighting Undo/Redo/Undo protect all 1,024 channels on the candidate. Driver-side waits retain CSP. Earlier production proof and invalid SVG-counting failure remain in history.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/7ef7d3e8-0d73-48db-a6a3-07c5f53fe8aa",
+      "runId": "6ce9abf2-c7fa-42dd-b636-6e93735aaf24",
+      "codeVersion": "v-c2f858534e93",
+      "sourceCommit": "77a40070cd1351a2c8f794d6b2d74dbd0eb428d9"
+    },
+    {
+      "id": "readable-heart",
+      "title": "A heart, read back exactly.",
+      "scope": "The literal 256-pixel, three-color Heart recipe matches every readout field, independent canvas RGBA and an actual decoded PNG, including Undo/Redo. Recipe application is separate from pointer drawing.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/557111b1-8302-498c-8b71-48315a4e24d3",
+      "runId": "7ce2de6e-8527-478b-a9d9-32cb0645b211",
+      "codeVersion": "v-854e85da6da9",
+      "sourceCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9"
+    },
+    {
+      "id": "animate-slot",
+      "title": "A blank frame with room to begin.",
+      "scope": "Keyboard Enter activates the actual Animate end slot. Its new frame is entirely transparent; the original pixels and observed hold survive adding, Undo and Redo.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/bda6c47c-05cd-4ea7-8fe7-4be7d41629e3",
+      "runId": "40a6ba90-f882-40fc-a474-49736edd169e",
+      "codeVersion": "v-1b7a575c38ea",
+      "sourceCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9"
+    },
+    {
+      "id": "four-themes",
+      "title": "A different desk, the same drawing.",
+      "scope": "Cocoa, Drizzle, Harvest and Harbor are chosen through Studio controls in Night and Day. Exact artwork and frame/layer counts survive every choice and Harbor Day reload. This is not a contrast audit.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/00278cc8-4b69-4cd7-a097-fb310d8e8eaf",
+      "runId": "a6477e44-f710-4921-9eea-b7fd624744df",
+      "codeVersion": "v-d22e95767dae",
+      "sourceCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9"
+    },
+    {
+      "id": "saved-desk",
+      "title": "The shelves remember their places.",
+      "scope": "Actual saved layout fields return from a proven opposite arrangement: left inspector, 300 px, Navigator and Timeline. Reload and reapply preserve exact artwork and frame/layer counts.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/60475fe3-d9ca-4d33-bdfb-c72711b89be3",
+      "runId": "0dec4f21-5c2c-4dbd-9be3-34a8b7a933de",
+      "codeVersion": "v-c44169e2a72e",
+      "sourceCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9"
+    },
+    {
+      "id": "frame-keys",
+      "title": "A frame can travel by keyboard.",
+      "scope": "Focused-card duplicate, Alt+Left/Right reorder and Delete preserve exact artwork and distinguishable 100/200 ms holds. A real workspace-name input keeps Delete as a text edit.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/43b8e71b-3b77-4856-a9e2-c645994504fd",
+      "runId": "8ac13004-89b7-4d38-9128-bd47340cd8d1",
+      "codeVersion": "v-db6dbf45ca67",
+      "sourceCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9"
+    },
+    {
+      "id": "homepage-bench",
+      "title": "The bench keeps its own tiny world.",
+      "scope": "Real Draw, Light and Turn actions change the homepage canvas. The actual Hop GIF decodes to distinct poses with positive holds; the original Studio drawing survives a second tab and reload. Bounded independent GIF reader.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/85c9b9ed-a044-4305-bd7e-ff4f33410acb",
+      "runId": "87a39028-f8bc-4b79-8757-0a329d11b177",
+      "codeVersion": "v-55f7396c1362",
+      "sourceCommit": "37b37191550cd9e9dc1e724d5b912516b6e4a3d9"
+    },
+    {
+      "id": "valid-surface",
+      "title": "A surface takes the mark. The paint stays safe.",
+      "scope": "A real Chisel drag commits to an explicit normal-tagged layer. Actual downloaded layer PNGs prove exact Undo/Redo while diffuse paint, frame identity and hold stay intact; ordinary-paint refusal is also checked. No vector-angle fidelity claim.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/8189dd16-5a40-4abd-a39e-03880bd46125",
+      "runId": "4abd2d98-cca6-4e2e-967d-df095b781a3f",
+      "codeVersion": "v-09eae17b70cc",
+      "sourceCommit": "77a40070cd1351a2c8f794d6b2d74dbd0eb428d9"
+    },
+    {
+      "id": "erase-family",
+      "title": "A neighbor keeps its color.",
+      "scope": "At tolerance 24 with family mode On and current-frame scope, three known green samples disappear. Red, blue, neutral neighbors and the other frame stay exact in canvas pixels and decoded backups, including Undo/Redo. Known imported fixture.",
+      "runUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/68c07b0f-1698-48a0-a421-5be8bc966cdf",
+      "runId": "119f9d76-ee65-4da3-b4e0-659f95738162",
+      "codeVersion": "v-e38c1780cedc",
+      "sourceCommit": "77a40070cd1351a2c8f794d6b2d74dbd0eb428d9"
+    }
+  ]
+}

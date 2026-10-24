@@ -1,0 +1,131 @@
+{
+  "id": "f06ef9db-6227-43e0-815e-72bf8fd2166a",
+  "key": "S4-MOTION-02",
+  "title": "S4-MOTION-02 — A saved rig refuses its genuinely changed source after reload.",
+  "goal": "A rig saved from Bun reopens after a reload while the artwork is unchanged; after a real Pen edit is saved and reloaded, opening the same rig is refused because its source artwork changed, and the drawing stays exactly as edited.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "key": "w"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "click": "Tools",
+      "nth": 0
+    },
+    {
+      "click": "Create Motion Part"
+    },
+    {
+      "fill": "Rig name",
+      "value": "S4 Lantern Wave"
+    },
+    {
+      "click": "Save motion rig"
+    },
+    {
+      "visible": "Open rig S4 Lantern Wave",
+      "why": "The rig is saved."
+    },
+    {
+      "click": "Cancel (Escape)"
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "open": "/studio?end=1",
+      "reload": true
+    },
+    {
+      "skip": true
+    },
+    {
+      "click": "Tools",
+      "nth": 0
+    },
+    {
+      "click": "Open rig S4 Lantern Wave"
+    },
+    {
+      "visible": "PixiMotion: Rigid Part",
+      "role": "heading",
+      "why": "With the source unchanged, the rig reopens."
+    },
+    {
+      "click": "Cancel (Escape)"
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "color": "#E83A5C"
+    },
+    {
+      "key": "b"
+    },
+    {
+      "click": "1px brush preset"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "colors": "7"
+      },
+      "why": "A real Pen edit changed the source artwork."
+    },
+    {
+      "record": "E"
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "open": "/studio?end=1",
+      "reload": true
+    },
+    {
+      "skip": true
+    },
+    {
+      "click": "Tools",
+      "nth": 0
+    },
+    {
+      "click": "Open rig S4 Lantern Wave"
+    },
+    {
+      "text": "The saved source artwork changed. Capture and save a new rig.",
+      "why": "The stale rig is refused with the reason."
+    },
+    {
+      "absent": "PixiMotion: Rigid Part",
+      "role": "heading",
+      "why": "No motion part opens."
+    },
+    {
+      "readout": {
+        "digest": "=E"
+      },
+      "why": "The refusal leaves the edited drawing exactly as saved."
+    }
+  ],
+  "cliOnly": [
+    "the rig's SHA-256 fingerprint against independently decoded source pixels (scripts/testsprite/pixibun-stale-rig-integrity.py)"
+  ]
+}

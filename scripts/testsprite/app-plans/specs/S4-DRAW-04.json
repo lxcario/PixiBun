@@ -1,0 +1,80 @@
+{
+  "id": "07d954a4-7605-43c9-af85-207d06a8b18a",
+  "key": "S4-DRAW-04",
+  "title": "S4-DRAW-04 — A gradient stays in its selection.",
+  "goal": "With a 12 x 10 Magic Wand selection, Pixel Gradient offers its shape, colour source, Bayer dithering and new-layer options; a click without a drag paints nothing, so the artwork, layers and history stay exact.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Magic Wand"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "text": "Selection 12×10"
+    },
+    {
+      "click": "Pixel Gradient"
+    },
+    {
+      "pressed": "Pixel Gradient"
+    },
+    {
+      "click": "Tools",
+      "nth": 0
+    },
+    {
+      "selected": "Gradient shape",
+      "option": "Linear"
+    },
+    {
+      "selected": "Gradient colors",
+      "option": "Foreground → background"
+    },
+    {
+      "checked": "/^Bayer 4×4 dithering/",
+      "role": "checkbox"
+    },
+    {
+      "checked": "/^Draw on new layer/",
+      "role": "checkbox",
+      "why": "By default a gradient goes on its own layer and leaves existing artwork untouched."
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "A click is not a gradient: nothing is painted and no layer is added."
+    },
+    {
+      "click": "Layers",
+      "nth": 0
+    },
+    {
+      "visible": "/^Layers \\(1\\)/",
+      "role": "heading",
+      "why": "Still one layer: the click added no gradient layer."
+    },
+    {
+      "disabled": "Undo last action"
+    }
+  ],
+  "cliOnly": [
+    "a dragged gradient inside the selection with exact ramp colours and Undo (tests/production/selectionLimitsTools.spec.ts)"
+  ]
+}

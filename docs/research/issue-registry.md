@@ -8,8 +8,8 @@ The [15 October review](../releases/2026-10-15-codebase-and-documentation.md) re
 
 | Area | Required evidence |
 | --- | --- |
-| Accessibility | Earlier scans recorded seven compact target findings; requalify changed controls and manual keyboard, screen-reader and touch equivalence on named devices. Automated scans do not establish conformance. |
-| Artist usefulness and learning | Recruit participants, record consent, build/task order and actual observations. Automated dry-runs do not close this work. |
+| Accessibility | Earlier scans recorded seven compact target findings; requalify changed controls and manual keyboard, screen-reader and touch equivalence on named devices. Automated scans do not establish conformance. On 16 October seven top-bar controls measured 24 × 22 px and were raised to 24 px ([P0 hardening](../releases/2026-10-16-p0-hardening.md#header-target-size)). |
+| Artist usefulness and learning | Recruit participants, record consent, build/task order and actual observations. Automated dry-runs do not close this work. A six-person feedback survey (29 September–13 October) is recorded in [early tester feedback](2026-10-user-feedback.md); it shaped the 5 October workspace release, but nobody was observed, so this row stays open. |
 | Physical devices and Safari | Qualify pen/touch input, browser/device combinations and actual Safari, including legacy-Blob rollback. |
 | Long sessions and memory | Measure peak, retained and active scratch memory plus decoder/GPU/worker behavior on named low-memory devices. Earlier periodic sessions failed their final compiled-build guard. |
 | Real collaboration | Exercise two-machine network modes, concurrent paints/locks, structure refusal, disconnect/reconnect and congestion. |

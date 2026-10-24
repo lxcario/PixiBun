@@ -75,13 +75,6 @@ export function getBufferGeneration(layerId: string): number | undefined {
   return buffers.get(layerId)?.generation;
 }
 
-export function setBufferRevision(layerId: string, revision: number): void {
-  const entry = buffers.get(layerId);
-  if (entry) {
-    entry.contentRevision = revision;
-  }
-}
-
 export function hasBuffer(layerId: string): boolean {
   return buffers.has(layerId);
 }
@@ -273,11 +266,6 @@ export function resizeAllBuffers(
 
     buffers.set(layerId, next);
   }
-}
-
-/** Exposed for tests and serialization diagnostics. */
-export function bufferCount(): number {
-  return buffers.size;
 }
 
 registerMemoryUsage('rasters', () => getBufferRegistryUsage().bytes);

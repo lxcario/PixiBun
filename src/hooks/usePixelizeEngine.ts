@@ -6,7 +6,7 @@ import {
   processImageToPixelArt,
   type PixelizeOptions,
   type PixelizeResult,
-} from '@/lib/ai/pixelizeEngine';
+} from '@/lib/graphics/pixelizeEngine';
 import { reserveMemory } from '@/lib/safety/memoryBudget';
 import { importPreviewSize, reserveImportCanvas } from '@/lib/project/importRaster';
 import { importErrorMessage } from '@/lib/project/importFile';

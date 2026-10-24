@@ -50,21 +50,22 @@ export const LeftToolbar = React.memo(function LeftToolbar({ isPlaygroundMode = 
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false);
   const [activeFlyoutTarget, setActiveFlyoutTarget] = useState<ColorTarget>('primary');
   const wellsContainerRef = useRef<HTMLDivElement>(null);
-  const flyoutTriggerRef = useRef<HTMLButtonElement>(null);
+  const flyoutOpenerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
     loadRecentColors();
   }, [loadRecentColors]);
 
-  const openFlyout = useCallback((target: ColorTarget) => {
+  const openFlyout = useCallback((target: ColorTarget, opener: HTMLButtonElement) => {
+    flyoutOpenerRef.current = opener;
     setActiveFlyoutTarget(target);
     setIsFlyoutOpen(true);
   }, []);
 
   const closeFlyout = useCallback((restoreFocus: boolean) => {
     setIsFlyoutOpen(false);
-    if (restoreFocus) flyoutTriggerRef.current?.focus();
+    if (restoreFocus) flyoutOpenerRef.current?.focus();
   }, []);
 
   const openSpectrum = useCallback((target: ColorTarget) => {
@@ -80,6 +81,7 @@ export const LeftToolbar = React.memo(function LeftToolbar({ isPlaygroundMode = 
   // Small windows: fold tool groups into flyout slots, only as many as needed.
   const toolScrollRef = useRef<HTMLDivElement>(null);
   const [folded, setFolded] = useState<ReadonlySet<FoldStage>>(() => new Set());
+  const compact = folded.has('Compact');
   useIsomorphicLayoutEffect(() => {
     const el = toolScrollRef.current;
     if (!el || isPlaygroundMode) return;
@@ -142,7 +144,7 @@ export const LeftToolbar = React.memo(function LeftToolbar({ isPlaygroundMode = 
                 {(folded.has(group.groupName as FoldStage) || (group.groupName === '2.5D Sculpt' && folded.has('Extras'))) && !isPlaygroundMode ? (group.groupName === '2.5D Sculpt' && folded.has('Extras') ? [EXTRAS_SLOT] : TOOL_SLOTS.filter(slot => slot.group === group.groupName)).map(slot => {
                   const holdsActive = slot.tools.includes(activeTool);
                   const shown = holdsActive ? activeTool : lastUsed[slot.id] ?? slot.tools[0];
-                  return <ToolSlotButton key={slot.id} slot={slot} shown={shown} active={holdsActive} onChoose={setActiveTool} />;
+                  return <ToolSlotButton key={slot.id} slot={slot} shown={shown} active={holdsActive} compact={compact} onChoose={setActiveTool} />;
                 }) : group.tools.map((tool) => {
                   const isActive = activeTool === tool.id;
                   return (
@@ -158,7 +160,7 @@ export const LeftToolbar = React.memo(function LeftToolbar({ isPlaygroundMode = 
                         aria-keyshortcuts={tool.shortcut ? tool.shortcut.replace(/ \+ /g, '+') : undefined}
                         data-testid={`${tool.id}-tool`}
                         data-tutorial={`${tool.id}-tool`}
-                        className={`w-10 h-10 rounded-[2px] flex items-center justify-center cursor-pointer transition-all ${
+                        className={`${compact ? 'w-9 h-9' : 'w-10 h-10'} rounded-[2px] flex items-center justify-center cursor-pointer transition-all ${
                           isActive
                             ? 'pixel-primary-btn font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_1px_0_var(--btn-shadow)] ring-2 ring-[var(--accent-gold)] ring-offset-1 ring-offset-[var(--desk-surface)] z-10'
                             : 'pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)]'
@@ -212,7 +214,7 @@ export const LeftToolbar = React.memo(function LeftToolbar({ isPlaygroundMode = 
           {/* Secondary Color Well (Bottom-right) */}
           <button
             type="button"
-            onClick={() => openFlyout('secondary')}
+            onClick={(event) => openFlyout('secondary', event.currentTarget)}
             onDoubleClick={() => {
               setIsFlyoutOpen(false);
               setColorPickerTarget('secondary');
@@ -234,7 +236,7 @@ export const LeftToolbar = React.memo(function LeftToolbar({ isPlaygroundMode = 
           {/* Primary Color Well (Top-left) */}
           <button
             type="button"
-            onClick={() => openFlyout('primary')}
+            onClick={(event) => openFlyout('primary', event.currentTarget)}
             onDoubleClick={() => {
               setIsFlyoutOpen(false);
               setColorPickerTarget('primary');
@@ -275,9 +277,8 @@ export const LeftToolbar = React.memo(function LeftToolbar({ isPlaygroundMode = 
 
           {/* Opens the Colors flyout: palette, shades, recent colors and hex entry */}
           <button
-            ref={flyoutTriggerRef}
             type="button"
-            onClick={() => (isFlyoutOpen ? closeFlyout(false) : openFlyout('primary'))}
+            onClick={(event) => (isFlyoutOpen ? closeFlyout(false) : openFlyout('primary', event.currentTarget))}
             title="Colors: palette, shades, recent colors and hex"
             aria-label="Quick Swatches Flyout"
             aria-haspopup="dialog"

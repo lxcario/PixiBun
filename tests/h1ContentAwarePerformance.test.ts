@@ -12,14 +12,14 @@ import {
   type ContentAwareAnalysis,
   type NormalVectorField,
   type AppendageData,
-} from '@/lib/ai/math/edtNormalMap';
+} from '@/lib/graphics/math/edtNormalMap';
 import {
   renderParametric2p5DLighting,
   type LightParameters,
-} from '@/lib/ai/math/photometricLighting';
+} from '@/lib/graphics/math/photometricLighting';
 
-vi.mock('@/lib/ai/math/edtNormalMap', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/lib/ai/math/edtNormalMap')>();
+vi.mock('@/lib/graphics/math/edtNormalMap', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/graphics/math/edtNormalMap')>();
   return {
     ...actual,
     computeContentAwareHeightmap: vi.fn(actual.computeContentAwareHeightmap),

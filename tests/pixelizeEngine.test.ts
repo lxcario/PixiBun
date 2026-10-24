@@ -19,7 +19,7 @@ import {
   quantizeAndDither,
   cleanAlphaAndBackground,
   downsampleImage,
-} from '@/lib/ai/pixelizeEngine';
+} from '@/lib/graphics/pixelizeEngine';
 
 // DOM mock for canvas testing in node environment
 interface ImageDataShim {

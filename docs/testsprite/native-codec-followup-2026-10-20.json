@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "observedOn": "2026-10-20 Europe/Istanbul",
+  "head": "2d27b262239fcf86aa1dc2ec9f13b42301319e4c",
+  "mergeSource": "bac15d731d4ea53e8d6381f2b13d018fb6b7ef3b",
+  "runUrl": "https://github.com/lxcario/PixiBun/actions/runs/39324757622",
+  "artifactUrl": "https://github.com/lxcario/PixiBun/actions/runs/39324757622/artifacts/12221599468",
+  "artifactBytes": 2042720,
+  "zipSha256": "1a77f3d0d5d02fe3a63c8a23c2eddfa950a08568775dccd22619db3bef41a713",
+  "retrieval": {
+    "schema": 1,
+    "verifiedAt": "2026-10-19T21:13:50.779Z",
+    "passed": true,
+    "filesIndexed": 15,
+    "downloadedIndexVerified": true,
+    "archivePrefixRemoved": "",
+    "fileManifestSha256": "4dfdcba9274a015b8bca46dad0b8a12281a56e30b5ee67c37a32fe1fca57ec10",
+    "failures": []
+  },
+  "stats": {
+    "startTime": "2026-10-19T21:07:50.983Z",
+    "duration": 212221.411,
+    "expected": 14,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "verdict": "FAILED: 14 passed, 1 failed, 0 skipped, 0 flaky, no retries",
+  "passedChange": "All three earlier Linux WebKit failures now pass under explicit actual-port identity; this qualifies the existing unsupported-H264 refusal on this Linux test port, not real macOS/iOS Safari encoding.",
+  "remainingFailure": {
+    "project": "firefox",
+    "test": "actual MP4 is playable with both painted poses, or its unsupported platform is explicitly refused",
+    "red": [
+      255,
+      26,
+      1,
+      255
+    ],
+    "expectedRed": [
+      255,
+      0,
+      0,
+      255
+    ],
+    "unchangedChannelTolerance": 12,
+    "productFixed": false
+  },
+  "colorDiagnostic": {
+    "schema": 1,
+    "diagnosticOnly": true,
+    "originalVerdictUnchanged": true,
+    "mediaSha256": "a81183b00ce16005788428c2706ff7b49866237f98359c345cadf3113fe79672",
+    "files": [
+      {
+        "name": "original",
+        "bytes": 1494,
+        "sha256": "c74df7c80ceaa21b7757d5a469aa08a6693a11053461312483358dd1ea52e0e0",
+        "mediaSha256": "a81183b00ce16005788428c2706ff7b49866237f98359c345cadf3113fe79672"
+      },
+      {
+        "name": "smpte170m",
+        "bytes": 1675,
+        "sha256": "17772a51d0369140c077334d019f7e61e77bd5d454085aee45801165de416500",
+        "mediaSha256": "a81183b00ce16005788428c2706ff7b49866237f98359c345cadf3113fe79672"
+      },
+      {
+        "name": "bt709",
+        "bytes": 1675,
+        "sha256": "4a3cc27f99485053f7ca2c0eb49ab7a7db12a0894c3f5076bfe687602c1525b0",
+        "mediaSha256": "a81183b00ce16005788428c2706ff7b49866237f98359c345cadf3113fe79672"
+      }
+    ],
+    "browsers": [
+      {
+        "name": "firefox",
+        "hostPlatform": "linux",
+        "files": [
+          {
+            "name": "original",
+            "width": 32,
+            "height": 32,
+            "duration": 0.8,
+            "samples": [
+              [
+                255,
+                26,
+                1,
+                255
+              ],
+              [
+                0,
+                14,
+                251,
+                255
+              ]
+            ]
+          },
+          {
+            "name": "smpte170m",
+            "width": 32,
+            "height": 32,
+            "duration": 0.8,
+            "samples": [
+              [
+                255,
+                26,
+                1,
+                255
+              ],
+              [
+                0,
+                14,
+                251,
+                255
+              ]
+            ]
+          },
+          {
+            "name": "bt709",
+            "width": 32,
+            "height": 32,
+            "duration": 0.8,
+            "samples": [
+              [
+                255,
+                26,
+                1,
+                255
+              ],
+              [
+                0,
+                14,
+                251,
+                255
+              ]
+            ]
+          }
+        ],
+        "encoder": {
+          "inputColorSpace": {
+            "primaries": "bt709",
+            "transfer": "iec61966-2-1",
+            "matrix": "rgb",
+            "fullRange": true
+          },
+          "configs": [
+            {
+              "codec": "avc1.42001f",
+              "codedWidth": 32,
+              "codedHeight": 32,
+              "colorSpace": {
+                "fullRange": false,
+                "matrix": "bt709",
+                "primaries": "bt709",
+                "transfer": "bt709"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "chromium",
+        "hostPlatform": "linux",
+        "files": [
+          {
+            "name": "original",
+            "width": 32,
+            "height": 32,
+            "duration": 0.8,
+            "samples": [
+              [
+                254,
+                1,
+                1,
+                255
+              ],
+              [
+                0,
+                0,
+                251,
+                255
+              ]
+            ]
+          },
+          {
+            "name": "smpte170m",
+            "width": 32,
+            "height": 32,
+            "duration": 0.8,
+            "samples": [
+              [
+                254,
+                1,
+                1,
+                255
+              ],
+              [
+                0,
+                0,
+                251,
+                255
+              ]
+            ]
+          },
+          {
+            "name": "bt709",
+            "width": 32,
+            "height": 32,
+            "duration": 0.8,
+            "samples": [
+              [
+                255,
+                26,
+                1,
+                255
+              ],
+              [
+                0,
+                14,
+                251,
+                255
+              ]
+            ]
+          }
+        ],
+        "encoder": {
+          "inputColorSpace": {
+            "fullRange": true,
+            "matrix": "rgb",
+            "primaries": "bt709",
+            "transfer": "iec61966-2-1"
+          },
+          "configs": [
+            {
+              "codec": "avc1.42001f",
+              "codedWidth": 32,
+              "codedHeight": 32,
+              "colorSpace": {
+                "fullRange": false,
+                "matrix": "smpte170m",
+                "primaries": "smpte170m",
+                "transfer": "smpte170m"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "interpretation": "Linux Firefox output metadata reports BT.709 limited, while the same actual file decodes in Chromium near the drawn colors under its original/BT.601 interpretation. Both container-only tag variants retain identical media payload; Firefox gives the same shifted colors for every variant. A container-only tag patch is not an established fix. No arbitrary universal color matrix is applied.",
+  "upstream": {
+    "url": "https://bugzilla.mozilla.org/show_bug.cgi?id=2057760",
+    "status": "Unconfirmed upstream report, assigned; independently retrieved on 20 October Istanbul",
+    "scope": "Reports RGB-to-BT.601 conversion with BT.709 output metadata. Consistent with this diagnostic, but not proof that every platform/codec uses the identical path. This is not a public TestSprite CLI defect or bonus claim."
+  },
+  "automaticApp": {
+    "executionId": "38207a10-bdfb-463a-99ea-10d3cd934d80",
+    "url": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80",
+    "statusAtObservation": "pending",
+    "source": "Automatic dispatch following 2d27b262 Vercel Ready; no manual retry",
+    "scope": "Not a terminal App verdict or a passing red-to-green loop."
+  },
+  "release": "Main remains unchanged; no release approval. Keep the mutable S4 preview fixed while its automatic cohort runs."
+}

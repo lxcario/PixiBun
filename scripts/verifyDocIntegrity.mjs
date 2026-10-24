@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ownedMarkdown, publishableProjectFiles, validateMarkdownLinks, sourceContracts, testInventory } from './docContracts.mjs';
+import { LEDGER_JSON_PATH, LEDGER_MARKDOWN_PATH, loopLedgerProblems, renderLoopLedgerMarkdown } from '../src/lib/verified/loopLedger.mjs';
 const root = process.cwd();
 const errors = [];
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
@@ -11,7 +12,7 @@ try {
   if (!phases.length || new Set(phases).size !== phases.length) fail('TASKS.md phase headers missing or duplicated');
   const sections = [...read('ARCHITECTURE.md').matchAll(/^## (\d+)\.\s+/gm)].map(m => Number(m[1]));
   if (!sections.length || sections.some((n,i) => n !== i+1)) fail('ARCHITECTURE.md numbered sections are not monotonic');
-  const historical = new Set(['src/lib/audio/lofiRadio.ts', 'src/lib/audio/tracks.ts', 'src/lib/audio/spectralFlux.ts', 'tests/audioOnsetDetection.test.ts', 'src/components/layout/inspector/VolumetricOpticsSection.tsx', 'tests/e2e/volumetricVisualProof.spec.ts', 'src/components/landing/PixelDitherCurtain.tsx', 'src/components/landing/AtelierDeskScene.tsx', 'src/components/onboarding/ArtisanHandbookPanel.tsx', 'tests/components/ArtisanHandbookPanel.test.tsx', 'src/components/landing/showcase/RotSpriteShowcase.tsx', 'src/components/landing/showcase/PhotometricShowcase.tsx', 'src/components/landing/showcase/EngineExportShowcase.tsx']);
+  const historical = new Set(['src/lib/audio/lofiRadio.ts', 'src/lib/audio/tracks.ts', 'src/lib/audio/spectralFlux.ts', 'tests/audioOnsetDetection.test.ts', 'src/components/layout/inspector/VolumetricOpticsSection.tsx', 'tests/e2e/volumetricVisualProof.spec.ts', 'src/components/landing/PixelDitherCurtain.tsx', 'src/components/landing/AtelierDeskScene.tsx', 'src/components/onboarding/ArtisanHandbookPanel.tsx', 'tests/components/ArtisanHandbookPanel.test.tsx', 'src/components/landing/showcase/RotSpriteShowcase.tsx', 'src/components/landing/showcase/PhotometricShowcase.tsx', 'src/components/landing/showcase/EngineExportShowcase.tsx', 'src/components/ui/ToolPreviewCanvas.tsx']);
   const paths = new Set([...read('CHANGELOG.md').matchAll(/`((?:src|tests)\/[^`]+)`/g)].map(m => m[1].trim()).filter(p => !p.endsWith('/')));
   let existing = 0, approvedHistory = 0;
   for (const file of paths) {
@@ -43,6 +44,11 @@ try {
     if (!fs.existsSync(file) || JSON.stringify(JSON.parse(read(file))) !== JSON.stringify(actual)) fail(file + ' is stale; run npm run docs:inventory');
   }
   console.log('Runner enumeration and selected tool/encoder/runtime contracts checked; enumeration is not a verdict.');
+  const ledger = JSON.parse(read(LEDGER_JSON_PATH));
+  const ledgerProblems = loopLedgerProblems(ledger);
+  for (const problem of ledgerProblems) fail(LEDGER_JSON_PATH + ': ' + problem);
+  if (!ledgerProblems.length && read(LEDGER_MARKDOWN_PATH).replace(/\r\n/g, '\n') !== renderLoopLedgerMarkdown(ledger)) fail(LEDGER_MARKDOWN_PATH + ' is stale; run npm run ledger:md');
+  console.log('Loop ledger: ' + (ledgerProblems.length ? 'invalid' : ledger.entries.length + ' entries; schema and Markdown twin checked') + '.');
   if (/\| \*\*Audio Engine\*\*/.test(read('README.md'))) fail('README advertises removed audio engine');
   if (/N for Rivet|Space\+Drag for Pan|Z\/Ctrl\+Z for Undo/.test(read('SKILL.md'))) fail('Retired/incorrect shortcut instruction remains');
 } catch (error) { fail(error.message); }

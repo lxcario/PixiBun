@@ -26,7 +26,7 @@ Artists need to draw, revise colors, compare animation poses and keep editable w
 | Make tiles | Repeat previews, exact unique-tile PNG/map bundles, contour review and bounded small tile-scene studies | [Tile guide](docs/guides/pixitools-cleanup-and-tiles.md); exact size/alpha and stale-result checks apply; a complete 47-tile atlas and general world generation are not shipped |
 | Keep and share work | Local saves, portable backups, recovery, image/animation exports, game-delivery formats, project-carrying PNG carts, phone player, Light Sweep and optional making-of receipts | [Artwork safety](docs/guides/artwork-safety.md), [exports](docs/contracts/exports.md), [carts](docs/contracts/carts.md); named consumer tests do not qualify every engine/version or sharing platform |
 | Draw together | One host and one guest share pixels through WebRTC; the host owns structure | [Current status](docs/current-status.md); real two-machine and stress qualification remain pending |
-| Learn and personalize | Twelve coached desktop lessons with save-before-entry, Return and explicit Keep; eight Pocket lessons and a free pad; task-based PixiTools, searchable actions, eight Night/Day studio styles and a first-run welcome with level-based tips | [Learning contract](docs/contracts/learning.md), [design](DESIGN.md) |
+| Learn and personalize | Twelve coached desktop lessons with save-before-entry, Return and explicit Keep; eight Pocket lessons and a free pad; task-based PixiTools, searchable actions, twelve Night/Day studio styles and a first-run welcome with level-based tips | [Learning contract](docs/contracts/learning.md), [design](DESIGN.md) |
 
 ### Explicitly out of scope for v1
 
@@ -49,7 +49,7 @@ The [storage contract](docs/contracts/storage.md#admission-and-optional-metadata
 | Interface | Tailwind CSS v4 and Motion | Shared visual tokens and interaction feedback |
 | Background work | Web Workers with operation-specific fallbacks | Bounded heavy processing and owned result publication |
 
-`src/lib/ai/` is a legacy directory name for predominantly deterministic graphics code. It does not establish a shipped learned model. Detailed algorithms belong in [the deep dive (local archive)](docs/archives.md#record-pixibun-deep-dive-md); ownership and integration belong in [architecture](ARCHITECTURE.md).
+`src/lib/graphics/` is a legacy directory name for predominantly deterministic graphics code. It does not establish a shipped learned model. Detailed algorithms belong in [the deep dive (local archive)](docs/archives.md#record-pixibun-deep-dive-md); ownership and integration belong in [architecture](ARCHITECTURE.md).
 
 ## Repo & Environments
 

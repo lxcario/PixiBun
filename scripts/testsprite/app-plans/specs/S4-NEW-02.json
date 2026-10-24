@@ -1,0 +1,99 @@
+{
+  "id": "59fc51e1-ce16-4ad1-9ea4-392dcca93fd7",
+  "key": "S4-NEW-02",
+  "title": "S4-NEW-02 — Delete, then bring the pose home.",
+  "goal": "Deleting the middle of three frames leaves 100 and 300 ms; one Undo brings back all three frames in their original order with the exact artwork.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Duplicate frame"
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "click": "Duplicate frame"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "100"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "200"
+    },
+    {
+      "click": "/^Select frame 3. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "300"
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "visible": "/^Select frame 3. #3 300ms/"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "click": "Delete frame"
+    },
+    {
+      "say": "Exactly two frames remain: frame 1 shows #1 100ms and frame 2 shows #2 300ms; the 200 ms middle frame is gone.",
+      "visible": "/^Select frame 2. #2 300ms/",
+      "assert": true
+    },
+    {
+      "click": "Undo last action",
+      "say": "Click the 'Undo last action' button once now. This click is required: the checks that follow are about what Undo brings back, so do not assert them without clicking it."
+    },
+    {
+      "enabled": "Redo last action",
+      "why": "Undo ran, so Redo is now available."
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Undo restores the deleted frame with the exact artwork."
+    },
+    {
+      "visible": "/^Select frame 3. /",
+      "why": "The third frame is back."
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "visible": "/^Select frame 3. #3 300ms/",
+      "why": "Original order and holds return."
+    }
+  ]
+}

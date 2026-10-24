@@ -8,7 +8,7 @@ import PanelSection from '@/components/ui/PanelSection';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { prepareTilesetBundle, tilesetSourceKey, assertTilesetCurrent } from '@/lib/export/tilesetBundle';
 import { compositeFrame } from '@/lib/render/compositor';
-import { generate47BlobEdgeData } from '@/lib/ai/pixelAiEngine';
+import { generate47BlobEdgeData } from '@/lib/graphics/pixelRasterEngine';
 
 function contourThumbnail(canvas: HTMLCanvasElement): string {
   const thumbnail = document.createElement('canvas');

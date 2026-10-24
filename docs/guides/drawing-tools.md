@@ -6,9 +6,9 @@ Animated tool previews appear on hover or focus. Activating a tool dismisses its
 
 [Handbook](README.md) · [Workspace and layers](studio-workspace.md) · [All features](../features.md)
 
-Pick a tool from the left-hand toolbar. On shorter windows the toolbar folds related tools into one button (Lines and shapes first, then Selection, then Drawing); click the button for the tool it shows, or its corner arrow or right-click for the rest of the group. The button keeps the last tool you used there, and letter shortcuts always work. Its controls appear along the top; some open under **tool options**, while brush size has its own small menu. Click a color swatch for your primary color. Right-click a swatch for your secondary color, and press **X** to swap them.
+Pick a tool from the left-hand toolbar. On shorter windows the toolbar folds related tools into one button (Lines and shapes first, then Selection, then Drawing; if that still does not fit, the buttons shrink from 40 to 36 px); click the button for the tool it shows, or its corner arrow or right-click for the rest of the group. The button keeps the last tool you used there, and letter shortcuts always work. Its controls appear along the top; some open under **tool options**, while brush size has its own small menu. Click a color swatch for your primary color. Right-click a swatch for your secondary color, and press **X** to swap them.
 
-Work on the intended frame and an unlocked layer. Most drawing tools change that layer's pixels; selecting a tool alone changes no artwork. **Undo** or **Ctrl+Z** restores a committed drawing action while it remains in session history. A selected area can limit drawing. Clear it with **Esc** before painting elsewhere. [Shortcut details](../contracts/shortcuts.md) explain keyboard focus and selection exceptions.
+Work on the intended frame and a visible, unlocked layer. Most drawing tools change that layer's pixels; selecting a tool alone changes no artwork. On a hidden or locked layer, strokes, fills, shapes, curves and a selection's Cut, Delete, move or paste are refused with a message and change nothing; Eyedropper, Copy and making a selection still work. A moved or pasted selection drops back onto the layer it came from, or was pasted onto, even if you choose another layer before committing; if that layer has been locked or hidden meanwhile, the selection stays floating until it is editable. **Undo** or **Ctrl+Z** restores a committed drawing action while it remains in session history. A selected area can limit drawing. Clear it with **Esc** before painting elsewhere. [Shortcut details](../contracts/shortcuts.md) explain keyboard focus and selection exceptions.
 
 Letter shortcut labels name QWERTY key positions, so a different keyboard layout can use the same positions. Symbols such as brackets follow your keyboard. Workspace shortcuts pause while a dialog is open or you are typing. By default, hold Space to pan, Alt-click to pick a color, Shift-click to draw a straight line from the last pixel and right-click to paint the secondary color; **Guide & Shortcuts** (`?`) can switch to the PixiBun classic keys. [Both keymaps](../contracts/shortcuts.md). On a landscape tablet wide enough for Studio (1024px+), one finger draws; extra fingers do not join that stroke. Use the zoom controls for the canvas. Browser gestures outside the drawing viewport keep their existing behavior.
 
@@ -44,7 +44,7 @@ Press **E**, set the brush size, and drag over pixels to make them transparent o
 
 ![Flood Fill selected; actual available tool settings, original three-frame artwork.](../assets/screenshots/2026-10-15-current-ui/tool-bucket.png)
 
-Press **G**, choose the replacement color and click an area. **Contiguous** fills a connected island; **Global Replace** finds matching colors across the active layer. Begin with low **Tolerance**, then increase it to include nearby shades. If the fill crosses an outline, undo and lower tolerance. **Enclosed specks** can fill small color islands of up to eight pixels surrounded by the fill; it can also remove deliberate tiny details.
+Press **G**, choose the replacement color and click an area. **Contiguous** fills a connected island; **Global Replace** finds matching colors across the active layer. Begin with low **Tolerance**, then increase it to include nearby shades; it measures red, green, blue and alpha together. If the fill crosses an outline, undo and lower tolerance. **Enclosed specks** can fill small color islands of up to eight pixels surrounded by the fill; it can also remove deliberate tiny details.
 
 ## Pixel Gradient
 
@@ -58,21 +58,21 @@ See [the gradient workflow](artist-workspace.md#draw-a-pixel-gradient) for ramp 
 
 ![Dither Brush selected; actual available tool settings, original three-frame artwork.](../assets/screenshots/2026-10-15-current-ui/tool-dither.png)
 
-Press **D**, set your two colors and drag a patterned stroke. Choose **Bayer 2×2, 4×4 or 8×8**, **Blue Noise**, or **Atkinson** in the pattern menu; adjust **Density** and brush size to make the texture gentler or stronger. This paints a brush pattern. Whole-layer Atkinson and Smooth Dither previews live separately in [Clean and refine](pixitools-cleanup-and-tiles.md#color-moods-and-dithering).
+Press **D**, choose your active drawing color and drag a patterned stroke. Choose **Bayer 2×2, 4×4 or 8×8**, **Blue Noise**, or **Atkinson** in the pattern menu; adjust **Density** and brush size to make the texture gentler or stronger. The brush paints the active color at admitted pattern positions and leaves skipped pixels unchanged; on an empty layer those gaps remain transparent. Paint over an existing color to blend two tones, or use the current keymap's secondary-color gesture for a separate stroke. One stroke does not automatically alternate foreground and background colors. Whole-layer Atkinson and Smooth Dither previews live separately in [Clean and refine](pixitools-cleanup-and-tiles.md#color-moods-and-dithering).
 
-Fast drags interpolate brush centers between received points instead of stamping only their endpoints. The pattern tests canvas coordinates, so a one-pixel brush keeps its pattern anchored as you draw. Larger sizes retain square stamp footprints.
+Fast drags interpolate brush centers between received points instead of stamping only their endpoints. The pattern tests canvas coordinates, so it stays anchored as you draw. Larger brushes keep square stamp footprints and test every pixel inside them, so a 4px stamp at Bayer 2×2 and 50% density leaves half of its 16 pixels untouched.
 
 ## Color Replace
 
 ![Color Replace selected; actual available tool settings, original three-frame artwork.](../assets/screenshots/2026-10-15-current-ui/tool-color-replace.png)
 
-Press **R**, choose the new primary color, then click the color you want to replace in the artwork. Matching visible colors change on the active layer; other layers and transparent pixels are preserved. **Tolerance** widens the range to similar shades. It is a color replacement action, rather than a brush that only changes pixels beneath the pointer. Start at zero when two details must keep separate colors.
+Press **R**, choose the new primary color, then click the color you want to replace in the artwork. Matching visible colors change on the active layer; other layers and transparent pixels are preserved. **Tolerance** widens the range to similar shades. It measures red, green and blue only, so each pixel keeps its own alpha. It is a color replacement action, rather than a brush that only changes pixels beneath the pointer. Start at zero when two details must keep separate colors.
 
 ## Erase Sampled Color
 
 ![Erase Sampled Color selected; actual available tool settings, original three-frame artwork.](../assets/screenshots/2026-10-15-current-ui/tool-erase-color.png)
 
-Press **Shift+R**, choose the matching settings, and click a visible color to remove it. **Connected** targets its connected region; **All matches** searches across the layer. **Color family** includes related shades and dark edge spill, protects neutral outlines, and enables searching all matching pixels. Tolerance widens the match. These are heuristics, so inspect small details after using them.
+Press **Shift+R**, choose the matching settings, and click a visible color to remove it. **Connected** targets its connected region; **All matches** searches across the layer. **Color family** includes related shades and dark edge spill, protects neutral outlines, and enables searching all matching pixels. Tolerance widens the match, measuring red, green and blue together; with **Color family** on it widens the range of hues instead. These are heuristics, so inspect small details after using them.
 
 Keep **This frame** selected for a first attempt. **All frames** finds one uniquely named counterpart with the same generated tag in every frame, regardless of stack order, and skips locked counterparts. A missing or ambiguous match refuses the batch; give counterparts matching unique names or choose This frame. Undo restores an admitted action. The tool removes pixels to transparency, rather than painting the background color.
 
@@ -92,7 +92,7 @@ Press **Q** and draw around an irregular detail. The selection mask follows the 
 
 ![Magic Wand selected; actual available tool settings, original three-frame artwork.](../assets/screenshots/2026-10-15-current-ui/tool-select-wand.png)
 
-Press **W** and click a color region to select matching pixels. Its implementation shares the stored color-match tolerance and contiguous setting with the related fill/color controls; the wand has no separate top-rail tolerance editor. Shift adds a region and Alt subtracts one. Review the outline before moving or deleting it, especially after changing matching settings in another tool.
+Press **W** and click a color region to select matching pixels. It shares **Color tolerance** with Color Replace and **Connected pixels only** with the Paint Bucket; set them under **Tools**, as the wand has no top-rail tolerance editor. The wand allows that difference in each channel, alpha included, while Color Replace measures red, green and blue together, so the same number selects and replaces slightly different ranges. The panel says which under each slider. Shift adds a region and Alt subtracts one. Review the outline before moving or deleting it, especially after changing matching settings in another tool.
 
 ## Line
 
@@ -109,7 +109,7 @@ Press **J**, then open the **Isometric-line** tool-options button in the header.
 1. Leave **ON** for the familiar two-across, one-down diagonal. The endpoint is projected onto that slope, so it may finish beside your pointer. Pure horizontal and vertical drags stay straight.
 2. Choose **FREE** for a line that follows your chosen endpoints, including shallow and steep slopes. It uses the same line path as **Line**.
 3. Choose a brush size if you want a thicker stroke. Mirror H/V can draw a matching reflected stroke. Drag, release, and use **Ctrl+Z** or **Ctrl+Shift+Z** to Undo/Redo the finished pixels.
-4. Turn on **View → 2:1 Iso Grid** if you would like a guide behind the artwork. The grid is only a viewing aid and is not included in exports.
+4. Turn on **View → Iso grid** (2:1 guides) if you would like a guide behind the artwork. The grid is only a viewing aid and is not included in exports.
 
 ![Current unsnapped Iso Line and drawing-mirror settings.](../assets/screenshots/2026-10-15-current-ui/iso-free-thick-mirrored.png)
 
@@ -125,7 +125,7 @@ Press **U**, choose **Outline** or **Filled**, then drag opposite corners. Brush
 
 ![Ellipse selected; actual available tool settings, original three-frame artwork.](../assets/screenshots/2026-10-15-current-ui/tool-ellipse.png)
 
-Press **O**, choose **Outline** or **Filled**, and drag its bounding rectangle. The result is a pixel ellipse on the active layer. At small sizes, inspect the staircase of pixels and touch it up with Pen if you want a particular silhouette.
+Press **O**, choose **Outline** or **Filled**, and drag its bounding rectangle. The result is a pixel ellipse on the active layer that touches all four sides of the dragged box, like the Rectangle tool's box: an 8×8 drag draws an 8×8 circle around a 2×2 centre, and a 9×9 drag a 9×9 circle around one centre pixel. At small sizes, inspect the staircase of pixels and touch it up with Pen if you want a particular silhouette.
 
 ## Normal Chisel
 

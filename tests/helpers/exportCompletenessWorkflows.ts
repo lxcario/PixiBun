@@ -123,7 +123,7 @@ export async function verifyPendingTileEdit(page: Page) {
   await page.getByRole('button', { name: 'Slice Into Unique Tiles', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Download tile PNG + maps (.zip)', exact: true })).toBeEnabled();
 }
-export async function verifyWelcomeExportNotes(page: Page, info: TestInfo, capture?: Capture) {
+export async function verifyWelcomeBenchGif(page: Page, info: TestInfo, capture?: Capture) {
   const startupErrors: string[] = [];
   const recordStartupError = (error: Error) => startupErrors.push(error.message);
   const recordConsoleError = (message: ConsoleMessage) => {
@@ -133,49 +133,39 @@ export async function verifyWelcomeExportNotes(page: Page, info: TestInfo, captu
   page.on('console', recordConsoleError);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto('/');
-  const orbit = page.getByRole('button', { name: /Auto-Orbit|Orbit/ });
-  await expect(orbit).toHaveText('▶ Auto-Orbit');
-  await expect.poll(() => page.getByRole('tabpanel', { name: /2.5D Lighting/ }).evaluate(el => {
-    for (let node: Element | null = el; node; node = node.parentElement) {
-      if (Number(getComputedStyle(node).opacity) === 0) return false;
-    }
-    return true;
-  })).toBe(true);
-  await orbit.click();
-  await expect(orbit).toHaveText('⏸ Orbit');
-  await orbit.click();
-  await expect(orbit).toHaveText('▶ Auto-Orbit');
+  // The bench replaced the welcome page's text-note samples: its Hop loop saves a real GIF.
+  const stage = page.getByRole('img', { name: /^Bun on the bench, / });
+  await stage.scrollIntoViewIfNeeded(); await expect(stage).toBeVisible();
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await page.reload();
-  await expect(orbit).toHaveText('⏸ Orbit');
+  await page.reload(); await stage.scrollIntoViewIfNeeded();
   expect(startupErrors).toEqual([]);
   page.off('pageerror', recordStartupError);
   page.off('console', recordConsoleError);
-  await expect(page.getByText(/take a Godot kit into your game/)).toBeVisible();
-  await expect(page.getByText('GODOT KIT & UNITY SHADERS', { exact: true })).toBeVisible();
-  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /a Godot kit or Unity shader code/);
-  await expect(page.getByText(/Share a PNG, GIF or full-RGBA APNG/)).toHaveCount(1);
-  await expect(page.getByText('ZERO PIXEL LOSS', { exact: true })).toHaveCount(0);
-  await expect(page.getByText('Offline after your first online load', { exact: true })).toBeVisible();
-  await page.getByRole('tab', { name: /Image Synthesis/ }).click();
-  await expect(page.getByRole('button', { name: /Preserve edges/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Nearest neighbor', exact: true })).toBeVisible();
-  await expect(page.getByText('Small lines can still shrink or disappear.', { exact: false })).toBeVisible();
-  await expect(page.getByText(/Sobel/)).toHaveCount(0);
-  await page.getByRole('tab', { name: /Game Engine Exports/ }).click();
-  await expect(page.getByRole('heading', { name: 'A little peek at your export options' })).toBeVisible();
-  for (const format of ['APNG', 'GIF']) {
-    await page.getByRole('button', { name: format, exact: true }).click();
-    await expect(page.getByRole('button', { name: format, exact: true })).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.getByText('Text notes only. Create your own animation in Studio.')).toBeVisible();
-    if (capture) {
-      await page.getByRole('tabpanel', { name: /Game Engine Exports/ }).evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
-      await capture(`welcome-${format.toLowerCase()}-notes.png`);
-    }
-    const next = page.waitForEvent('download'); await page.getByRole('button', { name: 'Download notes (.txt)', exact: true }).click();
-    const d = await next; expect(d.suggestedFilename()).toMatch(/\.txt$/); const path = info.outputPath(`${format}.txt`); await d.saveAs(path);
-    expect(await readFile(path, 'utf8')).toContain(`PixiBun ${format} export notes — text sample, not an animation`);
-  }
+  const tools = page.getByRole('radiogroup', { name: 'Tool' });
+  await expect(tools.getByRole('radio', { name: /^Draw/ })).toHaveAttribute('aria-checked', 'true');
+  // The bench is server-rendered: a click before hydration is lost, so repeat it until it takes.
+  await expect(async () => {
+    await tools.getByRole('radio', { name: /^Hop/ }).click();
+    await expect(tools.getByRole('radio', { name: /^Hop/ })).toHaveAttribute('aria-checked', 'true', { timeout: 1000 });
+  }).toPass({ timeout: 15_000 });
+  await expect(stage).toHaveAccessibleName(/Hop tool/);
+  if (capture) await capture('welcome-bench-hop.png');
+  const next = page.waitForEvent('download'); await page.getByRole('button', { name: 'Save GIF', exact: true }).click();
+  const d = await next; expect(d.suggestedFilename()).toMatch(/^pixibun-[a-z0-9-]+-hop\.gif$/);
+  const path = info.outputPath('bench-hop.gif'); await d.saveAs(path);
+  const bytes = await readFile(path);
+  expect(bytes.subarray(0, 6).toString('latin1')).toBe('GIF89a');
+  expect(bytes[bytes.length - 1]).toBe(0x3b);
+  // Every frame carries a graphic control extension; the loop has several, and they clear to transparency.
+  const controls: number[] = [];
+  for (let i = bytes.indexOf(Buffer.from([0x21, 0xf9, 0x04])); i >= 0; i = bytes.indexOf(Buffer.from([0x21, 0xf9, 0x04]), i + 1)) controls.push(i);
+  expect(controls.length).toBeGreaterThan(1);
+  expect(controls.every(at => (bytes[at + 3] & 1) === 1)).toBe(true);
+  const size = await page.evaluate(async base64 => {
+    const image = new Image(); image.src = `data:image/gif;base64,${base64}`; await image.decode();
+    return [image.naturalWidth, image.naturalHeight];
+  }, bytes.toString('base64'));
+  expect(size[0]).toBeGreaterThan(0); expect(size[1]).toBeGreaterThan(0);
 }
 export async function verifySvgApproximation(page: Page, info: TestInfo, capture?: Capture) {
   await importGameDeliveryFixture(page, false, { outlined: true }); await page.getByTestId('export-button').click(); await page.getByTestId('export-tab-svg').click();

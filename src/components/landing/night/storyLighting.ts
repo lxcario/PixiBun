@@ -15,7 +15,7 @@ export const SHADOW_OFFSET = { x: 8, y: 6, size: STAGE };
 const ELEVATION = 40;
 
 type Engines = {
-  renderBoundedSpriteCastShadow: typeof import('@/lib/ai/shadowRayMarcher').renderBoundedSpriteCastShadow;
+  renderBoundedSpriteCastShadow: typeof import('@/lib/graphics/shadowRayMarcher').renderBoundedSpriteCastShadow;
 };
 
 let ghost: HTMLCanvasElement | null = null;
@@ -42,8 +42,8 @@ export function warmStoryLighting(pixels: { x: number; y: number; c: string }[])
     for (const p of pixels) { g.fillStyle = p.c; g.fillRect(p.x, p.y, 1, 1); }
 
     const [{ renderBoundedSpriteCastShadow }, { computeSeparableEDT }] = await Promise.all([
-      import('@/lib/ai/shadowRayMarcher'),
-      import('@/lib/ai/smartMathEngine'),
+      import('@/lib/graphics/shadowRayMarcher'),
+      import('@/lib/graphics/smartMathEngine'),
     ]);
     const stage = document.createElement('canvas');
     stage.width = STAGE; stage.height = STAGE;

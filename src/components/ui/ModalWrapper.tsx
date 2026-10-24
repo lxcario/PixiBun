@@ -4,6 +4,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useIsPresent } from 'motion/react';
 import { surfaceVariants, revealVariants, useUnfolding } from '@/components/ui/surfaces/SpringSurface';
 import { useMorphHeight } from '@/components/ui/surfaces/useMorphHeight';
+import { registerModalHost, unregisterModalHost } from '@/components/ui/surfaces/modalHost';
 import { useReducedMotion } from '@/lib/motion/useReducedMotion';
 import { EXIT, FADE_IN, REDUCED_FADE } from '@/lib/motion/springs';
 
@@ -90,6 +91,7 @@ function ModalDialog({
         dialog.setAttribute('open', '');
       }
     }
+    registerModalHost(dialog);
     // Auto-focus priority: [data-autofocus] -> first interactive in modal body -> modal title (WCAG 2.4.3)
     const explicitFocus = dialog.querySelector<HTMLElement>('[data-autofocus]');
     if (explicitFocus) {
@@ -115,6 +117,7 @@ function ModalDialog({
   // Unmount (after the exit, or at once when nothing animates it out).
   useLayoutEffect(() => () => {
     const dialog = dialogRef.current;
+    if (dialog) unregisterModalHost(dialog);
     if (dialog?.open) {
       leavingRef.current = true;
       try { dialog.close(); } catch { dialog.removeAttribute('open'); }
@@ -126,6 +129,7 @@ function ModalDialog({
   useLayoutEffect(() => {
     const dialog = dialogRef.current;
     if (isPresent || !dialog) return;
+    unregisterModalHost(dialog);
     leavingRef.current = true;
     if (dialog.open) {
       try { dialog.close(); } catch { dialog.removeAttribute('open'); }

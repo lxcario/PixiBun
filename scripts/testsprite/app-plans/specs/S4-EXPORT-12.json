@@ -1,0 +1,83 @@
+{
+  "id": "dcf76735-5c13-437a-8f98-45fb2ff95a19",
+  "key": "S4-EXPORT-12",
+  "title": "S4-EXPORT-12 — Unsafe scale is refused kindly.",
+  "goal": "On a 512x512 canvas, PNG scales that would exceed the safety limit (16x = 8192, 32x = 16384 pixels wide) are refused before anything is allocated while 8x stays available; the page stays usable and cancelling export leaves the drawing unchanged.",
+  "cliOnly": [
+    "confirming that no file is downloaded"
+  ],
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "click": "/^File/",
+      "nth": 0
+    },
+    {
+      "click": "/^Canvas size/",
+      "role": "menuitem"
+    },
+    {
+      "fill": "Width (px)",
+      "value": "512"
+    },
+    {
+      "field": "Height (px)",
+      "equals": "512",
+      "why": "Lock Aspect Ratio keeps the canvas square."
+    },
+    {
+      "click": "Apply Resize"
+    },
+    {
+      "readout": {
+        "size": "512×512"
+      }
+    },
+    {
+      "record": "R"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "PNG"
+    },
+    {
+      "disabled": "32x",
+      "why": "16384x16384 is refused before allocation."
+    },
+    {
+      "disabled": "16x",
+      "why": "8192x8192 is refused too."
+    },
+    {
+      "enabled": "8x",
+      "why": "4096x4096 stays available."
+    },
+    {
+      "text": "Canvas Safety Limit",
+      "why": "The refusal is explained."
+    },
+    {
+      "click": "Cancel",
+      "nth": -1
+    },
+    {
+      "readout": {
+        "size": "512×512",
+        "digest": "=R"
+      },
+      "why": "Cancelling export left the resized drawing unchanged."
+    }
+  ],
+  "cliOnlyOutOfScope": true
+}

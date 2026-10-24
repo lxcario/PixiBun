@@ -1,0 +1,53 @@
+{
+  "id": "a0974817-fb8c-45ff-94cd-4223f9071a01",
+  "key": "S4-EXPORT-13",
+  "title": "S4-EXPORT-13 — A lighthouse for a pocket-sized drawing.",
+  "goal": "Light Sweep is its own export: it describes a 540 x 960 phone video at 12 frames a second and offers Save video, and the drawing stays exact.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Light Sweep",
+      "within": "Export Studio Assets"
+    },
+    {
+      "text": "540 × 960, 12 frames a second."
+    },
+    {
+      "text": "MP4 where your browser can make it, otherwise WebM."
+    },
+    {
+      "why": "The export is offered (enabled where this browser can encode it); this plan does not start the file.",
+      "visible": "Save video"
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      }
+    }
+  ],
+  "cliOnly": [
+    "decoding the delivered clip: the lamp position changes over time and animated drawings keep playing (tests/production/lightSweep.spec.ts)"
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

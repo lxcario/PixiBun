@@ -22,7 +22,8 @@ import { ENTER_BLUR, FADE_IN, MORPH_H, REDUCED_FADE, UNBLUR, spring } from '@/li
 import { readReducedMotion, useReducedMotion } from '@/lib/motion/useReducedMotion';
 import { studioEvents } from '@/lib/events/studioEvents';
 
-const cardActionClass = 'absolute bottom-1 w-5 h-5 flex items-center justify-center rounded-[3px] border border-[var(--desk-border)] bg-[var(--desk-surface)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)] opacity-0 group-hover/frame:opacity-100 group-focus-within/frame:opacity-100 focus-visible:opacity-100 transition-opacity cursor-pointer';
+// 24px: the WCAG 2.2 minimum target size; both fit side by side on a 76px card.
+const cardActionClass = 'absolute bottom-1 w-6 h-6 flex items-center justify-center rounded-[3px] border border-[var(--desk-border)] bg-[var(--desk-surface)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)] opacity-0 group-hover/frame:opacity-100 group-focus-within/frame:opacity-100 focus-visible:opacity-100 transition-opacity cursor-pointer';
 
 /** Total running time as animators read it: 0.6 s, 1.25 s, 12.5 s. */
 function formatSeconds(ms: number): string {
@@ -909,20 +910,23 @@ export const BottomTimeline = React.memo(function BottomTimeline({ isPlaygroundM
             );
           })}
 
-          {/* The reel ends in a slot for the next frame, so adding one is where the eye already is */}
+          {/* The reel ends in a slot for the next frame, so adding one is where the eye already is.
+              It is a list item like the frames, so the Frames list holds only list items. */}
           {!isPlaygroundMode && (
-            <button
-              type="button"
-              disabled={isGuest}
-              onClick={addFrame}
-              // The visible word leads the name, so voice control users can say what they see.
-              aria-label={`${frames.length === 1 ? 'Animate' : 'New frame'}: add a blank frame at the end`}
-              title={isGuest ? guestFrameLockTitle : 'Add a blank frame at the end'}
-              className="w-[76px] h-16 shrink-0 rounded-[2px] border-2 border-dashed border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--accent-gold)] hover:border-[var(--accent-gold)] flex flex-col items-center justify-center gap-1 text-[10px] font-medium cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <PixelIcon name="plus" size={12} />
-              <span>{frames.length === 1 ? 'Animate' : 'New frame'}</span>
-            </button>
+            <div role="listitem" className="shrink-0">
+              <button
+                type="button"
+                disabled={isGuest}
+                onClick={addFrame}
+                // The visible word leads the name, so voice control users can say what they see.
+                aria-label={`${frames.length === 1 ? 'Animate' : 'New frame'}: add a blank frame at the end`}
+                title={isGuest ? guestFrameLockTitle : 'Add a blank frame at the end'}
+                className="w-[76px] h-16 shrink-0 rounded-[2px] border-2 border-dashed border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--accent-gold)] hover:border-[var(--accent-gold)] flex flex-col items-center justify-center gap-1 text-[10px] font-medium cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <PixelIcon name="plus" size={12} />
+                <span>{frames.length === 1 ? 'Animate' : 'New frame'}</span>
+              </button>
+            </div>
           )}
         </div>
         {!isPlaygroundMode && (

@@ -4,14 +4,13 @@ import { studioEvents } from '@/lib/events/studioEvents';
 import {
   generateSelOutData,
   generateOuterStrokeData,
-  generateGroundShadowData,
-} from '@/lib/ai/pixelAiEngine';
+} from '@/lib/graphics/pixelRasterEngine';
 import {
   renderParametric2p5DLighting,
   computeSeparableEDT,
   renderBoundedSpriteCastShadow,
-} from '@/lib/ai/smartMathEngine';
-import { inferRaymarchedShadowSettings } from '@/lib/ai/math/shadowAuto';
+} from '@/lib/graphics/smartMathEngine';
+import { inferRaymarchedShadowSettings } from '@/lib/graphics/math/shadowAuto';
 import type { ViewportEventContext } from './types';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 import { planLayerRotation } from '@/lib/canvas/rotSpriteLayer';
@@ -118,24 +117,6 @@ export function useGeometricEvents({
         version: 1,
         sourceMode: 'composite-excluding-self',
         params: { color: strokeColor, thickness },
-      });
-    };
-
-    const handleGroundShadowEvent = () => {
-      const srcCtx = compositeSourceSnapshot('ground-shadow');
-      if (!srcCtx) return;
-
-      const { shadowPixels } = generateGroundShadowData(srcCtx, canvasWidth, canvasHeight);
-      updateTaggedLayer('Ground Shadow', 'ground-shadow', (outCtx) => {
-        shadowPixels.forEach((p) => {
-          outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
-          outCtx.fillRect(p.x, p.y, 1, 1);
-        });
-      }, {
-        kind: 'ground-shadow',
-        version: 1,
-        sourceMode: 'composite-excluding-self',
-        params: {},
       });
     };
 
@@ -358,7 +339,6 @@ export function useGeometricEvents({
       studioEvents.on('pixibun:auto-outline', (detail) =>
         handleAutoOutlineEvent({ detail } as CustomEvent)
       ),
-      studioEvents.on('pixibun:ground-shadow', handleGroundShadowEvent),
       studioEvents.on('pixibun:render-cast-shadow', (detail) =>
         handleRenderCastShadowEvent({ detail } as CustomEvent)
       ),

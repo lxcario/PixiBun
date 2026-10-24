@@ -1,0 +1,105 @@
+{
+  "id": "3de75df2-12d6-451d-99e8-23af772c3063",
+  "key": "S4-PAL-04",
+  "title": "S4-PAL-04 — Cycle tracks keep their range.",
+  "goal": "A palette cycle track built from Bun's scanned colors takes an inclusive range (colors 2 to 5), accepts whole and fractional rates (6, 5.5, 5.6 Hz) without marking them invalid, plays and pauses without changing the artwork, and can be deleted while the artwork stays exactly as it was.",
+  "cliOnly": [
+    "RGBA of every playback phase against the declared palette permutation",
+    "Undo/Redo of individual rate edits"
+  ],
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Palette",
+      "nth": 0
+    },
+    {
+      "click": "Scan Canvas"
+    },
+    {
+      "click": "Cycle Engine"
+    },
+    {
+      "click": "/^Add Color Range Track/"
+    },
+    {
+      "click": "/^Cycle 1/",
+      "nth": 0
+    },
+    {
+      "click": "Last color 5: #FAF6FC"
+    },
+    {
+      "click": "First color 2: #D9CDE8"
+    },
+    {
+      "pressed": "First color 2: #D9CDE8"
+    },
+    {
+      "pressed": "Last color 5: #FAF6FC",
+      "why": "Both endpoints are part of the range."
+    },
+    {
+      "fill": "Rate (Hz)",
+      "value": "6"
+    },
+    {
+      "field": "Rate (Hz)",
+      "equals": "6"
+    },
+    {
+      "fill": "Rate (Hz)",
+      "value": "5.5"
+    },
+    {
+      "field": "Rate (Hz)",
+      "equals": "5.5",
+      "why": "A fractional rate is accepted, not refused."
+    },
+    {
+      "fill": "Rate (Hz)",
+      "value": "5.6"
+    },
+    {
+      "field": "Rate (Hz)",
+      "equals": "5.6"
+    },
+    {
+      "click": "Play Cycle"
+    },
+    {
+      "click": "/^Pause Cycle/"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      },
+      "why": "Previewing the cycle and pausing leaves the stored artwork unchanged."
+    },
+    {
+      "click": "Delete track"
+    },
+    {
+      "text": "No cycle tracks configured",
+      "why": "The track is gone."
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Deleting the track does not delete artwork."
+    }
+  ]
+}

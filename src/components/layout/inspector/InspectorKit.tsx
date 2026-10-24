@@ -58,7 +58,7 @@ export function ToggleRow({
 }) {
   const hintId = useId();
   return (
-    <label className={clsx('insp-toggle flex items-start gap-2.5 py-1.5 select-none', disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer')}>
+    <label className={clsx('insp-toggle relative flex items-start gap-2.5 py-1.5 select-none', disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer')}>
       <span className="flex-1 min-w-0">
         <span className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-heading)]">
           {label}
@@ -66,9 +66,11 @@ export function ToggleRow({
         </span>
         {hint && <span id={hintId} className="block mt-0.5 text-[11px] leading-4 text-[var(--text-muted)]">{hint}</span>}
       </span>
+      {/* The real checkbox lies, invisible, exactly over the drawn switch, so a
+          pointer or an automated click on the control lands on the switch. */}
       <input
         type="checkbox"
-        className="sr-only peer"
+        className="peer absolute right-0 top-2 z-10 m-0 h-[18px] w-[30px] opacity-0 cursor-pointer disabled:cursor-not-allowed"
         checked={checked}
         disabled={disabled}
         aria-describedby={hint ? hintId : undefined}
@@ -90,6 +92,7 @@ export function RangeRow({
   unit = '',
   ariaLabel,
   format,
+  hint,
 }: {
   label: string;
   value: number;
@@ -100,15 +103,20 @@ export function RangeRow({
   unit?: string;
   ariaLabel?: string;
   format?: (value: number) => string;
+  /** One line under the label, also read as the slider's description. */
+  hint?: string;
 }) {
+  const hintId = useId();
   return (
     <div className="py-1">
       <div className="flex justify-between items-center gap-2">
         <span className="text-xs font-medium text-[var(--text-body)]">{label}</span>
         <output className="insp-readout">{format ? format(value) : value}{unit}</output>
       </div>
+      {hint && <span id={hintId} className="block mb-0.5 text-[11px] leading-4 text-[var(--text-muted)]">{hint}</span>}
       <input
         aria-label={ariaLabel ?? `Tool panel ${label.toLowerCase()}`}
+        aria-describedby={hint ? hintId : undefined}
         type="range"
         min={min}
         max={max}

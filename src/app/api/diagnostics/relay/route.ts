@@ -6,12 +6,13 @@ import { APP_VERSION } from '@/config/version';
  * Diagnostics Relay Endpoint Threat Model & Security Boundaries:
  *
  * 1. Origin Validation & Cross-Site Request Forgery (CSRF):
- *    - Diagnostic events are transmitted via POST. The handler validates the incoming `Origin`
- *      header against the request URL's exact scheme, host, and port. Requests from untrusted
- *      foreign origins are rejected with HTTP 403 to prevent cross-site quota exhaustion.
+ *    - Diagnostic events are transmitted via POST. The handler requires an `Origin` header that
+ *      matches the request URL's exact scheme, host, and port, and a JSON content type. Requests
+ *      without Origin or from foreign origins are rejected with HTTP 403 to prevent quota
+ *      exhaustion; other content types with 415.
  *
  * 2. Trusted Reverse Proxy Assumptions & Client IP Identity:
- *    - Client identity is determined by `clientKey()` inspecting `X-Forwarded-For` and `X-Real-IP`.
+ *    - Client identity is determined by `clientKey()`: `X-Real-IP`, else the last `X-Forwarded-For` entry.
  *    - In production deployments (e.g. Vercel, Cloudflare, AWS ALB), an operator-trusted edge
  *      reverse proxy must sanitize or prepend the client IP. In raw, direct Internet-facing Node.js
  *      deployments without an edge proxy, an adversary could spoof `X-Forwarded-For` headers to
@@ -42,17 +43,22 @@ const MAX_EVENTS = 100;
 // Token-bucket rate limiting, keyed by client IP.
 const relayLimiter = createTokenBucketStore({ capacity: 12, refillPerMinute: 12 });
 
+// The edge sets X-Real-IP (Vercel, nginx). Proxies append to X-Forwarded-For,
+// so its last entry is the one a single trusted proxy added; the first entry is
+// whatever the client sent and can be spoofed to dodge the limit.
 function clientKey(request: Request): string {
+  const realIp = request.headers.get('x-real-ip')?.trim();
+  if (realIp) return realIp;
   const forwarded = request.headers.get('x-forwarded-for');
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
-  }
-  return request.headers.get('x-real-ip') ?? 'unknown';
+  const last = forwarded?.split(',').map(part => part.trim()).filter(Boolean).pop();
+  return last ?? 'unknown';
 }
 
+// Browsers send Origin with every POST, including same-origin fetch. A request
+// without one is not from PixiBun's page and may not spend the upstream quota.
 function isValidOrigin(request: Request): boolean {
   const origin = request.headers.get('origin');
-  if (!origin) return true; // Same-origin or non-browser client without Origin header
+  if (!origin) return false;
   try {
     const originUrl = new URL(origin);
     return origin === originUrl.origin && originUrl.origin === new URL(request.url).origin;
@@ -82,6 +88,10 @@ export async function POST(request: Request) {
       { error: 'Forbidden cross-origin diagnostics request.' },
       { status: 403 }
     );
+  }
+
+  if (!/^application\/json\s*(;|$)/i.test(request.headers.get('content-type') ?? '')) {
+    return NextResponse.json({ error: 'Diagnostic reports must be sent as JSON.' }, { status: 415 });
   }
 
   if (!relayLimiter.take(clientKey(request))) {

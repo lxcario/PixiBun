@@ -3,6 +3,53 @@
 All notable changes and architectural enhancements to the PixiBun codebase are documented below.
 ## Unreleased
 
+- Steadier palettes and CI, and early tester feedback on the record (23 October).
+  - **Create palette always reopens.** Clicking **Create palette** again within about 50 ms of saving a palette could leave the button dead until the panel remounted: the closing dialog was revived, then removed while the panel still thought it was open. Each opening of the Create palette and palette library dialogs is now a fresh dialog (`PalettePanel.tsx`, `c6e42784`). Found by the TestSprite plan emulator (S4-PAL-01 failed 1 run in 6); reproduced 3 times in 6 fast reopens before the fix, 0 in 10 after. `tests/production/paletteDialogReopen.spec.ts` fails on the previous build and passes in all three engines on the fixed one; a development build does not reproduce the race.
+  - **The two-build rollback check no longer hangs.** After WebKit refuses the legacy-Blob fixture, its read-back once waited until the 2-minute timeout (CI run 39927559408). The fixture now closes its database connection, the read-back reports which step failed and retries a stall on a fresh connection; its comparisons are unchanged (`tests/release/updateRollback.spec.ts`).
+  - **Browser installs in CI are bounded.** A stalled Playwright download held the native-codecs job until its 35-minute limit. Every install step now gives each attempt 4 minutes, up to three times.
+  - **Early tester feedback.** Six testers' survey answers (29 September–13 October) and what changed because of them are now in [early tester feedback](docs/research/2026-10-user-feedback.md). It is a survey, not an observed study.
+
+- Homepage: sunrise, speed and a Mona Bunny (23 October).
+  - **Day/Night is a sunrise or a sunset.** Instead of a circle widening out of the switch, the hero's own moon sinks behind the hills as the sun rises from behind them (or the reverse), and the painting, the hero's text, buttons and vignettes blend to the new colors together on one smoothstep curve while the rest of the page crossfades. Nothing is laid over the page (`src/lib/theme/themeTransition.ts`, `src/app/theme-transition.css`, `MoonlitScene` `timeChange`).
+  - **Smoother scrolling.** The homepage no longer replaces wheel scrolling with a main-thread glide (`scrollTo` every frame), which stuttered whenever a scene painted; scrolling is native again and in-page links still glide (`SmoothScroll.tsx`).
+  - **Lighter frames.** The hero paints straight in the theme's colors (`sceneColor`) instead of reading back and recoloring every frame, its sky is a stamped canvas, and its sun and moon are cached sprites. The time change went from 60–80 ms of script per frame to about 3 ms in a development build, and the pause before a switch fell from about 130–180 ms to 60–90 ms there. The other landing scenes' per-frame recolor reads packed pixels and reuses the last color. The tour's text lines no longer blur with scroll.
+  - **The sun is golden** with pixel rays, and Bun's easel holds the Mona Lisa with Bun's face, in colors every theme leaves as painted.
+  - **Made with love.** The hero tag, its sentence and the page description say "Made with love" instead of "Hand-made, never generated", and the pledge page's headline reads "Made with love." in place of "Every pixel placed by a person." The pledge itself is unchanged.
+
+- Homepage by Day, and Sakura's colors (23 October). The hero used to make Day by inverting its night painting, which washed out the town and Bun and left a muddy band behind the hills. It now paints its own daylight landscape (lightest at the horizon, hazy far hills, light cottages under rose roofs, white clouds and a soft sun; no stars or fireflies) and the theme recolor keeps those values (`src/components/landing/night/moonlitScene.ts`, `src/lib/theme/sceneRecolor.ts`). Sakura's Day second accent is honey `#8a5a0c` instead of royal blue, matching its Night. Accent colors used as text are deepened by Day where they are fills (Sakura's button pink), and the tour stage's colored glow stays faint in daylight.
+
+- Fixes found through TestSprite's App runs on PR #6, 22–23 October ([evidence page](docs/testsprite/README.md), [record](docs/releases/2026-10-22-app-plan-reliability.md)):
+  - A lifted selection is never lost: flipping with H or V and then pressing Escape, deselecting, or committing and pressing Undo used to delete the pixels or return to the cut-out hole (`c534cc99`, `tests/e2e/selectionTransformUndo.spec.ts`).
+  - An error toast raised while a dialog is open now appears inside that dialog, where screen readers can hear it (`e43248c0`).
+  - Canvas-size fields accept a number typed digit by digit; typing 24 used to give 44 because each keystroke was clamped (`4d838ca9`).
+  - The Dither Brush keeps its pattern at every size; above 1 px it tested only each stamp's centre and painted solid squares (`88ba8cde`).
+  - A starter, replay or postcard you just saved goes straight into Playground practice instead of asking you to finish saving (`53eb033b`).
+  - A replay link ignores invisible formatting characters and surrounding spaces picked up when it is copied from a chat (`04acc9bb`).
+  - The Teaching Board reports a load only when it succeeds; palette roles say "1 saved index binding" (`1e68955a`).
+  - Accessible names: the transform buttons, the canvas-size Width and Height fields, the inline project name, each palette cycle track's switch, and **Apply Cleanup** and **Live preview**, whose names now contain their visible labels (WCAG 2.5.3) (`ff320663`, `9add4e04`, `c105ac05`, `0a39d617`, `1c494612`).
+  - The canvas readout's sentence names the layer count ("layer Base Layer of 1 layer") (`1071bcb6`); GIF and APNG Output Info say "1 frame" (`5c91e4cf`).
+- TestSprite verification (22 October). A **Stored Python Replay** workflow asks the TestSprite CLI to replay two deep scripts on every push to PR #6, waiting for a free run slot while the App batch runs (`.github/workflows/testsprite-replay.yml`, `4881c53a`, `aa052331`). App plans are generated from specs and checked in a Playwright emulator, with Studio Labs on and off, before they are published (`scripts/testsprite/app-plans/`).
+
+- Export and integrity fixes, 18–20 October. Palette cycle rates accept valid fractions such as 5.5 Hz and the 6 Hz default (`f2f13f3c`). MP4 export encodes explicit BT.709 colour planes, so a browser can no longer convert with one matrix and label another (`4510bba6`), and uses the parameter sets in the keyframe when an encoder's description repeats them (`a5caa2cb`). WebKit on Linux is not offered MP4, whose support check froze the page there (`15de2da6`). GIF encoding validates every frame's size and bytes before writing; duplicating a project cannot run twice at once and says when it fails; palette cycles no longer skip a step from floating-point phase error (`d462cb45`, integrated in `98d7625e`). The Liquid tool rail commits the tool under the pointer, even while its lens is still gliding (`5be4b61c`).
+
+- Cleanup and the homepage Day/Night switch ([record](docs/releases/2026-10-18-cleanup-and-day-switch.md)). Pressing Day no longer flies a large sun into the page or spins a glowing ring over a dimmed page: the new sky spreads from the switch with a few sparkles, and the knob's moon fades into the sun as it slides. The switch no longer blocks the page for over 100 ms. Unused files, components, the retired volumetric-optics engine and fourteen unused exports are removed. The README opens with the welcome, and the handbook's theme and export counts are corrected.
+
+- Audit follow-ups ([record](docs/releases/2026-10-18-audit-triage.md#follow-ups-resolved-and-the-feature-proposals--18-october)). A moved or pasted selection drops back onto the layer it came from, even after choosing another layer. Each tolerance slider under **Tools** says what it compares. The unused older ground-shadow event and engine are removed (**Add Floor Shadow** uses the ray-marched cast shadow), and that button's tool preview now runs the real shadow. Local audit and agent-coordination folders are ignored by Git. The audit's twelve feature proposals are checked against the code in the record.
+
+- Smooth Dithering keeps a ramp's tones: its 16 error weights summed to about 5.6, so a black-to-white ramp came out solid black; they are normalised (`src/lib/graphics/math/dithering.ts`). A documentation sweep corrected stale playback, tool-preview, frame-card, light bar, shelf and Smooth Jaggies descriptions and five renamed UI labels ([record](docs/releases/2026-10-18-open-issues.md#documentation-sweep)).
+
+- Documented open issues ([record](docs/releases/2026-10-18-open-issues.md)). Playback advances at most one pose per animation frame, so a stall no longer consumes poses unseen (M3); holds shorter than a display frame now play one pose per frame. MP4 export, its support probe and trial encode use the software H.264 encoder: a hardware encoder darkened red from 255 to 233 on one machine. Preview deployments give the Vercel token only to the pull and deploy steps and build pull-request code in an isolated container. The graphics folder formerly named for AI is now `src/lib/graphics`, with `pixelRasterEngine`, `PixiToolsPanel` and `RasterActionsSection` replacing the remaining "AI" and PixiBud names. Coverage thresholds rise to 61 / 56 / 56 / 62 %. The theme gallery is retaken with all twelve themes.
+
+- Tool previews ([record](docs/releases/2026-10-18-tool-previews.md)). The hover card for drawing tools and PixiTools actions now plays clips that run the studio's own code on Bun: the rasterizers, flood fill, RotSprite, 2.5D lighting, Sel-Out, cleanup, grades, dithers and in-between morph, instead of hand-drawn stand-ins. The stage is a 224×168 copy of the canvas with the studio checker, wooden frame, brush ghost and crosshair, a caption and `x·y` readout, and a before/action/result rule; hovering the stage scrubs the clip. The card is 246 px wide instead of 304, blooms through `SpringSurface`, glides between tools on the `MORPH_W` spring and keeps its measured height on screen. `src/components/ui/toolPreview/` replaces `src/components/ui/ToolPreviewCanvas.tsx`.
+
+- Audit triage ([record](docs/releases/2026-10-18-audit-triage.md)). A hidden or locked layer now refuses strokes, fills, shapes, curves and a selection's Cut, Delete, move and paste with a message, before anything changes; Delete and Ctrl+X used to clear a locked layer's selected pixels. The Ellipse fills the dragged box at any size (an 8×8 drag draws an 8×8 circle around a 2×2 centre, a 2-pixel-wide box an ellipse instead of a diagonal), and its fill matches its outline. Four golden replay digests change with it. Rectangle outlines list each pixel once, so a 1-pixel-high bar no longer stamps twice. Quadratic Bézier curves no longer skip a pixel where they move fast.
+
+- Final integration ([record](docs/releases/2026-10-17-final-integration.md)). Curve's Re-edit works again: a committed stroke publishes its store update at once instead of on the next frame. The tool shelf models 40 px buttons and adds a last Compact stage (36 px) so every tool shows at 1366 × 657. MP4 is offered only where a one-frame trial encode succeeds (Firefox reported H.264 support and then failed every encode). The light bar's Shade, Glint and Material segments use one lens placed inside the segment, so opening More no longer leaves the highlight trailing, and with the Liquid controls lab on they take the tool rail's hold-and-slide glass gesture. The homepage wave divider no longer fails hydration under reduced motion. The Frames list's New frame slot is a list item, frame-card actions are 24 px, Cocoa Day's accent passes AA, Vercel Analytics renders only on Vercel, and the making-of receipt counts a slow stroke once instead of picturing it half drawn. Every workflow action is pinned to a commit SHA, enforced by `tests/workflowPinning.test.ts`.
+
+- P1 hardening ([record](docs/releases/2026-10-17-p1-hardening.md)). The service worker answers a page load from its cached copy after 4 s on a connection that is up but not answering, never caches Next.js flight data, removes older builds' caches once one window remains, and trims its cache with one lookup set. Open pages check for a new build hourly and on return after 10 minutes away. WebKit no longer shows the update banner on a first visit (it reported a first install as an update). The diagnostics relay requires a same-origin `Origin` header and a JSON body before spending quota, and keys its limit on the edge address. Pages add `form-action 'self'`, `Cross-Origin-Opener-Policy` and `Cross-Origin-Resource-Policy`. Stored recent colors are validated. Inspector toggles place their real checkbox over the drawn switch, so automated clicks (Playwright, TestSprite) reach it.
+
+- P0 hardening ([record](docs/releases/2026-10-16-p0-hardening.md)). WebM and MP4 recording now paints the first frame before the recorder starts and repaints the held frame at the stream rate. A single held frame previously never reached the recorder, so a short animation could download as a 110-byte WebM with no frames. Frame holds are timed from the recorder's `start` event, encoder warm-up has its own 20 s bound, and a header-only WebM or MP4 is refused instead of downloaded (`src/lib/export/videoRecorder.ts`). The top bar's Mirror, Zoom, Fit and View controls are 24 px tall instead of 22 px, meeting the WCAG 2.2 minimum target size. Node is pinned to 22.23.3 in `.nvmrc`, and `npm run gate` stops at once on another major version. CI now runs with read-only permissions, cancels superseded pull-request runs (never `main`), has a timeout on every job and pins each action to a commit SHA; Dependabot proposes weekly action and npm updates. Stale browser expectations were brought up to date: `backupTrust` (File menu, header controls, tool labels, measuring Studio options at rest) and the `workspaceConsistency` navigator case.
+
 - Studio polish: ten original cozy palettes (Sakura Night, Cocoa Cabin, Rainy Café, Harvest Moon, Harbor Light, Matcha Latte, Strawberry Milk, Lavender Tea, Peach Sunset, Mossy Woods; `src/config/cozyPalettes.ts`) ship with new projects, and the Palette library offers them to existing projects. Sakura Night and Harbor Light carry a color-cycle track. Long palette names stay on one line in the Paint pot palette instead of wrapping under the color count. The workspace picker (Drawing) ends in the same small ▼ as the Studio button. Tool rail buttons are 40 px with 32 px icons (2× the 16 px pixel grid, so they stay sharp). Surfaces still unfold, but the clip now sits outside every edge except the moving one, so a panel's shadow appears with it instead of popping in when the animation ends. Cocoa, Drizzle, Harvest and Harbor each have their own panel colors by Night and Day, and Arcade's Night panels are near-black.
 
 - Themes: four new cozy scene styles, filling the Studio picker to an even twelve. **Cocoa** has snowed-in cabins with smoking chimneys, snowy pines, falling snow and the northern lights by night. **Drizzle** has a rainy street with café windows, water towers and flickering neon. **Harvest** has a harvest moon over haystacks, a barn, a scarecrow and glowing pumpkins, with drifting leaves and fireflies. **Harbor** has a striped lighthouse sweeping its beam over a moonlit bay, boats bobbing at anchor and a shore town with a pier. Each has a Day version and palettes that pass the WCAG checks in `tests/themeRegistry.test.ts`. Sakura Night is now a Japanese *yozakura* scene: a full moon behind a blossom branch, Mt. Fuji with woodblock-print mist bands, a vermilion torii between stone lanterns, a five-storey pagoda, lit cherry trees, a row of red-and-white chōchin, and a vermilion-lacquer canvas frame. Moonlit no longer has a string of colored lights across the top. `src/lib/theme/scenes.ts`, `src/lib/theme/themes.json`.
@@ -18,6 +65,12 @@ All notable changes and architectural enhancements to the PixiBun codebase are d
 - Colors flyout: Primary/Secondary chips that say which click paints with each, an editable hex field, eyedropper, hue-shifted shade strip, an 8-column palette grid with primary/secondary marks and arrow-key navigation, and recent colors; Shift+click or right-click sets the other color, and touch screens keep 44 px targets. Recent colors record only where a picker drag settles. Tool buttons use one hand-pixeled 16×16 icon family. Painting commits one store update per frame, the viewport and studio layout skip re-renders that raster edits don't need, preview thumbnails redraw at most every 120–150 ms during a stroke, and touchpad/pinch zoom accumulates wheel deltas.
 
 - Studio surfaces: every modal, popover, menu, dropdown, collapsible section and notice now opens with the Dynamic island's spring. Every dialog opens and closes with the same motion: it blooms from its centre (scale 0.95 and 12 px blur, on the island's 600/26/0.9 spring) and melts away when closed, including dialogs their parent unmounts. Menus and popovers grow out of their trigger. After opening, dialogs and popovers spring their height when their content changes, with scroll bars hidden until it settles, and their content arrives in a short stagger. The timeline's Collapse/Expand springs between the full strip and a compact bar (460/25), and its scene-theme compact bar is now tall enough for its controls. **View** is regrouped into roomy tiles, with Composition guide, Color vision and Pattern brush as dropdowns. **Studio** gets mini-scene style cards, a sliding Night/Day switch and switch rows. **Start a New Drawing?** offers size tiles with grid previews, arrow-key selection and a softer note. Export formats are pill toggles that report their pressed state. Toasts are springing capsules. Selects stay native; in browsers with customizable select, their list is drawn as a studio panel instead of the OS list. Native disclosures spring open where the browser can animate to auto height. This is the default skin for every theme, not a Lab. Scene themes add their ink edge, and Graphite keeps tighter corners. Reduced motion cross-fades. Shared primitives: `src/lib/motion/`, `src/components/ui/surfaces/` and `src/app/surfaces.css`. [Record](docs/releases/2026-10-16-studio-surfaces.md).
+
+- Replay links: `/studio?replay=<recipe>` opens a new drawing and redraws a compact, versioned, URL-safe recipe of Pen, Eraser, Line, Rectangle, Ellipse, Fill, add-layer and add-frame steps, each its own Undo step (`src/lib/project/replayLink.ts`, `src/lib/project/applyReplay.ts`). Recipes are limited to 64×64, 16 colors, 200 steps and 2,048 characters; one that cannot be read leaves the drawing unchanged and names the first problem (`replay-error`). Lesson edits and replay steps now share one undoable-edit helper (`src/lib/engine/historyEdit.ts`). Five golden replays with exact Canvas readout values, before and after one Undo, are published for TestSprite in `docs/testsprite/replays.md` and as PRD journeys; `tests/replayLink.test.ts` recomputes them with an independent model and `tests/e2e/replayLink.spec.ts` asserts them in the Studio. [Guide](docs/testsprite/replays.md).
+
+- Canvas readout: the Studio now describes the active frame as text for screen readers and black-box browser tests (`src/components/layout/CanvasReadout.tsx`, `src/lib/render/canvasReadout.ts`). A visually hidden region beside the status bar lists canvas size, active frame and layer, frame and layer counts, painted pixels, the most used colors with counts and a short FNV-1a digest of the composite, each behind a `canvas-readout-*` hook. It announces one sentence after each committed stroke, Undo or Redo, waits while a pointer is held or the animation plays, and stays readable in Focus mode. `tests/canvasReadout.test.ts` checks counts, color ranking and the digest against an independent reference; `tests/e2e/canvasReadout.spec.ts` draws an eight-pixel stroke and asserts the readout before, mid-drag, after, on Undo and on Redo. [Hooks](docs/guides/testing.md#canvas-readout).
+
+- New `/verified` page (`src/app/verified/page.tsx`, `src/components/verified/LoopLedgerView.tsx`) shows how PixiBun is tested: the TestSprite loop (pull request → preview → TestSprite check → fix → green), counts (cases in the suite, PRs checked, product bugs caught) and the loop ledger of checked PRs with each run link, what failed, the fixing commit and the final verdict. The ledger is the committed [loop-ledger.json](docs/testsprite/loop-ledger.json), validated by `src/lib/verified/loopLedger.mjs` at build time and by `npm run verify:docs`, with a generated Markdown twin ([loop-ledger.md](docs/testsprite/loop-ledger.md), `npm run ledger:md`). It starts empty with a friendly empty state; rows are added only for real runs. Linked from the homepage footer and the pledge page. Tests: `tests/loopLedger.test.ts`, `tests/components/LoopLedgerView.test.tsx` and `tests/e2e/verified.spec.ts` (smoke, phone width, axe in every theme Night and Day). [How to add a row](docs/guides/testing.md#loop-ledger-and-verified).
 
 - The bench: replaced the four-tab landing engine showcase with a unified 16×16 interactive canvas (`src/components/landing/AtelierEngineShowcase.tsx`, `src/components/landing/bench/benchStage.ts`, `src/components/landing/bench/benchArt.ts`). Visitors draw on an editable starter friend (Bun, Mochi, Sprout or Teacup Frog), then light it with a 2.5D photometric lamp and ray-marched cast shadow, rotate it with contour-aware RotSprite alongside a plain turn, and preview a four-frame hop loop with transparent GIF download, all on the same edited pixels. The stage redraws only on user input or active motion, and caches each engine result by art version. [Welcome guide](docs/guides/welcome-and-demos.md#the-bench).
 
@@ -81,7 +134,7 @@ All notable changes and architectural enhancements to the PixiBun codebase are d
 
 - Themes and first-run onboarding. Eight studio styles, each with a Night and a Day palette, now come from one source (`src/lib/theme/themes.json`, generated into `src/app/themes.generated.css` by `npm run themes:css`): Moonlit, Sakura, Tidepool, Ember, Moss and Arcade float the panels over their own animated pixel scene (`src/lib/theme/scenes.ts`), while Graphite and Plum (stored ids `atelier` and `cozy-classic`) stay flat. Fixed saved themes silently reverting: the theme store now starts at the server's defaults so hydration matches, and `ThemeSync` re-applies the theme attributes React drops from `<html>`. Buttons, the scene control skin, the canvas frame and 237 lines of dialog styling use theme tokens instead of the old Plum gold, so Day modes read correctly. A first Studio visit opens a welcome journey (`src/components/onboarding/WelcomeJourney.tsx`): skill level, a live theme picker, where to change it later and a first drawing; one-time tips (`CoachTips.tsx`) follow the chosen level, and the Studio menu adds Tips and Replay welcome. Color picker sliders get a 24px hit area in every theme. `tests/themeRegistry.test.ts` checks every palette's text against its panels at WCAG AA; `tests/production/welcomeJourney.spec.ts` passes in Chromium, Firefox and WebKit, and the theme axe suite now covers all 16 styles. [Studio guide](docs/guides/studio-workspace.md#appearance-help-and-command-search).
 
-- Brand cleanup (strategy Phase 0.5): the product is now just PixiBun, and no user-facing text says "AI". The landing headline is **Pixels with a pulse.** with a hand-made, no-account subline and **Open the Desk**; "atelier" and "2.5D game studio" marketing copy, the logo's ATELIER subtitle and Atelier dialog titles are retired (**Projects & Gallery**, **Guide & Shortcuts**, **Pixel Cleanup & RotSprite**). Undo labels and tool groups drop the AI prefix, and the unused PixiBud chat state and its message type are removed. Added a dated no-generative-AI pledge at `/pledge` (`src/app/pledge/page.tsx`), linked from the landing footer. Landing backdrops no longer crash the page when their host has zero size (hidden or collapsed preview). The internal `src/lib/ai` folder keeps its name until in-progress RotSprite work that imports it is committed.
+- Brand cleanup (strategy Phase 0.5): the product is now just PixiBun, and no user-facing text says "AI". The landing headline is **Pixels with a pulse.** with a hand-made, no-account subline and **Open the Desk**; "atelier" and "2.5D game studio" marketing copy, the logo's ATELIER subtitle and Atelier dialog titles are retired (**Projects & Gallery**, **Guide & Shortcuts**, **Pixel Cleanup & RotSprite**). Undo labels and tool groups drop the AI prefix, and the unused PixiBud chat state and its message type are removed. Added a dated no-generative-AI pledge at `/pledge` (`src/app/pledge/page.tsx`), linked from the landing footer. Landing backdrops no longer crash the page when their host has zero size (hidden or collapsed preview). The internal `src/lib/graphics` folder keeps its name until in-progress RotSprite work that imports it is committed.
 
 - Fixed audit v1.14.1 defect 1: opening a panel offline that had not been opened online crashed Studio and lost unsaved strokes. `next build` now writes `public/precache-manifest.json` (`scripts/writePrecacheManifest.mjs`), and the service worker precaches every listed `/_next/static` file at install. It uses the list only when the version matches and the list contains every file the served shell references, so a development server or another build of the same commit falls back to shell-only precaching. Code-split dialogs and the PixiTools panel load through `lazyPanel` (`src/components/system/lazyPanel.tsx`), which keeps a failure inside that panel with **Try again**. The Studio error screen saves the live drawing through the route session before claiming it is saved, and publishes a resume ticket so **Resume Session** keeps unsaved strokes (`src/lib/project/studioCrashSave.ts`). Verified by `tests/production/offlinePanels.spec.ts` in Chromium, Firefox and WebKit. [Offline guide](docs/guides/collaboration-and-privacy.md#local-saves-and-offline-drawing).
 
@@ -202,7 +255,7 @@ These are repository changes. Their presence here does not identify the live dep
   - Added focused unit and Chromium coverage for backup trust, PixiTools navigation, preview readability, and tool scenes. At that point the inventory was 1,314 unit tests across 130 suites and 91 Chromium tests across 23 suites. The preview browser suite, build, typecheck, and documentation checks passed; lint had one `ImportModal.tsx` dependency warning. TestSprite could not run because its CLI was unavailable.
 
 - Added interactive Tool Motion Previews (`src/components/ui/ToolMotionPreview.tsx`, `src/components/ui/ToolPreviewCanvas.tsx`, `src/components/ui/ToolMotionPreview.module.css`):
-  - Canvas-rendered before/action/result previews on hover and keyboard focus for drawing tools in `src/components/layout/LeftToolbar.tsx` and AI/shading actions in `src/components/layout/inspector/AiToolsPanel.tsx`.
+  - Canvas-rendered before/action/result previews on hover and keyboard focus for drawing tools in `src/components/layout/LeftToolbar.tsx` and AI/shading actions in `src/components/layout/inspector/PixiToolsPanel.tsx`.
   - Initial preview coverage included core drawing tools and PixiTools actions. The later cleanup retired the Rivet, Material Shading, and Seamless Pattern actions and their active previews; the retained scenes describe available tools.
   - Tactile button accessibility: updated `src/components/ui/TactileButton.tsx` disabled state to `disabled:cursor-not-allowed` so users can inspect preview capabilities of disabled actions.
   - User controls: Dismiss via Escape key, close button, or "Don't show again" button. Added "Tool Previews" preference toggle in `src/components/ui/AppearancePopover.tsx` with `localStorage` persistence and event-driven cross-component synchronization (`pixibun:tool-previews-changed`).
@@ -270,14 +323,14 @@ These are repository changes. Their presence here does not identify the live dep
   - Verified across 26 unit tests in `tests/wfcResourceSafety.test.ts` covering exact estimator formulas across tiny, large P small C, small P large C, and large P large C dimensions; safe arithmetic boundary and overflow protection; budget boundary tests (<= B admitted, > B rejected); budget ceiling clamping (cannot raise above 64 MiB); pre-allocation rejection proof (spying on propagator and state allocators to prove 0 calls); candidate footprint early structural rejection; incremental unique-P early abort on high-entropy sources before candidate enumeration finishes; duplicate-heavy source non-rejection; output-grid C-growth verification; logical contradiction vs resource limit distinction; determinism non-regression across multiple seeds and sample patterns; and high-entropy source measurement.
 
 ### Content-Aware Heightmap Algorithmic Work & Allocation Bounding (Phase 72 / H1 Hardening)
-- **Component-Local Bounding Box Tracking & Bounded Distance Work (`src/lib/ai/math/edtNormalMap.ts`, `tests/h1ContentAwarePerformance.test.ts`)**:
+- **Component-Local Bounding Box Tracking & Bounded Distance Work (`src/lib/graphics/math/edtNormalMap.ts`, `tests/h1ContentAwarePerformance.test.ts`)**:
   - Recorded component bounding boxes `[minX, minY, maxX, maxY]` during the linear connected-component labeling pass in Stage 4 of `computeContentAwareHeightmap`, bounding Stage 6 micro-distance BFS loops and per-component temporary array allocations strictly to component-local bounding-box area (`compW * compH = localArea`) rather than full canvas pixel count (`width * height = N`).
   - Resolved canonical HIGH finding H1: removed unconditional $K \times N$ full-canvas per-component scanning and allocation inside `computeContentAwareHeightmap`.
   - Reduced per-component scan work and cumulative temporary Float32Array allocation traffic from $K \times N$ to $\sum \text{localArea}$ (over 4000× reduction on a 64×64 1024-component fragmented fixture; note that $\sum \text{bboxArea}$ is not bounded by $N$ in general and may still be super-linear for pathological overlapping bounds, while $cDist$ peak temporary allocation is bounded by the maximum component bounding-box area), eliminating full-canvas temporary buffer allocations during Stage 6 while maintaining bitwise identical component maps, height fields, normal vectors, cavity AO, and final photometric render outputs across all fixtures.
   - Verified across 17 unit tests in `tests/h1ContentAwarePerformance.test.ts` covering exact bit-for-bit equivalence across 12 representative fixtures (transparent, single pixel, large solid block, checkerboard, 2 distant blobs, narrow lines, edge-touching shapes, asymmetric character, appendage character, noisy fragmented sprite, donut ring with interior hole, and nested concentric square rings with overlapping bounding boxes), deterministic allocation and work reduction on adversarial fragmented fixtures, adversarial overlapping bounding box complexity truth proof ($\sum \text{bboxArea} > N$), large component non-regression, and final photometric render equivalence across character and prop artwork compared against independent pre-H1 legacy baseline executions.
 
 ### Photometric Pipeline Deduplication & Hoisted Analysis (Phase 71 / H6 Hardening)
-- **Hoisted Photometric Analysis & Zero-Allocation Buffer Threading (`src/lib/ai/math/photometricLighting.ts`, `tests/photometricPipelineDeduplication.test.ts`)**:
+- **Hoisted Photometric Analysis & Zero-Allocation Buffer Threading (`src/lib/graphics/math/photometricLighting.ts`, `tests/photometricPipelineDeduplication.test.ts`)**:
   - Hoisted geometric analysis in `renderParametric2p5DLighting` to execute `computePhotometricAnalysis` once per invocation and feed the result into `executePhotometricPipeline` via `precomputedAnalysis`; the optimization remains entirely local without exposing unnecessary external injection surfaces.
   - Resolved canonical HIGH finding H6: the affected photometric render path reuses one content-aware analysis instead of recomputing the same full analysis twice, while retaining the separate specular silhouette cushion.
   - Added optional `precomputedData` buffer threading to `computePhotometricAnalysis` and `executePhotometricPipeline`, reducing `getImageData` canvas read allocations from 3 to 1 per parametric lighting pass.
@@ -420,7 +473,7 @@ These are repository changes. Their presence here does not identify the live dep
 - **rAF Composite Coalescing & Error Notification Bridge (`src/components/layout/CenterViewport.tsx`, `src/hooks/viewport/events/useArtisanEvents.ts`, `src/hooks/viewport/events/usePhotometricEvents.ts`)**:
   - Implemented self-cleaning `requestAnimationFrame` coalescing for `pixibun:request-composite` custom events, preventing redundant composite passes when rapid drawing or tool switching dispatches multiple requests within a single frame tick.
   - Bridged procedural engine error notifications from `useArtisanEvents.ts` and `usePhotometricEvents.ts` to the studio toast system via `pixibun:toast` with `type: 'error'` while preserving AI chat log history.
-- **Photometric Interaction Benchmarking (`src/lib/ai/math/photometricLighting.ts`, `tests/photometricPerformance.test.ts`)**:
+- **Photometric Interaction Benchmarking (`src/lib/graphics/math/photometricLighting.ts`, `tests/photometricPerformance.test.ts`)**:
   - Photometric compute kernel measured $\le 9.95\text{ ms}$ in the Vitest test runtime at $512\times512$ ($1.38\text{ ms}$ at $128\times128$, $2.42\text{ ms}$ at $256\times256$); browser end-to-end frame rate not measured.
 - **Deterministic Build-Versioned Service Worker & Real Offline Resilience (`src/app/sw.js/route.ts`, `tests/e2e/offline.spec.ts`, `tests/e2e/pwa.spec.ts`, `tests/serviceWorkerRoute.test.ts`)**:
   - Derived deterministic `SW_CACHE_VERSION` in `next.config.ts` from `package.json` version and git commit hash (e.g., `v1.14.1-1d4c3b8`), eliminating static `'prod'` cache name collisions and ensuring predictable client cache invalidation on new deployments.
@@ -465,14 +518,14 @@ These are repository changes. Their presence here does not identify the live dep
 
 ## [v1.14.0] - 2026-09-20
 ### Neutral Relighting & Smart-Effect Provenance (Phase 63)
-- **Neutral 2.5D Silhouette & Macro-Detail Shading (`src/lib/ai/math/edtNormalMap.ts`)**:
+- **Neutral 2.5D Silhouette & Macro-Detail Shading (`src/lib/graphics/math/edtNormalMap.ts`)**:
   - Superseded Phase 61's fixed anatomical height priors with neutral macro-form and multi-scale material detail ($H_{\text{composite}} = 0.70 H_{\text{macro}} + 0.30 H_{\text{micro}}$ for characters). The 2.5D surface normal field $\mathbf{N}$ is now geometrically neutral, allowing directional tones, cel terminator boundaries, and highlights to dynamically track the virtual light source $\mathbf{L}$ across $360^\circ$ azimuth and $0^\circ-90^\circ$ elevation without baked-in distortion.
-- **Source Shading Normalization & Painted Shading Removal (`src/lib/ai/math/photometricLighting.ts`, `src/lib/ai/math/edtNormalMap.ts`)**:
+- **Source Shading Normalization & Painted Shading Removal (`src/lib/graphics/math/photometricLighting.ts`, `src/lib/graphics/math/edtNormalMap.ts`)**:
   - Added tactile `sourceShadingRemoval` slider ($0\% - 100\%$, default $0\%$) in `PhotometricLightingSection`, conservatively reducing directional value bands already painted into color ramps before relighting while strictly preserving authored palette families.
   - Upgraded interior ink line detection in `edtNormalMap.ts` to require two-sided opposing luminance dips ($(\text{neighbor}_{\text{opposing}} - \text{lum}) \ge 0.12$), preventing one-sided painted shadow edges from being carved as permanent ink crevices.
   - Upgraded connected-component flood-fill to recognize authored color ramps via hue and chroma distance ($\Delta\text{hue} \le 35^\circ, \Delta\text{chroma} \le 0.25$), uniting shaded regions into smooth geometric surfaces.
   - Stabilized directional cel shadow terminator calculation across brightness levels ($\text{shadowThresh} = \text{clamp}(0.46, 0.58, 0.52 - (\text{brightness} - 1.15) \times 0.04)$), preventing high exposure from flattening unlit sides.
-- **Real-Time Analysis Readout & Form Overrides (`src/lib/ai/math/photometricAuto.ts`, `src/components/layout/inspector/PhotometricLightingSection.tsx`)**:
+- **Real-Time Analysis Readout & Form Overrides (`src/lib/graphics/math/photometricAuto.ts`, `src/components/layout/inspector/PhotometricLightingSection.tsx`)**:
   - Upgraded `inferPhotometricSettings()` with smooth, continuous heuristic `directionalShadingCue` ($0-1$) and detailed human-readable rationale.
   - Built an interactive inspector analysis card listening to `pixibun:photometric-analysis` displaying detected form type, material, source light azimuth/elevation, directional shading cue strength (Weak / Medium / Strong), crevice AO percentage, and explanation.
   - Added tactile surface interpretation override button group: `[ Auto | Character | Prop | Orb ]` allowing artists to explicitly steer geometry reconstruction.
@@ -489,11 +542,11 @@ These are repository changes. Their presence here does not identify the live dep
 - **Unified Brand Geometry (`src/components/ui/PixiBunLogo.tsx`)**:
   - Built standalone responsive `PixiBunLogo` component (`sm`, `md`, `lg`) with Bun mascot tile and typography.
   - Standardized branding across `AtelierRail`, `PlaygroundLayout`, `LandingNav`, `AtelierHero`, `AtelierFooter`, `MobileStudioGate`, and error boundaries (`error.tsx`, `global-error.tsx`, `studio/error.tsx`).
-- **Discrete 1/2/3 Shading Tones (Single / Dual / Trio Cel-Shading) (`src/lib/ai/math/photometricLighting.ts`, `src/types/tools.ts`, `src/components/layout/inspector/PhotometricLightingSection.tsx`, `src/components/studio/PixelLightBulbGizmo.tsx`)**:
+- **Discrete 1/2/3 Shading Tones (Single / Dual / Trio Cel-Shading) (`src/lib/graphics/math/photometricLighting.ts`, `src/types/tools.ts`, `src/components/layout/inspector/PhotometricLightingSection.tsx`, `src/components/studio/PixelLightBulbGizmo.tsx`)**:
   - Implemented 1 Single (1 shadow tone), 2 Dual (2 shadow tones: mid + deep), and 3 Trio (3 shadow tones: soft penumbra + mid + deep umbra) cel-shading band modes in perceptual OKLCH color space.
   - Enabled discrete cel-shading across all pixel art forms (orbs, characters, props) when shading bands mode is selected in the UI (`SHADE: 1 | 2 | 3` or `Shading Tones`), eliminating muddy 24-bit floating point gradients on pixel art while preserving smooth 3D shading when unbanded.
   - Added bottom HUD controls (`SHADE 1 | 2 | 3`) to the on-canvas `PixelLightBulbGizmo` and inspector segmented button group with accessible tooltips and test IDs.
-- **Continuous 3D Specular Highlight Pill & Line-of-Sight Gating (`src/lib/ai/math/photometricLighting.ts`, `tests/orbPhotometricCelShading.test.ts`, `tests/pixiBudMath.test.ts`)**:
+- **Continuous 3D Specular Highlight Pill & Line-of-Sight Gating (`src/lib/graphics/math/photometricLighting.ts`, `tests/orbPhotometricCelShading.test.ts`, `tests/graphicsMath.test.ts`)**:
   - Restored continuous 3D Blinn-Phong specular highlight pill with smooth alpha falloff ($I_{\text{spec}} > 0.35, \alpha = \min(255, \text{round}(I_{\text{spec}} \times 255))$).
   - Derived specular normals from macro-silhouette dome (`specularNormalField`) using inflated EDT and bilateral filtering, eliminating vertical razor scars down cheeks and across ears caused by internal feature depth depressions.
   - Added physical line-of-sight gate ($N_{3D} \cdot L_{3D} > 0$) preventing specular highlights from appearing on unlit shadow hemispheres.
@@ -562,14 +615,14 @@ These are repository changes. Their presence here does not identify the live dep
 
 ## [v1.13.1] - 2026-09-14
 ### Anatomical Part Decomposition & Volumetric Character Photometric Shading (Phase 61)
-- **Anatomical Part Decomposition Engine (`src/lib/ai/math/edtNormalMap.ts`)**:
+- **Anatomical Part Decomposition Engine (`src/lib/graphics/math/edtNormalMap.ts`)**:
   - Replaced flat-silhouette macro heightmap clamping with `computeAnatomicalCharacterHeightmap()`, decomposing character morphology into distinct volumetric parts:
     1. **Cranial Head Dome**: Elevated dome ($z_{\text{baseHead}}$) with smooth camera-facing facial cushion protecting eyes and mouth.
     2. **Recessed Neck Crevice & Chin Depth Step**: Detects transverse chin ink strokes strictly below facial features, establishing an elevated chin over recessed throat ($z_{\text{baseNeck}}$) that produces downward chin normals ($N_y > 0$) and deep throat cavity ambient occlusion ($ao < 0.48$).
     3. **Torso Chest Barrel**: Synthesizes genuine horizontal barrel curvature across the chest between arm seams ($\text{Var}(N_x) > 0.05$), creating directional lighting contrast between lit and unlit flanks.
     4. **Longitudinal Arm Cylinders**: Identifies internal vertical ink strokes flanking the torso, generating separate cylindrical arm height fields separated by carved crevice seams.
   - Added morphological boundary checks distinguishing head+torso characters from head-only creatures / busts (`!hasTorsoBelow`), maintaining 100% baseline cushion and zero regressions on floating heads, cat faces, or props.
-- **Precision Feature vs Structural Seam Classification (`src/lib/ai/math/edtNormalMap.ts`)**:
+- **Precision Feature vs Structural Seam Classification (`src/lib/graphics/math/edtNormalMap.ts`)**:
   - Filtered out longitudinal arm seams and transverse chin strokes from facial feature masking (`isFeature`), ensuring structural lines properly carve crevice valleys and participate in anatomical decomposition rather than being misclassified as facial features.
   - Restricts outer boundary ink lines touching transparent background from being carved as internal crevices, preventing artificial trenching along convex cheeks.
 - **Dedicated Anatomical Photometric Shading Suite (`tests/anatomicalPhotometricShading.test.ts`)**:
@@ -581,7 +634,7 @@ These are repository changes. Their presence here does not identify the live dep
   - Implemented 20° angular-drift cache invalidation during live light gizmo drags for character and appendage-bearing silhouettes, eliminating stale geometry caching while keeping 60 FPS performance.
   - Guaranteed fresh single-shot analysis recomputation on mouseup/commit before persisting layer snapshots, achieving 100.000% byte-identity with fresh execution and 0 committed staleness.
   - Preserved full zero-recompute caching for spherical orbs and non-appendage prop forms.
-- **Cavity AO Auto-Scaling for Complex Silhouettes (Phase 60b) (`src/lib/ai/math/photometricAuto.ts`, `src/lib/ai/math/photometricLighting.ts`, `src/hooks/viewport/events/usePhotometricEvents.ts`)**:
+- **Cavity AO Auto-Scaling for Complex Silhouettes (Phase 60b) (`src/lib/graphics/math/photometricAuto.ts`, `src/lib/graphics/math/photometricLighting.ts`, `src/hooks/viewport/events/usePhotometricEvents.ts`)**:
   - Added silhouette complexity metric computing circularity deficiency (`1 / circularity`) and upper-region multi-segment appendage density (`maxUpperSegments`).
   - Auto-scales recommended `cavityStrength` in `inferPhotometricSettings()` from 1.0 down toward 0.40 on complex, spiky character silhouettes (hair spikes, fur tufts), while preserving 1.0 for spherical orbs.
   - Dynamically tuned `creviceAOThresh` in cel-shading to scale with `cavityStrength`, dropping deep-crevice tone coverage from 50% down to <2% on hair-spike characters and recovering >90% directional lighting.
@@ -609,21 +662,21 @@ These are repository changes. Their presence here does not identify the live dep
   - Synchronized `package-lock.json` with `package.json` at version `1.13.1`.
 - **Cross-Boundary & Defensive Hardening Test Suites (`tests/crossBoundaryEnvelope.test.ts`, `tests/p2pValidation.test.ts`, `tests/structurePayload.test.ts`, `tests/safetyHardening.test.ts`, `tests/diagnostics.test.ts`, `tests/photometricNonDestructive.test.ts`)**:
   - Added 9 cross-boundary envelope integration tests and updated regression assertions, expanding test coverage to 637 unit tests across 90 suites (100% green).
-- **Dynamic Character Appendage Normal Stabilization (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`)**:
+- **Dynamic Character Appendage Normal Stabilization (`src/lib/graphics/math/edtNormalMap.ts`, `src/lib/graphics/math/photometricLighting.ts`)**:
   - Decoupled static pixel geometry from light-direction-coupled appendage normal stabilization via `applyAppendageStabilization`.
   - Preserves 60 FPS live light dragging while achieving 100.000% byte-for-byte identity with fresh single-shot recomputations at any azimuth.
   - Added regression test verifying zero pixel drift during multi-frame azimuth sweeps on anatomical character sprites (`tests/photometricNonDestructive.test.ts`).
 
 ### Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection (Phase 58)
-- **Resolution-Aware Bevel Radius & Macro Heightmap Scaling (`src/lib/ai/math/edtNormalMap.ts`)**:
+- **Resolution-Aware Bevel Radius & Macro Heightmap Scaling (`src/lib/graphics/math/edtNormalMap.ts`)**:
   - Replaced hardcoded 2.8px bevel clamping with proportional resolution scaling (`scaleFactor = Math.max(1.0, Math.min(width, height) / 32)`).
   - Dynamically scales character bevel radius (`charBevelRadius = 2.8 * scaleFactor`), dynamic bevel radius bounds (`[2.5, 6.0 * scaleFactor]`), and appendage width ceilings (`5 * scaleFactor`).
   - Enables higher-resolution canvases ($128\times128$, $64\times64$) to generate smooth, volumetric 3D surface normal maps rather than collapsing into flat forward plateaus ($N_z = 1.0$), while preserving 100% byte-exact parity for standard $32\times32$ sprites.
-- **Boundary-Aware Ink Line & Crevice Classification (`src/lib/ai/math/edtNormalMap.ts`)**:
+- **Boundary-Aware Ink Line & Crevice Classification (`src/lib/graphics/math/edtNormalMap.ts`)**:
   - Eliminated false-positive line art over-protection that previously treated any pixel with luminance $< 0.22$ as an ink line and skipped shading.
   - On user artwork featuring dark body colors (e.g. crimson $L=0.18$, navy $L=0.06$), this previously skipped $>83\%$ of character pixels.
   - Replaced naive thresholding with boundary-aware classification: only transparent-boundary dark pixels ($L < 0.14$), high-contrast interior crevices ($\max(N_{\text{lum}}) - L \ge 0.16$), or near-black pixels ($L < 0.035$) are classified as ink lines.
-- **Dark Palette OKLCH Cel Ramp Clamping (`src/lib/ai/math/photometricLighting.ts`)**:
+- **Dark Palette OKLCH Cel Ramp Clamping (`src/lib/graphics/math/photometricLighting.ts`)**:
   - Fixed shadow tone luminance calculation in `buildCelRamp`, where `Math.max(0.18, lch.L * 0.78)` previously forced shadow tones to be lighter than dark base tones ($lch.L < 0.18$).
   - Clamped shadow luminance relative to base color (`Math.max(0.04, Math.min(lch.L * 0.78, lch.L - 0.03))`) and deep crevice luminance (`Math.max(0.02, Math.min(lch.L * 0.60, lch.L - 0.06))`), restoring deep, atmospheric cel-shading contrast across dark palettes.
 - **Dark Palette & High-Resolution Photometric Regression Tests (`tests/photometricAutoAnalysis.test.ts`)**:
@@ -684,7 +737,7 @@ These are repository changes. Their presence here does not identify the live dep
   - Upgraded `HistoryEngine` from a pixel-only delta store to a hybrid Command Pattern supporting both pixel stroke diffs and full structural operations (`type: 'structural'`).
   - Added snapshots capturing layer additions, deletions, reordering, merge-downs, and frame insertions/reordering with byte-accurate `LayerBufferBackup` preservation across all frames.
   - Verified undo and redo of destructive structural mutations in `tests/historyEngineStructural.test.ts`.
-- **Worker EDT Distance Transform & Normal Map Offloading (`src/lib/ai/math/edtNormalMap.ts`, `src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `src/hooks/viewport/events/usePhotometricEvents.ts`, `tests/workerEdtNormalMap.test.ts`)**:
+- **Worker EDT Distance Transform & Normal Map Offloading (`src/lib/graphics/math/edtNormalMap.ts`, `src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `src/hooks/viewport/events/usePhotometricEvents.ts`, `tests/workerEdtNormalMap.test.ts`)**:
   - Offloaded CPU-heavy 2D Euclidean Distance Transform, bilateral Gaussian filtering, and Sobel normal map generation to `heavyCompute.worker.ts` using zero-copy Transferable ArrayBuffers.
   - Guarded main-thread canvas stability by defensively cloning outgoing buffer snapshots (`.slice(0)`), while achieving zero-copy transfer on the worker-to-main return trip.
   - Provided automatic synchronous fallback in `runEdtNormalMapInWorker` for headless/unsupported worker environments, verified in `tests/workerEdtNormalMap.test.ts`.
@@ -692,7 +745,7 @@ These are repository changes. Their presence here does not identify the live dep
   - Built zero-dependency native desktop ergonomics with `window.showSaveFilePicker` and `window.showOpenFilePicker`.
   - Bound `Ctrl+S` to instantaneous in-place disk overwriting via retained `FileSystemFileHandle`s, and `Ctrl+Shift+S` to "Save As" picker dialogs.
   - Implemented reliable browser anchor download and hidden file input fallbacks for Firefox, Safari, and headless test runners, verified in `tests/desktopFileSystem.test.ts`.
-- **47-Blob Autotile Interactive Engine (`src/lib/ai/math/autotileEngine.ts`, `tests/autotileEngine.test.ts`)**:
+- **47-Blob Autotile Interactive Engine (`src/lib/graphics/math/autotileEngine.ts`, `tests/autotileEngine.test.ts`)**:
   - Implemented complete 8-neighbor Moore bitmasking with cardinal-corner dominance, collapsing $2^8 = 256$ neighborhood configurations into the canonical 47 Wang/Blob equivalence classes.
   - Precomputed an $O(1)$ 256-element bitmask lookup table (`BITMASK_TO_47_INDEX`) and built a Chebyshev $3\times3$ dirty neighborhood reactive updater (`updateAutotileAt`) that recalculates only affected adjacent tiles.
   - Authored procedural 47-tile pixel renderer and validated full mathematical proofs in `tests/autotileEngine.test.ts`.
@@ -703,7 +756,7 @@ These are repository changes. Their presence here does not identify the live dep
 
 ## [v1.12.1] - 2026-09-12
 ### Comprehensive Audit Resolution, Algorithmic Precision & State Isolation (Phase 53)
-- **Dimetric Ray Projection for Isometric Lines (`src/lib/ai/math/curvesAndLines.ts`, `tests/curvesAndLines.test.ts`)**:
+- **Dimetric Ray Projection for Isometric Lines (`src/lib/graphics/math/curvesAndLines.ts`, `tests/curvesAndLines.test.ts`)**:
   - Replaced $dx$-only step scaling in `getIsometric2p1Line` with scalar dimetric ray projection ($t = (2|\Delta x| + |\Delta y|) / 5$), snapping arbitrary cursor endpoints $(x_1, y_1)$ to the true 2:1 line while maintaining exact cardinal horizontal/vertical lines.
   - Added unit test cases in `curvesAndLines.test.ts` verifying projection for off-axis points (e.g. $(0,0) \to (10, 2)$, $(0,0) \to (3, 10)$) and negative quadrant coordinates.
 - **Per-Tab Export Scale State Isolation (`src/components/modals/ExportModal.tsx`, `tests/components/ExportModal.test.tsx`)**:
@@ -714,7 +767,7 @@ These are repository changes. Their presence here does not identify the live dep
 - **Canonical DPaint CRNG Parity (`src/lib/color/paletteCycling.ts`, `tests/paletteCycling.test.ts`)**:
   - Removed unmotivated `rateRaw !== 36` check, aligning track activation strictly with the official Amiga IFF ILBM `RNG_ACTIVE` flag bit.
   - Added unit test verifying that slow 0.13 Hz cycle tracks parse and round-trip cleanly.
-- **Documentation Truthfulness Alignment (`src/lib/ai/smartMathEngine.ts`, `src/lib/export/depixelizeVector.ts`, `src/lib/export/apngEncoder.ts`, `src/lib/procedural/waveFunctionCollapse.ts`, `.env.example`, `SECURITY.md`, `README.md`, `MAIN.md`, `ARCHITECTURE.md`, `BENCHMARKS.md`)**:
+- **Documentation Truthfulness Alignment (`src/lib/graphics/smartMathEngine.ts`, `src/lib/export/depixelizeVector.ts`, `src/lib/export/apngEncoder.ts`, `src/lib/procedural/waveFunctionCollapse.ts`, `.env.example`, `SECURITY.md`, `README.md`, `MAIN.md`, `ARCHITECTURE.md`, `BENCHMARKS.md`)**:
   - Corrected `smartMathEngine.ts` line 18 comment to Quadratic Bézier.
   - Added Kopf-Lischinski DOI `10.1145/2010324.1964994` and domain heuristic note in `depixelizeVector.ts`.
   - Added Mozilla origins and W3C Third Edition integration citation in `apngEncoder.ts`.
@@ -732,7 +785,7 @@ These are repository changes. Their presence here does not identify the live dep
 - **Persistent Storage Eviction Warning Banner (`src/components/layout/StudioLayout.tsx`)**:
   - Added a visible, non-blocking, dismissible warning banner when `requestPersistentStorage()` is denied or not granted by the browser.
   - Warns users that local IndexedDB storage may be evicted under disk pressure (common on iOS/Safari) and provides a direct "Export Backup" action with session dismissal persistence.
-- **Quadratic Bézier Precision Nomenclature (`src/lib/ai/math/curvesAndLines.ts`, `PIXIBUN_DEEP_DIVE.md`, `README.md`, `MAIN.md`)**:
+- **Quadratic Bézier Precision Nomenclature (`src/lib/graphics/math/curvesAndLines.ts`, `PIXIBUN_DEEP_DIVE.md`, `README.md`, `MAIN.md`)**:
   - Corrected misnamed "Rational Bézier" references to "Quadratic Bézier", accurately reflecting the unweighted degree-2 polynomial de Casteljau formula implemented in source code ($B(t) = (1-t)^2 P_0 + 2(1-t)t P_1 + t^2 P_2$).
 - **Codebase Hyperbole Calibration (`src/components/landing/showcase/RotSpriteShowcase.tsx`, `src/lib/art/playgroundLessons.ts`, `src/lib/audio/lofiRadio.ts`, `src/components/modals/export/ShaderExportTab.tsx`, `src/lib/color/paletteCycling.ts`, `src/components/modals/export/AnimatedExportTab.tsx`, `src/components/modals/ImportModal.tsx`, `src/components/modals/CoDrawModal.tsx`, `src/components/modals/ShortcutsModal.tsx`)**:
   - Calibrated promotional UI text and comments removing unprovable assertions ("100% stable", "completely eliminates", "guaranteeing zero gaps", "100% pure") while intentionally preserving legitimate academic and distributed systems terms (CRDT Strong Eventual Consistency, WFC constraints).
@@ -752,10 +805,10 @@ These are repository changes. Their presence here does not identify the live dep
 - **P2P Co-Draw Modal Network Default (`src/components/modals/CoDrawModal.tsx`)**: Changed default network mode from `'internet'` to `'lan'`, matching the zero-egress LAN promise (`iceServers: []`) in `README.md`.
 - **Lossless PNG Export 32× Resolution Option (`src/components/modals/export/PngExportTab.tsx`)**: Added `32` to the scale button array (`[1, 2, 4, 8, 16, 32]`), fulfilling the documented "1× to 32× lossless PNG" export capability in the UI.
 - **Eradication of "Wu" Attribution on 2:1 Isometric Stepping (`README.md`, `ARCHITECTURE.md`, `PIXIBUN_DEEP_DIVE.md`, `CHANGELOG.md`, `TASKS.md`, `LOGS.md`)**: Replaced all mentions with "Quantized 2:1 Isometric Line Stepper", reflecting classic 1980s dimetric rasterization ($\arctan(0.5) \approx 26.565^\circ$) rather than Xiaolin Wu's anti-aliasing technique.
-- **Historical Citation Cleanup (`src/lib/ai/math/rotSprite.ts`)**: Standardized citation on canonical author name Xenowhirl (2007) and removed the leftover alias "Xenowoz".
+- **Historical Citation Cleanup (`src/lib/graphics/math/rotSprite.ts`)**: Standardized citation on canonical author name Xenowhirl (2007) and removed the leftover alias "Xenowoz".
 - **HistoryEngine Memory Arithmetic Correction (`BENCHMARKS.md`, `tests/benchmark.test.ts`)**: Corrected 256×256 50-step memory from 12.80 MB to 13.11 MB ($13{,}107{,}200 / 1{,}000{,}000$) and 100-step max memory from 25.60 MB to 26.21 MB.
 - **CenterViewport 6-Canvas Stack Diagram (`ARCHITECTURE.md`)**: Updated the mermaid diagram to include all 6 hardware-accelerated canvas layers (`onionCanvasRef`, `stencilCanvasRef`, `mainCanvasRef`, `previewCanvasRef`, `gridCanvasRef`, `cursorCanvasRef`).
-- **Deep Dive Directory Tree Alignment (`PIXIBUN_DEEP_DIVE.md`)**: Added `curvesAndLines.ts` and `morphology.ts` to the `src/lib/ai/math/` tree.
+- **Deep Dive Directory Tree Alignment (`PIXIBUN_DEEP_DIVE.md`)**: Added `curvesAndLines.ts` and `morphology.ts` to the `src/lib/graphics/math/` tree.
 - **Persistent Storage Rejection Handling (`src/components/layout/StudioLayout.tsx`)**: Handled the promise returned by `requestPersistentStorage()`, logging a diagnostic warning if persistence is not granted.
 
 ### Deep Audit Remediation, RotSprite Fast Paths, SDF Morphing & Test Suite Re-alignment (Phase 49)
@@ -766,23 +819,23 @@ These are repository changes. Their presence here does not identify the live dep
 - **Palette Cycling & History Engine Runtime Memory Benchmarks (`tests/benchmark.test.ts`, `BENCHMARKS.md`)**:
   - Added automated empirical benchmarks for 32-bit `updateLivePaletteLUT32` and raster pixel remapping across 64x64, 128x128, 256x256, and 512x512 sprite dimensions, verifying execution within 16.66ms (60 FPS budget). The LUT update itself allocates small RGB tuples.
   - Added formal memory footprint and ring buffer pruning capacity assertions for `HistoryEngine` across 16x16 through 512x512 resolutions, confirming exact agreement with `BENCHMARKS.md` ceilings (e.g. 13.1 MB for 50 steps at 256x256).
-- **Photometric Light Bulb Gizmo UX & Cel Shading Remediation (`src/components/studio/PixelLightBulbGizmo.tsx`, `src/hooks/viewport/useViewportPointerEvents.ts`, `src/hooks/viewport/useViewportTransform.ts`, `src/lib/ai/math/photometricLighting.ts`, `src/lib/events/studioEvents.ts`, `src/stores/slices/createToolSlice.ts`, `tests/orbPhotometricCelShading.test.ts`, `tests/components/PixelLightBulbGizmo.test.tsx`)**:
+- **Photometric Light Bulb Gizmo UX & Cel Shading Remediation (`src/components/studio/PixelLightBulbGizmo.tsx`, `src/hooks/viewport/useViewportPointerEvents.ts`, `src/hooks/viewport/useViewportTransform.ts`, `src/lib/graphics/math/photometricLighting.ts`, `src/lib/events/studioEvents.ts`, `src/stores/slices/createToolSlice.ts`, `tests/orbPhotometricCelShading.test.ts`, `tests/components/PixelLightBulbGizmo.test.tsx`)**:
   - Modulated directional cel shadow terminator threshold inversely by brightness (`(0.55 * 1.15) / max(0.2, brightness)` clamped to `[0.15, 0.85]`), ensuring bulb strength changes physically drive the shadow boundary back on character sprites while preserving exact palette purity and leaving default 1.15 output bit-identical.
   - Added event propagation suppression (`e.stopPropagation()`) across HUD buttons, steppers, inputs, and container `onPointerDown`, alongside an explicit `photometricGizmoActive` guard in `useViewportPointerEvents.ts` to eliminate canvas draw tool leakage when interacting with HUD controls.
   - Relocated the floating viewport HUD toolbar from `top-3` to `top-full mt-2 left-1/2 -translate-x-1/2`, anchoring it safely beneath the bottom canvas boundary and preventing artwork occlusion.
   - Intercepted mouse wheel events during active photometric sessions in `useViewportTransform.ts`, re-routing scroll deltas via `pixibun:photometric-strength-delta` to bulb strength adjustments ($\pm 0.05$ per tick) and preventing disruptive viewport zoom jumping.
   - Aligned tool store `setLightBrightness` lower clamp boundary from 0.4 to 0.3 to match the stepper minimum, and added unit tests in `tests/orbPhotometricCelShading.test.ts` and `tests/components/PixelLightBulbGizmo.test.tsx`.
-- **RotSprite Rectangular 90°/270° Fast Path & Centered Layer Rotation (`src/lib/ai/math/rotSprite.ts`, `src/lib/canvas/rotSprite.ts`, `src/hooks/viewport/events/useGeometricEvents.ts`, `tests/rotSpriteRectangular.test.ts`)**:
+- **RotSprite Rectangular 90°/270° Fast Path & Centered Layer Rotation (`src/lib/graphics/math/rotSprite.ts`, `src/lib/canvas/rotSprite.ts`, `src/hooks/viewport/events/useGeometricEvents.ts`, `tests/rotSpriteRectangular.test.ts`)**:
   - Removed `w === h` restriction on orthogonal 90° and 270° fast paths across both canvas and math processing chains, transposing output canvas dimensions ($W' = H, H' = W$) and updating coordinate indexing to $y' \cdot H + x'$.
   - Added dedicated fixed-dimension centered fast-paths for $90^\circ$ and $270^\circ$ rotations on non-square bounds ($O(W \times H)$) when `outW === w && outH === h`, and centered rotated content in `useGeometricEvents.ts` to prevent asymmetrical layer clipping.
-  - Deduplicated `src/lib/ai/math/rotSprite.ts` by removing 220 lines of redundant Scale2x/majority voting code and converting `rotateWithRotSprite` into a thin DOM adapter delegating directly to canonical `rotSprite` in `src/lib/canvas/rotSprite.ts`.
+  - Deduplicated `src/lib/graphics/math/rotSprite.ts` by removing 220 lines of redundant Scale2x/majority voting code and converting `rotateWithRotSprite` into a thin DOM adapter delegating directly to canonical `rotSprite` in `src/lib/canvas/rotSprite.ts`.
   - Corrected downsampling kernel documentation from Gaussian to Xenowhirl's parabolic center-weighted majority voting kernel: $w(u, v) = 1.0 + 0.01 \cdot (25 - (u^2 + v^2))$.
   - Created unit tests in `tests/rotSpriteRectangular.test.ts` (6 tests) verifying rectangular canvas rotation equivalence.
-- **Morph Fraction Forwarding & Multi-Source BFS Color Sampling (`src/lib/ai/pixelAiEngine.ts`, `src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `tests/pixelAiEngineMorphFraction.test.ts`)**:
+- **Morph Fraction Forwarding & Multi-Source BFS Color Sampling (`src/lib/graphics/pixelRasterEngine.ts`, `src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `tests/pixelRasterEngineMorphFraction.test.ts`)**:
   - Replaced $O(W \times H \times R^2)$ spiral search with an 8-connected multi-source Breadth-First Search (BFS) in exact $O(W \times H)$ time for nearest opaque color lookups.
   - Exported `morphInBetweenFrameAtFraction` and forwarded time fraction parameter `t` in `morphInBetweenFrames`.
   - Added `fraction` property support across Web Worker message schemas and dispatcher fallback routes.
-  - Created unit tests in `tests/pixelAiEngineMorphFraction.test.ts` (5 tests) asserting intermediate fraction color transitions.
+  - Created unit tests in `tests/pixelRasterEngineMorphFraction.test.ts` (5 tests) asserting intermediate fraction color transitions.
 - **History Engine Popped Step Loop Elimination (`src/lib/engine/historyEngine.ts`, `tests/historyEngine.test.ts`)**:
   - Guarded opposite stack push on `undo()` and `redo()` to execute only when `currentState !== undefined`, eliminating ghost state cycles.
   - Added unit test in `tests/historyEngine.test.ts` verifying no-arg undo behavior.
@@ -857,7 +910,7 @@ These are repository changes. Their presence here does not identify the live dep
   - Pruned deleted layer CRDT replicas and isolated guest active frame/layer pointers from incoming host updates.
 - **Viewport Drawing HUD Decoupling (`src/components/layout/CursorStatusBadge.tsx`, `src/components/layout/CenterViewport.tsx`, `src/hooks/viewport/useViewportDrawing.ts`, `tests/components/CursorStatusBadge.test.tsx`)**:
   - Decoupled cursor coordinate state from parent `CenterViewport.tsx` into isolated subscriber `CursorStatusBadge.tsx`, eliminating component re-render cascades during active pen and brush strokes.
-- **Photometric Lighting Cel-Shading Backlight Verification (`src/lib/ai/math/photometricLighting.ts`, `tests/orbPhotometricCelShading.test.ts`)**:
+- **Photometric Lighting Cel-Shading Backlight Verification (`src/lib/graphics/math/photometricLighting.ts`, `tests/orbPhotometricCelShading.test.ts`)**:
   - Verified existing `Math.max(0, ...)` guard in `wrapNdotL` and added unit test verifying that azimuth $180^\circ$ and negative elevation ($N \cdot L = -1.0$) evaluates to shadow tones without `NaN`.
 
 ## [v1.11.0] - 2026-09-08
@@ -868,7 +921,7 @@ These are repository changes. Their presence here does not identify the live dep
   - Shallow spherical rivet/stud stamp calculation with flattening factor $h \in (0, 1]$ and inversion flag for dimples/countersunk holes.
   - Reoriented Normal Mapping (RNM, Colin Barré-Brisebois & Stephen Hill 2012) via shortest-arc quaternion rotation, plus UDN detail normal blending.
   - Two-phase `ChiselStrokeSession` envelope buffer preventing intra-stroke angular accumulation.
-- **Studio Chisel & Rivet Integration (`src/types/tools.ts`, `src/stores/slices/createToolSlice.ts`, `src/components/layout/LeftToolbar.tsx`, `src/components/ui/PixelIcon.tsx`, `src/components/layout/inspector/NormalSculptorSection.tsx`, `src/components/layout/inspector/AiToolsPanel.tsx`, `src/components/layout/CenterViewport.tsx`)**:
+- **Studio Chisel & Rivet Integration (`src/types/tools.ts`, `src/stores/slices/createToolSlice.ts`, `src/components/layout/LeftToolbar.tsx`, `src/components/ui/PixelIcon.tsx`, `src/components/layout/inspector/NormalSculptorSection.tsx`, `src/components/layout/inspector/PixiToolsPanel.tsx`, `src/components/layout/CenterViewport.tsx`)**:
   - Added `'normal-chisel'` and `'rivet-stamp'` tool options and state slices.
   - Interactive 3D normal vector sphere gizmo visualizing active normal azimuth and incline in real time.
   - Chisel and rivet icons on LeftToolbar with keyboard shortcuts.
@@ -929,18 +982,18 @@ These are repository changes. Their presence here does not identify the live dep
 
 ## [v1.10.2] - 2026-09-07
 ### Cel-Shading Shadow Terminator Math Fix (Phase 43b)
-- **Fixed flat/invisible cel-shading on character sprites (`src/lib/ai/math/photometricLighting.ts`)**:
+- **Fixed flat/invisible cel-shading on character sprites (`src/lib/graphics/math/photometricLighting.ts`)**:
   - Root cause: the discrete OKLCH cel-shading branch mixed an ambient signal (`ambSignal ≈ 1.27`) into the `lightLevel` formula and applied a double brightness multiplication, making `lightLevel ≥ 1.0` for ALL pixels — mathematically impossible to drop below `shadowThresh = 0.58`.
   - Fix: shadow placement is now driven purely by the directional diffuse signal (`diffSignal = wrapNdotL × effectiveFalloff`), with threshold `0.55`. The ambient contribution no longer factors into shadow termination — it fills all surfaces equally and must not overwhelm the directional terminator.
   - Result: character sprites now show crisp anatomical cel-shadows on the unlit side (ears, chin, snout, limb backsides, body bottom), with ~40–50% surface coverage in shadow for typical side-lit compositions.
 
 ## [v1.10.1] - 2026-09-07
 ### Minecraft Skin vs 2.5D Character Sprite Topological Discriminator & Photometric User Sovereignty (Phase 43)
-- **Deep 8-Connected Topological Discriminator (`src/lib/ai/math/minecraftSkin.ts`)**:
+- **Deep 8-Connected Topological Discriminator (`src/lib/graphics/math/minecraftSkin.ts`)**:
   - Replaced naive 2-condition void/head check with `analyzeMinecraftSkinTopology(isOpaque, width, height)`.
   - Analyzes 8-connected component graph, dominant component pixel ratio (`largestComponentRatio`), bilateral limb presence ($x \in [0, 16)$ Right Leg, $x \in [40, 56)$ Right Arm), canonical void zone integrity ($<20\%$ pollution), and bounding box margins ($x < 10$ and $x > 48$).
   - Corrects the false positive where centered 64x64 character illustrations (e.g. red bunny, cat, props) were misidentified as Minecraft UV atlases, which previously led to flat $(0, 0, 1.0)$ normal generation and disabled photometric shading. Centered silhouettes ($\ge 68\%$ pixels in dominant component, empty lateral flanks) are decisively routed to standard 2.5D lighting.
-- **Photometric Pipeline & Form Type Protection (`src/lib/ai/math/photometricLighting.ts`)**:
+- **Photometric Pipeline & Form Type Protection (`src/lib/graphics/math/photometricLighting.ts`)**:
   - `executePhotometricPipeline` and `renderParametric2p5DLighting` now honor `params.minecraftSkinMode`.
   - When mode is `'disabled'` or `formType` is explicitly `'character' | 'orb' | 'prop'`, Minecraft skin shading is bypassed completely, ensuring continuous tangent normals and content-aware heightmaps.
 - **User Sovereignty & Studio Store (`src/types/tools.ts`, `src/stores/slices/createToolSlice.ts`, `src/stores/slices/types.ts`, `src/hooks/viewport/useViewportStudioEvents.ts`)**:
@@ -1002,8 +1055,8 @@ These are repository changes. Their presence here does not identify the live dep
   - Upgraded frame duration text contrast to $>6:1$ against dark panel surfaces.
   - Configured dark color scheme parity in `playwright.config.ts` and `src/stores/themeStore.ts`.
   - All 17 Playwright E2E tests pass with zero axe violations.
-- **Photometric & Tangent-Space Normal Map Optimization (`src/lib/ai/math/edtNormalMap.ts`, `src/components/layout/CenterViewport.tsx`)**:
-  - Precomputed 2D spatial Gaussian distance lookup table (`spatialLUT`) in `applyBilateralFilter` in `src/lib/ai/math/edtNormalMap.ts`, eliminating 50% of inner-loop `Math.exp()` calls, with bounds guards for non-positive dimensions and sigmas.
+- **Photometric & Tangent-Space Normal Map Optimization (`src/lib/graphics/math/edtNormalMap.ts`, `src/components/layout/CenterViewport.tsx`)**:
+  - Precomputed 2D spatial Gaussian distance lookup table (`spatialLUT`) in `applyBilateralFilter` in `src/lib/graphics/math/edtNormalMap.ts`, eliminating 50% of inner-loop `Math.exp()` calls, with bounds guards for non-positive dimensions and sigmas.
   - Memoized normal map preview canvas in `src/components/layout/CenterViewport.tsx` (measured 1179 lines) using an offscreen canvas ref cache invalidated only when `bufferVersion`, `activeFrameIndex`, layer structure signature, or floating selection key changes.
   - Removed inert `isDrawingRef` dependency from `src/components/layout/CenterViewport.tsx`'s `useEffect`.
 - **P2P WebRTC Sync Hardening & Bounded CRDT Log (`src/lib/sync/p2pSync.ts`, `src/lib/collab/crdtPixelBuffer.ts`, `tests/p2pValidation.test.ts`)**:
@@ -1058,14 +1111,14 @@ These are repository changes. Their presence here does not identify the live dep
   - Verified in `tests/components/PixelLightBulbGizmo.test.tsx`.
 
 ### Deep Character / Object Analysis Hardening & Cel-Shading Engine Restoration
-- **Uncapped Asymmetrical Ear & Appendage Scanning (`src/lib/ai/math/photometricAuto.ts`, `src/lib/ai/math/edtNormalMap.ts`)**:
+- **Uncapped Asymmetrical Ear & Appendage Scanning (`src/lib/graphics/math/photometricAuto.ts`, `src/lib/graphics/math/edtNormalMap.ts`)**:
   - Removed the arbitrary 8-pixel cap on silhouette appendage scanning. Scans up to 45% of sprite dimensions across horizontal and vertical sweeps, reliably identifying asymmetrical ears, horns, wings, and cheek tufts at any canvas resolution.
-- **Expressive Facial Feature Recognition (`src/lib/ai/math/photometricAuto.ts`)**:
+- **Expressive Facial Feature Recognition (`src/lib/graphics/math/photometricAuto.ts`)**:
   - Expanded cluster detection limits to support up to 32 facial feature clusters and improved contrast thresholds for darker and red fur tones, protecting eyes, eyebrows, nose, mouth, and whiskers from diffuse crush.
-- **Prop & Complex Shape Content-Aware Decomposition (`src/lib/ai/math/photometricLighting.ts`)**:
+- **Prop & Complex Shape Content-Aware Decomposition (`src/lib/graphics/math/photometricLighting.ts`)**:
   - Extended `computeContentAwareHeightmap` decomposition to props and general objects, isolating pure spherical dome EDT strictly to geometric orbs (`formType === 'orb'`).
   - Unified `formType` inference in `src/hooks/viewport/useViewportStudioEvents.ts` for both Auto and Manual studio modes, ensuring hand-drawn characters receive anatomical part segmentation and discrete OKLCH cel-shading even when setting light direction manually.
-- **Calibrated Spherical Convex Dome Normal Mathematics (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`)**:
+- **Calibrated Spherical Convex Dome Normal Mathematics (`src/lib/graphics/math/edtNormalMap.ts`, `src/lib/graphics/math/photometricLighting.ts`)**:
   - Calibrated spherical dome heightmap inflation blends 75% spherical profile with 25% gamma profile; the spherical term flattens at the apex, while the blend retains a nonzero apex slope (`tests/orbPhotometricCelShading.test.ts`).
   - Decoupled direct key light from cavity ambient occlusion on convex slopes to eliminate center-locked apex highlight glitches.
 
@@ -1076,18 +1129,18 @@ These are repository changes. Their presence here does not identify the live dep
 
 ## [v1.7.0] - 2026-09-05
 ### Deep Art Understanding, Anatomical Part Segmentation & OKLCH Cel-Shading
-- **Art Morphology & Anatomical Form Classification (`src/lib/ai/math/photometricAuto.ts`)**:
+- **Art Morphology & Anatomical Form Classification (`src/lib/graphics/math/photometricAuto.ts`)**:
   - Implemented automatic classification of canvas drawings into `character` (creatures with ears/horns, facial features, limbs) vs. `orb` (geometric spheres/circles) vs. `prop`.
   - Connected-component clustering isolates eyes, pupils, mouth, snout, and lateral whiskers (`isFeature`, `isInkLine`).
   - Scans the top 15%–35% of the silhouette for distinct local convex lobes to detect ears and horns.
   - Distinguishes flat unshaded base colors from intentional pre-painted highlights to prevent double-shading artifacts.
   - Verified in `tests/photometricAutoAnalysis.test.ts`.
-- **Frontal Face Cushion Plateau & Narrow Appendage Stabilization (`src/lib/ai/math/edtNormalMap.ts`)**:
+- **Frontal Face Cushion Plateau & Narrow Appendage Stabilization (`src/lib/graphics/math/edtNormalMap.ts`)**:
   - Eliminated "bowling-ball" face inflation on character sprites: for `character` forms, the height reaches a smooth plateau within 2.8px of the boundary contour while the interior remains flat facing the camera ($N_z \ge 0.85$), ensuring light illuminates faces without splitting them in half with shadow.
   - Preserves dedicated local 3D peaks for ears and horns so they catch directional light independently from the head.
   - Stabilizes narrow appendages (ears, horns, antennae, tails $\le 5$px wide) on the light-facing side: clamps $N_x \le 0$ when light comes from the left and enforces $N_z \ge 0.88$, preventing narrow 2–4px ears from bisecting into a 1px lit tube and a 1px dark shadow tube.
   - Stabilizes facial feature and whisker normals to $N = (0, 0, 1)$.
-- **Feature Preservation & Discrete OKLCH Cel-Shading Ramps (`src/lib/ai/math/photometricLighting.ts`)**:
+- **Feature Preservation & Discrete OKLCH Cel-Shading Ramps (`src/lib/graphics/math/photometricLighting.ts`)**:
   - Pixels identified as `isFeature` (eyes, mouth) or `isInkLine` (outlines, whiskers) bypass diffuse and ambient multipliers entirely, maintaining exact artist colors without diffuse brown mud or dark ambient crush.
   - Excludes facial features and line art from receiving specular highlights.
   - Implemented discrete OKLCH cel-shading ramps cached per unique base color (`CelRamp`): maps each artist base color to exactly one unified crisp shadow tone (cool skylight hue shifted to 260°, $L \times 0.78$), one deep crevice tone for concave seams/folds ($AO < 0.60$, $L \times 0.60$), and optional warm highlight tone (65°).
@@ -1098,17 +1151,17 @@ These are repository changes. Their presence here does not identify the live dep
   - Maintains non-destructive tagged layer replacement (`Photometric <material>`).
 
 ### Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows
-- **Length-Bounded 2.5D Sprite Cast Shadow Projection (`src/lib/ai/shadowRayMarcher.ts`)**:
+- **Length-Bounded 2.5D Sprite Cast Shadow Projection (`src/lib/graphics/shadowRayMarcher.ts`)**:
   - Replaced infinite 2D planar cone-tracing wedge with professional length-bounded 2.5D sprite cast shadows.
   - Implemented exact 1-to-1 sheared silhouette projection ($h = y_{\text{base}} - y_s \ge 0$, $\text{projX} = \text{round}(x_s + h \cdot \text{shear}_x)$, $\text{projY} = \text{round}(y_{\text{ground}} + h \cdot \text{shear}_y)$) anchored at the sprite contact baseline ($y_{\text{base}}$).
   - Preserves hollow leg arches, waist indentations, and wing gaps without bounding-box bloat or muddy center ambient occlusion blobs.
   - Verified in `tests/shadowRayMarcher.test.ts`.
-- **Classic Ground Contact Drop Shadows (`src/lib/ai/shadowRayMarcher.ts`, `src/components/layout/inspector/RaymarchedShadowSection.tsx`)**:
+- **Classic Ground Contact Drop Shadows (`src/lib/graphics/shadowRayMarcher.ts`, `src/components/layout/inspector/RaymarchedShadowSection.tsx`)**:
   - Added dedicated `shadowStyle: 'cast' | 'drop'` support: 'cast' renders directional sheared silhouette on the floor, while 'drop' renders a crisp stylized Bresenham pixel ellipse/capsule under the character contact baseline.
 - **Crisp Pixel Art Uniform Opacity (`ditherMode: 'none'`)**:
   - When `ditherMode === 'none'`, shadows render with crisp uniform flat opacity $\text{round}(\text{shadowOpacity} \times 255)$, completely eliminating blurry continuous float alpha gradients and digital airbrush smear.
   - Changed default `ditherMode` across the shadow engine and inspector UI to `'none'`.
-- **Smart Shadow Auto-Analysis (`src/lib/ai/math/shadowAuto.ts`)**:
+- **Smart Shadow Auto-Analysis (`src/lib/graphics/math/shadowAuto.ts`)**:
   - Implemented "Analyze & Render" for shadows: analyzes canvas sprite morphology to auto-infer optimal light source coordinates, elevation, radius, opacity, and shadow style with plain-language rationale chips.
   - Verified in `tests/shadowAutoAnalysis.test.ts`.
 
@@ -1132,7 +1185,7 @@ These are repository changes. Their presence here does not identify the live dep
   - `createAnimationSlice.ts`: Frames list, active frame index, playback loop, FPS, and onion skinning.
   - `createViewportSlice.ts`: Zoom, pan, grid, isometric guides, 3x3 tile preview, and perceptual lenses.
   - `createHistorySlice.ts`: Selection bounding box, selection mask, buffer version incrementing, and canUndo/canRedo flags.
-- **Smart Math Modularization (`src/lib/ai/math/`)**: Extracted `smartMathEngine.ts` into modular domain modules with a clean barrel file:
+- **Smart Math Modularization (`src/lib/graphics/math/`)**: Extracted `smartMathEngine.ts` into modular domain modules with a clean barrel file:
   - `edtNormalMap.ts`: Felzenszwalb & Huttenlocher (2012) exact Euclidean Distance Transform, inflated heightmaps, bilateral filtering, and tangent normal field computation.
   - `photometricLighting.ts`: Parametric Blinn-Phong 2.5D lighting and volumetric raymarched soft shadows.
   - `dithering.ts`: Atkinson and Riemersma error-diffusion dithering.
@@ -1233,10 +1286,10 @@ These are repository changes. Their presence here does not identify the live dep
 - **Magic Wand & Lasso Rasterization**: Shipped the Magic Wand tool for continuous flood-fill color selection and implemented precise polygon rasterization for the freehand Lasso tool.
 
 ### Rendering Pipeline & AI Morphing Rewrite
-- **Signed Distance Field (SDF) Morphing Engine (`src/lib/ai/pixelAiEngine.ts`)**: Replaced artifact-prone optical flow with Felzenszwalb-Huttenlocher O(N) EDT (Euclidean Distance Transform) to provide pixel-perfect topological morphing for in-between frames.
+- **Signed Distance Field (SDF) Morphing Engine (`src/lib/graphics/pixelRasterEngine.ts`)**: Replaced artifact-prone optical flow with Felzenszwalb-Huttenlocher O(N) EDT (Euclidean Distance Transform) to provide pixel-perfect topological morphing for in-between frames.
 - **Smart Morph Relighting (`src/components/layout/CenterViewport.tsx`)**: Re-architected in-between generation to cleanly extract base artwork, perform the SDF morph, and automatically re-dispatch `pixibun:photometric-lighting` and `pixibun:volumetric-optics` passes so newly generated frames match the dynamic lighting of the scene.
 - **Physical Rendering Fix**: Restored omitted Lambertian diffuse reflection to physical composites, vastly improving lighting realism.
-- **RotSprite Artifact-Free Canvas Rotation (`src/lib/ai/smartMathEngine.ts`)**: Implemented a custom Scale3x + Nearest-Neighbor Inverse Mapping algorithm to fix floating-point holes created by native `ctx.rotate`.
+- **RotSprite Artifact-Free Canvas Rotation (`src/lib/graphics/smartMathEngine.ts`)**: Implemented a custom Scale3x + Nearest-Neighbor Inverse Mapping algorithm to fix floating-point holes created by native `ctx.rotate`.
 - **GIF Export Multiframe Pooled Canvas Fix (`src/components/modals/ExportModal.tsx`, `src/lib/render/compositor.ts`)**: Passed `{ freshCanvas: true }` during multi-frame composite jobs, preventing the `sharedOffscreenCanvas` singleton from destructively overwriting all output frames with the final frame.
 - **GIF Delay Centisecond Clamping (`src/lib/export/gifEncoderCore.ts`)**: Added a lower bound of `2` centiseconds to GIF frame delays to bypass aggressive browser 100ms throttling penalties for fast animations.
 - **Test Suite Updates**: 123 tests passing. Added new unit tests for GIF chunk distinction and delay clamping.
@@ -1246,7 +1299,7 @@ These are repository changes. Their presence here does not identify the live dep
 ## [v1.2.0] - 2026-08-31
 
 ### 2D Ray Marching & Physically Accurate Soft Shadows Engine
-- **Aaltonen Contact-Hardening Cone Tracing (`src/lib/ai/shadowRayMarcher.ts`)**: Implemented CPU-bound 2D sphere tracing directly over discrete Euclidean Distance Fields ($O(N)$ Felzenszwalb EDT) using Sebastian Aaltonen's tangent geometric correction ($y = \frac{h^2}{2ph}, d = \sqrt{h^2 - y^2}$) and physical area light cone tracing ($r_{\text{cone}} = R_L \frac{t_{\text{closest}}}{T}$).
+- **Aaltonen Contact-Hardening Cone Tracing (`src/lib/graphics/shadowRayMarcher.ts`)**: Implemented CPU-bound 2D sphere tracing directly over discrete Euclidean Distance Fields ($O(N)$ Felzenszwalb EDT) using Sebastian Aaltonen's tangent geometric correction ($y = \frac{h^2}{2ph}, d = \sqrt{h^2 - y^2}$) and physical area light cone tracing ($r_{\text{cone}} = R_L \frac{t_{\text{closest}}}{T}$).
 - **Branchless $C^0$ Bilinear Field Interpolation (`sampleEDTBilinear`)**: Eliminates grid-stepping quantization and ray-stepping acne across fractional query coordinates.
 - **Zero-Allocation TypedArray Memory Safety**: Reused Float32Array visibility buffers from `bufferPool.ts` (`acquireFloat32Buffer` / `releaseFloat32Buffer`) with structured `try...finally` deallocation blocks.
 - **Bayer Matrix Ordered Penumbra Dithering**: Converts continuous float visibility gradients into authentic retro pixel art stippling patterns (`2x2`, `4x4`, `8x8`).
@@ -1261,8 +1314,8 @@ These are repository changes. Their presence here does not identify the live dep
 ### Core Engine & Rendering Optimizations
 - **Zero-GC Compositor Canvas Pooling**: Added `sharedOffscreenCanvas` singleton and `targetCanvas` parameter in `compositeFrame()`, eliminating dynamic canvas element creation during onion skinning, scrubbing, and frame compositing.
 - **TypedArray Buffer Pool (`src/lib/engine/bufferPool.ts`)**: Built a memory-bounded scratch buffer pool (`acquireFloat32Buffer`, `releaseFloat32Buffer`, `acquireInt32Buffer`, `releaseInt32Buffer`, clamped arrays) with zero-fill reset guarantees.
-- **Zero-GC EDT Distance Transform (`src/lib/ai/smartMathEngine.ts`)**: Refactored 1D parabolic envelope calculations in `computeSeparableEDT` and `dt1D` to borrow scratch buffers from `TypedArrayPool`.
-- **Zero-GC Downsampling Gradient Allocation (`src/lib/ai/pixelizeEngine.ts`)**: Swapped dynamic gradient map allocations with buffer pool acquires.
+- **Zero-GC EDT Distance Transform (`src/lib/graphics/smartMathEngine.ts`)**: Refactored 1D parabolic envelope calculations in `computeSeparableEDT` and `dt1D` to borrow scratch buffers from `TypedArrayPool`.
+- **Zero-GC Downsampling Gradient Allocation (`src/lib/graphics/pixelizeEngine.ts`)**: Swapped dynamic gradient map allocations with buffer pool acquires.
 - **Web Worker GIF Encoding Engine (`src/lib/export/gifEncoder.worker.ts`)**: Offloaded heavy LZW compression and median-cut color quantization to a dedicated worker thread with transferable ArrayBuffers.
 - **Buffer Registry Memory Safety (`src/stores/studioStore.ts`)**: Integrated `clearAllBuffers()` calls during `resetToNewProject()` and `loadProjectState()`, preventing memory leaks on project switches.
 - **Flood Fill Exact Tolerance 0 (`src/lib/canvas/floodFill.ts`)**: Added strict integer RGBA comparison when `tolerance === 0`, preventing floating-point alpha edge case false positives.

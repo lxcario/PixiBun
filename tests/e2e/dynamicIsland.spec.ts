@@ -205,14 +205,16 @@ test('compact and wide layouts fit their slot and reduced motion removes blur an
   await page.getByTestId('dither-tool').click();
   await page.getByTestId('tool-options-button').click();
   await expect.poll(() => page.locator('.isl-content').evaluate(el => getComputedStyle(el).filter)).toBe('none');
-  const effects = await page.locator('[data-testid="dynamic-island"]').evaluate(el => ({
+  const island = page.locator('[data-testid="dynamic-island"]');
+  const effects = await island.evaluate(el => ({
     filter: getComputedStyle(el.querySelector('.isl-goo')!).filter,
     panelTransition: getComputedStyle(el.querySelector('[data-island-panel]')!).transitionDuration,
-    animations: el.getAnimations({ subtree: true }).filter(animation => animation.playState === 'running').length,
   }));
   expect(effects.filter).toBe('none');
   expect(effects.panelTransition).toBe('0s');
-  expect(effects.animations).toBe(0);
+  // A press started before reduced motion took effect may still be finishing; nothing keeps running after it.
+  await expect.poll(() => island.evaluate(el => el.getAnimations({ subtree: true })
+    .filter(animation => animation.playState === 'running').length)).toBe(0);
 });
 
 test('hover shortcut splits to the right without moving text and stays reachable across the gap', async ({ page }) => {

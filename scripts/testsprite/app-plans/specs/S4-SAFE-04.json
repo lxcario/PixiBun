@@ -1,0 +1,80 @@
+{
+  "id": "2dee1983-4ac9-490d-9986-1b054492cab0",
+  "key": "S4-SAFE-04",
+  "title": "S4-SAFE-04 — Offline and update promises need an actual network boundary.",
+  "goal": "Work is kept locally: an edit saved with Save now is reported as saved to local storage and comes back exactly after a full reload, where a panel not opened before still loads and the history starts empty.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "color": "#E83A5C"
+    },
+    {
+      "click": "Pen"
+    },
+    {
+      "click": "1px brush preset"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "colors": "7"
+      }
+    },
+    {
+      "record": "E"
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "visible": "All changes saved to local storage",
+      "role": "status",
+      "why": "The save is kept on this device, not sent over the network."
+    },
+    {
+      "open": "/studio?end=1",
+      "reload": true
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "digest": "=E"
+      },
+      "why": "The saved edit comes back exactly."
+    },
+    {
+      "disabled": "Undo last action"
+    },
+    {
+      "click": "/^Effects/",
+      "nth": 0
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "click": "/^Review animation/"
+    },
+    {
+      "visible": "Create clip from all frames",
+      "why": "A panel not opened before loads after the reload."
+    }
+  ],
+  "cliOnly": [
+    "the same journey with the network actually disconnected, and update Restart saving first (tests/production/offlinePanels.spec.ts, tests/production/resourceCacheRecovery.spec.ts)"
+  ],
+  "allow": []
+}

@@ -58,11 +58,6 @@ function getStructureCapacityError(width: number, height: number, layerCount: nu
   return null;
 }
 
-export const CODRAW_STATE_EVENT = 'pixibun:codraw-state';
-export const CODRAW_CURSORS_EVENT = 'pixibun:remote-cursors';
-export const CODRAW_COMPOSITE_EVENT = 'pixibun:request-composite';
-export const CODRAW_REMOTE_CHANGE_EVENT = 'pixibun:remote-change';
-
 export type CoDrawRole = 'host' | 'guest';
 
 export interface CoDrawStartOptions {

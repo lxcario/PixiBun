@@ -1,0 +1,114 @@
+{
+  "id": "aff47330-da21-4332-803b-67d3f8c1bb85",
+  "key": "S4-VIEW-02",
+  "title": "S4-VIEW-02 — A workspace remembers its shelves.",
+  "goal": "A saved layout restores the inspector's side and width after other changes and after reopening the Studio, and none of it changes the drawing.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^View/",
+      "nth": 0
+    },
+    {
+      "click": "/^Arrange/"
+    },
+    {
+      "select": "Inspector position",
+      "option": "Left"
+    },
+    {
+      "fill": "Inspector width",
+      "value": "300"
+    },
+    {
+      "fill": "New workspace name",
+      "value": "S4 Proof Desk"
+    },
+    {
+      "click": "Save layout"
+    },
+    {
+      "visible": "S4 Proof Desk",
+      "why": "The saved layout is listed."
+    },
+    {
+      "select": "Inspector position",
+      "option": "Right"
+    },
+    {
+      "fill": "Inspector width",
+      "value": "380"
+    },
+    {
+      "click": "S4 Proof Desk"
+    },
+    {
+      "selected": "Inspector position",
+      "option": "Left",
+      "why": "The saved side returns."
+    },
+    {
+      "field": "Inspector width",
+      "equals": "300",
+      "why": "The saved width returns."
+    },
+    {
+      "click": "Close dialog"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Layout changes do not touch the drawing."
+    },
+    {
+      "open": "/studio?end=1",
+      "reload": true
+    },
+    {
+      "skip": true
+    },
+    {
+      "click": "/^View/",
+      "nth": 0
+    },
+    {
+      "click": "/^Arrange/"
+    },
+    {
+      "click": "S4 Proof Desk"
+    },
+    {
+      "selected": "Inspector position",
+      "option": "Left",
+      "why": "The saved layout survives reopening."
+    },
+    {
+      "field": "Inspector width",
+      "equals": "300"
+    },
+    {
+      "click": "Close dialog"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "The drawing is exactly the original."
+    }
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

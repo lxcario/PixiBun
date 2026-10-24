@@ -1,0 +1,84 @@
+{
+  "id": "1c218262-aac8-4a1d-b6ba-fb7785bce98f",
+  "key": "S4-PAL-03",
+  "title": "S4-PAL-03 — Five shades from one seed.",
+  "goal": "Shade ramp turns the selected seed #3A2E4C into five shades that keep the seed and join the palette; choosing a generated shade is an explicit action that sets the Primary color; Undo removes the ramp; the artwork never changes.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Palette",
+      "nth": 0
+    },
+    {
+      "selected": "Color palette preset",
+      "option": "Lamplit Hearth (31)"
+    },
+    {
+      "click": "/^Select color #3a2e4c/i",
+      "nth": 0
+    },
+    {
+      "click": "Shade ramp",
+      "say": "Click the 'Shade ramp' button in the Palette panel. It is not the '+ Add 4 to palette' button under 'Shades of the main color', which is a different, four-shade tool."
+    },
+    {
+      "selected": "Color palette preset",
+      "option": "Lamplit Hearth (36)",
+      "why": "Five shades joined the palette."
+    },
+    {
+      "visible": "Select color #6B5871"
+    },
+    {
+      "visible": "Select color #3A2E4C",
+      "why": "The ramp keeps the seed."
+    },
+    {
+      "visible": "Select color #120B2A"
+    },
+    {
+      "visible": "Select color #030015"
+    },
+    {
+      "visible": "Select color #000003"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      },
+      "why": "Generating shades does not touch the artwork."
+    },
+    {
+      "click": "Select color #6B5871"
+    },
+    {
+      "visible": "/^Primary color #6B5871/i",
+      "why": "A generated shade is applied only when chosen."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "selected": "Color palette preset",
+      "option": "Lamplit Hearth (31)",
+      "why": "Undo removes the ramp."
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      }
+    }
+  ]
+}

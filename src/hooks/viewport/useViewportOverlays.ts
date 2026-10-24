@@ -15,6 +15,15 @@ export interface FloatingSelection {
   y: number;
   w: number;
   h: number;
+  /** The layer the pixels were lifted from, or pasted onto. Committing puts them back there. */
+  layerId?: string;
+  /**
+   * Set when the pixels were cut out of `layerId`: a copy of them where they were.
+   * Cancelling draws it back. While it is set, the lift's Undo snapshot is still
+   * pending, so committing must not capture another one (that would record the
+   * hole left by the lift as the state Undo returns to).
+   */
+  liftedFrom?: { canvas: HTMLCanvasElement; x: number; y: number };
 }
 
 interface UseViewportOverlaysProps {

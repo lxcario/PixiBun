@@ -16,6 +16,7 @@ import { estimatePaletteBytes } from '@/lib/color/paletteSemantics';
 import { commitWorkspace } from '@/lib/engine/workspaceTransaction';
 import { selectiveRestore } from '@/lib/engine/selectiveRestore';
 import { cropImageData, isPatchStep, stepRect, toPatchStep } from '@/lib/engine/pixelPatch';
+import { isEditableLayer } from '@/lib/canvas/layerEditGuard';
 
 interface UseViewportDrawingProps {
   canvasWidth: number;
@@ -146,6 +147,14 @@ export function useViewportDrawing({
 
   // Commit Undo Snapshot to Stack
   const commitSnapshot = useCallback(() => {
+    // A stroke publishes its store update once per frame while it is drawn. When
+    // it is committed, publish now: callers record the workspace revision right
+    // after (Curve's re-edit ownership) and a late update would read as a change.
+    if (rafBufferBumpRef.current !== null) {
+      cancelAnimationFrame(rafBufferBumpRef.current);
+      rafBufferBumpRef.current = null;
+      useStudioStore.getState().commitBufferEdit();
+    }
     if (currentStrokeSnapshotRef.current) {
       const snapshot = currentStrokeSnapshotRef.current;
       if (
@@ -612,10 +621,12 @@ export function useViewportDrawing({
 
   // Draw points on active layer
   const drawPointsOnActiveLayer = useCallback(
-    (points: Point[], color: string, isErase: boolean = false, refresh: boolean = true) => {
+    // `keep`, when given, decides pixel by pixel which cells of each brush footprint are painted
+    // (the Dither Brush pattern); without it every footprint is a solid square.
+    (points: Point[], color: string, isErase: boolean = false, refresh: boolean = true, keep?: (x: number, y: number) => boolean) => {
       const currentFrame = useStudioStore.getState().frames[activeFrameIndex] || frames[activeFrameIndex];
       const targetLayerId = useStudioStore.getState().activeLayerId || activeLayerId || currentFrame?.layers[0]?.id;
-      if (!targetLayerId || !currentFrame?.layers.some(layer => layer.id === targetLayerId && !layer.locked)) return;
+      if (!targetLayerId || !currentFrame?.layers.some(layer => layer.id === targetLayerId && isEditableLayer(layer))) return;
 
       const layerCanvas = getOrCreateLayerCanvas(targetLayerId);
       const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
@@ -643,7 +654,16 @@ export function useViewportDrawing({
       // An active selection limits every brush, line, shape and curve stamp.
       const selected = useStudioStore.getState();
       const mask = resolveSelectionMask(selected.selection, selected.selectionMask, canvasWidth, canvasHeight);
-      const stamp = (p: Point) => fillRectMasked(ctx, p.x - offset, p.y - offset, tools.brushSize, tools.brushSize, mask, canvasWidth, canvasHeight);
+      const size = tools.brushSize;
+      const stamp = keep
+        ? (p: Point) => {
+          for (let y = p.y - offset; y < p.y - offset + size; y++) {
+            for (let x = p.x - offset; x < p.x - offset + size; x++) {
+              if (keep(x, y)) fillRectMasked(ctx, x, y, 1, 1, mask, canvasWidth, canvasHeight);
+            }
+          }
+        }
+        : (p: Point) => fillRectMasked(ctx, p.x - offset, p.y - offset, size, size, mask, canvasWidth, canvasHeight);
       if (isErase) {
         ctx.globalCompositeOperation = 'destination-out';
         allPoints.forEach(stamp);
@@ -685,7 +705,7 @@ export function useViewportDrawing({
   const drawProvisionalPoint = useCallback((point: Point, color: string, isErase: boolean) => {
     const frame = useStudioStore.getState().frames[activeFrameIndex];
     const layerId = activeLayerId || frame?.layers[0]?.id;
-    if (!layerId || !frame?.layers.some(layer => layer.id === layerId && !layer.locked)) return;
+    if (!layerId || !frame?.layers.some(layer => layer.id === layerId && isEditableLayer(layer))) return;
     const ctx = getOrCreateLayerCanvas(layerId).getContext('2d', { willReadFrequently: true });
     if (!ctx) return;
     const points = applySymmetry([point], canvasWidth, canvasHeight, tools.symmetryHorizontal, tools.symmetryVertical, tools.symmetryGroup);

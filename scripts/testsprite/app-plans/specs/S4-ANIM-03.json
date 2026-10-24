@@ -1,0 +1,145 @@
+{
+  "id": "5197eb3b-9b2a-43ca-8371-5fb0ed29d7ae",
+  "key": "S4-ANIM-03",
+  "title": "S4-ANIM-03 — Clips use inclusive endpoints.",
+  "goal": "A clip covers its first and last frame, an inverted range is refused with a message the artist can see and hear, the last valid range stays, and editing clips never touches frame holds or artwork.",
+  "cliOnly": [
+    "per-frame native RGBA of all three frames"
+  ],
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "frame": "1 of 1",
+        "pixels": "192",
+        "colors": "6"
+      }
+    },
+    {
+      "record": "A"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "100"
+    },
+    {
+      "click": "Duplicate frame"
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "200"
+    },
+    {
+      "click": "Duplicate frame"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "300"
+    },
+    {
+      "readout": {
+        "frame": "3 of 3",
+        "digest": "=A"
+      },
+      "why": "Duplicates copy the artwork exactly."
+    },
+    {
+      "click": "Clips",
+      "nth": 0
+    },
+    {
+      "fill": "New tag name",
+      "value": "S4 Quiet Loop"
+    },
+    {
+      "fill": "New tag start frame",
+      "value": "1"
+    },
+    {
+      "fill": "New tag end frame",
+      "value": "2"
+    },
+    {
+      "click": "Add Tag"
+    },
+    {
+      "field": "Start frame for tag S4 Quiet Loop",
+      "equals": "1"
+    },
+    {
+      "field": "End frame for tag S4 Quiet Loop",
+      "equals": "2"
+    },
+    {
+      "fill": "Start frame for tag S4 Quiet Loop",
+      "value": "2"
+    },
+    {
+      "field": "Start frame for tag S4 Quiet Loop",
+      "equals": "2",
+      "why": "Start 2 to End 2 is a valid one-frame clip."
+    },
+    {
+      "fill": "End frame for tag S4 Quiet Loop",
+      "value": "1"
+    },
+    {
+      "alert": "Clip frames must form a valid range within the animation."
+    },
+    {
+      "field": "End frame for tag S4 Quiet Loop",
+      "equals": "2",
+      "why": "The refused edit leaves the last valid range 2–2."
+    },
+    {
+      "fill": "Start frame for tag S4 Quiet Loop",
+      "value": "1"
+    },
+    {
+      "fill": "End frame for tag S4 Quiet Loop",
+      "value": "3"
+    },
+    {
+      "field": "Start frame for tag S4 Quiet Loop",
+      "equals": "1"
+    },
+    {
+      "field": "End frame for tag S4 Quiet Loop",
+      "equals": "3",
+      "why": "Both endpoints are included: the clip spans all three frames."
+    },
+    {
+      "click": "Done"
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/",
+      "why": "Frame holds are unchanged by clip edits."
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "visible": "/^Select frame 3. #3 300ms/"
+    },
+    {
+      "readout": {
+        "frame": "3 of 3",
+        "digest": "=A"
+      },
+      "why": "Clip editing changed no artwork."
+    }
+  ]
+}

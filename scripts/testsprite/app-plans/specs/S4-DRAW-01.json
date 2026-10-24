@@ -1,0 +1,107 @@
+{
+  "id": "6b85de97-1585-4bda-a830-b9b23fb83901",
+  "key": "S4-DRAW-01",
+  "title": "S4-DRAW-01 — Pen and erase return exact pixels.",
+  "goal": "On a new transparent 16×16 drawing, a 2 px red Pen stamp paints exactly pixels (7,7)–(8,8); a 1 px Eraser click removes exactly (8,8) and leaves the other three; Undo restores (8,8) and Redo erases it again.",
+  "cliOnly": [
+    "separated cells (2,3) and (8,10) placed by coordinate and native RGBA"
+  ],
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "click": "/^File/",
+      "nth": 0
+    },
+    {
+      "click": "New drawing",
+      "role": "menuitem"
+    },
+    {
+      "click": "16 by 16 pixels, Tiny icon",
+      "role": "radio",
+      "shown": "16×16 Tiny icon"
+    },
+    {
+      "click": "Start New Drawing"
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "pixels": "0"
+      }
+    },
+    {
+      "color": "#FF0000"
+    },
+    {
+      "key": "b"
+    },
+    {
+      "click": "2px brush preset",
+      "say": "Click the '2px brush preset' button: the preset labelled 2 in the row of brush presets (1, 2, 3, 4). Do not use the 'Brush size' menu."
+    },
+    {
+      "pressed": "2px brush preset",
+      "why": "The 2 px preset is selected before painting."
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "pixels": "4",
+        "top": "#ff0000 4",
+        "digest": "51ca6ebd"
+      },
+      "why": "Exactly pixels (7,7), (8,7), (7,8) and (8,8) are red."
+    },
+    {
+      "enabled": "Undo last action"
+    },
+    {
+      "key": "e"
+    },
+    {
+      "click": "1px brush preset"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "pixels": "3",
+        "top": "#ff0000 3",
+        "digest": "32a99a1f"
+      },
+      "why": "Only (8,8) is erased; the other three red pixels are unchanged."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "pixels": "4",
+        "digest": "51ca6ebd"
+      },
+      "why": "Undo returns (8,8) exactly."
+    },
+    {
+      "click": "Redo last action"
+    },
+    {
+      "readout": {
+        "pixels": "3",
+        "digest": "32a99a1f"
+      },
+      "why": "Redo erases (8,8) again."
+    }
+  ]
+}

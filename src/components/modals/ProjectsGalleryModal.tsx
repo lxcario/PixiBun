@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
@@ -42,6 +42,8 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
   const [storageError, setStorageError] = useState<string | null>(null);
   const [renaming, setRenaming] = useState(false);
   const [renameError, setRenameError] = useState<string | null>(null);
+  const [duplicating, setDuplicating] = useState(false);
+  const duplicatingRef = useRef(false);
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
@@ -102,8 +104,29 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
 
   const handleDuplicate = async (project: StoredProject, e: React.MouseEvent) => {
     e.stopPropagation();
-    await duplicateProject(project.id);
-    void fetchProjects();
+    if (duplicatingRef.current) return;
+    duplicatingRef.current = true;
+    setDuplicating(true);
+    try {
+      const duplicated = await duplicateProject(project.id);
+      if (!duplicated) {
+        studioEvents.emit('pixibun:toast', {
+          type: 'error',
+          message: 'The project could not be duplicated. Your original drawing was left unchanged.',
+        });
+        return;
+      }
+      await fetchProjects();
+    } catch (err: unknown) {
+      console.error('Failed to duplicate project:', err);
+      studioEvents.emit('pixibun:toast', {
+        type: 'error',
+        message: err instanceof Error ? err.message : 'The project could not be duplicated. Your original drawing was left unchanged.',
+      });
+    } finally {
+      duplicatingRef.current = false;
+      setDuplicating(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -360,8 +383,10 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
                   <div className="flex items-center justify-between border-t border-[var(--desk-border)] pt-2 mt-auto">
                     <button
                       type="button"
+                      disabled={duplicating}
+                      aria-disabled={duplicating}
                       onClick={(e) => handleDuplicate(project, e)}
-                      className="inline-flex items-center gap-1 text-[11px] font-mono text-[var(--text-muted)] hover:text-[var(--accent-wisteria)] transition-colors"
+                      className="inline-flex items-center gap-1 text-[11px] font-mono text-[var(--text-muted)] hover:text-[var(--accent-wisteria)] transition-colors disabled:opacity-50 disabled:pointer-events-none"
                       title="Duplicate drawing"
                     >
                       <PixelIcon name="copy" size={12} />

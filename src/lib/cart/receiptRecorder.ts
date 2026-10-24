@@ -76,6 +76,11 @@ export function startReceiptRecorder(): () => void {
   let saveTimer: number | null = null;
   let switching: Promise<void> = Promise.resolve();
   let stopped = false;
+  // Pointers held down. A stroke publishes as it is drawn, so a slow one (WebKit took
+  // over 350 ms for a short line) went quiet long enough to be pictured half drawn and
+  // counted twice; pictures wait for the release instead.
+  const held = new Set<number>();
+  let deferred = false;
 
   const save = async () => {
     if (saveTimer !== null) { window.clearTimeout(saveTimer); saveTimer = null; }
@@ -107,16 +112,19 @@ export function startReceiptRecorder(): () => void {
   const capture = () => {
     captureTimer = null;
     const state = useStudioStore.getState();
+    if (held.size > 0) { deferred = true; return; }
     if (stopped || state.isPlaying) return;
     const current = session;
-    if (!current) {
+    // While switching to this drawing, the previous session lingers until its ledger is
+    // saved; pictures taken then belong to the new drawing and wait for it, rather than
+    // being dropped (strokes made just after opening a drawing went uncounted).
+    if (!current || current.projectId !== state.currentProjectId) {
       if (loadingProject === state.currentProjectId && waiting.length < 64) {
         const picture = snapshot();
         if (picture) waiting.push({ picture, time: Date.now() });
       }
       return;
     }
-    if (state.currentProjectId !== current.projectId) return;
     const picture = snapshot();
     if (picture) record(current, picture, Date.now());
   };
@@ -157,11 +165,25 @@ export function startReceiptRecorder(): () => void {
   });
   const onHide = () => { if (document.visibilityState === 'hidden') void save(); };
   document.addEventListener('visibilitychange', onHide);
+  const onPress = (event: PointerEvent) => { held.add(event.pointerId); };
+  const onRelease = (event: PointerEvent) => {
+    if (held.delete(event.pointerId) && held.size === 0 && deferred) { deferred = false; scheduleCapture(); }
+  };
+  // A release outside the window may never arrive; leaving it must not stop the receipt.
+  const onBlur = () => { held.clear(); if (deferred) { deferred = false; scheduleCapture(); } };
+  window.addEventListener('pointerdown', onPress, true);
+  window.addEventListener('pointerup', onRelease, true);
+  window.addEventListener('pointercancel', onRelease, true);
+  window.addEventListener('blur', onBlur);
 
   return () => {
     stopped = true;
     unsubscribe();
     document.removeEventListener('visibilitychange', onHide);
+    window.removeEventListener('pointerdown', onPress, true);
+    window.removeEventListener('pointerup', onRelease, true);
+    window.removeEventListener('pointercancel', onRelease, true);
+    window.removeEventListener('blur', onBlur);
     if (captureTimer !== null) window.clearTimeout(captureTimer);
     void save();
   };

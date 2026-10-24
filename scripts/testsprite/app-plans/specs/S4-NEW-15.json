@@ -1,0 +1,76 @@
+{
+  "id": "306a7b5a-9435-4506-9be2-eaf7dd9f607f",
+  "key": "S4-NEW-15",
+  "title": "S4-NEW-15 — Preview stays on the desk.",
+  "goal": "The Live Preview window opens on the desk with its header controls reachable, stays reachable when its scale grows to 4x (the window keeps itself inside the drawing area), folds, unfolds and closes, and never changes the artwork.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^View/",
+      "nth": 0
+    },
+    {
+      "click": "Live preview Floating window"
+    },
+    {
+      "click": "Close view options"
+    },
+    {
+      "visible": "Live Preview Window",
+      "role": "dialog"
+    },
+    {
+      "visible": "Minimize Preview Window"
+    },
+    {
+      "click": "4x",
+      "role": "radio"
+    },
+    {
+      "checked": "4x",
+      "role": "radio"
+    },
+    {
+      "visible": "Minimize Preview Window",
+      "why": "After growing, the header is still on the desk and reachable."
+    },
+    {
+      "click": "Minimize Preview Window"
+    },
+    {
+      "visible": "Expand Preview Window"
+    },
+    {
+      "click": "Expand Preview Window"
+    },
+    {
+      "visible": "Close Preview Window"
+    },
+    {
+      "click": "Close Preview Window"
+    },
+    {
+      "absent": "Close Preview Window",
+      "why": "The window closes."
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      }
+    }
+  ],
+  "cliOnly": [
+    "dragging the title bar and the resize handle to the workspace edge, and narrowing the browser (tests/production/drawingAndPreviewControls.spec.ts, tests/production/stableStudioGeometry.spec.ts)"
+  ]
+}

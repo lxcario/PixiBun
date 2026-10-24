@@ -1,0 +1,80 @@
+{
+  "id": "4efa7cc4-49d7-43a1-887a-0d5148376376",
+  "key": "S4-LEARN-02",
+  "title": "S4-LEARN-02 — Practice returns to the original.",
+  "goal": "A renamed, saved Bun goes Home, into Playground practice, gets a traced practice pose, and Return to drawing brings back the same project name, frame and layer structure and exact artwork.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Rename project Bun"
+    },
+    {
+      "fill": "Project name",
+      "value": "S4 Original Before Practice"
+    },
+    {
+      "click": "Save now",
+      "why": "Saving also finishes the name edit."
+    },
+    {
+      "visible": "Rename project S4 Original Before Practice"
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "click": "/PIXIBUN STUDIO/",
+      "role": "link",
+      "nth": 0
+    },
+    {
+      "click": "/^Playground/",
+      "role": "link",
+      "nth": 0
+    },
+    {
+      "click": "/^Let.s start/",
+      "nth": 0,
+      "settle": 1
+    },
+    {
+      "click": "/^Trace it for me/",
+      "nth": 0
+    },
+    {
+      "text": "Matched",
+      "why": "The practice pose is traced."
+    },
+    {
+      "click": "/^Return to drawing/",
+      "nth": 0
+    },
+    {
+      "skip": true
+    },
+    {
+      "visible": "Rename project S4 Original Before Practice",
+      "why": "The original project returns."
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "frames": "1",
+        "layers": "1",
+        "pixels": "192"
+      },
+      "why": "Practice did not replace the original artwork."
+    }
+  ]
+}

@@ -2,12 +2,29 @@ import { describe, it, expect } from 'vitest';
 import {
   IsobmffWriter,
   createAvcCRecord,
+  avcCFromEncodedSample,
   muxToMp4Blob,
   Mp4MuxerTrack,
 } from '@/lib/export/isobmffWriter';
 import { toBlobPart } from '@/lib/export/blobBytes';
 
 describe('Pure-TypeScript ISOBMFF Binary Writer', () => {
+  it('derives a valid description from the actual Linux Firefox CI parameter sets without duplicating NAL headers', () => {
+    // Actual CI run 39154907266/attempts/2, source 749fc828. These are the
+    // in-band SPS/PPS bytes, not the duplicate-header decoder description.
+    const sps = Uint8Array.from(Buffer.from('6742c01fd9096840000003004007a12003c60c92', 'hex'));
+    const pps = Uint8Array.from(Buffer.from('68cb8cb2', 'hex'));
+    const sample = new Uint8Array(4 + sps.length + 4 + pps.length);
+    const view = new DataView(sample.buffer);
+    view.setUint32(0, sps.length); sample.set(sps, 4);
+    view.setUint32(4 + sps.length, pps.length); sample.set(pps, 8 + sps.length);
+    const record = avcCFromEncodedSample(sample)!;
+    expect(Buffer.from(record).toString('hex')).toBe('0142c01fffe100146742c01fd9096840000003004007a12003c60c9201000468cb8cb2');
+    expect(avcCFromEncodedSample(sample.subarray(0, sample.length - 1))).toBeNull();
+    expect(avcCFromEncodedSample(new Uint8Array([0, 0, 0, 2, 0x65, 0x88]))).toBeNull();
+    const offsetView = new Uint8Array(sample.length + 7); offsetView.set(sample, 7);
+    expect(avcCFromEncodedSample(offsetView.subarray(7))).toEqual(record);
+  });
   it('converts shared-backed byte views to portable Blob parts without extra bytes', async () => {
     const shared = new SharedArrayBuffer(4);
     new Uint8Array(shared).set([1, 2, 3, 4]);

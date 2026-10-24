@@ -1,10 +1,12 @@
 import { useState, useRef, useCallback, useEffect, type RefObject } from 'react';
 import { Point } from '@/lib/canvas/rasterMath';
 import { createBoxMask, mergeSelectionMask } from '@/lib/canvas/selectionUtils';
+import { confirmLayerEditable, floatingSelectionTarget } from '@/lib/canvas/layerEditGuard';
 import { useStudioStore } from '@/stores/studioStore';
 import { SafeCanvas } from '@/lib/safety/safeCanvas';
 import { FloatingSelection } from './useViewportOverlays';
 import { isWorkspaceControlTarget, shouldIgnoreWorkspaceKey, workspaceShortcutKey } from '@/lib/input/workspaceKeyboard';
+import { canEditSelectionLayer } from '@/lib/engine/selectionEdit';
 
 interface UseViewportSelectionProps {
   canvasWidth: number;
@@ -13,7 +15,7 @@ interface UseViewportSelectionProps {
   previewCanvasRef: RefObject<HTMLCanvasElement | null>;
   getOrCreateLayerCanvas: (layerId: string) => HTMLCanvasElement;
   renderComposite: () => void;
-  captureSnapshot: (description: string) => void;
+  captureSnapshot: (description: string, layerId?: string) => void;
   commitSnapshot: () => void;
   ownsTransformShortcuts?: boolean;
 }
@@ -86,19 +88,19 @@ export function useViewportSelection({
 
   // Lift selected pixels from active layer into floating selection
   const liftSelectionToFloating = useCallback(() => {
-    if (!selection) return;
+    if (!selection || !canEditSelectionLayer(activeLayerId)) return false;
 
     captureSnapshot('Lift Selection');
 
     const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
     const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return;
+    if (!ctx) return false;
 
     const floatCanvas = document.createElement('canvas');
     floatCanvas.width = selection.w;
     floatCanvas.height = selection.h;
     const fCtx = floatCanvas.getContext('2d', { willReadFrequently: true });
-    if (!fCtx) return;
+    if (!fCtx) return false;
 
     if (selectionMask) {
       const srcData = SafeCanvas.getImageData(ctx, selection.x, selection.y, selection.w, selection.h);
@@ -140,16 +142,24 @@ export function useViewportSelection({
       ctx.clearRect(selection.x, selection.y, selection.w, selection.h);
     }
 
+    const original = document.createElement('canvas');
+    original.width = selection.w;
+    original.height = selection.h;
+    original.getContext('2d')?.drawImage(floatCanvas, 0, 0);
+
     setFloatingSelection({
       canvas: floatCanvas,
       x: selection.x,
       y: selection.y,
       w: selection.w,
       h: selection.h,
+      layerId: activeLayerId,
+      liftedFrom: { canvas: original, x: selection.x, y: selection.y },
     });
 
     renderComposite();
     bumpBufferVersion();
+    return true;
   }, [
     activeLayerId,
     bumpBufferVersion,
@@ -161,24 +171,31 @@ export function useViewportSelection({
     selectionMask,
   ]);
 
-  // Commit floating selection buffer back to active layer
-  const commitFloatingSelection = useCallback(() => {
-    if (!floatingSelection) return;
+  // Commit the floating selection back to the layer it came from (see
+  // floatingSelectionTarget). False when that layer became locked or hidden: the
+  // pixels stay floating until it is editable.
+  const commitFloatingSelection = useCallback((): boolean => {
+    if (!floatingSelection) return true;
+    const target = floatingSelectionTarget(floatingSelection.layerId);
+    if (!target || !confirmLayerEditable(target)) return false;
 
-    captureSnapshot('Commit Selection');
-    const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
-    const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
-    if (ctx) {
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(floatingSelection.canvas, floatingSelection.x, floatingSelection.y);
+    // Lifted pixels already have their Undo snapshot (taken before the lift).
+    // Capturing again here would make Undo return to the cut-out hole.
+    if (!(floatingSelection.liftedFrom && target.id === floatingSelection.layerId)) {
+      captureSnapshot('Commit Selection', target.id);
     }
+    const layerCanvas = getOrCreateLayerCanvas(target.id);
+    const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return false;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(floatingSelection.canvas, floatingSelection.x, floatingSelection.y);
     setFloatingSelection(null);
     setSelection(null);
     commitSnapshot();
     renderComposite();
     bumpBufferVersion();
+    return true;
   }, [
-    activeLayerId,
     bumpBufferVersion,
     captureSnapshot,
     commitSnapshot,
@@ -253,6 +270,7 @@ export function useViewportSelection({
   }, [activeLayerId, canvasWidth, floatingSelection, getOrCreateLayerCanvas, selection, selectionMask]);
 
   const handleCut = useCallback(() => {
+    if ((selection || floatingSelection) && !canEditSelectionLayer(activeLayerId)) return;
     handleCopy();
     clearPreview();
     if (floatingSelection) {
@@ -270,6 +288,7 @@ export function useViewportSelection({
       bumpBufferVersion();
     }
   }, [
+    activeLayerId,
     bumpBufferVersion,
     captureSnapshot,
     clearPreview,
@@ -284,9 +303,10 @@ export function useViewportSelection({
 
   const handlePaste = useCallback(() => {
     if (!clipboardRef.current) return;
+    if (!canEditSelectionLayer(activeLayerId)) return;
 
     if (floatingSelection) {
-      commitFloatingSelection();
+      if (!commitFloatingSelection()) return;
     }
 
     const { canvas, w, h } = clipboardRef.current;
@@ -305,12 +325,14 @@ export function useViewportSelection({
       y: py,
       w,
       h,
+      layerId: activeLayerId,
     });
     setSelection({ x: px, y: py, w, h });
     renderComposite();
-  }, [canvasHeight, canvasWidth, commitFloatingSelection, floatingSelection, renderComposite, setSelection]);
+  }, [activeLayerId, canvasHeight, canvasWidth, commitFloatingSelection, floatingSelection, renderComposite, setSelection]);
 
   const handleDeleteSelection = useCallback(() => {
+    if ((selection || floatingSelection) && !canEditSelectionLayer(activeLayerId)) return;
     clearPreview();
     if (floatingSelection) {
       setFloatingSelection(null);
@@ -327,6 +349,7 @@ export function useViewportSelection({
       bumpBufferVersion();
     }
   }, [
+    activeLayerId,
     bumpBufferVersion,
     captureSnapshot,
     clearPreview,
@@ -339,6 +362,7 @@ export function useViewportSelection({
   ]);
 
   const handleFlipHorizontal = useCallback(() => {
+    if ((selection || floatingSelection) && !canEditSelectionLayer(activeLayerId)) return;
     const active = floatingSelection;
     if (!active) {
       liftSelectionToFloating();
@@ -360,9 +384,10 @@ export function useViewportSelection({
       canvas: flippedCanvas,
     });
     renderComposite();
-  }, [floatingSelection, liftSelectionToFloating, renderComposite]);
+  }, [activeLayerId, selection, floatingSelection, liftSelectionToFloating, renderComposite]);
 
   const handleFlipVertical = useCallback(() => {
+    if ((selection || floatingSelection) && !canEditSelectionLayer(activeLayerId)) return;
     const active = floatingSelection;
     if (!active) {
       liftSelectionToFloating();
@@ -384,7 +409,7 @@ export function useViewportSelection({
       canvas: flippedCanvas,
     });
     renderComposite();
-  }, [floatingSelection, liftSelectionToFloating, renderComposite]);
+  }, [activeLayerId, selection, floatingSelection, liftSelectionToFloating, renderComposite]);
 
   // Global Keyboard Shortcuts for Selection
   useEffect(() => {
@@ -395,6 +420,8 @@ export function useViewportSelection({
       // CenterViewport delegates Escape/arrows to its transform hook. One owner
       // avoids committing then cancelling, or moving a floating selection twice.
       if (!ownsTransformShortcuts && ['Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+      // Flips too: the transform owner keeps the source for Cancel and flips on the first press.
+      if (!ownsTransformShortcuts && !e.ctrlKey && !e.metaKey && (key === 'h' || key === 'v')) return;
 
       if ((e.ctrlKey || e.metaKey) && key === 'c') {
         e.preventDefault();
@@ -407,13 +434,13 @@ export function useViewportSelection({
         handlePaste();
       } else if ((e.ctrlKey || e.metaKey) && key === 'd') {
         e.preventDefault();
-        commitFloatingSelection();
+        if (!commitFloatingSelection()) return;
         setSelection(null);
       } else if (e.ctrlKey || e.metaKey) {
         return;
       } else if (e.key === 'Escape') {
         e.preventDefault();
-        commitFloatingSelection();
+        if (!commitFloatingSelection()) return;
         setSelection(null);
         clearPreview();
       } else if (e.key === 'Delete' || e.key === 'Backspace') {

@@ -1,6 +1,6 @@
 import { parseResearchSettings, type ResearchSettings, type MaterialRole, type DetailRegion } from './recipes';
-import { srgbToLinear, linearToSrgb } from '@/lib/ai/math/colorSpace';
-import { computeSeparableEDT, generateInflatedHeightmap, computeTangentNormalField, bakeNormalMapToRgba } from '@/lib/ai/math/edtNormalMap';
+import { srgbToLinear, linearToSrgb } from '@/lib/graphics/math/colorSpace';
+import { computeSeparableEDT, generateInflatedHeightmap, computeTangentNormalField, bakeNormalMapToRgba } from '@/lib/graphics/math/edtNormalMap';
 export interface ResearchInput { width: number; height: number; data: Uint8ClampedArray; normal?: Uint8ClampedArray; settings: ResearchSettings }
 export interface ResearchOutput { data: Uint8ClampedArray; specular?: Uint8ClampedArray; shadow?: Uint8ClampedArray; map?: number[]; seams?: { cell: number; side: 'east' | 'south'; mismatches: number }[]; repeats?: number; notes: string[] }
 const inside = (x: number, y: number, r: DetailRegion) => x >= r.x && y >= r.y && x < r.x + r.w && y < r.y + r.h;

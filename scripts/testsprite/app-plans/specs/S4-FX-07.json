@@ -1,0 +1,67 @@
+{
+  "id": "fb1facc7-97dd-4f27-a7fe-c80787ee9859",
+  "key": "S4-FX-07",
+  "title": "S4-FX-07 — Variations stay tied to their source.",
+  "goal": "Try a new look prepares a 2px Simplify preview without touching the drawing; only Apply changes the artwork, and one Undo restores it exactly.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Effects/",
+      "nth": 0
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "click": "/^Try a new look/"
+    },
+    {
+      "click": "2px"
+    },
+    {
+      "click": "Create research preview"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "A preview is not an edit."
+    },
+    {
+      "enabled": "Apply research preview"
+    },
+    {
+      "click": "Apply research preview"
+    },
+    {
+      "readout": {
+        "digest": "!=A"
+      },
+      "why": "Apply changes the visible artwork."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "One Undo restores the exact original."
+    }
+  ],
+  "cliOnly": [
+    "saving and reopening a recipe, and source-changed or missing-source refusals (tests/production/researchWorkbench.spec.ts)"
+  ]
+}

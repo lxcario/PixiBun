@@ -58,9 +58,14 @@ export const PalettePanel: React.FC<{ basics?: boolean }> = ({ basics = true }) 
   const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];
   const paletteFileInputRef = useRef<HTMLInputElement | null>(null);
   const crngFileInputRef = useRef<HTMLInputElement | null>(null);
-  const [creatingPalette, setCreatingPalette] = useState(false);
-  const [browsingPalettes, setBrowsingPalettes] = useState(false);
-  const closePaletteCreator = useCallback(() => setCreatingPalette(false), []);
+  // Each opening of these dialogs is numbered and keyed by that number, so opening one again
+  // while the last is still fading out mounts a fresh dialog. Reviving the fading one after a
+  // save could leave it unmounted while the panel thought it was open, and the button stopped
+  // working (found by the TestSprite plan emulator, 23 October). 0 means closed.
+  const dialogOpenings = useRef(0);
+  const [creatingPalette, setCreatingPalette] = useState(0);
+  const [browsingPalettes, setBrowsingPalettes] = useState(0);
+  const closePaletteCreator = useCallback(() => setCreatingPalette(0), []);
   const [selectedSwatch, setSelectedSwatch] = useState<{ paletteId: string; index: number } | null>(null);
   const selectedIndex = selectedSwatch?.paletteId === currentPalette.id
     ? Math.min(selectedSwatch.index, currentPalette.colors.length - 1)
@@ -180,7 +185,7 @@ export const PalettePanel: React.FC<{ basics?: boolean }> = ({ basics = true }) 
           </select>
           <TactileButton
             size="sm"
-            onClick={() => setBrowsingPalettes(true)}
+            onClick={() => setBrowsingPalettes(++dialogOpenings.current)}
             title="Library and presets"
             className="h-7 px-2 text-[11px] shrink-0"
           >
@@ -188,7 +193,7 @@ export const PalettePanel: React.FC<{ basics?: boolean }> = ({ basics = true }) 
           </TactileButton>
         </div>
       </InspectorSection>
-      <AnimatePresence>{browsingPalettes && <PaletteLibraryModal key="PaletteLibraryModal" onClose={() => setBrowsingPalettes(false)} />}</AnimatePresence>
+      <AnimatePresence>{browsingPalettes > 0 && <PaletteLibraryModal key={`PaletteLibraryModal-${browsingPalettes}`} onClose={() => setBrowsingPalettes(0)} />}</AnimatePresence>
 
       {/* 2. Swatches */}
       <InspectorSection
@@ -256,7 +261,7 @@ export const PalettePanel: React.FC<{ basics?: boolean }> = ({ basics = true }) 
           <TactileButton
             variant="tactile"
             size="sm"
-            onClick={() => setCreatingPalette(true)}
+            onClick={() => setCreatingPalette(++dialogOpenings.current)}
             className="justify-center h-8 text-xs font-semibold text-[var(--accent-gold)] border-[var(--accent-gold)]/40 hover:border-[var(--accent-gold)]"
           >
             <PixelIcon name="plus" size={11} /> Create palette
@@ -304,7 +309,7 @@ export const PalettePanel: React.FC<{ basics?: boolean }> = ({ basics = true }) 
         />
       </InspectorSection>
 
-      <AnimatePresence>{creatingPalette && <CreatePaletteModal key="CreatePaletteModal" onClose={closePaletteCreator} />}</AnimatePresence>
+      <AnimatePresence>{creatingPalette > 0 && <CreatePaletteModal key={`CreatePaletteModal-${creatingPalette}`} onClose={closePaletteCreator} />}</AnimatePresence>
 
       {/* 4. Cycle Engine Section */}
       <PaletteRolesSection key={currentPalette.id} palette={currentPalette} />
@@ -377,6 +382,7 @@ export const PalettePanel: React.FC<{ basics?: boolean }> = ({ basics = true }) 
                     <div className="flex items-center gap-2">
                       <StudioToggle
                         label=""
+                        ariaLabel={`Enable ${track.name || `Track [${track.low}..${track.high}]`}`}
                         checked={track.enabled}
                         onChange={(val) => updatePaletteCycleTrack(currentPalette.id, track.id, { enabled: val })}
                       />
@@ -428,6 +434,7 @@ export const PalettePanel: React.FC<{ basics?: boolean }> = ({ basics = true }) 
                         min={0.1}
                         max={60}
                         step={0.5}
+                        inputStep="any"
                         onChange={(val) => updatePaletteCycleTrack(currentPalette.id, track.id, { rate: val })}
                       />
                       <StudioSelect

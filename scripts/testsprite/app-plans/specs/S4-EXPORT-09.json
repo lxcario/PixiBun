@@ -1,0 +1,101 @@
+{
+  "id": "7113128a-96dd-40fe-8c3d-79608d16fbc4",
+  "key": "S4-EXPORT-09",
+  "title": "S4-EXPORT-09 — Palette motion becomes a loop.",
+  "goal": "With a cycle track over Bun's colors 2 to 5, Cycle Loop is ready to export a loop (no warning, download enabled) and is ready without changing the stored artwork.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Cycle Loop",
+      "within": "Export Studio Assets"
+    },
+    {
+      "alert": "Add an enabled cycle in Palette and choose at least two colors.",
+      "why": "Without a cycle there is nothing to loop, and the dialog says so."
+    },
+    {
+      "click": "Close dialog"
+    },
+    {
+      "click": "Palette",
+      "nth": 0
+    },
+    {
+      "click": "Scan Canvas"
+    },
+    {
+      "click": "Cycle Engine"
+    },
+    {
+      "click": "/^Add Color Range Track/"
+    },
+    {
+      "click": "/^Cycle 1/",
+      "nth": 0
+    },
+    {
+      "click": "Last color 5: #FAF6FC"
+    },
+    {
+      "click": "First color 2: #D9CDE8"
+    },
+    {
+      "pressed": "First color 2: #D9CDE8"
+    },
+    {
+      "pressed": "Last color 5: #FAF6FC"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Cycle Loop",
+      "within": "Export Studio Assets"
+    },
+    {
+      "enabled": "Download cycle animation",
+      "why": "With an enabled two-colour range the loop can be exported."
+    },
+    {
+      "text": "2 seconds",
+      "why": "The loop length is stated."
+    },
+    {
+      "enabled": "Download cycle animation",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      },
+      "why": "Exporting palette motion never rewrites the stored artwork."
+    }
+  ],
+  "cliOnly": [
+    "decoding the loop: frames vary only inside the chosen palette range at the canvas size (scripts/testsprite/pixibun-remaining-integrity.py cycle)"
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

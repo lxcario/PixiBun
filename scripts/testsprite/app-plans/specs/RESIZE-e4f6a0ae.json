@@ -1,0 +1,67 @@
+{
+  "id": "e4f6a0ae-6028-4035-9e59-a42ad5a88e46",
+  "key": "RESIZE-e4f6a0ae",
+  "title": "Reject or clamp invalid canvas sizes through the real resize controls",
+  "goal": "The File > Canvas size dialog clamps typed sizes to 4-512 pixels once each entry is committed (a typed 0 becomes 4 when the field is left, a typed 513 becomes 512 on Enter), and Cancel keeps the original 16 x 16 drawing exactly.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^File/",
+      "nth": 0
+    },
+    {
+      "click": "/^Canvas size/",
+      "role": "menuitem"
+    },
+    {
+      "fill": "Width (px)",
+      "value": "0"
+    },
+    {
+      "key": "Tab",
+      "inField": "Width (px)",
+      "why": "Leaving the field commits what was typed."
+    },
+    {
+      "field": "Width (px)",
+      "equals": "4",
+      "why": "0 is clamped to the minimum 4."
+    },
+    {
+      "fill": "Height (px)",
+      "value": "513"
+    },
+    {
+      "key": "Enter",
+      "inField": "Height (px)",
+      "why": "Enter commits what was typed."
+    },
+    {
+      "field": "Height (px)",
+      "equals": "512",
+      "why": "513 is clamped to the maximum 512."
+    },
+    {
+      "click": "Cancel",
+      "nth": -1
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "digest": "=A"
+      },
+      "why": "Cancel keeps the original drawing exactly."
+    }
+  ]
+}

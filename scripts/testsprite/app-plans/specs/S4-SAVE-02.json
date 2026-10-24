@@ -1,0 +1,61 @@
+{
+  "id": "a717d33a-ab5a-4e61-84a1-0108a0bd7b51",
+  "key": "S4-SAVE-02",
+  "title": "S4-SAVE-02 — A gallery copy is its own project.",
+  "goal": "A saved Bun named S4 Original can be cloned from Projects: the copy appears as its own project next to the original and opens with the same drawing.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Rename project Bun"
+    },
+    {
+      "fill": "Project name",
+      "value": "S4 Original"
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "click": "/^File/",
+      "nth": 0
+    },
+    {
+      "click": "Projects",
+      "role": "menuitem"
+    },
+    {
+      "visible": "Open project S4 Original"
+    },
+    {
+      "click": "Clone"
+    },
+    {
+      "visible": "Open project Copy of S4 Original",
+      "why": "The copy is its own project."
+    },
+    {
+      "visible": "Open project S4 Original",
+      "why": "The original is still there."
+    },
+    {
+      "click": "Open project Copy of S4 Original"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "The copy opens with the same drawing."
+    }
+  ]
+}

@@ -125,12 +125,14 @@ export const TeachingAnimationBoard: React.FC<TeachingAnimationBoardProps> = ({
 
   // Load into Playground timeline action
   const handleLoadToPlayground = useCallback(() => {
+    // Announce success only when the frames were actually loaded.
     try {
       loadTeachingAnimationIntoPlayground(character, palette);
+      setToastMessage(`Loaded 10-frame ${character.name} jump into Playground timeline!`);
     } catch (err) {
       console.error('Failed to load into playground:', err);
+      setToastMessage(`Could not load ${character.name} into the Playground timeline. Your practice is unchanged.`);
     }
-    setToastMessage(`Loaded 10-frame ${character.name} jump into Playground timeline!`);
     setTimeout(() => setToastMessage(null), 3200);
   }, [character, palette]);
 

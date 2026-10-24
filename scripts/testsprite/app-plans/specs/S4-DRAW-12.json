@@ -1,0 +1,113 @@
+{
+  "id": "055924c4-9b9d-4a1f-9215-2685358f3896",
+  "key": "S4-DRAW-12",
+  "title": "S4-DRAW-12 — A normal is a surface, not paint.",
+  "goal": "Normal Chisel refuses ordinary paint layers without adding history. On a surface layer, a stroke adds surface data that this view draws over the art; Undo removes it exactly and Redo restores it; hiding the surface layer shows Bun's original colors bit for bit, so the diffuse artwork itself never changed.",
+  "cliOnly": [
+    "decoded normal-layer pixels before and after the stroke, from downloaded project backups"
+  ],
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "key": "k"
+    },
+    {
+      "pressed": "Normal Chisel"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "The ordinary Base Layer refuses the chisel."
+    },
+    {
+      "disabled": "Undo last action",
+      "why": "The refusal added no history."
+    },
+    {
+      "click": "/^Effects/",
+      "nth": 0
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "click": "/^Add light and depth/"
+    },
+    {
+      "click": "/^Shape the surface/"
+    },
+    {
+      "click": "Create surface layer"
+    },
+    {
+      "readout": {
+        "layers": "2",
+        "digest": "=A"
+      },
+      "why": "A surface layer is added without changing the visible colors."
+    },
+    {
+      "click": "Paint raised edges"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "!=A"
+      },
+      "why": "The surface layer now holds data, drawn over the art in this view."
+    },
+    {
+      "record": "S"
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Undo removes the surface stroke exactly."
+    },
+    {
+      "click": "Redo last action"
+    },
+    {
+      "readout": {
+        "digest": "=S"
+      },
+      "why": "Redo restores it exactly."
+    },
+    {
+      "click": "Layers",
+      "nth": 0
+    },
+    {
+      "click": "Hide layer Normal Facets"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      },
+      "why": "With the surface layer hidden, Bun's color artwork is exactly the original: the stroke was surface data, not paint."
+    }
+  ]
+}

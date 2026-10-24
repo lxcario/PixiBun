@@ -58,6 +58,8 @@ test('bucket recolors nearby shades through the visible grid without crossing a 
     state.setActiveTool('bucket');
   });
   await page.getByTestId('tool-options-button').click();
+  // Flood Fill defaults to tolerance 0 (audit defect 7, 14 October); this case is about nearby shades.
+  await page.getByRole('slider', { name: 'Bucket fill tolerance' }).fill('24');
   await expect(page.getByRole('slider', { name: 'Bucket fill tolerance' })).toHaveValue('24');
   await page.keyboard.press('Escape');
   await clickPixel(8, 8);
@@ -80,6 +82,9 @@ test('large supported artwork never scales overlay backing stores with zoom', as
   await expect(grid).toHaveJSProperty('tagName', 'DIV');
   await expect(selection).toHaveAttribute('width', '2048');
   await expect(selection).toHaveAttribute('height', '2048');
+  // A resized canvas is fitted to the window once it lands; measure the overlays at an
+  // explicit 1600% after that, as the 6400% step below does.
+  await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { setZoom: (zoom: number) => void } } }).__studioStore!.getState().setZoom(1600));
   await expect.poll(() => grid.evaluate((element) => getComputedStyle(element).backgroundSize)).toContain('16px 16px');
   await expect(brushGhost).toHaveJSProperty('tagName', 'DIV');
 
@@ -116,7 +121,9 @@ test('a three-pixel pen uses the same square footprint as its CSS brush outline'
     state.setBrushSize(3);
   });
   await expect(page.getByRole('button', { name: 'Brush size 3 pixels. Size 3 px', exact: true })).toBeVisible();
-  const zoom = 16;
+  // Screen pixels per art pixel: the canvas opens fitted to the window.
+  const fitted = (await artwork.boundingBox())!, artWidth = await artwork.evaluate((c: HTMLCanvasElement) => c.width);
+  const zoom = fitted.width / artWidth;
   // Hover may scroll the canvas; measure its position after that action.
   await artwork.hover({ position: { x: 10.5 * zoom, y: 10.5 * zoom } });
   const stage = await artwork.boundingBox();
@@ -125,8 +132,9 @@ test('a three-pixel pen uses the same square footprint as its CSS brush outline'
   const y = stage!.y + 10.5 * zoom;
   await page.mouse.move(x + 1, y + 1);
   await expect(ghost).toBeVisible();
-  await expect.poll(() => ghost.evaluate((element) => getComputedStyle(element).width)).toBe('48px');
-  await expect.poll(() => ghost.evaluate((element) => getComputedStyle(element).height)).toBe('48px');
+  // Exactly three art pixels square.
+  await expect.poll(() => ghost.evaluate((element) => parseFloat(getComputedStyle(element).width))).toBeCloseTo(3 * zoom, 1);
+  await expect.poll(() => ghost.evaluate((element) => parseFloat(getComputedStyle(element).height))).toBeCloseTo(3 * zoom, 1);
   await page.mouse.down();
   await page.mouse.up();
   await expect.poll(() => artwork.evaluate((element: HTMLCanvasElement) => {

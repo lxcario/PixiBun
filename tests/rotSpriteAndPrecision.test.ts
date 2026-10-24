@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { rotateWithRotSprite } from '@/lib/ai/smartMathEngine';
+import { rotateWithRotSprite } from '@/lib/graphics/smartMathEngine';
 import { useStudioStore } from '@/stores/studioStore';
 import { getOrCreateBuffer, clearAllBuffers } from '@/lib/engine/bufferRegistry';
 

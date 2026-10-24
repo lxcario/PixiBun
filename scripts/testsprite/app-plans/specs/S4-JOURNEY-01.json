@@ -1,0 +1,234 @@
+{
+  "id": "afc0b83b-d6df-4b48-8341-bb2cf962f3fc",
+  "key": "S4-JOURNEY-01",
+  "title": "S4-JOURNEY-01 — A little animation comes safely home.",
+  "goal": "A two-frame animation with its own holds survives Duplicate and Undo exactly, offers PNG, GIF and APNG exports that state the right size and frame count, and asks for a backup honestly; the animation stays exact throughout.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "frames": "2",
+        "frame": "2 of 2",
+        "pixels": "1",
+        "top": "#0000ff 1"
+      }
+    },
+    {
+      "record": "B"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "pixels": "1",
+        "top": "#ff0000 1"
+      }
+    },
+    {
+      "record": "A"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "100"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "200"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "click": "Duplicate frame"
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "visible": "/^Select frame 3. /"
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "absent": "/^Select frame 3. /",
+      "why": "Undo removes the duplicate."
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "frames": "2",
+        "digest": "=A"
+      },
+      "why": "Exporting never changes the drawing."
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "readout": {
+        "digest": "=B"
+      }
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "PNG",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "1x",
+      "within": "Export Studio Assets"
+    },
+    {
+      "text": "16 × 16 px"
+    },
+    {
+      "enabled": "Download PNG",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "GIF",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "1x",
+      "within": "Export Studio Assets"
+    },
+    {
+      "text": "16 × 16 px, 2 frames"
+    },
+    {
+      "enabled": "Download GIF",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "APNG",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "1x",
+      "within": "Export Studio Assets"
+    },
+    {
+      "text": "16 × 16 px, 2 frames (RGBA)"
+    },
+    {
+      "enabled": "Download APNG",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Project Backup",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "Download project backup"
+    },
+    {
+      "say": "Either the Export dialog has closed because the backup was saved, or it shows exactly \"No backup was created. Your project is still open here.\" It never shows a success state without a saved file.",
+      "either": [
+        {
+          "text": "No backup was created. Your project is still open here."
+        },
+        {
+          "absent": "Download project backup"
+        }
+      ]
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "frames": "2",
+        "digest": "=A"
+      },
+      "why": "Exporting never changes the drawing."
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "readout": {
+        "digest": "=B"
+      }
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    }
+  ],
+  "cliOnly": [
+    "decoding PNG, GIF and APNG channel for channel and reopening the backup in a fresh browser (scripts/testsprite/pixibun-journey-journey.py)"
+  ],
+  "allow": [
+    "raw pixel channels",
+    "reading a download"
+  ]
+}

@@ -54,7 +54,7 @@ Choose **WebM Video**, scope, scale and 1 / 2 / 4 animation cycles. Export recor
 
 Choose **MP4 Video**, scope, admitted scale and animation cycles. Supported configurations use H.264 WebCodecs with an MP4 writer, or a supported recording fallback. Odd output dimensions are padded to even values without rescaling the pixels. Alpha is not generally guaranteed. An unsupported browser/configuration disables this path; choose WebM, GIF or APNG instead.
 
-The local pre-S4 checks found Firefox advertising H.264 support but failing during real encoding. A positive support query can still fail at runtime. The local Chromium file decoded both test poses; WebKit explicitly refused MP4. Check the downloaded file in your destination and use GIF/APNG when video cannot encode. [Current status](../current-status.md#local-pre-s4-hardening-candidate) retains each outcome separately.
+The local pre-S4 checks found Firefox advertising H.264 support but failing during real encoding. A positive support query can still fail at runtime. PixiBun therefore encodes one small trial frame before offering MP4, and uses the browser's software H.264 encoder: a hardware encoder on one Windows machine wrote limited-range colour that darkened red from 255 to 233. The local Chromium file decoded both test poses; WebKit explicitly refused MP4. In WebKit on Linux (GNOME Web and other WebKitGTK or WPE browsers), checking for H.264 froze the page in CI, so PixiBun does not offer MP4 there and Light Sweep saves WebM. Check the downloaded file in your destination and use GIF/APNG when video cannot encode. [Current status](../current-status.md#local-pre-s4-hardening-candidate) retains each outcome separately.
 
 ## Sprite Sheet
 
@@ -125,4 +125,4 @@ Reduce scale or frame count if the panel rejects the geometry. Raster output adm
 
 During a supported asynchronous export, use its progress/cancel controls and wait for the result before closing the page. A capture of an enabled button is not a download verdict. The [export contract](../contracts/exports.md) keeps codec, fidelity and scope details together.
 
-Sources: [all 12 tabs](../../src/components/modals/export/ExportTabsNav.tsx), [actual download dispatch](../../src/components/modals/ExportModal.tsx), [Godot kit](../../src/lib/export/godotKit.ts), [geometry validation](../../src/lib/export/exportGeometryValidation.ts), [sheet packer](../../src/lib/export/spriteSheetPacker.ts).
+Sources: [all 14 tabs](../../src/components/modals/export/ExportTabsNav.tsx), [actual download dispatch](../../src/components/modals/ExportModal.tsx), [Godot kit](../../src/lib/export/godotKit.ts), [geometry validation](../../src/lib/export/exportGeometryValidation.ts), [sheet packer](../../src/lib/export/spriteSheetPacker.ts).

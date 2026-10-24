@@ -1,0 +1,81 @@
+{
+  "id": "8b27171a-6d28-442e-8df6-b9d50e53c57a",
+  "key": "S4-FX-03",
+  "title": "S4-FX-03 — Quick magic has a way home.",
+  "goal": "Outline adds a separate, undoable outline around Bun; one Undo returns the exact original artwork and layer count.",
+  "cliOnly": [
+    "Drop shadow, Light it, Shine, Tidy, Smooth and color moods, each recorded separately"
+  ],
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "readout": {
+        "pixels": "192"
+      }
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Studio/",
+      "nth": 0
+    },
+    {
+      "click": "/^Lab: Quick magic/",
+      "role": "checkbox"
+    },
+    {
+      "checked": "/^Lab: Quick magic/",
+      "role": "checkbox",
+      "why": "Quick magic is a Studio Lab, off by default in automated browsers."
+    },
+    {
+      "click": "Close studio options"
+    },
+    {
+      "click": "/^Effects/",
+      "nth": 0
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "click": "/^Outline/",
+      "shown": "Outline — A clean 1px line around your art"
+    },
+    {
+      "readout": {
+        "digest": "!=A"
+      },
+      "why": "The outline is visible in the composite."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "pixels": "192",
+        "digest": "=A"
+      },
+      "why": "One Undo returns the exact original artwork and layers."
+    },
+    {
+      "click": "Layers",
+      "nth": 0
+    },
+    {
+      "visible": "/^Layers \\(1\\)/",
+      "role": "heading",
+      "why": "Still one layer after Undo."
+    }
+  ]
+}

@@ -86,7 +86,7 @@ test('project and drawing controls stay grouped, visible and usable at desktop w
   await fileButton.focus();
   await fileButton.press('ArrowDown');
   const file = page.getByRole('menu', { name: 'File', exact: true });
-  await expect(file.getByRole('menuitem')).toHaveText(['Projects', 'New drawing', 'Import…', 'Canvas size…']);
+  await expect(file.getByRole('menuitem')).toHaveText(['Projects', 'New drawing', 'Living postcard…', 'Import…', 'Canvas size…']);
   await expect(file.getByRole('menuitem', { name: 'Projects', exact: true })).toBeFocused();
   await page.keyboard.press('ArrowDown');
   await expect(file.getByTestId('new-drawing-button')).toBeFocused();
@@ -115,7 +115,12 @@ test('project and drawing controls stay grouped, visible and usable at desktop w
   await expect(header.getByRole('tooltip')).toHaveCount(0);
   await expect(header.getByTestId('appearance-button')).toContainText('Studio');
   await expect(page.getByTestId('shortcuts-guide-button')).toHaveCount(0);
-  expect(await header.locator('button').count()).toBe(20);
+  // Fifteen visible controls at 1280 px. The four quick brush presets appear only at
+  // 2xl widths, and the closed brush menu holds five common sizes.
+  expect(await header.locator('button:visible').count()).toBe(15);
+  expect(await header.locator('[aria-label="Quick brush size presets"] button').count()).toBe(4);
+  expect(await header.getByRole('group', { name: 'Brush size controls', includeHidden: true }).locator('[aria-label="Common brush sizes"] button').count()).toBe(5);
+  expect(await header.locator('button').count()).toBe(24);
 
   // Rename through the real control; a long title must not push actions out of reach.
   await project.getByRole('button', { name: /^Rename project/ }).click();
@@ -123,12 +128,15 @@ test('project and drawing controls stay grouped, visible and usable at desktop w
   await project.getByRole('textbox').press('Enter');
   for (const width of [1920, 1536, 1280, 1024]) {
     await page.setViewportSize({ width, height: 900 });
-    for (const tool of ['pen', 'eraser', 'bucket', 'erase-color', 'color-replace', 'curve', 'dither', 'line', 'isometric-line', 'rectangle', 'ellipse']) {
+    // The rail opens with the tool's canonical label (src/config/shortcuts.ts).
+    for (const [tool, label] of [['pen', 'Pen'], ['eraser', 'Eraser'], ['bucket', 'Flood Fill'], ['erase-color', 'Erase Sampled Color'],
+      ['color-replace', 'Color Replace'], ['curve', 'Bézier Curve'], ['dither', 'Dither Brush'], ['line', 'Line'],
+      ['isometric-line', '2:1 Iso Line'], ['rectangle', 'Rectangle'], ['ellipse', 'Ellipse']]) {
       await page.evaluate((activeTool) => {
         const store = (window as Window & { __studioStore?: { getState: () => { setActiveTool: (tool: string) => void } } }).__studioStore!;
         store.getState().setActiveTool(activeTool);
       }, tool);
-      await expect(drawing.getByTestId('tool-options-rail')).toContainText(tool === 'erase-color' ? 'Erase-color:' : `${tool.charAt(0).toUpperCase()}${tool.slice(1)}:`);
+      await expect(drawing.getByTestId('tool-options-rail').locator(':scope > span').first()).toHaveText(label);
       await page.mouse.move(0, 200);
       await expect.poll(() => header.evaluate((element) => {
         const bounds = element.getBoundingClientRect();
@@ -144,8 +152,9 @@ test('project and drawing controls stay grouped, visible and usable at desktop w
         const fit = element.querySelector('[data-testid="fit-canvas-button"]')!.getBoundingClientRect();
         const view = element.querySelector('[aria-label="View options menu"]')!.getBoundingClientRect();
         return [zoom, fit, view].every((box) => Math.abs(box.top - mirror.top) <= 1 && box.height === mirror.height)
-          && zoom.left >= mirror.right && zoom.left - mirror.right <= 5
-          && view.left >= fit.right && view.left - fit.right <= 5;
+          // A separator (1px plus 2px margins) and the cluster's 1px gap on each side.
+          && zoom.left >= mirror.right && zoom.left - mirror.right <= 7
+          && view.left >= fit.right && view.left - fit.right <= 7;
       }), `Mirror, Fit and View remain adjacent at ${width}px with ${tool}`).toBe(true);
     }
   }
@@ -166,6 +175,10 @@ test('project and drawing controls stay grouped, visible and usable at desktop w
   await expect(studio).toBeInViewport();
   await expect(studio.getByRole('button', { name: 'Co-Draw session' })).toBeFocused();
   await expect(studio.getByTestId('shortcuts-guide-button')).toHaveText('Help');
+  // Measure at rest: the panel blooms and unfolds its items one after another.
+  await studio.evaluate(element => Promise.all(element.getAnimations({ subtree: true })
+    .filter(animation => animation.effect?.getComputedTiming().endTime !== Infinity)
+    .map(animation => animation.finished.catch(() => undefined))));
   const actions = await studio.getByRole('button', { name: 'Co-Draw session' }).boundingBox();
   const help = await studio.getByTestId('shortcuts-guide-button').boundingBox();
   expect(actions!.width).toBe(help!.width);
@@ -207,7 +220,7 @@ test('project and drawing controls stay grouped, visible and usable at desktop w
   await expect(studio).toHaveCount(0);
   await page.keyboard.press('Escape');
   await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { setActiveTool: (tool: string) => void } } }).__studioStore!.getState().setActiveTool('erase-color'));
-  await expect(drawing.getByTestId('tool-options-rail')).toContainText('Erase-color:');
+  await expect(drawing.getByTestId('tool-options-rail').locator(':scope > span').first()).toHaveText('Erase Sampled Color');
   await header.screenshot({ path: test.info().outputPath('captures', 'header-one-row-erase-color-1024.png') });
   await page.getByTestId('tool-options-button').click();
   await expect(page.getByRole('slider', { name: 'Erase Color tolerance' })).toBeInViewport();

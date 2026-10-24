@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-20T13:48:53.014Z",
+  "scope": "Fresh manual script execution qualification and integrated local release candidate; no automatic App green or production release.",
+  "publishedBase": "5be4b61cc861e812138b08f47c9415d2866cc5a1",
+  "reviewedOtherAgentCommit": "d462cb45b7e9ebfa0dc71642e3eb961d4c703622",
+  "candidate": "Published base plus the reviewed committed gallery/GIF/palette patch and finite-animation geometry assertion repair. Uncommitted export edits in the other checkout excluded.",
+  "linuxCi": {
+    "runId": 39397455693,
+    "source": "5be4b61cc861e812138b08f47c9415d2866cc5a1",
+    "mergeSource": "3774e9b3897ee62ba9fca4f0ab5f877bfc2244a6",
+    "conclusion": "failure",
+    "development": {
+      "passed": 365
+    },
+    "production": {
+      "passed": 556,
+      "failed": 1,
+      "skipped": 4,
+      "flaky": 0
+    },
+    "failure": {
+      "test": "stableStudioGeometry cozy-classic / WebKit",
+      "expectedWidth": 116,
+      "observedWidth": 115.896728515625,
+      "classification": "Test measured the finite press-release spring before settling; exact assertion retained."
+    },
+    "custody": {
+      "files": 314,
+      "mismatches": 0,
+      "independentlyDownloadedAndVerified": true
+    }
+  },
+  "localCandidate": {
+    "node": "22.23.3",
+    "qualityGate": {
+      "stages": 6,
+      "passed": true,
+      "unitTests": 3038,
+      "testFiles": 279,
+      "seconds": 599.4
+    },
+    "focusedOtherAgentTests": {
+      "passed": 136,
+      "files": 10
+    },
+    "geometry": {
+      "passed": 6,
+      "engines": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "retries": 0,
+      "skips": 0
+    },
+    "actualGifDownloads": {
+      "passed": 3,
+      "engines": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "assertions": [
+        "independently decoded moving poses",
+        "transparent clearing",
+        "frame holds after saved reload"
+      ]
+    },
+    "build": {
+      "id": "sOdkNz7ooRdAkuq6tNH9-",
+      "files": 432,
+      "unchangedAfterBrowserTests": true,
+      "sourceBanner": "5be4b61c base; not a committed candidate identity"
+    }
+  },
+  "runnerQualification": {
+    "runId": "e2f4279f-27ce-41d9-8fd7-0e2d1476c79c",
+    "status": "failed",
+    "expectedFailureMarker": "PIXIBUN_RUNNER_QUALIFICATION_EXPECTED_FAILURE_20261020_serverless",
+    "classification": "Harness diagnostic, not a product defect or hackathon red-to-green finding.",
+    "conclusion": "The supported fresh CLI run path executed saved Python. Zero UI-agent actions does not establish that Python was ignored.",
+    "limits": "Returned codeVersion remains null. This diagnostic does not qualify the automatic GitHub App execution path."
+  },
+  "cloud": {
+    "source": "cli",
+    "target": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+    "pinnedCommit": "5be4b61cc861e812138b08f47c9415d2866cc5a1",
+    "autoHeal": false,
+    "localQualification": {
+      "passed": 6,
+      "engines": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "sharedScriptSha256": "012b42f97f6bc7587d25eda42365e786800117b36de912980f5f5eab3101c684"
+    },
+    "runs": [
+      {
+        "scenario": "palette-authoring",
+        "testId": "ffedf7d1-5b19-4552-993a-fe63e56e9f19",
+        "runId": "dd10b2af-bd42-4546-9d2f-446a74da35a6",
+        "status": "passed",
+        "source": "cli",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "submittedCodeVersion": "v-d0046a64fdd0",
+        "submittedCodeSha256": "c0b210e1f23833d2ecf1e65e2b66cac3948f38a49b2e6a27f798c497f1b5d0f7",
+        "returnedCodeVersion": null,
+        "recordedActions": 0,
+        "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/2fdaad0e-dc04-4664-a4d8-a1085cdfc487/test/dd10b2af-bd42-4546-9d2f-446a74da35a6"
+      },
+      {
+        "scenario": "four-themes",
+        "testId": "8454253c-80b9-4da4-b9c8-548776bb4298",
+        "runId": "4e6d64a6-2835-4c8f-85b0-41d55e2262fa",
+        "status": "passed",
+        "source": "cli",
+        "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+        "submittedCodeVersion": "v-8f517aaa8b70",
+        "submittedCodeSha256": "4c27ab20dcf6e26957030dd4d6c55367e73fe69c30a571c898203542053b16a2",
+        "returnedCodeVersion": null,
+        "recordedActions": 0,
+        "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/a89f24de-3dc6-441c-8f01-83e1aafa0556/test/4e6d64a6-2835-4c8f-85b0-41d55e2262fa"
+      }
+    ],
+    "reusableScriptsRestored": true,
+    "automaticGitHubAppPass": false
+  },
+  "portalCycle": {
+    "runId": "38d8952f-7b13-4e45-b95d-b98c36eac25e",
+    "source": "portal",
+    "status": "blocked",
+    "recordedActions": 17,
+    "targetCorrect": true,
+    "observation": "UI actions were recorded but exact pixel/history assertions were not performed. The run entered 2 Hz rather than independently rechecking 6/5.5/5.6 native validity.",
+    "defaultEnvironmentRestored": true
+  },
+  "releaseGates": {
+    "automaticTrigger": "Disabled",
+    "requiredGitHubChecks": [
+      "validate",
+      "TestSprite V3"
+    ],
+    "branchProtectionEnforcedForAdmins": true,
+    "publicRepository": true,
+    "production": "92de6c74b259eafcf73cc986b1def6c69f5566aa",
+    "remaining": [
+      "Fresh Linux qualification of the committed integrated candidate",
+      "A genuine passing automatic App fixing-commit loop with strict assertions",
+      "Fixture import path on current plan",
+      "Final production release and honest Discord submission"
+    ]
+  },
+  "rawEvidenceHashes": {
+    "integrated-gate.log": "d43bacb0b9d15822c4f3109617149b768c9f564b0a0f1f14b6529fd8b7490fe1",
+    "geometry-results.json": "23f2f8ceb084815eb93b1c1b37a7e29684a5405d0b5acb54a1f89c3ca6ec5b56",
+    "gif-results.json": "4858526776b5017c68d682064c122335ad2c3923fd1d3703f33c6b8f407bdb25",
+    "integrated-build-after.json": "d4ec923771e97dfed694f68425752ad35846c5c26ab3406d163a81ab1a82d30d",
+    "local-5be4-custody.json": "d3c5d93c30f8c5a8417c90958cb29eea191f8cc85c1693e3d576343d0c0573ab",
+    "5be4-e2e.log": "ac4e94781da94de1d964926d1568cea19595cac286f15ab731020d48a3be1817"
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "id": "e3dedfcc-3074-4425-a274-6b3d9fc81674",
+  "key": "S4-ANIM-04",
+  "title": "S4-ANIM-04 — Review explains a difference.",
+  "goal": "Animation review scans a two-frame clip with a known one-pixel difference, lists it as a finding to inspect rather than an error, can mark it intentional, and saves a protected region made with a Magic Wand click; none of this changes either frame.",
+  "cliOnly": [
+    "a dragged marquee region and cleanup exclusion by native RGBA"
+  ],
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Duplicate frame"
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "color": "#1D4ED8"
+    },
+    {
+      "key": "b"
+    },
+    {
+      "click": "1px brush preset"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "record": "B"
+    },
+    {
+      "click": "/^Effects/",
+      "nth": 0
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "click": "/^Review animation/"
+    },
+    {
+      "click": "Create clip from all frames"
+    },
+    {
+      "click": "Scan animation"
+    },
+    {
+      "visible": "/change/",
+      "why": "The difference is listed as a change to look at."
+    },
+    {
+      "click": "/change/",
+      "nth": 0
+    },
+    {
+      "click": "Mark this change intentional"
+    },
+    {
+      "text": "Marked intentional for these exact frames",
+      "why": "The finding is recorded as intentional, tied to these frames."
+    },
+    {
+      "visible": "Clear saved exceptions",
+      "why": "The exception can be undone."
+    },
+    {
+      "key": "w"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "clickText": "Regions and protection"
+    },
+    {
+      "fill": "Animation region name",
+      "value": "Protected speck",
+      "shown": "Region name"
+    },
+    {
+      "click": "Save selected region"
+    },
+    {
+      "text": "Regions and protection (1)",
+      "why": "The protected region is saved with the clip."
+    },
+    {
+      "readout": {
+        "frame": "2 of 2",
+        "digest": "=B"
+      },
+      "why": "Review never changes the edited frame."
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "The first frame is untouched."
+    }
+  ]
+}

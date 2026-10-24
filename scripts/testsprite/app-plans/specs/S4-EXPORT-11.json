@@ -1,0 +1,134 @@
+{
+  "id": "1bffe460-3740-40d7-acfc-f59d73cbc55a",
+  "key": "S4-EXPORT-11",
+  "title": "S4-EXPORT-11 — Video reports its real capability.",
+  "goal": "WebM and MP4 each state their output size, format and limits for a two-frame drawing and are offered for export, and the drawing stays exact.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "frames": "2",
+        "frame": "2 of 2",
+        "pixels": "1",
+        "top": "#0000ff 1"
+      }
+    },
+    {
+      "record": "B"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "pixels": "1",
+        "top": "#ff0000 1"
+      }
+    },
+    {
+      "record": "A"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "100"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "200"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "WebM Video",
+      "within": "Export Studio Assets"
+    },
+    {
+      "text": "px WebM (VP9/VP8)"
+    },
+    {
+      "text": "Records animation with browser-paced frame holds. Use APNG for exact image frame timing."
+    },
+    {
+      "why": "The export is offered (enabled where this browser can encode it); this plan does not start the file.",
+      "visible": "Download WEBM"
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "MP4 Video",
+      "within": "Export Studio Assets"
+    },
+    {
+      "text": "px MP4 (H.264 / ISOBMFF)"
+    },
+    {
+      "text": "transparency is not guaranteed"
+    },
+    {
+      "why": "The export is offered (enabled where this browser can encode it); this plan does not start the file.",
+      "visible": "Download MP4"
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "frames": "2",
+        "digest": "=A"
+      },
+      "why": "Exporting never changes the drawing."
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "readout": {
+        "digest": "=B"
+      }
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    }
+  ],
+  "cliOnly": [
+    "decoding the delivered WebM and MP4: frame content and duration (tests/production/animatedExportIntegrity.spec.ts, tests/production/lightSweep.spec.ts, the native codec regression workflow)"
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

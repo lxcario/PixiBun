@@ -2,6 +2,8 @@
 
 Build window: **16 October, about 19:00 Türkiye per the site countdown (confirm in Discord) → 22 October 23:59 PT (23 October 09:59 Türkiye)**. CLI bonus runs to 29 October 23:59 PT. Sources: [hackathon page](https://www.testsprite.com/hackathon-s4), [GitHub integration docs](https://docs.testsprite.com/web-portal/integrations/github-integration) and the official rules posted in the TestSprite Discord.
 
+19 October reconciliation: use [current status](../current-status.md), the [executed PR triage](../releases/2026-10-19-pr-verification-triage.md) and the [unfinished submission draft](../testsprite/submission-draft.md) for actual results. The hour-zero checklist and proposed extras below are planning history, not proof that each item was configured or passed.
+
 ## How we are scored, and our answer
 
 | Criterion | Points | What judges read | Our play |
@@ -13,11 +15,9 @@ Build window: **16 October, about 19:00 Türkiye per the site countdown (confirm
 
 ## Blockers — clear these first
 
-1. **The repository stays private during the build and goes public by 21 October** (Türkiye time), well before the 23 October 09:59 deadline. Rules require a public repo at submission; confirm in Discord #hackathon-info that private-during-build is acceptable. While private:
-   - **Blocking needs enforcement.** GitHub Free cannot enforce required status checks on private repositories (Pro can). TestSprite still posts its check; add the `main` branch rule the moment the repo goes public, or upgrade for the month.
-   - **Actions minutes are capped** (about 2,000 a month on Free, unlimited once public). Watch usage; the full CI gate and browser suite run on every PR.
-   - The GitHub personal access token that commits `80928d64` and `a6f198dc` added (prefix `ghp_1Va0`, removed again in `f0d5d48b` / `93019e47`) was revoked months ago. It stays in history; if secret scanning raises it after going public, close the alert as revoked.
-   - `.env.local` was never committed (it is ignored), and ignored folders (`artifacts/`, raw evidence) are not in Git.
+1. **The repository is public as of 19 October; keep it public for the entry.** The earlier private-build proposal was not confirmation of a rules exception. GitHub Actions now executes and `main` has required TestSprite V3/validate checks with admin bypass disabled. Preserve that enforcement.
+   - The owner confirmed the historical GitHub token was revoked before publication. Its historical commits remain visible; no new credential was introduced for the fixes.
+   - Keep current credentials and raw/signed evidence out of Git. Publication and secret-scanning observations are scoped in the release records.
 2. **PR checks need a per-PR preview deployment.** TestSprite listens for a "deployment finished" event and builds the URL from a pattern. Two options:
    - **Vercel Git integration** (preferred, zero code): connect the Vercel project to the GitHub repo. Vercel then comments on each PR and records a deployment. URL pattern: `https://pixibun-git-{branch-slug}-<vercel-team-slug>.vercel.app`.
    - **Fallback workflow** [`preview.yml`](../../.github/workflows/preview.yml): set repository variable `PREVIEW_DEPLOY=vercel-cli` (secrets `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` already feed production). URL pattern: `https://pixibun-pr-{pr}.vercel.app`; trigger event: the **Preview Deploy** workflow run completing.
@@ -38,7 +38,7 @@ Build window: **16 October, about 19:00 Türkiye per the site countdown (confirm
 
 ## Loop PRs for the week
 
-Each PR is real work, opened inside the window, checked by TestSprite and merged only on green. Aim for 6–10, at least two showing red → fix → green.
+Each PR is real work, opened inside the window, checked by TestSprite and merged only after its actual release gates pass. Prioritize a complete, truthful red → fix → green loop; do not manufacture features, failures or extra PRs to reach a count.
 
 | Day | PR | Why it scores |
 | --- | --- | --- |
@@ -83,7 +83,7 @@ Agent loop per PR: Claude Code implements → PR opens → preview deploys → T
 
 ## CLI Improvement Bonus (separate pool, to 29 October)
 
-Note every rough edge hit while wiring PixiBun. If it is a real CLI bug: open an issue in the TestSprite CLI repo, assign yourself, fix it with tests, PR with `Closes #<issue>`, tick the entry box and add the Discord username. At most three eligible PRs and three open claims; one concern per PR.
+Note every rough edge hit while wiring PixiBun. For an independently reproduced public CLI bug, search existing issues/PRs first and use the Hackathon Improvement issue template. Under the supplied updated Discord instructions, wait for maintainer acceptance (`accepted`, `good first issue` or `help wanted`) before commenting `/assign`. Then fix it with tests, use `Closes #<issue>`, tick the entry box and include Discord username `resquwue`. At most three bonus-eligible PRs and three open claims; one concern per PR. Portal entitlement or runner behavior is not automatically a public CLI bug.
 
 ## Risks
 

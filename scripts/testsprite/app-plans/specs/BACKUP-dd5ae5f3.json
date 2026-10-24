@@ -1,0 +1,126 @@
+{
+  "id": "dd5ae5f3-02e6-47a9-8b8c-fb05a96b25c9",
+  "key": "BACKUP-dd5ae5f3",
+  "title": "Export an editable backup and reopen it through the supported import flow",
+  "goal": "A named two-frame project with its own holds asks for an editable backup: either the file is saved and the dialog closes, or the app says plainly that no backup was created. Either way the project stays open and exact.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "frames": "2",
+        "frame": "2 of 2",
+        "pixels": "1",
+        "top": "#0000ff 1"
+      }
+    },
+    {
+      "record": "B"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "pixels": "1",
+        "top": "#ff0000 1"
+      }
+    },
+    {
+      "record": "A"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "100"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "200"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "click": "Rename project Replay",
+      "optional": true
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "digest": "=A"
+      }
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Project Backup",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "Download project backup"
+    },
+    {
+      "say": "Either the Export dialog has closed because the backup was saved, or it shows exactly \"No backup was created. Your project is still open here.\" It never shows a success state without a saved file.",
+      "either": [
+        {
+          "text": "No backup was created. Your project is still open here."
+        },
+        {
+          "absent": "Download project backup"
+        }
+      ]
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "frames": "2",
+        "digest": "=A"
+      },
+      "why": "Exporting never changes the drawing."
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "readout": {
+        "digest": "=B"
+      }
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    }
+  ],
+  "cliOnly": [
+    "downloading the backup, re-importing it and comparing title, layers, frame order, holds and every pixel (scripts/testsprite/pixibun-save-reopen-integrity.py, scripts/testsprite/pixibun-journey-journey.py)"
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

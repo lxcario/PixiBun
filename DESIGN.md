@@ -58,7 +58,7 @@ These are design rules and targets for new work, not a declaration that every ex
 * **The Single Lamp Pool:** There is at most **one** warm amber illumination pool per scene (`.lamp-pool`). It is rendered as a soft, non-interactive radial gradient overlay (`pointer-events: none`) that batches over the viewport without altering pixel export data.
 * **Wood Grain & Dither Inset Textures:**
   * `.texture-dither`: 4px static checkerboard pattern at $\le 6\%$ opacity for inset wells and recessed slider tracks.
-  * `.texture-wood-grain`: Static linear gradient streaks representing brushed timber grain.
+  * Wood: there is no wood-grain texture class. The canvas hangs in a flat wooden frame (`[data-layout="scene"] .canvas-platen` in `src/app/globals.css`) built from each theme's `--frame-wood`, `--frame-light` and `--frame-dark` tokens with inset bevels.
 * **Anti-Slop Discipline:**
   * **Keep workbench controls anchored.** Procedural scene particles, Bun reactions and the optional Day/Night reveal are deliberate current exceptions; respect reduced-motion handling in their owners.
   * **Avoid generic AI sparkles as feature markers.**
@@ -214,7 +214,7 @@ stateDiagram-v2
 
 On fine-pointer devices (mouse / trackpad), the landing hero uses custom pixel cursors. Its current interactions are owned by [NightHero](src/components/landing/night/NightHero.tsx):
 * **Custom SVG Cursors:** Sharp pixel-art quill/arrow for resting state and an illuminated golden wand for clickable elements.
-* **Hero interactions:** Bun taps trigger companion reactions; drawing in the sky adds temporary constellations. `src/components/reactbits/ClickSpark.tsx` is retained source but is not mounted by the current app.
+* **Hero interactions:** Bun taps trigger companion reactions; drawing in the sky adds temporary constellations. The unmounted `ClickSpark` effect was removed on 18 October.
 
 ---
 
@@ -236,7 +236,7 @@ graph TD
 | **UI Body** | `Plus Jakarta Sans` | `12px - 13px` | `500 Medium` | `1.4` | Layer names, dialog descriptions |
 | **Numeric Value** | `JetBrains Mono` | `10px - 11px` | `700 Bold` | `1.0` | Coordinate HUD, degree sliders, zoom % |
 
-Tool motion preview cards use a 304px frame with a 14px title, 13px description, and 11px dismiss action. The 96×54 artwork stays pixelated; action/result labels are regular HTML text at 11px so they remain readable at card scale. The close target is 24×24px. Under reduced motion, the preview displays its result frame.
+Tool motion preview cards are 246px wide with a 24px icon, 13px title, 12px description and an 11px tip line. The 224×168 stage (a 32×24 canvas at 7×) stays pixelated; action/result labels are regular HTML text at 11px so they remain readable at card scale. The close target is 24×24px. Under reduced motion, the preview displays its result frame.
 
 ---
 
@@ -277,7 +277,7 @@ Keyboard conventions for rapid drafting ergonomics:
 
 ### Classical Timing vs. Spacing Principles
 Grounded in Richard Williams (*The Animator's Survival Kit*) and Disney's 12 Principles of Animation:
-* **Current Timeline Frame Cards:** [BottomTimeline](src/components/layout/BottomTimeline.tsx) uses fixed 72px-wide cards. Each displays its frame number and duration in milliseconds; an absent explicit hold falls back to `round(1000 / fps)`. Duration-proportional card widths and a special long-hold badge are not implemented controls.
+* **Current Timeline Frame Cards:** [BottomTimeline](src/components/layout/BottomTimeline.tsx) uses fixed 76px-wide cards. Each displays its frame number and duration in milliseconds, with 24px Duplicate and Delete actions; an absent explicit hold falls back to `round(1000 / fps)`. Duration-proportional card widths and a special long-hold badge are not implemented controls.
 * **Ghost Frame Spacing Falloff:** [onionSkin](src/lib/render/onionSkin.ts) uses $\max(0.1, 1 - 0.25 \times (\text{dist} - 1))$, multiplied by the configured opacity and clamped to $[0,1]$. Ghosts render only when enabled, with multiple frames and playback paused.
 
 ---
@@ -351,7 +351,7 @@ All primitives consume the v2 design token scale defined in `globals.css`:
 * **Surfaces:** `--surface-0` through `--surface-3` for layered elevation.
 
 ### Appearance Popover
-The `AppearancePopover` (`src/components/ui/AppearancePopover.tsx`) consolidates theme management into a single flyout, superseding the standalone `ThemeToggle` as the primary entry point. It exposes two orthogonal axes:
+The `AppearancePopover` (`src/components/ui/AppearancePopover.tsx`) consolidates theme management into a single flyout, replacing the standalone theme toggle (removed on 18 October). It exposes two orthogonal axes:
 1. **Studio Theme:** Moonlit, Sakura, Tidepool, Ember, Moss, Arcade, Cocoa, Drizzle, Harvest, Harbor, Graphite (`atelier`) or Plum (`cozy-classic`), sourced from `src/lib/theme/themes.json`.
 2. **Color Scheme:** Dark or Light.
 
@@ -417,7 +417,7 @@ These counts describe directional shadow choices per base color, not the entire 
 
 ### 2. Current live pixel glints
 
-Off/Soft/Crisp sits beside Shade in the bulb bar. The reflection uses a bright core and a stepped shoulder at native resolution; Soft is wider and Crisp tighter. Matte and fabric retain visible highlights. A smaller bulb without a glow, quiet idle guides and an interaction-only angle badge expose more artwork. Equal-height choices stay on one toolbar row within the workspace at tested compact desktop widths. Apply commits the exact preview and Cancel restores prior artwork.
+The light bar under the canvas is a shared surface (`pb-panel`), so every theme and both times of day dress it. It blooms in, and the floating status pill steps aside while it is open. Each control is a small channel: its name and value on top, the control below. The main row holds eight compass directions around Recenter, Strength (− / slider / +), Height (elevation 5–85°), Shade 1/2/3 and Glint Off/Soft/Crisp. The highlight slides between choices on the snap spring. **More** springs open a drawer with Tint (Daylight, Candle, Sunset, Moonlight, Neon, Forest or any color), Fill, Material (Matte, Fabric, Metal, Gold, Glass), Edges (crease depth, 0 turns creases off) and Dither, plus Reset. Sliders are native ranges, so scene themes and the Labs liquid lens dress them; values changed from a stepper, a compass button or the wheel glide there. Glint-only sessions show only Material in the drawer. In cel shading, daylight, the usual fill (0.30–0.50), matte and edge depth 1 leave the result exactly as before. The bulb icon glows in the light's tint. The glint reflection uses a bright core and a stepped shoulder at native resolution; Soft is wider and Crisp tighter. Apply commits the exact preview, including tint, fill and material, and Cancel restores prior artwork.
 
 The [current glint report (local archive)](docs/archives.md#record-docs-research-specular-glint-2026-10-01-md) records painted-normal priority, ink/alpha protection and real-character contrast checks.
 

@@ -3,7 +3,7 @@ import {
   getQuadraticBezierPoints,
   getIsometric2p1Line,
   calculate47TileBitmask,
-} from '@/lib/ai/math/curvesAndLines';
+} from '@/lib/graphics/math/curvesAndLines';
 import { getBresenhamLine } from '@/lib/canvas/rasterMath';
 
 describe('curvesAndLines mathematical engine', () => {

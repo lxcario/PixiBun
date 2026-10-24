@@ -9,12 +9,11 @@ import { makeCanvas, type MockCanvas } from './helpers/mockCanvas';
 const smartMathMocks = vi.hoisted(() => ({
   computePhotometricAnalysis: vi.fn(),
   executePhotometricPipeline: vi.fn(),
-  executeVolumetricOpticalPipeline: vi.fn(),
   detectMinecraftSkin: vi.fn(),
   renderParametric2p5DLighting: vi.fn(),
 }));
 
-vi.mock('@/lib/ai/smartMathEngine', () => smartMathMocks);
+vi.mock('@/lib/graphics/smartMathEngine', () => smartMathMocks);
 
 function fillPixel(canvas: MockCanvas, x: number, y: number, rgba: [number, number, number, number]) {
   const ctx = canvas.getContext('2d')!;

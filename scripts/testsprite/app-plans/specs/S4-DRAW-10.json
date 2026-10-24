@@ -1,0 +1,138 @@
+{
+  "id": "0f7b89d1-67d1-4337-8b4c-ee09195f9c10",
+  "key": "S4-DRAW-10",
+  "title": "S4-DRAW-10 — Straight and isometric agree with their previews.",
+  "goal": "Line and 2:1 Iso Line are reachable by their shortcuts, Iso Line exposes its 2:1 snap, each commits exactly the intended pixel on a white 16×16 field, and Undo restores the field exactly. The replay heart, drawn row by row with the same Line rasterizer, matches its documented golden readout.",
+  "cliOnly": [
+    "dragged endpoints (0,0)→(7,0), snapped (8,4) versus free (8,5), reversed direction and 3 px width against native RGBA"
+  ],
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_e83a5c.ffd6e0.ffffff_l0.3.3.5.3~l0.10.3.12.3~l0.2.4.6.4~l0.9.4.13.4~l0.1.5.14.5~l0.1.6.14.6~l0.1.7.14.7~l0.2.8.13.8~l0.3.9.12.9~l0.4.10.11.10~l0.5.11.10.11~l0.6.12.9.12~l0.7.13.8.13~f1.0.0~p2.4.4.3.5.3.6&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "pixels": "256",
+        "colors": "3",
+        "top": "#ffd6e0 156, #e83a5c 97, #ffffff 3",
+        "digest": "57feec3e"
+      },
+      "why": "Thirteen Line rows draw the documented heart exactly."
+    },
+    {
+      "open": "/studio?replay=1_16x16_ffffff_R0.0.0.15.15&end=1",
+      "reload": true
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "pixels": "256",
+        "colors": "1",
+        "top": "#ffffff 256"
+      }
+    },
+    {
+      "record": "W"
+    },
+    {
+      "color": "#1D4ED8"
+    },
+    {
+      "key": "l"
+    },
+    {
+      "pressed": "Line",
+      "why": "L selects Line."
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "pixels": "256",
+        "colors": "2",
+        "top": "#ffffff 255, #1d4ed8 1",
+        "digest": "f99d82e7"
+      },
+      "why": "A Line committed at the centre paints exactly one blue pixel at (8,8)."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "top": "#ffffff 256",
+        "digest": "=W"
+      },
+      "why": "Undo restores the white field exactly."
+    },
+    {
+      "key": "j"
+    },
+    {
+      "pressed": "2:1 Iso Line",
+      "why": "J selects 2:1 Iso Line."
+    },
+    {
+      "click": "Tools",
+      "nth": 0
+    },
+    {
+      "checked": "/^Snap to 2:1 slope/",
+      "role": "checkbox",
+      "why": "The isometric snap is on by default."
+    },
+    {
+      "click": "/^Snap to 2:1 slope/",
+      "role": "checkbox"
+    },
+    {
+      "unchecked": "/^Snap to 2:1 slope/",
+      "role": "checkbox"
+    },
+    {
+      "click": "/^Snap to 2:1 slope/",
+      "role": "checkbox"
+    },
+    {
+      "checked": "/^Snap to 2:1 slope/",
+      "role": "checkbox"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "top": "#ffffff 255, #1d4ed8 1",
+        "digest": "f99d82e7"
+      },
+      "why": "The Iso Line commits the same centre pixel."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=W"
+      }
+    },
+    {
+      "click": "Redo last action"
+    },
+    {
+      "readout": {
+        "top": "#ffffff 255, #1d4ed8 1",
+        "digest": "f99d82e7"
+      }
+    }
+  ]
+}

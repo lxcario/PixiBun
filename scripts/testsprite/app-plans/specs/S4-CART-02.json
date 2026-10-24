@@ -1,0 +1,66 @@
+{
+  "id": "da6a67a2-4780-4761-98e9-5f9b33e07566",
+  "key": "S4-CART-02",
+  "title": "S4-CART-02 — A broken postcard is not a lost drawing.",
+  "goal": "A broken cart link is refused clearly with a way home, sends nothing anywhere, and the saved Studio project is still there afterwards.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Rename project Bun"
+    },
+    {
+      "fill": "Project name",
+      "value": "S4 Postcard Keep"
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "visible": "Rename project S4 Postcard Keep"
+    },
+    {
+      "open": "/open#this-is-not-a-cart?end=1",
+      "reload": true
+    },
+    {
+      "alert": "This link does not carry a cart.",
+      "why": "The broken link is refused in plain words."
+    },
+    {
+      "visible": "PixiBun home",
+      "role": "link",
+      "why": "There is a way back."
+    },
+    {
+      "text": "Nothing here leaves your device."
+    },
+    {
+      "open": "/studio?end=1",
+      "reload": true
+    },
+    {
+      "skip": true
+    },
+    {
+      "visible": "Rename project S4 Postcard Keep",
+      "why": "The saved project is still the one open in Studio."
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      }
+    }
+  ]
+}

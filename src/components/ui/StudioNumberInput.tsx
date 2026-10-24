@@ -8,6 +8,8 @@ interface StudioNumberInputProps {
   min?: number;
   max?: number;
   step?: number;
+  /** Native validity increment, when typed values differ from the +/- increment. */
+  inputStep?: number | 'any';
   onChange: (value: number) => void;
   unit?: string;
   id?: string;
@@ -21,6 +23,7 @@ export default function StudioNumberInput({
   min,
   max,
   step = 1,
+  inputStep,
   onChange,
   unit = '',
   id,
@@ -104,7 +107,7 @@ export default function StudioNumberInput({
             onKeyDown={handleKeyDown}
             min={min}
             max={max}
-            step={step}
+            step={inputStep ?? step}
             className={`w-12 h-full bg-transparent border-none text-center font-mono text-xs font-medium text-[var(--text-heading)] focus:outline-none focus:ring-0 p-0 m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield] ${unit ? 'pr-4' : ''}`}
           />
           {unit && (

@@ -1,0 +1,114 @@
+{
+  "id": "8659a0b0-983c-40c8-ab30-60a9eb8f81b5",
+  "key": "S4-SAFE-03",
+  "title": "S4-SAFE-03 — A corrupted import leaves an escape.",
+  "goal": "Two corrupted links (not a replay at all, and one with an impossible 0-pixel width) are refused in plain words; the saved original stays in Projects, reopens exactly and is still editable with exact Undo.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Rename project Bun"
+    },
+    {
+      "fill": "Project name",
+      "value": "S4 Safe Original"
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "open": "/studio?replay=this-is-not-a-replay&end=1",
+      "reload": true,
+      "refused": true
+    },
+    {
+      "skip": true
+    },
+    {
+      "text": "Replay link not drawn"
+    },
+    {
+      "text": "This is not a PixiBun replay link.",
+      "why": "The broken link is refused with the reason."
+    },
+    {
+      "click": "Dismiss replay message"
+    },
+    {
+      "open": "/studio?replay=1_0x16_ff0000_p0.1.1&end=1",
+      "reload": true,
+      "refused": true
+    },
+    {
+      "skip": true
+    },
+    {
+      "text": "Replay link not drawn",
+      "why": "An impossible canvas size is refused too."
+    },
+    {
+      "click": "Dismiss replay message"
+    },
+    {
+      "click": "/^File/",
+      "nth": 0
+    },
+    {
+      "click": "Projects",
+      "role": "menuitem"
+    },
+    {
+      "click": "Open project S4 Safe Original",
+      "why": "The saved original is still in Projects."
+    },
+    {
+      "visible": "Rename project S4 Safe Original"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      },
+      "why": "It reopens exactly."
+    },
+    {
+      "color": "#E83A5C"
+    },
+    {
+      "key": "b"
+    },
+    {
+      "click": "1px brush preset"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "!=A"
+      }
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "The desk is still editable, with exact Undo."
+    }
+  ],
+  "cliOnly": [
+    "uploading a truncated .pixibun and one with invalid dimensions through File > Import (needs test-file uploads; scripts/testsprite/pixibun-corrupted-import-integrity.py)"
+  ]
+}

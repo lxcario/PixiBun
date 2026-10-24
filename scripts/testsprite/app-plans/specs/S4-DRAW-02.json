@@ -1,0 +1,57 @@
+{
+  "id": "61070835-b7f7-480e-9506-352f6c13b36f",
+  "key": "S4-DRAW-02",
+  "title": "S4-DRAW-02 — The curve can be reconsidered.",
+  "goal": "The Bezier Curve tool offers its stroke presets and curve tightness; a click without a drag commits nothing, so the artwork and history stay exactly as they were (a curve is only committed from its draft).",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Bézier Curve"
+    },
+    {
+      "pressed": "Bézier Curve"
+    },
+    {
+      "click": "Tools",
+      "nth": 0
+    },
+    {
+      "visible": "Bézier Curve",
+      "role": "heading"
+    },
+    {
+      "visible": "Tool panel curve tightness",
+      "role": "slider"
+    },
+    {
+      "visible": "2 pixel brush"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "A click is not a curve: nothing is committed without a draft."
+    },
+    {
+      "disabled": "Undo last action",
+      "why": "No history was added."
+    }
+  ],
+  "cliOnly": [
+    "dragging a curve draft, adjusting its bend and end handles, Cancel, Apply, Re-edit with its original colour and refusal of stale ownership (tests/production/curveOwnership.spec.ts, tests/production/curveColorRetention.spec.ts)"
+  ]
+}

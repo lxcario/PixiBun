@@ -1,0 +1,78 @@
+{
+  "id": "d175b106-aba4-40a9-a5c3-12c035d7b76b",
+  "key": "S4-NEW-20",
+  "title": "S4-NEW-20 — Quiet motion, complete controls.",
+  "goal": "Menus and the color flyout work from the keyboard: File opens with Enter and closes with Escape, the Primary well opens Colors with Enter and Escape closes it and returns focus so Enter reopens it; nothing changes the artwork.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^File/",
+      "nth": 0
+    },
+    {
+      "visible": "/^Canvas size/",
+      "role": "menuitem"
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "absent": "/^Canvas size/",
+      "role": "menuitem",
+      "why": "Escape closes the File menu."
+    },
+    {
+      "key": "Enter"
+    },
+    {
+      "visible": "/^Canvas size/",
+      "role": "menuitem",
+      "why": "Focus returned to File, so Enter reopens it."
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "click": "/^Primary color/"
+    },
+    {
+      "visible": "Close color access"
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "absent": "Close color access",
+      "why": "Escape closes Colors."
+    },
+    {
+      "key": "Enter"
+    },
+    {
+      "visible": "Close color access",
+      "why": "Focus returned to the Primary well."
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      }
+    }
+  ],
+  "cliOnly": [
+    "the reduced-motion browser preference and its effect on motion (tests/e2e/dynamicIsland.spec.ts, tests/components/SurfacePrimitives.test.tsx)"
+  ]
+}

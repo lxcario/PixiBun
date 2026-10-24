@@ -1,0 +1,117 @@
+{
+  "id": "bde1ab4b-a6e2-47ae-ab33-00c8ee84c3cf",
+  "key": "S4-DRAW-07",
+  "title": "S4-DRAW-07 — Erase a family, keep a neighbor.",
+  "goal": "Erase Sampled Color with a matching color family and all matches erases exactly the three greens of frame 1 and keeps the red, blue and gray neighbours and the whole of frame 2; Undo and Redo are exact.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_e83a5c.1d4ed8.808080_p0.8.9~p1.9.8~p2.7.8&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "readout": {
+        "pixels": "3"
+      },
+      "why": "This link draws only the three neighbours: the independent expected result."
+    },
+    {
+      "record": "E"
+    },
+    {
+      "open": "/studio?replay=1_16x16_3a7d44.427f4a.35733f.e83a5c.1d4ed8.808080_p0.8.8~p1.2.2~p2.12.12~p3.8.9~p4.9.8~p5.7.8~F~p0.8.8~p1.2.2~p2.12.12~p3.8.9~p4.9.8~p5.7.8&end=1",
+      "reload": true
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "frame": "2 of 2",
+        "pixels": "6",
+        "colors": "6"
+      }
+    },
+    {
+      "record": "B"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "readout": {
+        "pixels": "6"
+      }
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Erase Sampled Color"
+    },
+    {
+      "click": "Tools",
+      "nth": 0
+    },
+    {
+      "checked": "Match color family",
+      "role": "checkbox"
+    },
+    {
+      "unchecked": "Connected pixels only",
+      "role": "checkbox",
+      "why": "All matches, not only connected ones."
+    },
+    {
+      "unchecked": "/^Across all frames/",
+      "role": "checkbox",
+      "why": "This frame only."
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "pixels": "3",
+        "digest": "=E"
+      },
+      "why": "Exactly the three greens are gone; the neighbours match the independently drawn result."
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "readout": {
+        "digest": "=B"
+      },
+      "why": "Frame 2 is untouched."
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Undo restores every green."
+    },
+    {
+      "click": "Redo last action"
+    },
+    {
+      "readout": {
+        "digest": "=E"
+      }
+    }
+  ],
+  "cliOnly": [
+    "every channel of both frames from a downloaded backup (scripts/testsprite/pixibun-erase-family-integrity.py)"
+  ]
+}

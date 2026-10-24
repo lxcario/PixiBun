@@ -1,0 +1,85 @@
+{
+  "id": "6054b7b4-74c8-4c69-8285-9b9568558043",
+  "key": "S4-HOME-01",
+  "title": "S4-HOME-01 — The bench keeps its own tiny world.",
+  "goal": "The homepage bench is its own little world: it offers Bun and its friends, paint colours and its Draw, Light, Turn and Hop tools, its Undo starts disabled, and visiting it leaves the saved Studio drawing exactly as it was.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "open": "/?end=1",
+      "reload": true
+    },
+    {
+      "checked": "Bun",
+      "role": "radio",
+      "why": "Bun is on the bench."
+    },
+    {
+      "visible": "Mochi",
+      "role": "radio"
+    },
+    {
+      "visible": "/^Draw 1/",
+      "role": "radio"
+    },
+    {
+      "click": "/^Light 2/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Light 2/",
+      "role": "radio"
+    },
+    {
+      "click": "/^Turn 3/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Turn 3/",
+      "role": "radio"
+    },
+    {
+      "click": "/^Hop 4/",
+      "role": "radio"
+    },
+    {
+      "checked": "/^Hop 4/",
+      "role": "radio"
+    },
+    {
+      "disabled": "Undo every edit to Bun",
+      "why": "Choosing tools is not an edit."
+    },
+    {
+      "open": "/studio?end=1",
+      "reload": true
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      },
+      "why": "The bench never repaints the Studio drawing."
+    }
+  ],
+  "cliOnly": [
+    "painting on the bench copy, its Undo, and decoding the Hop GIF (scripts/testsprite/pixibun-homepage-bench-integrity.py)"
+  ]
+}

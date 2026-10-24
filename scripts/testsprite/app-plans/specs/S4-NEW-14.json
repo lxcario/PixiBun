@@ -1,0 +1,94 @@
+{
+  "id": "f3933f1b-661a-41f6-8297-9a9bfbb58f84",
+  "key": "S4-NEW-14",
+  "title": "S4-NEW-14 — Preview is a window, not a paintbrush.",
+  "goal": "The Live Preview opens, takes 1x, 2x and 4x scales and a different backdrop, folds and unfolds; none of it changes the drawing or adds history.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^View/",
+      "nth": 0
+    },
+    {
+      "click": "Live preview Floating window"
+    },
+    {
+      "click": "Close view options"
+    },
+    {
+      "visible": "Minimize Preview Window",
+      "within": "Live Preview Window",
+      "why": "The preview window is open."
+    },
+    {
+      "click": "1x",
+      "role": "radio",
+      "within": "Live Preview Window"
+    },
+    {
+      "click": "2x",
+      "role": "radio",
+      "within": "Live Preview Window"
+    },
+    {
+      "click": "4x",
+      "role": "radio",
+      "within": "Live Preview Window"
+    },
+    {
+      "checked": "4x",
+      "role": "radio",
+      "within": "Live Preview Window",
+      "why": "The chosen scale is selected."
+    },
+    {
+      "click": "Backdrop: obsidian",
+      "role": "radio",
+      "within": "Live Preview Window"
+    },
+    {
+      "checked": "Backdrop: obsidian",
+      "role": "radio",
+      "within": "Live Preview Window"
+    },
+    {
+      "click": "Minimize Preview Window",
+      "within": "Live Preview Window"
+    },
+    {
+      "visible": "Expand Preview Window",
+      "why": "The preview folds."
+    },
+    {
+      "click": "Expand Preview Window"
+    },
+    {
+      "visible": "Minimize Preview Window",
+      "within": "Live Preview Window",
+      "why": "The preview unfolds."
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "frames": "1",
+        "layers": "1"
+      },
+      "why": "The preview never edits the drawing."
+    },
+    {
+      "disabled": "Undo last action",
+      "why": "Preview controls add no history."
+    }
+  ]
+}

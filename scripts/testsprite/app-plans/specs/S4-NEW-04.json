@@ -1,0 +1,112 @@
+{
+  "id": "4fdbc1b5-3baa-4fc0-bcf9-1d3bdc501e30",
+  "key": "S4-NEW-04",
+  "title": "S4-NEW-04 — Earlier and later respect the ends.",
+  "goal": "With three frames held 100, 200 and 300 ms, moving the middle frame earlier gives 200, 100, 300 and the first frame cannot move earlier; moving it back and selecting the last frame gives 100, 200, 300 and the last cannot move later; the artwork never changes.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Duplicate frame"
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "click": "Duplicate frame"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "100"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "200"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "click": "/^Select frame 3. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "300"
+    },
+    {
+      "click": "/^Select frame 3. /"
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "visible": "/^Select frame 3. #3 300ms/"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "click": "Move frame earlier"
+    },
+    {
+      "visible": "/^Select frame 1. #1 200ms/",
+      "why": "The 200 ms frame is now first."
+    },
+    {
+      "visible": "/^Select frame 2. #2 100ms/"
+    },
+    {
+      "visible": "/^Select frame 3. #3 300ms/"
+    },
+    {
+      "disabled": "Move frame earlier",
+      "why": "The selected first frame cannot move earlier."
+    },
+    {
+      "click": "Move frame later"
+    },
+    {
+      "visible": "/^Select frame 1. #1 100ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 200ms/"
+    },
+    {
+      "click": "/^Select frame 3. /"
+    },
+    {
+      "disabled": "Move frame later",
+      "why": "The last frame cannot move later."
+    },
+    {
+      "readout": {
+        "frame": "3 of 3",
+        "digest": "=A"
+      },
+      "why": "Reordering identical frames never changes the artwork."
+    }
+  ]
+}

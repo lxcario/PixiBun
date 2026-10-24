@@ -19,6 +19,7 @@
     "nibbli:hands": "node scripts/nibbli/runArtist.mjs --hands",
     "verify:docs": "node scripts/verifyDocIntegrity.mjs",
     "docs:inventory": "node scripts/generateDocInventory.mjs",
+    "ledger:md": "node scripts/generateLoopLedger.mjs",
     "themes:css": "node scripts/generateThemeCss.mjs",
     "evidence:publish": "node scripts/publishEvidence.mjs",
     "evidence:index": "node scripts/indexVerificationEvidence.mjs",
@@ -31,6 +32,7 @@
     "npm": ">=10.0.0"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "clsx": "^2.1.1",
     "dexie": "^4.0.11",
     "immer": "^10.1.1",

@@ -1,9 +1,11 @@
 'use client';
 
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, type Variants } from 'motion/react';
 import { PixelIcon, type PixelIconName } from '@/components/ui/PixelIcon';
 import { BLOOM, EXIT, REDUCED_FADE, UNBLUR, spring } from '@/lib/motion/springs';
 import { useReducedMotion } from '@/lib/motion/useReducedMotion';
+import { useTopModalHost } from '@/components/ui/surfaces/modalHost';
 
 export interface SurfaceToastContent {
   /** A new key replaces the capsule: the old one melts, the new one rises. */
@@ -27,10 +29,15 @@ function toastVariants(reduce: boolean): Variants {
   };
 }
 
-/** The studio's single toast: a glass capsule that springs up from the bottom edge. */
+/**
+ * The studio's single toast: a glass capsule that springs up from the bottom edge.
+ * While a dialog is open the rest of the page is inert, so the toast moves into that
+ * dialog: an error raised from inside it (an invalid clip range) is still seen and announced.
+ */
 export function SurfaceToast({ toast, onAction }: { toast: SurfaceToastContent | null; onAction?: () => void }) {
   const reduce = useReducedMotion();
-  return (
+  const host = useTopModalHost();
+  const capsule = (
     <div className="fixed bottom-14 inset-x-0 z-50 flex justify-center pointer-events-none px-4">
       <AnimatePresence mode="wait">
         {toast && (
@@ -63,4 +70,5 @@ export function SurfaceToast({ toast, onAction }: { toast: SurfaceToastContent |
       </AnimatePresence>
     </div>
   );
+  return host ? createPortal(capsule, host) : capsule;
 }

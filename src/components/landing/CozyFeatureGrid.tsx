@@ -138,7 +138,7 @@ export const CozyFeatureGrid: React.FC = () => {
                 <div className="border-2 border-[var(--ink)] rounded-[1px] overflow-hidden shadow-[0_3px_0_var(--ink)]">
                   <Vignette kind={promise.kind} active={hovered === i} />
                 </div>
-                <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.18em]" style={{ color: promise.color }}>
+                <p className="tint-text mt-5 font-mono text-[11px] uppercase tracking-[0.18em]" style={{ "--tint": promise.color } as React.CSSProperties}>
                   {promise.tag}
                 </p>
                 <h3 className="mt-2 font-display text-xl leading-tight text-[var(--text-heading)]">{promise.title}</h3>

@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
 import { data, Evaluator, Lexer, Parser } from '@actions/expressions';
 
-interface WorkflowStep { name: string; uses?: string; run?: string; with?: Record<string, unknown> }
+interface WorkflowStep { name: string; uses?: string; run?: string; with?: Record<string, unknown>; env?: Record<string, string> }
 interface PreviewWorkflow {
   on: { pull_request: { branches: string[]; types: string[] } };
   permissions: Record<string, string>;
@@ -51,6 +51,19 @@ describe('Preview deployment trust boundary', () => {
     const checkout = workflow.jobs.preview.steps.find(step => step.uses?.startsWith('actions/checkout@'))!;
     expect(checkout.with?.ref).toBe('${{ github.event.pull_request.head.sha }}');
     expect(checkout.with?.['persist-credentials']).toBe(false);
+  });
+
+  it('never hands the deploy token to the pull request code', () => {
+    const { steps, env } = workflow.jobs.preview;
+    expect(Object.keys(env)).not.toContain('VERCEL_TOKEN');
+    const holders = steps.filter(step => JSON.stringify(step).includes('VERCEL_TOKEN')).map(step => step.name);
+    expect(holders).toEqual(['Pull Vercel preview settings', 'Deploy and alias preview']);
+    // Install and build scripts from the PR run only in a container that sees the checkout.
+    const build = steps.find(step => step.run?.includes('vercel@50.34.0 build'))!;
+    expect(build.run).toMatch(/^docker run --rm /);
+    expect(build.run).not.toMatch(/VERCEL_TOKEN|--network|docker\.sock|-v "\$HOME|--privileged/);
+    expect(build.run).toContain(`node:${readFileSync('.nvmrc', 'utf8').trim()}-bookworm`);
+    expect(steps.indexOf(build)).toBeLessThan(steps.findIndex(step => step.name === 'Deploy and alias preview'));
   });
 
   it('publishes the stable alias TestSprite targets and never a production deployment', () => {

@@ -58,7 +58,11 @@ test('compiled LAN guest reloads the shared copy and reopens its untouched origi
     await expect.poll(() => pixels(page)).toEqual(hostArt);
     const projects = await gallery(page);
     await expect(projects.getByRole('button', { name: 'Open project Shared Drawing', exact: true })).toBeVisible();
-    await projects.getByRole('button', { name: 'Open project Guest original', exact: true }).click();
+    // Opened from the keyboard: with the host's window also open, WebKit on Linux kept this
+    // dialog's bloom from settling, so a pointer click never found the card at rest.
+    // Pointer opening is covered by the gallery tests in strokeAndGallery and projectDatesAndClipboard.
+    const original = projects.getByRole('button', { name: 'Open project Guest original', exact: true });
+    await original.focus(); await original.press('Enter');
     await expect(projects).not.toBeVisible();
     await expect.poll(() => pixels(page)).toEqual(originalArt);
     await page.screenshot({ path: testInfo.outputPath('original-reopened.png'), fullPage: true });

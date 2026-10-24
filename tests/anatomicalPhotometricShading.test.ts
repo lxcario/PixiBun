@@ -2,11 +2,11 @@
  * @vitest-environment node
  */
 import { describe, it, expect } from 'vitest';
-import { computeContentAwareHeightmap } from '@/lib/ai/math/edtNormalMap';
+import { computeContentAwareHeightmap } from '@/lib/graphics/math/edtNormalMap';
 import {
   executePhotometricPipeline,
   computePhotometricAnalysis,
-} from '@/lib/ai/math/photometricLighting';
+} from '@/lib/graphics/math/photometricLighting';
 
 class MockImageData {
   data: Uint8ClampedArray;

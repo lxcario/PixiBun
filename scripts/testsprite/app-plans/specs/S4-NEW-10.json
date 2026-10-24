@@ -1,0 +1,58 @@
+{
+  "id": "a3ffdffc-17ef-43b3-8df8-feeebb00d513",
+  "key": "S4-NEW-10",
+  "title": "S4-NEW-10 — A typo stays in the paint pot.",
+  "goal": "A valid hex commits with Enter; an invalid one is never committed, with Enter or with Escape; the primary stays #FF0000 and the drawing is unchanged.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Primary color/"
+    },
+    {
+      "fill": "Primary hex value",
+      "value": "#FF0000"
+    },
+    {
+      "key": "Enter"
+    },
+    {
+      "visible": "/^Primary color #FF0000/i",
+      "why": "A valid hex commits."
+    },
+    {
+      "fill": "Primary hex value",
+      "value": "#GGGGGG"
+    },
+    {
+      "key": "Enter"
+    },
+    {
+      "visible": "/^Primary color #FF0000/i",
+      "why": "The typo is not committed."
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "visible": "/^Primary color #FF0000/i",
+      "why": "Escape never commits the typo."
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Editing colors changed no artwork."
+    }
+  ]
+}

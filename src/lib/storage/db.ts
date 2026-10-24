@@ -566,6 +566,7 @@ export async function duplicateProject(id: string, newName?: string): Promise<St
       } finally { releaseBytes(); }
     });
   } catch (err) {
+    if (isIgnorableDbClosure(err)) return null;
     console.error(`Duplicate project ${id} error:`, err);
     return null;
   }

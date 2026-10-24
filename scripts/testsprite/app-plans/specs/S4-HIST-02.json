@@ -1,0 +1,96 @@
+{
+  "id": "6c4c3552-16b8-441f-a51b-9732ae33da1f",
+  "key": "S4-HIST-02",
+  "title": "S4-HIST-02 — An empty history stays calm.",
+  "goal": "A new edit after an Undo discards only the redo branch; the saved drawing reopens exactly, with Undo and Redo both unavailable on the reopened desk.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "key": "b"
+    },
+    {
+      "color": "#1D4ED8"
+    },
+    {
+      "click": "1px brush preset"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "record": "B"
+    },
+    {
+      "color": "#E83A5C"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "!=B"
+      }
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=B"
+      },
+      "why": "Undo removes only the red pixel."
+    },
+    {
+      "enabled": "Redo last action"
+    },
+    {
+      "color": "#68BA7F"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "disabled": "Redo last action",
+      "why": "A new edit discards the redo branch."
+    },
+    {
+      "readout": {
+        "digest": "!=B"
+      }
+    },
+    {
+      "record": "G"
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "open": "/studio?end=1",
+      "reload": true
+    },
+    {
+      "skip": true
+    },
+    {
+      "readout": {
+        "digest": "=G"
+      },
+      "why": "The saved drawing reopens with the first edit and the new branch, without the discarded red pixel."
+    },
+    {
+      "disabled": "Undo last action",
+      "why": "Reopening starts a calm, empty history."
+    }
+  ]
+}

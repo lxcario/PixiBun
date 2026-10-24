@@ -1,0 +1,108 @@
+{
+  "id": "fd3da2e3-9a59-46e0-b591-df9d18fe2703",
+  "key": "S4-LAYER-02",
+  "title": "S4-LAYER-02 — Hidden and locked mean different things.",
+  "goal": "Hiding Bun's layer removes it from the composite without losing data, showing it brings back the exact artwork, locking refuses an edit without adding history, and unlocking makes the layer editable again.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "readout": {
+        "pixels": "192",
+        "colors": "6"
+      }
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Layers",
+      "nth": 0
+    },
+    {
+      "click": "Hide layer Base Layer"
+    },
+    {
+      "readout": {
+        "pixels": "0",
+        "layers": "1"
+      },
+      "why": "A hidden layer is absent from the composite but still listed."
+    },
+    {
+      "click": "Show layer Base Layer"
+    },
+    {
+      "readout": {
+        "pixels": "192",
+        "digest": "=A"
+      },
+      "why": "Showing it restores the exact artwork."
+    },
+    {
+      "click": "Lock layer Base Layer"
+    },
+    {
+      "key": "b"
+    },
+    {
+      "color": "#1D4ED8"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "The locked layer refused the stroke."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "visible": "Lock layer Base Layer",
+      "why": "The refused stroke added no Undo step: one Undo reverses the lock itself."
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      }
+    },
+    {
+      "click": "Redo last action"
+    },
+    {
+      "visible": "Unlock layer Base Layer"
+    },
+    {
+      "click": "Unlock layer Base Layer"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "!=A",
+        "pixels": "192"
+      },
+      "why": "Once unlocked, the layer takes the edit."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Undo restores the exact pre-lock artwork."
+    }
+  ]
+}

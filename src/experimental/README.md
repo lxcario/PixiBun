@@ -19,7 +19,7 @@ writing that storage key before the page loads.
 | Liquid tabs | `liquid/` | `RightInspector.tsx`: `liquidTabs ? <LiquidTabs …/> : (classic tab bar)` |
 | Liquid controls | `liquidControls/` | `StudioLayout.tsx`: `{scene && <LiquidSliders />}`; `LeftToolbar.tsx`: `<ToolRailLens …/>` (both render nothing when off) |
 | Paint pot palette | `palette/` | `RightInspector.tsx`: `paintPot ? <PaintPotPalette /> : <PalettePanel />` |
-| Quick magic | `magic/` | `AiToolsPanel.tsx`: `{quickMagic && <QuickMagic />}` and the two `quickMagic ?` labels |
+| Quick magic | `magic/` | `PixiToolsPanel.tsx`: `{quickMagic && <QuickMagic />}` and the two `quickMagic ?` labels |
 
 Each lab imports its own stylesheet, so deleting its folder removes its CSS too.
 

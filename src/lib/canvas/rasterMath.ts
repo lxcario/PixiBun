@@ -156,79 +156,92 @@ export function filterPixelPerfect(points: Point[]): Point[] {
   return result;
 }
 
-// Midpoint Ellipse Algorithm
+/**
+ * Ellipse inscribed in the inclusive pixel box spanned by two corners, as the
+ * Rectangle tool spans it: an 8×8 drag gives an 8×8 ellipse touching all four
+ * sides. Even spans mirror about a half-pixel centre (a 2×2 hub), odd spans
+ * about a centre pixel. Outline pixels are 8-connected and listed once; the
+ * filled ellipse is the outline plus every pixel between it on each row.
+ * Error-term rasterizer after A. Zingl, "A Rasterizing Algorithm for Drawing
+ * Curves" (2012), which accepts boxes of either parity.
+ */
 export function getEllipsePoints(x0: number, y0: number, x1: number, y1: number, filled: boolean): Point[] {
+  const left = Math.min(x0, x1);
+  const right = Math.max(x0, x1);
+  const top = Math.min(y0, y1);
+  const bottom = Math.max(y0, y1);
+
+  // A one-pixel-thick box is a straight run either way.
+  if (left === right || top === bottom) return getRectanglePoints(left, top, right, bottom, true);
+
   const points: Point[] = [];
-  const rx = Math.abs(Math.floor((x1 - x0) / 2));
-  const ry = Math.abs(Math.floor((y1 - y0) / 2));
-  const xc = Math.min(x0, x1) + rx;
-  const yc = Math.min(y0, y1) + ry;
+  const seen = new Set<number>();
+  const rowMin = new Map<number, number>();
+  const rowMax = new Map<number, number>();
+  const boxWidth = right - left + 1;
+  const add = (x: number, y: number) => {
+    const key = (y - top) * boxWidth + (x - left);
+    if (seen.has(key)) return;
+    seen.add(key);
+    points.push({ x, y });
+    rowMin.set(y, Math.min(rowMin.get(y) ?? x, x));
+    rowMax.set(y, Math.max(rowMax.get(y) ?? x, x));
+  };
 
-  if (rx === 0 || ry === 0) {
-    return getBresenhamLine(x0, y0, x1, y1);
-  }
+  const a = right - left;
+  const b = bottom - top;
+  const bOdd = b & 1;
+  const a8 = 8 * a * a;
+  const b8 = 8 * b * b;
+  let dx = 4 * (1 - a) * b * b;
+  let dy = 4 * (bOdd + 1) * a * a;
+  let err = dx + dy + bOdd * a * a;
+  let xl = left;
+  let xr = right;
+  let yLow = top + Math.floor((b + 1) / 2);
+  let yHigh = yLow - bOdd;
 
-  if (filled) {
-    for (let y = -ry; y <= ry; y++) {
-      for (let x = -rx; x <= rx; x++) {
-        if ((x * x) / (rx * rx) + (y * y) / (ry * ry) <= 1) {
-          points.push({ x: xc + x, y: yc + y });
-        }
-      }
+  do {
+    add(xr, yLow);
+    add(xl, yLow);
+    add(xl, yHigh);
+    add(xr, yHigh);
+    const e2 = 2 * err;
+    if (e2 <= dy) {
+      yLow++;
+      yHigh--;
+      dy += a8;
+      err += dy;
     }
-    return points;
-  }
-
-  // Outline ellipse
-  let x = 0;
-  let y = ry;
-  let d1 = ry * ry - rx * rx * ry + 0.25 * rx * rx;
-  let dx = 2 * ry * ry * x;
-  let dy = 2 * rx * rx * y;
-
-  while (dx < dy) {
-    points.push({ x: xc + x, y: yc + y });
-    points.push({ x: xc - x, y: yc + y });
-    points.push({ x: xc + x, y: yc - y });
-    points.push({ x: xc - x, y: yc - y });
-
-    if (d1 < 0) {
-      x++;
-      dx += 2 * ry * ry;
-      d1 += dx + ry * ry;
-    } else {
-      x++;
-      y--;
-      dx += 2 * ry * ry;
-      dy -= 2 * rx * rx;
-      d1 += dx - dy + ry * ry;
+    if (e2 >= dx || 2 * err > dy) {
+      xl++;
+      xr--;
+      dx += b8;
+      err += dx;
     }
+  } while (xl <= xr);
+
+  // Flat ellipses stop short of the top and bottom rows: finish the tips.
+  while (yLow - yHigh <= b) {
+    add(xl - 1, yLow);
+    add(xr + 1, yLow++);
+    add(xl - 1, yHigh);
+    add(xr + 1, yHigh--);
   }
 
-  let d2 = ry * ry * ((x + 0.5) * (x + 0.5)) + rx * rx * ((y - 1) * (y - 1)) - rx * rx * ry * ry;
-  while (y >= 0) {
-    points.push({ x: xc + x, y: yc + y });
-    points.push({ x: xc - x, y: yc + y });
-    points.push({ x: xc + x, y: yc - y });
-    points.push({ x: xc - x, y: yc - y });
+  if (!filled) return points;
 
-    if (d2 > 0) {
-      y--;
-      dy -= 2 * rx * rx;
-      d2 += rx * rx - dy;
-    } else {
-      y--;
-      x++;
-      dx += 2 * ry * ry;
-      dy -= 2 * rx * rx;
-      d2 += dx - dy + rx * rx;
-    }
+  const area: Point[] = [];
+  for (let y = top; y <= bottom; y++) {
+    const from = rowMin.get(y);
+    const to = rowMax.get(y);
+    if (from === undefined || to === undefined) continue;
+    for (let x = from; x <= to; x++) area.push({ x, y });
   }
-
-  return points;
+  return area;
 }
 
-// Rectangle Points
+/** Rectangle outline or fill over the inclusive box; each pixel is listed once. */
 export function getRectanglePoints(x0: number, y0: number, x1: number, y1: number, filled: boolean): Point[] {
   const points: Point[] = [];
   const minX = Math.min(x0, x1);
@@ -243,13 +256,15 @@ export function getRectanglePoints(x0: number, y0: number, x1: number, y1: numbe
       }
     }
   } else {
+    // A one-pixel-high or -wide box has a single edge; stamping it twice
+    // would double translucent paint.
     for (let x = minX; x <= maxX; x++) {
       points.push({ x, y: minY });
-      points.push({ x, y: maxY });
+      if (maxY !== minY) points.push({ x, y: maxY });
     }
     for (let y = minY + 1; y < maxY; y++) {
       points.push({ x: minX, y });
-      points.push({ x: maxX, y });
+      if (maxX !== minX) points.push({ x: maxX, y });
     }
   }
 
@@ -304,7 +319,7 @@ export function applySymmetry(
 }
 
 // Re-export Bezier curve, isometric helpers, and wallpaper group symmetry
-export { getQuadraticBezierPoints, getIsometric2p1Line } from '@/lib/ai/smartMathEngine';
+export { getQuadraticBezierPoints, getIsometric2p1Line } from '@/lib/graphics/smartMathEngine';
 export { applyWallpaperSymmetry, replicatePointWallpaper } from './wallpaperSymmetry';
 
 

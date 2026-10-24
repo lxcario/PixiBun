@@ -1,0 +1,46 @@
+# Season 4 verification
+
+## Current observation — 21 October 2026
+
+The repository is public and Starter is active. PR #6 at a8c0f90f has passing GitHub E2E/Lighthouse/native-codec checks, while the actual required TestSprite App status remains failed (37/5/79). The real latest-case catalog is 91/0/30 across mixed executions; it is not a green automatic batch. The [current story](../releases/2026-10-21-testsprite-verification-and-pr-story.md) and [readiness receipt](s4-readiness-2026-10-21.json) preserve all sources, original failures, verified merge enforcement and the precise next-run proposal. Older dated setup observations below remain historical; their private-repo and billing statements are not current.
+
+Live app: https://pixibun.vercel.app/
+
+TestSprite 3.0 portal project: https://www.testsprite.com/dashboard-v3/o/resques-workspace-8da317b3/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/test-cases
+
+Status on 16 October 2026: the portal project was created with product requirements and live exploration started. This workspace is connected to lxcario through the existing TestSprite GitHub App. A generated suite, active PR trigger and enforced merge gate must each be verified before being described as operational.
+
+## Coverage requirements
+
+- Drawing, erasing and Undo/Redo restore the expected pixels, not only button states.
+- Locked layers refuse edits without changing artwork or consuming history.
+- Frame content stays separate; save/reload preserves project identity, layers and holds.
+- PNG exports decode with expected dimensions, transparency and artwork. GIF exports preserve distinct frames and timing.
+- Editable backups and carts preserve artwork when reopened, where the runner supports the required file interaction.
+- Lighting Cancel preserves artwork; Apply is undoable. Tool shortcuts inside text fields remain text.
+
+Audit generated assertions and run-specific recordings. A filename, visible canvas or frame count does not establish exact artwork integrity. Record unsupported prerequisites as blocked or missing coverage. Native Playwright/unit evidence keeps its own revision and scope; it is not a portal verdict.
+
+## Delivery evidence
+
+Record each PR opening timestamp, head SHA, preview URL, TestSprite run ID and terminal outcome. For genuine failures retain the failed run, root cause, fixing commit and automatic rerun. Verify the latest-commit check actually prevents merge before claiming blocking protection.
+
+The GitHub App needs a ready-deployment signal. Use this PR preview rather than an unrelated production revision. A local workflow alone does not prove an active deployment or trigger.
+
+## Current limitations
+
+The repo is private and must be publicly readable for submission. The latest main CI job was blocked before starting by GitHub account billing/spending limits; Vercel deployed independently. No passing application tests are inferred from this documentation change.
+
+Official rules: https://www.testsprite.com/hackathon-s4
+
+Integration setup: https://docs.testsprite.com/web-portal/integrations/github-integration
+
+## Integration progress — 16 October
+
+The portal exploration finished with ten agents. Eighteen cases were selected from the proposed plan, reviewed and refined, and generation/execution started in run `c47b5c65-be9d-44d1-bc58-dec0fba58a63`. This is an active run, not a terminal pass.
+
+The project now has an Active pull-request trigger for the Vercel commit-status event. Its target pattern is `https://pixibun-git-{branch-slug}-lxcarios-projects.vercel.app`. TestSprite Merge gate is enabled. Preview login protection was disabled with owner approval so cloud browsers can reach this app. GitHub branch-rule enforcement still needs separate verification.
+
+Auditing the initial reported command-palette pass showed direct Pen selection rather than opening/searching the palette. It is inconclusive for the intended flow. The case was refined with intermediate assertions and rerun; its original result is retained. Exact PNG/GIF and canvas-pixel checks reported blocked runner prerequisites; those are missing cloud coverage, not product defect findings or full passes.
+
+This follow-up commit is also the real deployment event used to verify automatic PR dispatch. The eventual TestSprite execution and check on this commit must be recorded before calling the loop complete.

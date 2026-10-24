@@ -64,7 +64,7 @@ export const LandingNav: React.FC = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-200 ${
+      className={`landing-nav fixed top-0 left-0 right-0 z-50 w-full transition-all duration-200 ${
         isScrolled
           ? 'bg-[var(--desk-surface)]/[0.97] border-b-2 border-[var(--desk-border)] shadow-[0_4px_12px_rgba(0,0,0,0.4)]'
           : 'bg-transparent border-b-2 border-transparent'

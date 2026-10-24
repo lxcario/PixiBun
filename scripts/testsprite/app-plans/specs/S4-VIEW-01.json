@@ -1,0 +1,110 @@
+{
+  "id": "1bdd2744-29ef-4e59-879f-9852f0a1475c",
+  "key": "S4-VIEW-01",
+  "title": "S4-VIEW-01 — Lenses do not leave the glass.",
+  "goal": "Color-vision lens, rule of thirds, iso grid, 3x3 tiling and silhouette can all be switched on and back off; none of them changes the artwork or the 16 x 16 PNG export size.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "View options menu"
+    },
+    {
+      "select": "Color vision lens (P cycles)",
+      "option": "Protanopia (red-weak)"
+    },
+    {
+      "select": "Composition guide",
+      "option": "Rule of thirds"
+    },
+    {
+      "click": "Iso grid 2:1 guides"
+    },
+    {
+      "pressed": "Iso grid 2:1 guides"
+    },
+    {
+      "click": "3×3 tiling Seamless check"
+    },
+    {
+      "pressed": "3×3 tiling Seamless check"
+    },
+    {
+      "click": "Silhouette S"
+    },
+    {
+      "pressed": "Silhouette S"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192",
+        "colors": "6"
+      },
+      "why": "Lenses and guides only change the view."
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "PNG",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "1x",
+      "within": "Export Studio Assets"
+    },
+    {
+      "text": "16 × 16 px",
+      "why": "Tiling does not enlarge the export."
+    },
+    {
+      "enabled": "Download PNG",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "click": "View options menu"
+    },
+    {
+      "click": "Silhouette S"
+    },
+    {
+      "click": "3×3 tiling Seamless check"
+    },
+    {
+      "click": "Iso grid 2:1 guides"
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      }
+    }
+  ],
+  "cliOnly": [
+    "decoding the exported PNG to prove no lens, guide or tile pixels (tests/production/viewportLenses.spec.ts, scripts/testsprite/pixibun-lighting-journey.py)"
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

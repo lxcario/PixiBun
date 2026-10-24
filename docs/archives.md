@@ -84,6 +84,7 @@ These originals are local files at the listed paths, mirrored beneath the archiv
 | <a id="record-pixibun-ux-audit-md"></a>`PIXIBUN_UX_AUDIT.md` | Preserved; untracked |
 | <a id="record-pixibun-ux-changelog-md"></a>`PIXIBUN_UX_CHANGELOG.md` | Preserved; untracked |
 | <a id="record-pixibun-ux-implementation-plan-md"></a>`PIXIBUN_UX_IMPLEMENTATION_PLAN.md` | Preserved; untracked |
+| <a id="record-docs-audits-2026-10-17-comprehensive"></a>`docs/audits/2026-10-17-comprehensive/` | Local only; ignored by Git (`/docs/audits/` in `.gitignore`) and not mirrored beneath the archive root. Eight reports plus the proof suite `auditVerification.test.ts.txt`; verdicts in the [18 October triage](releases/2026-10-18-audit-triage.md) |
 | <a id="record-docs-plans-2026-10-02-feature-repairs-md"></a>`docs/plans/2026-10-02-feature-repairs.md` | Preserved; untracked |
 | <a id="record-docs-plans-2026-10-07-editing-quality-and-release-md"></a>`docs/plans/2026-10-07-editing-quality-and-release.md` | Preserved; untracked |
 | <a id="record-docs-plans-audit-remediation-2026-09-26-md"></a>`docs/plans/audit-remediation-2026-09-26.md` | Preserved; untracked |

@@ -7,10 +7,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   analyzeMinecraftSkinTopology,
   detectMinecraftSkin,
-} from '../src/lib/ai/math/minecraftSkin';
+} from '../src/lib/graphics/math/minecraftSkin';
 import {
   executePhotometricPipeline,
-} from '../src/lib/ai/math/photometricLighting';
+} from '../src/lib/graphics/math/photometricLighting';
 
 // ---------------------------------------------------------------------------
 // Minimal DOM + Canvas mock for Vitest

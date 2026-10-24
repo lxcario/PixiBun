@@ -1,0 +1,101 @@
+{
+  "id": "064e9c2c-3eef-42a9-a6f6-d6d9ae5db343",
+  "key": "S4-EXPORT-06",
+  "title": "S4-EXPORT-06 — A replay remembers the latest stroke.",
+  "goal": "After two strokes the timelapse reports the recorded stroke snapshots and is ready to download; exporting it does not use up Undo, which still steps back exactly one stroke.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_ffffff_R0.0.0.15.15&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "color": "#1D4ED8"
+    },
+    {
+      "key": "b"
+    },
+    {
+      "click": "1px brush preset"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "!=A"
+      }
+    },
+    {
+      "record": "B"
+    },
+    {
+      "color": "#E83A5C"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "!=B"
+      }
+    },
+    {
+      "record": "C"
+    },
+    {
+      "click": "/^Export/",
+      "nth": -1
+    },
+    {
+      "click": "Timelapse",
+      "within": "Export Studio Assets"
+    },
+    {
+      "click": "Animated GIF"
+    },
+    {
+      "text": "stroke snapshots recorded",
+      "why": "The timelapse counts the strokes it will replay."
+    },
+    {
+      "enabled": "Download REPLAY"
+    },
+    {
+      "enabled": "Download REPLAY",
+      "why": "The export is ready; this plan does not start the browser download (the file itself is checked outside the App run)."
+    },
+    {
+      "click": "Close dialog",
+      "optional": true
+    },
+    {
+      "readout": {
+        "digest": "=C"
+      },
+      "why": "The export leaves the latest stroke in place."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=B"
+      },
+      "why": "Undo still steps back exactly one stroke: exporting did not consume history."
+    }
+  ],
+  "cliOnly": [
+    "decoding the replay GIF and checking that its last frame is the latest visible artwork (tests/production/timelapseIntegrity.spec.ts)"
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

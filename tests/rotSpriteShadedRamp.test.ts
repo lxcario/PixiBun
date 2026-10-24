@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { rotateWithRotSprite } from '../src/lib/ai/math/rotSprite';
+import { rotateWithRotSprite } from '../src/lib/graphics/math/rotSprite';
 import { makeCanvas } from './helpers/mockCanvas';
 
 describe('RotSprite Shaded & Gradient Cel-Shading Test', () => {

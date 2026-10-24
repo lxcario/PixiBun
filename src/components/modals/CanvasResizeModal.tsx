@@ -32,26 +32,49 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
   const [anchor, setAnchor] = useState<AnchorPosition>('center');
   const [resample, setResample] = useState(false);
 
-  const handleWidthChange = (val: number) => {
-    const clamped = Math.max(4, Math.min(512, val));
-    setWidth(clamped);
-    if (lockAspect) {
-      const ratio = canvasHeight / canvasWidth;
-      setHeight(Math.max(4, Math.min(512, Math.round(clamped * ratio))));
-    }
+  // What the person has typed. A field only updates the size while its number is already
+  // in bounds; it is clamped to 4–512 when they leave it, press Enter or apply. Clamping on
+  // every keystroke turned a typed "24" into 44: the "2" snapped to 4 before the "4" arrived.
+  const [widthText, setWidthText] = useState(String(canvasWidth));
+  const [heightText, setHeightText] = useState(String(canvasHeight));
+  const inBounds = (n: number) => Number.isInteger(n) && n >= 4 && n <= 512;
+  const clampSize = (n: number) => Math.max(4, Math.min(512, n));
+
+  const setSize = (w: number, h: number) => {
+    setWidth(w); setHeight(h); setWidthText(String(w)); setHeightText(String(h));
+  };
+  const heightFor = (w: number) => (lockAspect ? clampSize(Math.round(w * (canvasHeight / canvasWidth))) : height);
+  const widthFor = (h: number) => (lockAspect ? clampSize(Math.round(h * (canvasWidth / canvasHeight))) : width);
+
+  const handleWidthText = (text: string) => {
+    setWidthText(text);
+    const n = parseInt(text, 10);
+    if (inBounds(n)) { setWidth(n); if (lockAspect) { const h = heightFor(n); setHeight(h); setHeightText(String(h)); } }
+  };
+  const handleHeightText = (text: string) => {
+    setHeightText(text);
+    const n = parseInt(text, 10);
+    if (inBounds(n)) { setHeight(n); if (lockAspect) { const w = widthFor(n); setWidth(w); setWidthText(String(w)); } }
   };
 
-  const handleHeightChange = (val: number) => {
-    const clamped = Math.max(4, Math.min(512, val));
-    setHeight(clamped);
-    if (lockAspect) {
-      const ratio = canvasWidth / canvasHeight;
-      setWidth(Math.max(4, Math.min(512, Math.round(clamped * ratio))));
+  // Resolve both fields to the size that will be used, clamping whatever is still being typed.
+  const committedSize = (): [number, number] => {
+    const typedWidth = parseInt(widthText, 10), typedHeight = parseInt(heightText, 10);
+    if (widthText !== String(width)) {
+      const w = Number.isFinite(typedWidth) ? clampSize(typedWidth) : width;
+      return [w, heightFor(w)];
     }
+    if (heightText !== String(height)) {
+      const h = Number.isFinite(typedHeight) ? clampSize(typedHeight) : height;
+      return [widthFor(h), h];
+    }
+    return [width, height];
   };
+  const commitTyped = () => { const [w, h] = committedSize(); setSize(w, h); };
 
   const handleApply = () => {
-    onResize(width, height, anchor, resample);
+    const [w, h] = committedSize();
+    onResize(w, h, anchor, resample);
     onClose();
   };
 
@@ -70,10 +93,7 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
           {PRESETS.map((p) => (
             <button
               key={p}
-              onClick={() => {
-                setWidth(p);
-                setHeight(p);
-              }}
+              onClick={() => setSize(p, p)}
               className={`px-2 py-1 rounded-[2px] border text-[11px] font-mono font-bold cursor-pointer transition-colors ${
                 width === p && height === p
                   ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
@@ -94,8 +114,11 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
             type="number"
             min={4}
             max={512}
-            value={width}
-            onChange={(e) => handleWidthChange(parseInt(e.target.value, 10) || 4)}
+            value={widthText}
+            aria-label="Width (px)"
+            onChange={(e) => handleWidthText(e.target.value)}
+            onBlur={commitTyped}
+            onKeyDown={(e) => { if (e.key === 'Enter') commitTyped(); }}
             className="bg-[var(--desk-surface)] text-[var(--text-heading)] font-mono font-bold text-sm px-2.5 py-1.5 rounded-[2px] border-2 border-[var(--desk-border)] focus:border-[var(--accent-gold)] outline-none"
           />
         </div>
@@ -106,8 +129,11 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
             type="number"
             min={4}
             max={512}
-            value={height}
-            onChange={(e) => handleHeightChange(parseInt(e.target.value, 10) || 4)}
+            value={heightText}
+            aria-label="Height (px)"
+            onChange={(e) => handleHeightText(e.target.value)}
+            onBlur={commitTyped}
+            onKeyDown={(e) => { if (e.key === 'Enter') commitTyped(); }}
             className="bg-[var(--desk-surface)] text-[var(--text-heading)] font-mono font-bold text-sm px-2.5 py-1.5 rounded-[2px] border-2 border-[var(--desk-border)] focus:border-[var(--accent-gold)] outline-none"
           />
         </div>

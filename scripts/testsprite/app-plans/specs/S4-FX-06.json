@@ -1,0 +1,62 @@
+{
+  "id": "4b519c7e-d4e0-4db7-87d3-d0a8dee71f17",
+  "key": "S4-FX-06",
+  "title": "S4-FX-06 — Tiles agree with their map.",
+  "goal": "Slicing the 16 x 16 Bun into 8 px tiles reports 4 unique tiles and offers the tileset download, and slicing never changes the artwork.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Effects/",
+      "nth": 0
+    },
+    {
+      "click": "Got it",
+      "optional": true
+    },
+    {
+      "click": "/^Build tiles and patterns/"
+    },
+    {
+      "click": "Patterns & Tilesets"
+    },
+    {
+      "click": "8px"
+    },
+    {
+      "pressed": "8px"
+    },
+    {
+      "click": "Slice Into Unique Tiles"
+    },
+    {
+      "text": "Unique Tiles: 4",
+      "why": "Bun's four 8 x 8 quarters are all different."
+    },
+    {
+      "visible": "Download tile PNG + maps (.zip)"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Slicing never changes the drawing."
+    }
+  ],
+  "cliOnly": [
+    "decoding the ZIP: tileset.png and the tilemaps agree on indices and bounds (tests/production/gameDelivery.spec.ts)"
+  ],
+  "allow": [
+    "reading a download"
+  ]
+}

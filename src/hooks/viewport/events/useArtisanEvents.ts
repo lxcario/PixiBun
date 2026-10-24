@@ -7,12 +7,12 @@ import {
   applyAtmosphericColorGrade,
   quantizeToActivePalette,
   cleanStrayPixelsOnCanvas,
-} from '@/lib/ai/pixelAiEngine';
+} from '@/lib/graphics/pixelRasterEngine';
 import {
   applyAtkinsonDither,
   applyRiemersmaDither,
   applyZhangSuenThinning,
-} from '@/lib/ai/smartMathEngine';
+} from '@/lib/graphics/smartMathEngine';
 import { runMorphInWorker } from '@/lib/engine/workerDispatcher';
 import { canAddFramesToProject } from '@/lib/project/workspaceEnvelopeGuard';
 import type { ViewportEventContext } from './types';

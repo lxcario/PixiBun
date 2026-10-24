@@ -1,0 +1,50 @@
+# Repairs prepared while testing is paused — 20 October 2026, Istanbul
+
+Historical preparation snapshot. The owner later explicitly resumed bounded testing before the upgrade; see the [resumed verification record](../releases/2026-10-20-resumed-verification.md). Statements below about tests not being run describe this earlier preparation step.
+
+**VERIFIED:** six repaired definitions were saved in the existing TestSprite cases and read back byte-for-byte after canonicalizing their type/description fields. The official CLI's offline plan validator accepted all six with zero issues. The dashboard independently displayed the new eleven-step palette plan. This is definition verification, not a passing browser test.
+
+**NOT RUN:** no application tests, TestSprite runs, generation, healing or code uploads were requested. The existing GitHub PR trigger remains Disabled, independently read after the saves. No app files, branches, PRs or deployments were changed. The source reviewed was `efb223ae92a0411613d215430b52628cb3f0a427`.
+
+## Six specific definition repairs
+
+| Existing case | Evidence and repair | Current scope |
+| --- | --- | --- |
+| [S4-DRAW-11 — Rectangles and ellipses keep their promises.](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/test-cases/dc365ace-40a4-4567-a6c5-7d199b58658c) | The action log clicked Line twice; it never opened the folded Lines and shapes menu. The previous boundary assertion also failed to distinguish existing Bun pixels from new shape pixels. | Definition saved, 9 → 9 steps; execution **UNKNOWN**. |
+| [S4-PAL-01 — A named palette is a keepsake.](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/test-cases/ffedf7d1-5b19-4552-993a-fe63e56e9f19) | The description promises reorder/remove, but neither operation existed in the plan or recorded actions. Reopening Create palette creates a new draft, not the committed palette. | Definition saved, 9 → 11 steps; execution **UNKNOWN**. |
+| [Draw on an unlocked layer, lock it, and verify drawing is blocked until unlocked](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/test-cases/f9fbb1e0-03fb-4d5a-90a0-4ab44ccfa8a6) | The trace records generic canvas clicks with no proof that the unlocked click reached a distinct empty cell; refusal feedback lasts 1600 ms and must be observed before unlocking. | Definition saved, 12 → 12 steps; execution **UNKNOWN**. |
+| [S4-VIEW-03 — Quick tools follow the keymap.](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/test-cases/e65d4b15-428d-430e-bbbb-4c8f0e7e917c) | The recorded setup clicked the artwork while Pen was active and then compared to the earlier digest; the plan also omitted its stated text-editing checkpoint. | Definition saved, 9 → 11 steps; execution **UNKNOWN**. |
+| [S4-MOTION-01 — A rigid part takes two poses.](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/test-cases/b5cab687-77f4-4ba1-8df6-5def1766b4f4) | The trace inspected Effects animation-stability review rather than the rigid-part creation controls in Tools. | Definition saved, 9 → 9 steps; execution **UNKNOWN**. |
+| [S4-EXPORT-07 — SVG explains its approximation.](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/test-cases/df8bdde4-3afe-4f0d-8d06-eecc3a00e058) | The trace repeatedly reopened Export/Vector SVG and never recorded clicking Download SVG. Its summary cannot establish a download regression. | Definition saved, 6 → 6 steps; execution **UNKNOWN**. |
+
+Geometry now opens the real folded **Lines and shapes** menu through ArrowRight/right-click rather than selecting Line repeatedly. Its exact boundary comparison preserves the admitted Bun's pre-existing pixels. Palette authoring now actually reorders and removes a temporary swatch before committing, then checks the committed palette rather than an unrelated new draft. Layer locking uses three distinct native cells and checks transient refusal feedback before unlocking. Quick tools uses focus without a painting click and adds its previously omitted text-input checkpoint. Motion follows **Tools → Animate artwork → Create Motion Part**. SVG requires a click on the separate **Download SVG** button and independently parsed downloaded bytes.
+
+The existing native-pixel, original-artwork, exact Undo, layer/frame and actual-file requirements remain. Unavailable capabilities remain Blocked; actual mismatches after established prerequisites remain failures. Selection-mask geometry is still separate coverage; this unmasked sequence does not certify it. No fabricated assets, product-state writes or substituted successful observations were added.
+
+## What the nine failures in the completed cohort establish
+
+The [terminal App cohort](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80) remains **37 Passed /9 Failed /75 Blocked**, on `2d27b262`. Its [original receipt](automatic-followup-2026-10-20.json) remains unchanged.
+
+| Original failed case | Disposition |
+| --- | --- |
+| Layer lock · `add34c54-40a8-473a-afd5-dcba9fb586a6` | **UNKNOWN product attribution.** Generic canvas clicks did not establish three distinct cells; the plan repair makes that prerequisite explicit. Missing transient feedback must be observed before unlock. |
+| Clips · `a8471cd8-1412-4f7c-89fd-aa135fd4a91b` | **UNRESOLVED execution gap.** The trace restores the valid range and closes Clips before the validation assertion, despite an already explicit immediate checkpoint. Native artwork observations remain missing. No additional wording-only fix claimed. |
+| Rectangle/Ellipse · `193481a8-1248-4b24-9b51-372e5c4181b6` | **Definition repaired; rerun UNKNOWN.** The recorded sequence never opens the folded shape menu or draws a shape. It does not demonstrate a raster regression. |
+| SVG · `673c9389-fcc8-4b96-af6f-2cf537eced2e` | **Definition repaired; file result UNKNOWN.** The trace repeatedly opens Export/Vector SVG, with no recorded Download SVG action. Its timeout summary alone does not establish an encoder defect. |
+| Outline Undo · `62b74b32-a463-4f4e-921a-5743f5c24194` | **UNRESOLVED execution gap.** The summary alleges failed Undo, but the retained action rows contain no Undo click. The plan already requires the actual action. Earlier independent companion passes remain separate evidence. |
+| Frame recovery · `5ba38185-5290-475f-9a76-ed1ab4416a90` | **UNRESOLVED execution gap.** Delete is recorded, then restoration assertions, with no recorded Undo action. Existing exact companions do not overwrite this App failure. |
+| Named palette · `b1f8264d-885c-4275-83e2-e78abab7710a` | **Definition repaired; rerun UNKNOWN.** Reorder/remove were promised in the goal but absent from the plan and execution. Both now have real actions and checkpoints. |
+| Cycle rate · `43dbf725-da8f-4777-b38a-24fadfdb7786` | **Real product finding already fixed** by `f2f13f3c`; see the [red/green record](../releases/2026-10-20-targeted-repairs.md). Local qualification does not replace the original App failure or prove the remaining range/history behavior. No new rate fix was made here. |
+| Quick tools · `d49c1395-52dc-4e2c-bcce-a775affa35f5` | **Definition repaired; integrity attribution UNKNOWN.** The trace clicks the drawing workspace during setup and does not record the requested key chords/text checkpoint. A painting click is a confound, not proven causation for the digest difference. Native RGBA remains the independent requirement. |
+
+The additional motion-panel repair addresses an earlier failure, `3f82801e-02b8-4f62-b295-f9465d01379e`, in the [preceding cohort](automatic-followup-2026-10-19.json); it is not counted as a tenth failure in the nine-failure cohort.
+
+## Saved code, results and the next bounded qualification
+
+Saved Python was left unchanged. Where a script existed, its bytes still match the pre-edit SHA-256. It is **not certified against the revised definition**, particularly the new palette reorder/remove and quick-tools text-input assertions. Do not restamp an older script or accept its narrower pass as coverage of these additions. App plan-versus-saved-code behavior remains unresolved with TestSprite engineering.
+
+The six latest run IDs were unchanged by the updates and stayed Cancelled. The portal marks edited definitions Pending; this is not an active test run or a new passing verdict. The previously stopped batch's displayed completed subset remains **8 Passed /0 Failed /7 Blocked**; its 106 cancelled entries must not disappear into a claimed all-green suite. The [last completed cohort](automatic-followup-2026-10-20.json) is separate from that stopped subset.
+
+After a confirmed upgrade and the owner's resumption instruction: align the executed scripts with these exact definitions, then qualify only the affected cases against one verified preview origin/full commit SHA. Confirm actual keys, gestures, immediate checkpoints, native RGBA and downloaded bytes. Keep original failures, code versions and narrower historical passes. Enable no full catalog by default. Fixture access and unsupported cloud actions remain separate prerequisites; a paid plan alone does not prove them available.
+
+The [lightweight receipt](paused-plan-repairs-2026-10-20.json) records all six original run IDs, before/after plan hashes, code hashes and unchanged last-run identities. Full definitions and original action evidence remain in ignored `artifacts/s4-remediation/paused-plan-repairs-20261020/` under the [archive policy](../archives.md). Documentation is local and uncommitted; no publication gate or test run is claimed.

@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { unexpectedStudioAccessibilityFindings } from '../helpers/studioAccessibilityFindings';
 import { STUDIO_THEMES } from '../../src/lib/theme/registry';
+import { settleAnimations } from '../helpers/settle';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
@@ -41,7 +42,10 @@ test.describe('Rendered Browser Accessibility Audits for Every Theme', () => {
         await expect(canvas).toBeVisible();
 
         await page.getByRole('button', { name: 'Studio options' }).click();
-        await expect(page.getByRole('dialog', { name: 'Studio options' })).toBeInViewport();
+        const studio = page.getByRole('dialog', { name: 'Studio options' });
+        await expect(studio).toBeInViewport();
+        // Scan at rest: mid-bloom, the swatch names are still fading in and read as low contrast.
+        await settleAnimations(studio);
         const studioResults = await new AxeBuilder({ page }).include('[role="dialog"]').withTags(WCAG_TAGS).analyze();
         expect(studioResults.violations.filter((v) => v.impact === 'critical' || v.impact === 'serious')).toEqual([]);
         await page.keyboard.press('Escape');

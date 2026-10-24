@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
-import { renderPixelGlints, applyPixelGlints } from '@/lib/ai/math/pixelGlint';
-import { computePhotometricAnalysis, executePhotometricPipeline } from '@/lib/ai/math/photometricLighting';
+import { renderPixelGlints, applyPixelGlints } from '@/lib/graphics/math/pixelGlint';
+import { computePhotometricAnalysis, executePhotometricPipeline } from '@/lib/graphics/math/photometricLighting';
 import { encodeNormalRGB } from '@/lib/art/normalSculptor';
 import type { PhotometricLightingParams } from '@/types/tools';
 import { makeCanvas, installDocumentCanvasMock } from './helpers/mockCanvas';

@@ -1,0 +1,74 @@
+{
+  "id": "c9688b8d-3ebc-4fe3-b10d-ad7d49f546bf",
+  "key": "S4-PAL-02",
+  "title": "S4-PAL-02 — A library choice is explicit.",
+  "goal": "Previewing a library palette changes nothing; Use palette selects the palette but not the brush color; clicking one of its swatches sets the Primary color; Bun's artwork never changes.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Palette",
+      "nth": 0
+    },
+    {
+      "click": "Browse palettes",
+      "nth": 0
+    },
+    {
+      "fill": "Search palettes",
+      "value": "Sakura Night"
+    },
+    {
+      "click": "Preview Sakura Night",
+      "shown": "Sakura Night 12 colors · PixiBun"
+    },
+    {
+      "visible": "Use palette"
+    },
+    {
+      "visible": "/^Primary color #3A2E4C/",
+      "why": "Previewing does not change the brush color."
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Previewing does not change the artwork."
+    },
+    {
+      "click": "Use palette"
+    },
+    {
+      "visible": "Select color #0a0d24",
+      "why": "The Sakura Night swatches are now the palette."
+    },
+    {
+      "visible": "/^Primary color #3A2E4C/",
+      "why": "Use palette selects the palette, not a brush color."
+    },
+    {
+      "click": "Select color #0a0d24"
+    },
+    {
+      "visible": "/^Primary color #0a0d24/i",
+      "why": "The explicitly clicked swatch becomes the Primary color."
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "pixels": "192"
+      },
+      "why": "Choosing palettes and colors never edits the artwork."
+    }
+  ]
+}

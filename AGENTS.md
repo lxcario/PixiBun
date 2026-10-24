@@ -8,6 +8,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
+Repository branches: keep only `main` (production) and `testsprite-s4` (integration) on `origin`. Consolidate tested changes into `testsprite-s4`; PR #6 carries the integration to `main`. Isolate concurrent agent work locally without publishing another remote branch unless the user requests one. Never rewrite published history or remove unique work during cleanup. Preserve source-labelled test receipts and PR history when consolidating.
+
 Project status and documentation contracts: [docs/current-status.md](docs/current-status.md) and [docs/README.md](docs/README.md). Keep dated evidence separate from operating instructions.
 
 Current engineering status: [current status](docs/current-status.md); corpus reconciliation: [15 October review](docs/releases/2026-10-15-codebase-and-documentation.md); subsequent corrections and current screenshot qualification: [audit follow-up](docs/plans/2026-10-15-audit-follow-up.md). Retain source/build revision labels and original failure verdicts when maintaining documentation.

@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-20T14:46:01.316Z",
+  "scope": "Five strict manual TestSprite companions on published source 98d7625e; not a complete automatic App cohort or production release.",
+  "source": "98d7625e43e125a39d5151be578703d2040191bb",
+  "localQualification": {
+    "passed": 15,
+    "engines": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "retries": 0,
+    "remainingScriptSha256": "c58a37c04faf062d6691531c81eaacccf7c2be2f938d35e3c2014a9f4dc039c9",
+    "pocketScriptSha256": "1aaed970cd525a1ffc4e25f62dc25b5730ed1e426be351dc0dde821356d6024d"
+  },
+  "runs": [
+    {
+      "scenario": "svg",
+      "testId": "df8bdde4-3afe-4f0d-8d06-eecc3a00e058",
+      "runId": "98df8f0f-9f2c-49a7-a33c-bd4479bac5b3",
+      "status": "passed",
+      "source": "cli",
+      "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/1a30fd1d-025d-4407-8efd-08baa0bce3b6/test/98df8f0f-9f2c-49a7-a33c-bd4479bac5b3",
+      "submittedCodeVersion": "v-baf6f79b61b0",
+      "acknowledgedCodeVersion": "v-baf6f79b61b0",
+      "pinnedCodeSha256": "e298eec1168b8a9f2f4870dad2470da58b9aadf089c9dc5f9aeb58021ad94198",
+      "returnedCodeVersion": null,
+      "recordedUiActions": 0
+    },
+    {
+      "scenario": "png",
+      "testId": "8ba9f1eb-92b7-4d26-bf19-2ce9e9b92273",
+      "runId": "b8b3f8c8-b5ad-4def-b5bb-670f50992b5f",
+      "status": "passed",
+      "source": "cli",
+      "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/a22ac1b1-1d5e-4f9d-8e85-c47ed5a7b21f/test/b8b3f8c8-b5ad-4def-b5bb-670f50992b5f",
+      "submittedCodeVersion": "v-3ce7c54c6dfa",
+      "acknowledgedCodeVersion": "v-3ce7c54c6dfa",
+      "pinnedCodeSha256": "be907d3c7c0d8246ea0cda2443136e091501da87f69d86089c579fa29c49a795",
+      "returnedCodeVersion": null,
+      "recordedUiActions": 0
+    },
+    {
+      "scenario": "save",
+      "testId": "c5377b6e-0321-4426-8e41-2da4c98a34cf",
+      "runId": "065d7adc-9556-4ca3-8084-6528cb8cfbd0",
+      "status": "passed",
+      "source": "cli",
+      "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/e147d28d-4e73-475f-baa2-3a10119b6aea/test/065d7adc-9556-4ca3-8084-6528cb8cfbd0",
+      "submittedCodeVersion": "v-2b6fb9e75914",
+      "acknowledgedCodeVersion": "v-2b6fb9e75914",
+      "pinnedCodeSha256": "60b999a00cd912629621e47f3e6d929bec90b2b22aff907cd5cd52c3537ee8ea",
+      "returnedCodeVersion": null,
+      "recordedUiActions": 0
+    },
+    {
+      "scenario": "cycle",
+      "testId": "3de75df2-12d6-451d-99e8-23af772c3063",
+      "runId": "6e0faf6b-c91d-443b-a1b4-da6201165c18",
+      "status": "passed",
+      "source": "cli",
+      "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/bd26a77d-464e-4f60-9fa3-9cfe2134363f/test/6e0faf6b-c91d-443b-a1b4-da6201165c18",
+      "submittedCodeVersion": "v-e0dbe031078b",
+      "acknowledgedCodeVersion": "v-e0dbe031078b",
+      "pinnedCodeSha256": "d20647d6fd489e322656dbab0204fea8ad3c6f0a70c554e86f74ceb2254a7929",
+      "returnedCodeVersion": null,
+      "recordedUiActions": 0
+    },
+    {
+      "scenario": "pocket",
+      "testId": "161d6301-2b6b-4c53-aa18-b396f848bd60",
+      "runId": "7e37d52b-52ab-4e3e-b466-30cef3eb79bf",
+      "status": "passed",
+      "source": "cli",
+      "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/3544c27f-73c3-4090-b633-74006b877606/test/7e37d52b-52ab-4e3e-b466-30cef3eb79bf",
+      "submittedCodeVersion": "v-2ccd1c3f505b",
+      "acknowledgedCodeVersion": "v-2ccd1c3f505b",
+      "pinnedCodeSha256": "437b89489ebcff4d264ff623411f43661054d59a3103cc3561c2730fb9589bc5",
+      "returnedCodeVersion": null,
+      "recordedUiActions": 0
+    }
+  ],
+  "assertions": {
+    "png": "Real New Drawing and pointer-painted red (2,3), blue (8,10), exact Undo/Redo, all 1024 channels and independently decoded actual PNG.",
+    "save": "Real two-frame drawing; per-frame layer counts 1/2 and Blue Mark identity; 100/200ms holds; explicit save confirmation and actual page reload; complete project equality and decoded PNGs for both poses.",
+    "svg": "Visible approximation guidance, 4x/64x64 output, actual XML namespace/dimensions/nonempty emitted geometry; no pixel-exact vector reconstruction claim; exact protected project/artwork.",
+    "cycle": "Admitted Bun, UI Scan Canvas palette verified against actual source colors; inclusive range 2..5, both outside colors and alpha protected across at least three observed phases; native 6/5.5/5.6 validity; pause/exact project, single Undo to 5.5 and Redo to 6; safe track deletion.",
+    "pocket": "Real 390x844 Studio gate/Pocket navigation, selected swatch, two literal pen marks and one erased mark, all 4096 channels, independently decoded real PNG, Clear/Home. Desktop viewport simulation, not physical touch."
+  },
+  "portalPocket": {
+    "runId": "cb0918e2-d0ce-4e0a-bdbb-cf91cc37db81",
+    "source": "portal",
+    "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+    "status": "blocked",
+    "recordedSteps": 10,
+    "viewport": [
+      390,
+      844
+    ],
+    "configurationFix": "Changed only this case from inherited 1920x1080 to the supported 390x844 override; persisted setting retained.",
+    "remainingObservation": "The real UI-agent run reached Pocket but never performed a successful canvas drawing action. Original Blocked verdict preserved; local strict passes and the later saved-script pass do not replace it."
+  },
+  "preparationNotes": [
+    "The first four-case preparation stopped before mutations/runs when a legacy case had no saved Python. First attachment used the CLI-supported initial/legacy If-Match:* path after confirming absence; exact bytes/version were read back before dispatch.",
+    "A standalone Pocket prelude assembly duplication was caught by the pin guard before any cloud dispatch. The earlier source/preparation is retained; clean entry point and single pin markers were checked, and all three engines requalified the cleaned script. These are harness preparation issues, not product bugs."
+  ],
+  "restored": {
+    "scripts": 5,
+    "environment": "https://pixibun.vercel.app/",
+    "automaticTrigger": "left Disabled",
+    "branchProtection": "unchanged"
+  },
+  "catalogSnapshot": {
+    "observedAt": "2026-10-20T14:43:45.669Z",
+    "passed": 75,
+    "failed": 0,
+    "blocked": 46,
+    "scope": "Mixed latest-case default-environment view across dates/builds, not one cohort."
+  },
+  "remainingGates": [
+    "46 default-environment cases still Blocked",
+    "Genuine automatic fixing-commit App qualification",
+    "Broad Linux production-browser completion",
+    "Retry Lighthouse action-download setup failure after current run finishes",
+    "Final production merge/deployment/verification and Discord submission"
+  ],
+  "supportingOracleQualification": {
+    "checks": 18,
+    "passed": 18,
+    "scope": "Pillow-encoded RGBA/RGB/indexed PNG comparisons, CRC/truncation refusal and standalone marker checks. Harness evidence, not extra product findings."
+  }
+}

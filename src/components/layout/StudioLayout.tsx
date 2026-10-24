@@ -9,6 +9,8 @@ import { CenterViewport } from './CenterViewport';
 import { RightInspector } from './RightInspector';
 import { BottomTimeline } from './BottomTimeline';
 import { StatusBar } from './StatusBar';
+import { CanvasReadout } from './CanvasReadout';
+import { ReplayNotice, type ReplayState } from './ReplayNotice';
 import { StudioSkyBackdrop } from './StudioSkyBackdrop';
 import { useThemeStore } from '@/stores/themeStore';
 import { isSceneTheme } from '@/lib/theme/registry';
@@ -32,7 +34,9 @@ import { executeImageImport } from '@/lib/project/imageImportExecution';
 import type { PendingRecoveryContext } from '@/lib/recovery/projectAdmission';
 import { getLocalSaveLabel } from '@/lib/project/localSaveLabel';
 import type { ExportType } from '@/components/modals/export/ExportTabsNav';
-import { openBlankWorkspace, openPostcardWorkspace, openStarterWorkspace } from '@/lib/project/starterWorkspace';
+import { openBlankWorkspace, openPostcardWorkspace, openReplayWorkspace, openStarterWorkspace } from '@/lib/project/starterWorkspace';
+import { parseReplay } from '@/lib/project/replayLink';
+import { applyReplay } from '@/lib/project/applyReplay';
 import { PostcardPicker } from '@/components/cart/PostcardPicker';
 import { POSTCARDS } from '@/lib/postcards/scenes';
 import { findStarterTemplate } from '@/lib/art/starterTemplates';
@@ -167,9 +171,51 @@ export const StudioLayout: React.FC = () => {
   const pendingRecovery =
     lifecycleState.phase === 'active' ? lifecycleState.pendingRecovery : undefined;
 
+  // A ?replay= link opens a new drawing and redraws its steps once per page
+  // load, even if the lifecycle settles again while the steps are applied.
+  const [replayState, setReplayState] = useState<ReplayState | null>(null);
+  const replayHandledRef = useRef(false);
+  useEffect(() => {
+    if (lifecycleState.phase !== 'active' || replayHandledRef.current) return;
+    const url = new URL(window.location.href), replayText = url.searchParams.get('replay');
+    if (replayText === null) return;
+    replayHandledRef.current = true;
+    const parsed = parseReplay(replayText);
+    if (!parsed.ok) {
+      setReplayState({ phase: 'error', message: parsed.error, applied: 0, opened: false });
+      return;
+    }
+    if (lifecycleState.pendingRecovery || lifecycleState.startupIssue) {
+      setReplayState({ phase: 'error', message: 'Resolve the current drawing recovery or storage problem before opening a replay link.', applied: 0, opened: false });
+      return;
+    }
+    setReplayState({ phase: 'running' });
+    void (async () => {
+      let opened = false;
+      try {
+        opened = await openReplayWorkspace(parsed.value, runAutosave);
+        if (!opened) throw new Error('The replay drawing could not be opened. Your current drawing is unchanged.');
+        // Reload must restore the replayed drawing, rather than replay it again.
+        url.searchParams.delete('replay');
+        window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
+        const result = await applyReplay(parsed.value);
+        if (result.ok) {
+          setReplayState({ phase: 'applied', steps: result.steps });
+          studioEvents.emit('pixibun:toast', { type: 'success', message: `Replayed ${result.steps} ${result.steps === 1 ? 'step' : 'steps'}. Undo steps back through them.` });
+        } else {
+          setReplayState({ phase: 'error', message: `Step ${result.failedStep}: ${result.error}`, applied: result.applied, opened: true });
+        }
+        void runAutosave();
+      } catch (error) {
+        setReplayState({ phase: 'error', message: error instanceof Error ? error.message : 'The replay link could not be drawn.', applied: 0, opened });
+      }
+    })();
+  }, [lifecycleState, runAutosave]);
+
   useEffect(() => {
     if (lifecycleState.phase !== 'active') return;
     const url = new URL(window.location.href), templateId = url.searchParams.get('template');
+    if (url.searchParams.has('replay')) return;
     const postcardId = url.searchParams.get('postcard');
     const blankSize = [16, 24, 32, 48].find(size => url.searchParams.get('width') === String(size) && url.searchParams.get('height') === String(size));
     const knownPostcard = !!postcardId && POSTCARDS.some(card => card.id === postcardId);
@@ -223,6 +269,8 @@ export const StudioLayout: React.FC = () => {
   const { saveToast, triggerSaveToast, handleSaveDesktopProject } = useStudioFileSystem();
 
   const setCanvasSize = useStudioStore((s) => s.setCanvasSize);
+  // The light bar sits where the status pill floats; the pill steps aside while it is open.
+  const lightBarOpen = useStudioStore((s) => s.photometricGizmoActive);
   const currentProjectId = useStudioStore((s) => s.currentProjectId);
   const resetToNewProject = useStudioStore((s) => s.resetToNewProject);
 
@@ -544,7 +592,10 @@ export const StudioLayout: React.FC = () => {
       <div hidden={focusMode || !workspace.timeline} className="moon-slot moon-slot-timeline shrink-0"><BottomTimeline /></div>
 
       {/* Status Bar */}
-      <div hidden={focusMode} className="moon-slot moon-slot-status"><StatusBar /></div>
+      <div hidden={focusMode} className="moon-slot moon-slot-status" data-away={lightBarOpen || undefined} inert={lightBarOpen || undefined}><StatusBar /></div>
+      {/* Text account of the drawing; outside the slot so Focus mode keeps it readable */}
+      <CanvasReadout />
+      <ReplayNotice state={replayState} onDismiss={() => setReplayState(null)} />
 
       <PostcardPicker
         isOpen={isPostcardsOpen}

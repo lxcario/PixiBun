@@ -1,0 +1,66 @@
+{
+  "id": "71cc3067-44fb-4a52-8469-88468e42d1c9",
+  "key": "NEW-DRAWING-SIZES",
+  "title": "Reject invalid canvas size before starting a new drawing",
+  "goal": "The new-drawing dialog offers only the supported preset sizes (16 to 128 pixels square), so no out-of-range size can be entered; Keep Drawing cancels it and the original drawing and name remain exactly.",
+  "cliOnly": [
+    "numeric 0 and 513 entry, which only the Canvas size dialog accepts (covered by S4-HIST-04)"
+  ],
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "Rename project Bun"
+    },
+    {
+      "fill": "Project name",
+      "value": "S4 Size Original"
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "click": "/^File/",
+      "nth": 0
+    },
+    {
+      "click": "New drawing",
+      "role": "menuitem"
+    },
+    {
+      "visible": "16 by 16 pixels, Tiny icon",
+      "role": "radio",
+      "shown": "16×16 Tiny icon"
+    },
+    {
+      "visible": "128 by 128 pixels, Big scene",
+      "role": "radio",
+      "shown": "128×128 Big scene",
+      "why": "Only supported preset sizes are offered."
+    },
+    {
+      "click": "Keep Drawing"
+    },
+    {
+      "visible": "Rename project S4 Size Original",
+      "why": "The original project is still open."
+    },
+    {
+      "readout": {
+        "size": "16×16",
+        "digest": "=A"
+      },
+      "why": "Its artwork is unchanged."
+    }
+  ]
+}

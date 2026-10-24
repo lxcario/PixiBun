@@ -16,9 +16,10 @@
 
 import { getVideoRecordingMimeType, recordCanvasVideo } from './videoRecorder';
 import { awaitVideoOperation } from './videoOperation';
-import { muxToMp4Blob, Mp4MuxerSample } from './isobmffWriter';
+import { avcCFromEncodedSample, muxToMp4Blob, Mp4MuxerSample } from './isobmffWriter';
 import { validateExportGeometry } from './exportGeometryValidation';
 import { withExportMemory } from './exportMemory';
+import { I420_COLOR_SPACE, rgbaToI420Bt709 } from './i420Color';
 
 export interface Mp4ExportOptions {
   fps?: number; // Target video frame rate (default: 30)
@@ -37,7 +38,18 @@ interface WebCodecsWindow extends Window {
     flush: () => Promise<void>;
     close: () => void;
   }; };
-  VideoFrame?: new (source: CanvasImageSource, init: { timestamp: number; duration: number }) => { close: () => void };
+  VideoFrame?: new (source: Uint8Array<ArrayBuffer>, init: { timestamp: number; duration: number; format: 'I420'; codedWidth: number; codedHeight: number; colorSpace: typeof I420_COLOR_SPACE }) => { close: () => void };
+}
+
+/**
+ * WebKit's Linux ports (WebKitGTK, WPE) encode H.264 through GStreamer. In CI's Linux
+ * WebKit, the MP4 support probe froze the page and saving a Light Sweep closed it, so
+ * PixiBun does not reach for H.264 there at all and offers WebM, GIF and APNG instead.
+ * Safari on macOS and iOS says "Macintosh", "iPhone" or "iPad", not Linux.
+ */
+export function h264FreezesThisBrowser(userAgent = typeof navigator === 'undefined' ? '' : navigator.userAgent): boolean {
+  return /AppleWebKit/.test(userAgent) && /Version\/[\d.]+.* Safari\//.test(userAgent) && /Linux|X11/.test(userAgent)
+    && !/Chrome|Chromium|CriOS|Edg|Firefox|FxiOS|Android/.test(userAgent);
 }
 
 /**
@@ -45,7 +57,7 @@ interface WebCodecsWindow extends Window {
  * or fallback MediaRecorder with Canvas captureStream.
  */
 export function isMp4ExportSupported(): boolean {
-  if (typeof window === 'undefined' || typeof document === 'undefined') {
+  if (typeof window === 'undefined' || typeof document === 'undefined' || h264FreezesThisBrowser()) {
     return false;
   }
   // Synchronous API-presence hint. UI/export must also probe the exact config.
@@ -59,18 +71,69 @@ export function isMp4ExportSupported(): boolean {
   return getVideoRecordingMimeType('mp4') !== null;
 }
 
+/**
+ * The H.264 configuration every MP4 path uses, so the support probe, the trial encode
+ * and the export test the same encoder. Software encoding: on one Windows machine the
+ * hardware encoder began writing limited-range colour that decoded red as 233,0,2, with
+ * no change in PixiBun. Pixel-art videos are small enough that the software encoder is
+ * quick and avoids that observed hardware conversion. Actual decoded colors and
+ * parameter-set metadata still require separate browser/file verification.
+ */
+const H264 = { codec: 'avc1.42001f', bitrate: 2_000_000, avc: { format: 'avc' }, hardwareAcceleration: 'prefer-software' } as const;
+
+const trialEncodes = new Map<string, Promise<boolean>>();
+
+/**
+ * Encodes one small frame with the given configuration. Some browsers report an
+ * H.264 configuration as supported and then fail every encode (Firefox without
+ * its H.264 plugin), so support is only claimed once a real chunk comes out.
+ */
+function trialEncode(config: { width: number; height: number; framerate: number } & Record<string, unknown>): Promise<boolean> {
+  const key = `${config.width}x${config.height}@${config.framerate}`;
+  const cached = trialEncodes.get(key);
+  if (cached) return cached;
+  const attempt = (async () => {
+    const { VideoEncoder: Encoder, VideoFrame: Frame } = window as WebCodecsWindow;
+    if (!Encoder || !Frame) return false;
+    let chunks = 0, failed = false;
+    const encoder = new Encoder({ output: () => { chunks += 1; }, error: () => { failed = true; } });
+    let frame: { close: () => void } | undefined;
+    try {
+      encoder.configure(config);
+      const planes = rgbaToI420Bt709(new Uint8ClampedArray(config.width * config.height * 4), config.width, config.height);
+      frame = new Frame(planes, { timestamp: 0, duration: 33_333, format: 'I420', codedWidth: config.width, codedHeight: config.height, colorSpace: I420_COLOR_SPACE });
+      encoder.encode(frame, { keyFrame: true });
+      frame.close(); frame = undefined;
+      await awaitVideoOperation(encoder.flush());
+      return !failed && chunks > 0;
+    } catch {
+      return false;
+    } finally {
+      try { frame?.close(); } catch { /* already closed */ }
+      try { encoder.close(); } catch { /* a failed encoder may already be closed */ }
+    }
+  })();
+  trialEncodes.set(key, attempt);
+  return attempt;
+}
+
 /** Exact configuration probe for export controls; API presence alone is insufficient. */
 export async function probeMp4ExportSupport(width: number, height: number, fps = 30): Promise<boolean> {
-  if (typeof window === 'undefined') return false;
+  if (typeof window === 'undefined' || h264FreezesThisBrowser()) return false;
   const encoder = (window as WebCodecsWindow).VideoEncoder;
   if (encoder?.isConfigSupported && (window as WebCodecsWindow).VideoFrame) {
     try {
-      const config = { codec: 'avc1.42001f', width: (width + 1) & ~1, height: (height + 1) & ~1,
-        bitrate: 2_000_000, framerate: fps, avc: { format: 'avc' } };
-      if ((await awaitVideoOperation(encoder.isConfigSupported(config))).supported) return true;
+      const config = { ...H264, width: (width + 1) & ~1, height: (height + 1) & ~1, framerate: fps };
+      if ((await awaitVideoOperation(encoder.isConfigSupported(config))).supported
+        && await trialEncode({ ...config, width: 16, height: 16 })) return true;
     } catch { /* Check recording fallback independently. */ }
   }
   return getVideoRecordingMimeType('mp4') !== null;
+}
+
+/** Test seam: forget earlier trial encodes. */
+export function resetMp4ProbeCache(): void {
+  trialEncodes.clear();
 }
 
 async function exportAnimationWithWebCodecsAsync(
@@ -104,11 +167,12 @@ async function exportAnimationWithWebCodecsAsync(
       const chunk = rawChunk as { byteLength: number; duration?: number; type: string; copyTo: (dest: Uint8Array) => void };
       const metadata = rawMeta as { decoderConfig?: { description?: ArrayBuffer | Uint8Array } } | undefined;
 
-      if (metadata?.decoderConfig?.description) {
+      if (!avcCData && metadata?.decoderConfig?.description) {
         avcCData = new Uint8Array(metadata.decoderConfig.description);
       }
       const data = new Uint8Array(chunk.byteLength);
       chunk.copyTo(data);
+      if (chunk.type === 'key') avcCData = avcCFromEncodedSample(data) ?? avcCData;
       samples.push({
         data,
         durationMs: Math.max(1, Math.round((chunk.duration || 0) / 1000)),
@@ -121,14 +185,7 @@ async function exportAnimationWithWebCodecsAsync(
   });
 
   try {
-    const config = {
-      codec: 'avc1.42001f',
-      width,
-      height,
-      bitrate: 2_000_000,
-      framerate: fps,
-      avc: { format: 'avc' },
-    };
+    const config = { ...H264, width, height, framerate: fps };
     if (!VideoEncoderClass.isConfigSupported || !(await awaitVideoOperation(VideoEncoderClass.isConfigSupported(config), options.signal)).supported) {
       throw new Error('The requested H.264 configuration is unsupported.');
     }
@@ -152,9 +209,11 @@ async function exportAnimationWithWebCodecsAsync(
         ctx.clearRect(0, 0, width, height);
         ctx.drawImage(frameCanvases[f], 0, 0, drawWidth, drawHeight);
 
-        const videoFrame = new VideoFrameClass(exportCanvas, {
+        const planes = rgbaToI420Bt709(ctx.getImageData(0, 0, width, height).data, width, height);
+        const videoFrame = new VideoFrameClass(planes, {
           timestamp: currentTimestampUs,
           duration: durationUs,
+          format: 'I420', codedWidth: width, codedHeight: height, colorSpace: I420_COLOR_SPACE,
         });
 
         const isKey = loop === 0 && f === 0;
@@ -186,6 +245,7 @@ async function exportAnimationWithWebCodecsAsync(
       timescale: 1000,
       avcCData,
       samples,
+      color: { primaries: 1, transfer: 13, matrix: 1, fullRange: false },
     });
   } finally {
     try { encoder.close(); } catch { /* A failed encoder may already be closed. */ }
@@ -200,7 +260,13 @@ async function exportAnimationWithWebCodecsAsync(
  * @returns Promise resolving to an MP4 video Blob (MIME type: 'video/mp4')
  */
 export async function exportAnimationToMp4Async(...args: Parameters<typeof encodeMp4>): Promise<Blob> {
-  return withExportMemory(args[0], Math.max(1, Math.min(16, args[1]?.scale ?? 4)), () => encodeMp4(...args), undefined, 'MP4');
+  const scale = Math.max(1, Math.min(16, args[1]?.scale ?? 4)), frame = args[0]?.[0];
+  // Conversion scratch is reused one frame at a time. Reserve an additional
+  // RGBA-sized workspace, including even padding, alongside the existing
+  // aggregate source/scaled/codec estimate; do not multiply it by every cel.
+  const width = frame ? (frame.width * scale + 1) & ~1 : 0;
+  const height = frame ? (frame.height * scale + 1) & ~1 : 0;
+  return withExportMemory(args[0], scale, () => encodeMp4(...args), undefined, 'MP4', width * height * 4);
 }
 
 async function encodeMp4(
@@ -213,6 +279,9 @@ async function encodeMp4(
 
   if (options.signal?.aborted) {
     throw new DOMException('MP4 export aborted', 'AbortError');
+  }
+  if (h264FreezesThisBrowser()) {
+    throw new Error('MP4 recording is unsupported in this browser. Choose WebM, GIF / APNG instead.');
   }
 
   const fps = Math.max(1, Math.min(60, options.fps ?? 30));

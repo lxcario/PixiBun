@@ -1,0 +1,73 @@
+{
+  "id": "48fad655-2a7c-49e7-9bb8-c58f74e0f5eb",
+  "key": "S4-NEW-12",
+  "title": "S4-NEW-12 — Colors by keyboard.",
+  "goal": "In Colors, arrow keys and End move along the palette swatches and Enter applies the swatch reached, which shows in the Primary well; Escape closes Colors and returns focus to the Primary well, so Enter reopens Colors. The artwork never changes.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "click": "/^Primary color/"
+    },
+    {
+      "click": "Palette color #c792df",
+      "why": "Clicking a swatch applies it and puts keyboard focus on it."
+    },
+    {
+      "visible": "/^Primary color #c792df/i"
+    },
+    {
+      "key": "ArrowLeft"
+    },
+    {
+      "key": "Enter"
+    },
+    {
+      "visible": "/^Primary color #3a2e4c/i",
+      "why": "Left moved to the previous swatch and Enter applied it."
+    },
+    {
+      "key": "End"
+    },
+    {
+      "key": "Enter"
+    },
+    {
+      "visible": "/^Primary color #faf6fc/i",
+      "why": "End reached the last swatch and Enter applied it."
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "absent": "Close color access",
+      "why": "Escape closes Colors."
+    },
+    {
+      "key": "Enter"
+    },
+    {
+      "visible": "Close color access",
+      "why": "Focus went back to the Primary well, so Enter reopens Colors."
+    },
+    {
+      "key": "Escape"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Choosing colors changed no artwork."
+    }
+  ]
+}

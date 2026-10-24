@@ -18,23 +18,6 @@ export type ExportType =
   | 'palette-cycle'
   | 'project';
 
-export const EXPORT_TYPES: readonly ExportType[] = [
-  'cart',
-  'light-sweep',
-  'png',
-  'gif',
-  'apng',
-  'webm',
-  'mp4',
-  'spritesheet',
-  'godot-kit',
-  'replay',
-  'svg',
-  'shader',
-  'palette-cycle',
-  'project',
-] as const;
-
 interface ExportTabsNavProps {
   exportType: ExportType;
   onSelectType: (type: ExportType) => void;

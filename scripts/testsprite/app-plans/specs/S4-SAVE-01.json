@@ -1,0 +1,136 @@
+{
+  "id": "b353085c-8d22-424c-9ecc-8d3a7c75d367",
+  "key": "S4-SAVE-01",
+  "title": "S4-SAVE-01 — Close the desk, keep the drawing.",
+  "goal": "A two-frame drawing gets a real Pen edit and new 175/325 ms holds, is saved, and comes back exactly after two full reloads, each starting with an empty Undo history.",
+  "steps": [
+    {
+      "open": "/studio?replay=1_16x16_ff0000.0000ff_p0.2.3~F~p1.8.10&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "color": "#E83A5C"
+    },
+    {
+      "key": "b"
+    },
+    {
+      "click": "1px brush preset"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "frame": "1 of 2",
+        "pixels": "2",
+        "colors": "2"
+      },
+      "why": "Frame 1 now has its red pixel and the new mark at the centre."
+    },
+    {
+      "record": "A"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "175"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "fill": "Active frame duration in milliseconds",
+      "value": "325"
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "visible": "/^Select frame 1. #1 175ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 325ms/"
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "record": "B"
+    },
+    {
+      "click": "Save now"
+    },
+    {
+      "visible": "All changes saved to local storage",
+      "role": "status",
+      "why": "Wait for the actual save confirmation before starting the full reload."
+    },
+    {
+      "open": "/studio?end=1",
+      "reload": true
+    },
+    {
+      "skip": true
+    },
+    {
+      "visible": "/^Select frame 1. #1 175ms/"
+    },
+    {
+      "visible": "/^Select frame 2. #2 325ms/"
+    },
+    {
+      "disabled": "Undo last action",
+      "why": "A fresh session starts with empty history."
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "readout": {
+        "digest": "=A",
+        "frames": "2"
+      }
+    },
+    {
+      "click": "/^Select frame 2. /"
+    },
+    {
+      "readout": {
+        "digest": "=B"
+      }
+    },
+    {
+      "open": "/studio?end=1",
+      "reload": true
+    },
+    {
+      "skip": true
+    },
+    {
+      "click": "/^Select frame 1. /"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "Closing and reopening the Studio again keeps everything."
+    },
+    {
+      "visible": "/^Select frame 2. #2 325ms/"
+    },
+    {
+      "disabled": "Undo last action"
+    }
+  ],
+  "cliOnly": [
+    "closing the browser tab, decoding every layer from a downloaded backup and comparing exported PNGs (scripts/testsprite/pixibun-save-reopen-integrity.py)"
+  ]
+}

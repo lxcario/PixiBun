@@ -24,6 +24,7 @@ class MockMediaRecorderInstance extends EventTarget {
   public stream: unknown;
   public options: unknown;
   public ondataavailable: ((e: { data: Blob }) => void) | null = null;
+  public onstart: (() => void) | null = null;
   public onstop: (() => void) | null = null;
   public onerror: ((e: unknown) => void) | null = null;
 
@@ -35,12 +36,17 @@ class MockMediaRecorderInstance extends EventTarget {
 
   start() {
     this.state = 'recording';
+    // Real recorders announce capture asynchronously.
+    queueMicrotask(() => this.onstart?.());
   }
 
   stop() {
     if (this.state === 'inactive') return;
     this.state = 'inactive';
-    const chunk = new Blob([new Uint8Array([0, 0, 0, 24, 102, 116, 121, 112, 105, 115, 111, 109])], {
+    const chunk = new Blob([new Uint8Array([
+      0, 0, 0, 12, 102, 116, 121, 112, 105, 115, 111, 109, // ftyp isom
+      0, 0, 0, 12, 109, 100, 97, 116, 1, 2, 3, 4, // mdat with encoded samples
+    ])], {
       type: 'video/mp4',
     });
     if (this.ondataavailable) {
@@ -451,5 +457,15 @@ describe('Animated Exporters Output Safety Ceilings (H3 Verification)', () => {
     expect(webmBtn4x.disabled).toBe(false);
     expect(webmView.queryByTestId('unsafe-scale-warning')).toBeNull();
     webmView.unmount();
+  });
+
+  it('S. Output Info counts one frame as "1 frame"', () => {
+    const props = { scale: 1, setScale: vi.fn(), canvasWidth: 16, canvasHeight: 16, fps: 8, videoLoopCount: 1, setVideoLoopCount: vi.fn(), isMp4Supported: true };
+    const one = render(React.createElement(AnimatedExportTab, { ...props, exportType: 'gif', totalFrames: 1 }));
+    expect(one.getByText(/16 × 16 px, 1 frame at 8 FPS/)).toBeDefined();
+    one.unmount();
+    const two = render(React.createElement(AnimatedExportTab, { ...props, exportType: 'apng', totalFrames: 2 }));
+    expect(two.getByText(/16 × 16 px, 2 frames \(RGBA\)/)).toBeDefined();
+    two.unmount();
   });
 });

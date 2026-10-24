@@ -11,7 +11,7 @@ The [source and documentation review](docs/releases/2026-10-15-codebase-and-docu
 | Collaboration history | [selectiveRestore](src/lib/engine/selectiveRestore.ts) restores changed RGBA cells only while their live bytes still equal the step's expected result. It preserves differing later peer pixels, not author identity for equal-color overwrites. Structural history and created-layer steps retain their separate behavior. |
 | Playback | [usePlaybackClock](src/hooks/studio/usePlaybackClock.ts) owns one elapsed-time rAF clock per workspace, preserves time across frame publications, caps one contribution at 250 ms and suspends hidden-tab time. Studio and desktop practice share it; speed is a preview multiplier. M3 scheduling qualification remains open. |
 | Playground | [PlaygroundLayout](src/components/layout/PlaygroundLayout.tsx) uses CoachPanel, ToolDock, FilmStrip and ghost/gap overlays. [lessonArt](src/lib/art/lessonArt.ts) paints all twelve curricula; [playgroundCoach](src/lib/art/playgroundCoach.ts) supplies display names and coaching. Pocket has eight 16×16 lessons plus its temporary 32×32 free pad. |
-| Homepage | [NightStory](src/components/landing/night/NightStory.tsx) follows scroll through sketch, light, motion and export; the hero reacts to Bun taps and sky drawing. [The bench](src/components/landing/AtelierEngineShowcase.tsx) runs the Studio's pencil, lamp, RotSprite and GIF engines on one editable starter, redrawing only after input. |
+| Homepage | [NightStory](src/components/landing/night/NightStory.tsx) follows scroll through sketch, light, motion and export; the hero reacts to Bun taps and sky drawing. [The bench](src/components/landing/AtelierEngineShowcase.tsx) runs the Studio's pencil, lamp, RotSprite and GIF engines on one editable starter, redrawing only after input. The landing's pixel scenes are painted in Moonlit's palette and mapped into the studio theme by lightness ([sceneRecolor](src/lib/theme/sceneRecolor.ts)). The hero paints straight in the theme's colors through `sceneColor` (no per-frame readback) and has its own daylight landscape; the other scenes recolor each frame and invert their night by Day. Switching Day/Night plays a sunset or sunrise inside the hero ([themeTransition](src/lib/theme/themeTransition.ts)) while the page crossfades. Wheel scrolling is native; only in-page links glide. |
 | Inspector | [InspectorKit](src/components/layout/inspector/InspectorKit.tsx) shares section, field and control styling across Tools, Layers and Palette. Timeline thumbnails are admitted while visible, and the existing Studio cards remain 72 px wide. |
 | Theme | [useLiveThemeChoice](src/stores/themeStore.ts) supplies saved palette values to canvas consumers during hydration; markup keeps server-compatible values. [themeTransition](src/lib/theme/themeTransition.ts) optionally reveals Day/Night through View Transitions, with an immediate reduced-motion/unsupported fallback. |
 | Updates | [appRestart](src/lib/system/appRestart.ts) delegates to the active Studio's real save coordinator. The initiating page saves before APPLY_UPDATE and rechecks before reload; other pages do not automatically reload. The worker retains old caches when multiple window clients exist and can read their assets through CacheStorage. See [deployment](docs/guides/deployment.md). |
@@ -98,13 +98,13 @@ This document describes subsystem ownership and integration. For artist workflow
 
 - [1. System Topology Overview](#1-system-topology-overview)
 - [2. Canvas & Rendering Pipeline](#2-canvas--rendering-pipeline)
-- [3. Deterministic Graphics Math Engine (`src/lib/ai/math/`)](#3-deterministic-graphics-math-engine-srclibaimath)
+- [3. Deterministic Graphics Math Engine (`src/lib/graphics/math/`)](#3-deterministic-graphics-math-engine-srclibgraphicsmath)
 - [4. State Management, Layer Security & Undo Architecture](#4-state-management-layer-security--undo-architecture)
 - [5. Local-First Storage & Multi-Project Lifecycle (`src/lib/storage/db.ts`, `src/lib/project/schema.ts`)](#5-local-first-storage--multi-project-lifecycle-srclibstoragedbts-srclibprojectschemats)
 - [6. Multi-Engine Export & Web Worker Pipeline (`src/lib/export/`)](#6-multi-engine-export--web-worker-pipeline-srclibexport)
-- [7. 3D Minecraft Skin Recognition & Domain Shading Engine (`src/lib/ai/math/minecraftSkin.ts`)](#7-3d-minecraft-skin-recognition--domain-shading-engine-srclibaimathminecraftskints)
-- [8. Signed Distance Field (SDF) In-Between Animation Morphing (`src/lib/ai/pixelAiEngine.ts`)](#8-signed-distance-field-sdf-in-between-animation-morphing-srclibaipixelaienginets)
-- [9. Image-to-Pixel-Art Conversion Pipeline (`src/lib/ai/pixelizeEngine.ts`)](#9-image-to-pixel-art-conversion-pipeline-srclibaipixelizeenginets)
+- [7. 3D Minecraft Skin Recognition & Domain Shading Engine (`src/lib/graphics/math/minecraftSkin.ts`)](#7-3d-minecraft-skin-recognition--domain-shading-engine-srclibgraphicsmathminecraftskints)
+- [8. Signed Distance Field (SDF) In-Between Animation Morphing (`src/lib/graphics/pixelRasterEngine.ts`)](#8-signed-distance-field-sdf-in-between-animation-morphing-srclibgraphicspixelrasterenginets)
+- [9. Image-to-Pixel-Art Conversion Pipeline (`src/lib/graphics/pixelizeEngine.ts`)](#9-image-to-pixel-art-conversion-pipeline-srclibgraphicspixelizeenginets)
 - [10. Theme Architecture (`src/stores/themeStore.ts`)](#10-theme-architecture-srcstoresthemestorets)
 - [11. Bounded Idle Buffer Pooling (`src/lib/engine/bufferPool.ts`)](#11-bounded-idle-buffer-pooling-srclibenginebufferpoolts)
 - [12. Multithreaded Worker & Deterministic CG Math Architecture](#12-multithreaded-worker--deterministic-cg-math-architecture)
@@ -118,7 +118,7 @@ This document describes subsystem ownership and integration. For artist workflow
 - [20. Database & Canvas Teardown Lifecycle Invariants (`src/lib/storage/db.ts`, `tests/e2e/chiselAndPaletteLiveProof.spec.ts`)](#20-database--canvas-teardown-lifecycle-invariants-srclibstoragedbts-testse2echiselandpaletteliveproofspects)
 - [21. Bitwise Normalization, Hot-Path Viewport Decoupling & Export Pipeline Hardening](#21-bitwise-normalization-hot-path-viewport-decoupling--export-pipeline-hardening)
 - [22. Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine](#22-selection-free-transform-gizmo-sprite-sheet-slicer--web-worker-offloading-engine)
-- [23. Workstation Architectural Upgrades (`p2pHostAuthority`, `structuralHistory`, `desktopFS`, `47-blob`, `isobmffMuxer`)](#23-workstation-architectural-upgrades-p2p-host-authority-structural-history-desktop-fs-47-blob-autotile--pure-isobmff-muxer)
+- [23. Workstation Architectural Upgrades (P2P Host Authority, Structural History, Desktop FS, 47-Blob Autotile & Pure ISOBMFF Muxer)](#23-workstation-architectural-upgrades-p2p-host-authority-structural-history-desktop-fs-47-blob-autotile--pure-isobmff-muxer)
 - [24. Comprehensive Defensive Hardening & Invariant Architecture](#24-comprehensive-defensive-hardening--invariant-architecture)
 - [25. Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection](#25-autonomous-local-cicd-quality-gate--git-pre-push-protection)
 - [26. Studio Workstation Ergonomics, Focus Trapping & Unsaved Invariants](#26-studio-workstation-ergonomics-focus-trapping--unsaved-invariants)
@@ -232,11 +232,11 @@ The undo/redo ledger is independent of React rendering in `HistoryEngine`; its m
 
 ---
 
-## 3. Deterministic Graphics Math Engine (`src/lib/ai/math/`)
+## 3. Deterministic Graphics Math Engine (`src/lib/graphics/math/`)
 
-The `ai` folder name is historical; nothing in it is a generative or trained model. A rename to `src/lib/graphics` is planned.
+Nothing in `src/lib/graphics` is a generative or trained model. The folder was named `ai` until 18 October.
 
-The graphics intelligence engine is decomposed into modular, deterministic mathematical modules under `src/lib/ai/math/` and `src/lib/ai/`:
+The graphics intelligence engine is decomposed into modular, deterministic mathematical modules under `src/lib/graphics/math/` and `src/lib/graphics/`:
 - `edtNormalMap.ts`: Felzenszwalb-Huttenlocher $O(N)$ EDT, non-linear dome inflation ($\gamma = 0.5$), bilateral smoothing, content-aware heightmaps, anatomical part segmentation, frontal face cushion plateau (level camera-facing plateau), independent ear cone ridges, and Sobel tangent normal vector fields.
 - `photometricLighting.ts`: Parametric 2.5D lighting, protected features/ink, stepped OKLCH diffuse shading and live tagged relighting. Explicit glint choices use the pixel reflection path; calls omitting the choice retain legacy renderer behavior.
 - `pixelGlint.ts`: Finite GGX-shaped reflection masks, painted-normal priority with OpenGL-up conversion, two flat core/shoulder coverage levels, bounded hue-related lightness lifts, and preserved source alpha. This is artist-directed pixel shading, not a full energy-conserving BRDF.
@@ -363,7 +363,7 @@ The schema validates dimensions, frame/layer counts, aggregate footprint, decode
 
 
 
-## 7. 3D Minecraft Skin Recognition & Domain Shading Engine (`src/lib/ai/math/minecraftSkin.ts`)
+## 7. 3D Minecraft Skin Recognition & Domain Shading Engine (`src/lib/graphics/math/minecraftSkin.ts`)
 
 When an imported or active sprite canvas has dimensions $64\times64$ or $64\times32$, the photometric lighting system distinguishes between authentic Minecraft 3D player skin texture atlases and single-character / object illustrations before routing normal generation:
 
@@ -407,7 +407,7 @@ graph TD
 
 ---
 
-## 8. Signed Distance Field (SDF) In-Between Animation Morphing (`src/lib/ai/pixelAiEngine.ts`)
+## 8. Signed Distance Field (SDF) In-Between Animation Morphing (`src/lib/graphics/pixelRasterEngine.ts`)
 
 The frame morphing engine generates smooth intermediate tween frames between keyframes via **Separable Euclidean Distance Transform (EDT) Signed Distance Fields (SDF)** combined with multi-source nearest-color sampling:
 
@@ -424,7 +424,7 @@ The frame morphing engine generates smooth intermediate tween frames between key
 
 ---
 
-## 9. Image-to-Pixel-Art Conversion Pipeline (`src/lib/ai/pixelizeEngine.ts`)
+## 9. Image-to-Pixel-Art Conversion Pipeline (`src/lib/graphics/pixelizeEngine.ts`)
 
 ```mermaid
 graph TD
@@ -475,7 +475,7 @@ The combined 512 MiB ledger estimates selected active and suspended rasters/hist
 
 Compute-bound tasks are balanced between background Web Workers and on-device TypedArray math:
 - **Web Worker GIF Encoding (`src/lib/export/gifEncoder.worker.ts`):** LZW compression and median-cut color quantization run off-thread with zero-copy transferable `ArrayBuffer` lists (`postMessage(payload, [buffer])`).
-- **Live photometric preview and Apply (`src/hooks/viewport/events/usePhotometricEvents.ts`, `src/lib/ai/math/`, `src/lib/ai/shadowRayMarcher.ts`):** Analysis, including its EDT/height/normal passes when required, photometric rendering and bounded sprite cast shadows execute synchronously on the main thread using reusable scratch buffers. The live session can reuse owned analysis; changing inference inputs can recompute it. This path is separate from normal-map baking. For audit finding H1 (resolved), `computeContentAwareHeightmap` records component membership in a linear pass, then visits each component's members and propagates distances through them using one shared canvas-sized `cDist` buffer. The component stage avoids repeated full-canvas scans and per-component distance-buffer allocations. For audit finding H6 (resolved), the affected photometric render path reuses one content-aware analysis instead of recomputing the same full analysis twice, while retaining the separate specular silhouette cushion: `renderParametric2p5DLighting` hoists geometric analysis via `computePhotometricAnalysis` and feeds `precomputedAnalysis` directly into `executePhotometricPipeline`.
+- **Live photometric preview and Apply (`src/hooks/viewport/events/usePhotometricEvents.ts`, `src/lib/graphics/math/`, `src/lib/graphics/shadowRayMarcher.ts`):** Analysis, including its EDT/height/normal passes when required, photometric rendering and bounded sprite cast shadows execute synchronously on the main thread using reusable scratch buffers. The live session can reuse owned analysis; changing inference inputs can recompute it. This path is separate from normal-map baking. For audit finding H1 (resolved), `computeContentAwareHeightmap` records component membership in a linear pass, then visits each component's members and propagates distances through them using one shared canvas-sized `cDist` buffer. The component stage avoids repeated full-canvas scans and per-component distance-buffer allocations. For audit finding H6 (resolved), the affected photometric render path reuses one content-aware analysis instead of recomputing the same full analysis twice, while retaining the separate specular silhouette cushion: `renderParametric2p5DLighting` hoists geometric analysis via `computePhotometricAnalysis` and feeds `precomputedAnalysis` directly into `executePhotometricPipeline`.
 
 - **Normal-map Bake:** The same viewport event owner calls `runEdtNormalMapInWorker()` for EDT, bilateral smoothing and normal-field output through `heavyCompute.worker.ts`. Source-bound jobs reject stale results before publication. Its bounded synchronous fallback is described in sections 22–23; moving this bake off-thread does not move the live photometric path off-thread.
 
@@ -614,6 +614,7 @@ The following describes the named browser-test fixture's database teardown, not 
   - **Orthogonal Boundary Extraction (`extractSelectionBoundarySegments`):** Traverses arbitrary 1-bit binary selection masks and extracts pixel boundary segments along cell edges $(x, y) \to (x+1, y)$ and $(x, y) \to (x, y+1)$ where selection state transitions $0 \leftrightarrow 1$. Converts contiguous edge segments into SVG path strings (`boundarySegmentsToSvgPath`) rendered with dual-pass contrasting strokes (white on black) and animated CSS dashoffset marching ants.
   - **Screen-Space Hitbox Invariance:** 8 transformation handles (4 corners, 4 midpoints) maintain a constant 18x18px screen-space hit area regardless of canvas zoom factor ($100\% - 6400\%$).
   - **Center Pivot Crosshair Reticle ($\oplus$):** Draggable pivot point initialized to selection center $((x_1+x_2)/2, (y_1+y_2)/2)$. Serves as the origin for both interactive scaling and RotSprite affine rotation.
+  - **Lifted selections keep their source:** a selection lifted by a flip (H/V) or a transform carries its original pixels and marks its pre-lift Undo snapshot as pending, so Escape puts the pixels back and Commit followed by Undo returns to the original drawing, never to the cut-out hole (`tests/e2e/selectionTransformUndo.spec.ts`).
   - **Outer Corner Rotation Zone & HUD:** Corner hit zones extend $24\text{px}$ outside the boundary handles to detect rotational drag. Holding `Shift` snaps rotation to $15^\circ$ increments. A floating degree readout badge displays active angle, and a quick-action HUD bar exposes Flip Horizontal, Flip Vertical, Rotate 90° CW/CCW, Commit, and Cancel actions. Lasso preview strokes require an active pointer drag; lifted irregular selections keep excluded bounding-box pixels transparent during scaling and rotation, and the source mask tint disappears while the selection floats.
 * **Sprite Sheet Slicer Engine (`src/lib/canvas/spritesheetSlicer.ts`, `src/lib/canvas/spriteSheetAnalysis.ts`, `src/components/modals/ImportModal.tsx`):**
   - High-performance grid computation (`computeGridDimensions`) partitioning arbitrary atlas sheets into uniform cells (presets: 16x16, 24x24, 32x32, 48x48, 64x64, custom).
@@ -638,7 +639,7 @@ The following describes the named browser-test fixture's database teardown, not 
   - Upgrades `HistoryEngine` to a hybrid Command Pattern (`HistoryStep = PixelHistoryStep | StructuralHistoryStep`).
   - Destructive structural operations (layer additions, deletions, reorderings, merge-downs, frame insertions, frame deletions) record a `StructuralHistoryStep` using a hybrid capture architecture: an authoritative full frame/layer metadata tree snapshot cloned via `structuredClone(state.frames)`, paired with targeted raster pixel buffer backups (`captureLayerBuffers`) strictly limited to affected layer IDs (rather than capturing the entire project's raster buffers).
   - Restores both layer/frame structures and targeted layer canvas pixel buffers into the live `bufferRegistry` upon undo and redo.
-* **Worker EDT Distance Transform & Normal Map Offloading (`src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `src/lib/ai/math/edtNormalMap.ts`):**
+* **Worker EDT Distance Transform & Normal Map Offloading (`src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `src/lib/graphics/math/edtNormalMap.ts`):**
   - Offloads CPU-intensive 2D Euclidean Distance Transform, bilateral Gaussian smoothing, and Sobel normal field baking to `heavyCompute.worker.ts`.
   - Copies the outgoing main-thread pixel buffer with `rgba.slice().buffer` to prevent live canvas detachment, then transfers the copy to the worker without another structured-clone copy.
   - Retains bounded synchronous fallback in `runEdtNormalMapInWorker` when a worker is unavailable in tests or restricted browsers. This describes normal-map Bake, not the main-thread live photometric analysis/Apply path.
@@ -646,7 +647,7 @@ The following describes the named browser-test fixture's database teardown, not 
   - Integrates W3C File System Access API (`window.showSaveFilePicker`, `window.showOpenFilePicker`, `FileSystemFileHandle`).
   - Binds `Ctrl+S` to instantaneous in-place disk overwriting without file picker prompts once a file handle is active, and `Ctrl+Shift+S` to explicit Save As dialogs.
   - Provides fallback to browser anchor downloads (`<a download>`) and file inputs in unsupported browsers.
-* **47-Blob Autotile Interactive Engine (`src/lib/ai/math/autotileEngine.ts`):**
+* **47-Blob Autotile Interactive Engine (`src/lib/graphics/math/autotileEngine.ts`):**
   - Implements canonical 8-neighbor Moore bitmasking with cardinal-corner dominance, collapsing $2^8 = 256$ neighborhood configurations into 47 Wang/Blob equivalence classes.
   - Utilizes a precomputed $O(1)$ 256-element bitmask lookup table (`BITMASK_TO_47_INDEX: Uint8Array`) and a reactive $3\times3$ Chebyshev dirty neighborhood updater (`updateAutotileAt`) that recalculates only affected adjacent tiles.
   - Includes a zero-dependency procedural 47-tile pixel renderer for instant terrain, wall, and platform synthesis.
@@ -700,6 +701,7 @@ The workstation implements dirty-state and focus behavior; WCAG targets still re
   - Supports focus-order/visibility goals relevant to WCAG 2.4.3 and 2.4.11; unit/browser checks are not a full conformance determination.
   - Enforces programmatic initial focus on modal title or first focusable interactable.
   - Implements circular Tab / Shift+Tab keyboard focus containment, preventing focus leakage to obscured background layers.
+  - Studio toasts portal into the topmost open dialog (a small registry that `ModalWrapper` updates as dialogs enter and leave the top layer), because a modal dialog makes the rest of the page inert and a toast outside it would never be announced.
   - Restores focus to the triggering opener button upon modal dismissal.
 * **Shortcut Collision Prevention & Quantized Zoom Stepping (`src/components/layout/StudioLayout.tsx`):**
   - Shields viewport keyboard shortcuts (e.g. `s` silhouette squint mode) from firing when focused in text inputs or executing `Ctrl+S`.
@@ -711,19 +713,19 @@ The workstation implements dirty-state and focus behavior; WCAG targets still re
 
 To ensure that the 2.5D Photometric Studio delivers mathematically sound volumetric lighting across all canvas sizes ($16\times16$ through $128\times128$) and dark color palettes:
 
-* **Resolution-Aware Bevel Scaling (`src/lib/ai/math/edtNormalMap.ts`):**
+* **Resolution-Aware Bevel Scaling (`src/lib/graphics/math/edtNormalMap.ts`):**
   - Introduces a dimensionless scale factor $\text{scaleFactor} = \max\left(1.0, \frac{\min(W, H)}{32}\right)$.
   - Dynamically scales the anatomical character bevel radius $R_{\text{char}} = 2.8 \times \text{scaleFactor}$, dynamic bevel radius $R_{\text{bevel}} \in [2.5, 6.0 \times \text{scaleFactor}]$, and appendage width ceilings.
   - Addresses interior normal fields flattening to $N = [0, 0, 1]$ on larger canvases. Recorded byte-exact parity applies to the tested legacy $32\times32$ baseline fixtures, not every possible sprite.
-* **Boundary-Aware Ink Line & Crevice Classification (`src/lib/ai/math/edtNormalMap.ts`):**
+* **Boundary-Aware Ink Line & Crevice Classification (`src/lib/graphics/math/edtNormalMap.ts`):**
   - Replaces naive global luminance thresholds ($L < 0.22$) with contextual spatial heuristics:
     1. Dark boundary pixels touching transparent void ($L < 0.14$).
     2. High-contrast interior crevices ($\max_{q \in \mathcal{N}_4} L(q) - L(p) \ge 0.16$).
     3. Near-black true ink lines ($L < 0.035$).
   - Prevents dark body colors (crimson $L=0.18$, navy $L=0.06$) from being falsely classified as unshaded line art.
-* **Monotonic Cel-Shading Ramp Clamping (`src/lib/ai/math/photometricLighting.ts`):**
+* **Monotonic Cel-Shading Ramp Clamping (`src/lib/graphics/math/photometricLighting.ts`):**
   - Current mid/deep lightness uses factors 0.86/0.72 and minimum drops 0.025/0.05, with floors 0.04/0.02. Floors mean this is not a strict darker-than-base guarantee at every possible lightness. See the rendering contract.
-* **Dynamic Appendage Normal Stabilization & Drag Decoupling (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`):**
+* **Dynamic Appendage Normal Stabilization & Drag Decoupling (`src/lib/graphics/math/edtNormalMap.ts`, `src/lib/graphics/math/photometricLighting.ts`):**
   - Decouples static pixel geometry (EDT, part segmentation, composite heightmap, bilateral filter, Laplace AO) from light-direction-coupled appendage normal stabilization.
   - Appendage stabilization updates narrow-feature normals using base fields, candidate metadata and light azimuth. End-to-end drag latency is unmeasured.
   - Scheduled previews target responsive dragging; commit recomputes a fresh result. Recorded fixture parity does not guarantee every artwork/azimuth or 60 FPS.
@@ -806,15 +808,15 @@ Theme mutations apply synchronously via `applyThemeToDOM()`, which injects a tem
 The `AppearancePopover` (`src/components/ui/AppearancePopover.tsx`) provides a flyout UI for switching both axes with live preview swatches, focus trapping, and `Escape` dismiss handling.
 
 ### Contextual Tool Motion Previews & Tactile Affordances
-The tool preview architecture (`src/components/ui/ToolMotionPreview.tsx`, `src/components/ui/ToolPreviewCanvas.tsx`, `src/components/ui/ToolMotionPreview.module.css`) delivers instant visual affordances across the studio without mutating document state:
-1. **Interactive Pixel Previews:** Procedural 96×54 canvas scenes cycle through before, action, and result states for 43 drawing and PixiTools effects. The Lasso traces an irregular path; Magic Wand marks one connected color region. The preview card is 304px wide, and step labels render as crisp HTML over the canvas. Reduced-motion users see the result state. These demonstrations do not mutate artwork.
+The tool preview architecture (`src/components/ui/ToolMotionPreview.tsx`, `src/components/ui/toolPreview/`, `src/components/ui/ToolMotionPreview.module.css`) delivers instant visual affordances across the studio without mutating document state:
+1. **Clips that run the tools' own code:** each clip in `src/components/ui/toolPreview/clips.ts` calls the engine function its tool calls (rasterizers, flood fill, selections, RotSprite, 2.5D lighting, Sel-Out, cleanup, grades, dithers, the in-between morph) on a 32×24 copy of the canvas shown at 7× (224×168), with the studio checker, wooden frame, brush ghost and crosshair. A before / action / result rule and caption sit under the stage; hovering the stage scrubs the clip. The card is 246 px wide, blooms through `SpringSurface` and glides between tools on the `MORPH_W` spring. The clip engine loads lazily on the first hover intent. Reduced-motion users see the result state. These demonstrations do not mutate artwork ([record](docs/releases/2026-10-18-tool-previews.md)).
 2. **Dual-Layer Context Architecture:**
    - `DrawingToolsPreviewLayer`: Mounted around `LeftToolbar` to anchor previews to the right of drawing tool buttons.
-   - `PixiToolsPreviewLayer`: Mounted around `AiToolsPanel` to anchor previews to the left of photometric, procedural, and cleanup action controls.
+   - `PixiToolsPreviewLayer`: Mounted around `PixiToolsPanel` to anchor previews to the left of photometric, procedural, and cleanup action controls.
 3. **Motion Ergonomics & Gliding Transitions:** Hover transitions between adjacent controls glide smoothly (`0.18s` cubic bezier) with warmth tracking (`450ms` window) eliminating pop flicker. Re-anchors dynamically on container scroll and clamps safely within the viewport (`minY = 48px` to preserve header visibility).
 4. **User Preferences & Dismissal:** Provides an explicit "Don't show again" option and close button on each card, with a master toggle in `AppearancePopover`. Setting state persists in `localStorage` under `pixibun:tool-previews-disabled` with real-time cross-tab/window event synchronization (`pixibun:tool-previews-changed`).
 
-`AiToolsPanel.tsx` begins with lighting, tiles, and cleanup task choices, keeps Browse all available, and remembers the choice for the browser tab. `PhotometricLightingSection.tsx` exposes the primary lighting action before specialist settings.
+`PixiToolsPanel.tsx` begins with lighting, tiles, and cleanup task choices, keeps **Show every tool on one page** available, and remembers the choice for the browser tab. `PhotometricLightingSection.tsx` exposes the primary lighting action before specialist settings.
 
 ---
 
@@ -898,7 +900,7 @@ Phase 1A and Phase 1B establish defensive boundaries against runaway workspace c
 * **Responsive Cancellation:** Checks `signal?.aborted` immediately at function entry before preflight allocations; gives cancellation absolute priority over simultaneous probe failures during pending operations.
 * **Runtime Immutability:** Deep-freezes all candidate result trees, projects, and remap entries via `deepFreeze()`.
 ### 7. Trusted Recovery Orchestration & Atomic Recovered-Copy Persistence (Phase 1B.6)
-* **Trusted Plan Preparation (`src/lib/recovery/recoveryOrchestrator.ts`):** Evaluates authoritative IndexedDB snapshots (`acquireStoredProjectSnapshot`) in memory. Computes dual SHA-256 binary fingerprints: `sourceContentFingerprint` (covering stored project record, exact UTF-8 `dataJson`, complete ordered blob keyspace, metadata, and 32-byte blob digests) and `commitPreimageFingerprint` (chaining source-content fingerprint with existing `recoveryRecords` ledger state to compare the preimage atomically and refuse changed source/ledger state).
+* **Trusted Plan Preparation (`src/lib/recovery/recoveryOrchestrator.ts`):** Evaluates authoritative IndexedDB snapshots (`acquireStoredProjectSnapshot`) in memory. Computes dual SHA-256 binary fingerprints: `resolvedSourceFingerprint` (the source-content fingerprint, covering stored project record, exact UTF-8 `dataJson`, complete ordered blob keyspace, metadata, and 32-byte blob digests) and `commitPreimageFingerprint` (chaining source-content fingerprint with existing `recoveryRecords` ledger state to compare the preimage atomically and refuse changed source/ledger state).
 * **Token Branding & One-Use Semantics:** Protects candidate plans via module-private `WeakMap` token branding, enforcing one-use semantics (`TOKEN_ALREADY_CONSUMED`) and concurrent commit locking (`TOKEN_ALREADY_COMMITTING`).
 * **Atomic Persistence:** Re-evaluates exact source snapshot in-transaction with `Dexie.waitFor()` keepalive on asynchronous Web Crypto digests. Executes atomic persistence across `projects`, `layerBlobs`, and `recoveryRecords` in a single readwrite transaction, preserving the damaged source project untouched, persisting reconstructed data under a fresh collision-checked project ID (bounded retries $N=3$), remapping survivor blobs byte-for-byte, and appending resolution audit metadata. Rollback on mid-flight failure leaves zero partial destination state. Supports cooperative cancellation before, during, and after commit (`cancellationIgnoredPostCommit`).
 

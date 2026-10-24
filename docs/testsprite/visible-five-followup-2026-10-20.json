@@ -1,0 +1,1078 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-20T18:56:49.255Z",
+  "projectId": "ae8453ac-f859-4324-9ca2-5016e683bc6c",
+  "sourceCommit": "98d7625e43e125a39d5151be578703d2040191bb",
+  "priorSourceAttribution": "Original full App cohort receipt verified preview identity before dispatch and held the branch alias fixed; individual original cases do not independently attest their SHA.",
+  "applicationDefectsReproduced": 0,
+  "applicationSourceChanges": 0,
+  "originalVisibleCounts": {
+    "passed": 44,
+    "failed": 5,
+    "blocked": 72,
+    "total": 121
+  },
+  "latestUiVerifiedCounts": {
+    "passed": 44,
+    "failed": 4,
+    "blocked": 73,
+    "total": 121
+  },
+  "countsScope": "Mixed latest non-cancelled results across environments; not a single passing cohort. Latest UI read after the fresh Outline replay.",
+  "cases": [
+    {
+      "testId": "f9fbb1e0-03fb-4d5a-90a0-4ab44ccfa8a6",
+      "name": "layer lock",
+      "originalRunId": "add34c54-40a8-473a-afd5-dcba9fb586a6",
+      "originalExecutionId": "38207a10-bdfb-463a-99ea-10d3cd934d80",
+      "originalSource": "2d27b262239fcf86aa1dc2ec9f13b42301319e4c",
+      "originalEnvironmentId": "ce059a14-f25c-4af7-aa99-3f928d645167",
+      "originalObservedBehavior": "The trace used generic canvas clicks and did not establish distinct native A/B/C cells or the immediate refusal checkpoint.",
+      "currentObservedBehavior": "Real 32×32 A=(2,2), locked B=(5,2), unlocked C=(8,2); immediate warning, every composite/layer channel, same layer identity, Undo/Redo.",
+      "disposition": "Not reproduced on current source; original gesture/timing prerequisites were not established.",
+      "currentSource": "98d7625e43e125a39d5151be578703d2040191bb",
+      "originalVerdictRetained": true
+    },
+    {
+      "testId": "5197eb3b-9b2a-43ca-8371-5fb0ed29d7ae",
+      "name": "clip bounds",
+      "originalRunId": "a8471cd8-1412-4f7c-89fd-aa135fd4a91b",
+      "originalExecutionId": "38207a10-bdfb-463a-99ea-10d3cd934d80",
+      "originalSource": "2d27b262239fcf86aa1dc2ec9f13b42301319e4c",
+      "originalEnvironmentId": "ce059a14-f25c-4af7-aa99-3f928d645167",
+      "originalObservedBehavior": "The transient invalid-range message was asserted only after later valid edits and Done.",
+      "currentObservedBehavior": "Immediate 2–2 refusal feedback; original frames/holds/pixels preserved; distinct painted red/blue/green poses and actual clipped GIF prove inclusive 1–2 output, 100/200ms and exclusion of pose 3.",
+      "disposition": "Not reproduced; assertion order in original execution is invalid for a transient checkpoint. Live playback-clock accuracy remains separate.",
+      "currentSource": "98d7625e43e125a39d5151be578703d2040191bb",
+      "originalVerdictRetained": true
+    },
+    {
+      "testId": "dc365ace-40a4-4567-a6c5-7d199b58658c",
+      "name": "rectangle and ellipse",
+      "originalRunId": "193481a8-1248-4b24-9b51-372e5c4181b6",
+      "originalExecutionId": "38207a10-bdfb-463a-99ea-10d3cd934d80",
+      "originalSource": "2d27b262239fcf86aa1dc2ec9f13b42301319e4c",
+      "originalEnvironmentId": "ce059a14-f25c-4af7-aa99-3f928d645167",
+      "originalObservedBehavior": "The run never opened the real folded tool flyout; no shape was drawn.",
+      "currentObservedBehavior": "Actual tool chooser, 12-cell outline rectangle, filled ellipse interior/bounds, single Undo, and selection-mask outside-pixel preservation.",
+      "disposition": "Not reproduced; control/gesture prerequisite unavailable or not exercised by original runner.",
+      "currentSource": "98d7625e43e125a39d5151be578703d2040191bb",
+      "originalVerdictRetained": true
+    },
+    {
+      "testId": "8b27171a-6d28-442e-8df6-b9d50e53c57a",
+      "name": "Outline Undo",
+      "originalRunId": "62b74b32-a463-4f4e-921a-5743f5c24194",
+      "originalExecutionId": "38207a10-bdfb-463a-99ea-10d3cd934d80",
+      "originalSource": "2d27b262239fcf86aa1dc2ec9f13b42301319e4c",
+      "originalEnvironmentId": "ce059a14-f25c-4af7-aa99-3f928d645167",
+      "originalObservedBehavior": "The original action trace contains Apply Outline but no Undo click before its restoration assertion.",
+      "currentObservedBehavior": "Actual global Undo restores every native channel; Redo restores Outline in all three engines. A fresh edited-plan portal replay records the real Undo, then retains Blocked for unavailable independent pixel/file observation.",
+      "disposition": "Original missing-action configuration corrected for one supported UI replay; independent application regression not reproduced. Cloud integrity remains Blocked.",
+      "currentSource": "98d7625e43e125a39d5151be578703d2040191bb",
+      "originalVerdictRetained": true
+    },
+    {
+      "testId": "e65d4b15-428d-430e-bbbb-4c8f0e7e917c",
+      "name": "quick tools and text input",
+      "originalRunId": "d49c1395-52dc-4e2c-bcce-a775affa35f5",
+      "originalExecutionId": "38207a10-bdfb-463a-99ea-10d3cd934d80",
+      "originalSource": "2d27b262239fcf86aa1dc2ec9f13b42301319e4c",
+      "originalEnvironmentId": "ce059a14-f25c-4af7-aa99-3f928d645167",
+      "originalObservedBehavior": "The run painted/focused by canvas click, selected Flood Fill instead of the authored Eraser path, and did not exercise text-input isolation.",
+      "currentObservedBehavior": "Nonpainting focus, actual Shift+F10, all ten dialog tools and swap, Eraser selection/focus, Escape, typed g and Shift+F10 inside rename input; cancelled rename and all pixels intact.",
+      "disposition": "Not reproduced; original recorded actions drift from the current authored plan.",
+      "currentSource": "98d7625e43e125a39d5151be578703d2040191bb",
+      "originalVerdictRetained": true
+    }
+  ],
+  "independentExecutions": {
+    "reportScenarios": 9,
+    "gestureAndTextScenarios": 9,
+    "realFileRoundtripJourneys": 3,
+    "inclusiveClipGifJourneys": 3,
+    "ciTailCases": 6,
+    "total": 30,
+    "note": "Thirty executions with overlapping behavior; not thirty distinct bugs or thirty additional official cloud passes.",
+    "engines": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "retries": 0
+  },
+  "portalFollowup": {
+    "runId": "86879042-2cac-4e0a-89f7-4279309a27bd",
+    "executionId": "68fe7f8b-6575-45bc-bbdc-fa963a843ce6",
+    "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/68fe7f8b-6575-45bc-bbdc-fa963a843ce6/test/86879042-2cac-4e0a-89f7-4279309a27bd",
+    "source": "portal",
+    "status": "blocked",
+    "targetUrl": "https://pixibun-git-testsprite-s4-lxcarios-projects.vercel.app",
+    "finishedAt": "2026-10-20T18:52:54.775Z",
+    "recordedUndoAction": true,
+    "independentPixelObservation": "Blocked; not replaced with aggregate counts/digest",
+    "defaultEnvironmentRestored": "https://pixibun.vercel.app/"
+  },
+  "blockedBaseline": {
+    "count": 72,
+    "reportedPrimaryPrerequisites": {
+      "precision-input-or-selection-prerequisite": 16,
+      "download-file-or-container-observation": 18,
+      "known-fixture-not-admitted": 11,
+      "environment-timing-or-preference-control": 4,
+      "independent-raster-or-history-oracle": 20,
+      "scenario-navigation-or-source-checkpoint": 3
+    },
+    "classificationScope": "One reviewed primary reported prerequisite; not confirmed backend bugs. Secondary blockers overlap."
+  },
+  "blockedCases": [
+    {
+      "testId": "a6c571af-6e7d-4a40-bbdf-2d0f196bd9be",
+      "name": "Draw distinct pixels, then undo and redo",
+      "runId": "cb7322a3-dee1-4400-9652-315909782644",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/cb7322a3-dee1-4400-9652-315909782644",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:12:20.091Z",
+      "category": "precision-input-or-selection-prerequisite"
+    },
+    {
+      "testId": "0aa9fcd9-0c73-4973-a819-e6891b25d1cd",
+      "name": "Erase part of a drawing and undo the erase",
+      "runId": "c6a4bc8e-6b5d-4406-ad2a-bdaf9c735a26",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/ca1755b5-469e-446f-9c8f-2898a12644b0/test/c6a4bc8e-6b5d-4406-ad2a-bdaf9c735a26",
+      "environment": {
+        "id": "b3b1c5f9-9878-4092-891b-b0a8a84418a7",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:57:12.890Z",
+      "category": "precision-input-or-selection-prerequisite"
+    },
+    {
+      "testId": "fde7a312-bc33-4d07-bbde-6dd6d7e49972",
+      "name": "EXP-003 — Paint a little heart, light it, and bring it back.",
+      "runId": "20519241-0d9a-4f61-a63f-b3d18e2acb90",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/20519241-0d9a-4f61-a63f-b3d18e2acb90",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:15:39.693Z",
+      "category": "precision-input-or-selection-prerequisite"
+    },
+    {
+      "testId": "2c762ddc-9921-415d-bc62-0f49b0b4a30d",
+      "name": "Export a two-frame animation as GIF with distinct frame content",
+      "runId": "1d1f0ac7-e4bb-4bff-8b91-2664504eae49",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/ca1755b5-469e-446f-9c8f-2898a12644b0/test/1d1f0ac7-e4bb-4bff-8b91-2664504eae49",
+      "environment": {
+        "id": "b3b1c5f9-9878-4092-891b-b0a8a84418a7",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:58:15.331Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "dd5ae5f3-02e6-47a9-8b8c-fb05a96b25c9",
+      "name": "Export an editable backup and reopen it through the supported import flow",
+      "runId": "87310231-6615-4799-8edf-2fc11bb69aef",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/87310231-6615-4799-8edf-2fc11bb69aef",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:16:00.256Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "69f584fe-836d-49a2-b91d-0ad7a857affa",
+      "name": "S4-ANIM-01 — Onion skin is only a guide.",
+      "runId": "4b4b55f3-2d1d-45b8-87b4-a20a8d9f8ddb",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/4b4b55f3-2d1d-45b8-87b4-a20a8d9f8ddb",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:24:22.234Z",
+      "category": "known-fixture-not-admitted"
+    },
+    {
+      "testId": "ac3e0785-bcf6-445d-a2a9-8ccef1464bec",
+      "name": "S4-ANIM-02 — Holds and playback remain editable.",
+      "runId": "4a4da41e-07d3-4289-959e-dc75f68aee79",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/4a4da41e-07d3-4289-959e-dc75f68aee79",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:33:37.983Z",
+      "category": "environment-timing-or-preference-control"
+    },
+    {
+      "testId": "e3dedfcc-3074-4425-a274-6b3d9fc81674",
+      "name": "S4-ANIM-04 — Review explains a difference.",
+      "runId": "fce536b6-6372-417f-8ca6-1e0a913db5c0",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/fce536b6-6372-417f-8ca6-1e0a913db5c0",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:42:20.910Z",
+      "category": "precision-input-or-selection-prerequisite"
+    },
+    {
+      "testId": "1165bc74-c877-4d9f-a3ad-ad58dd3f6729",
+      "name": "S4-CART-01 — A living postcard brings the drawing back.",
+      "runId": "c992e934-4175-4280-b428-3ccffe2d7403",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/c992e934-4175-4280-b428-3ccffe2d7403",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:19:53.506Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "da6a67a2-4780-4761-98e9-5f9b33e07566",
+      "name": "S4-CART-02 — A broken postcard is not a lost drawing.",
+      "runId": "54983aec-4751-460d-928f-a3470a96e49d",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/54983aec-4751-460d-928f-a3470a96e49d",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:37:47.759Z",
+      "category": "known-fixture-not-admitted"
+    },
+    {
+      "testId": "6b85de97-1585-4bda-a830-b9b23fb83901",
+      "name": "S4-DRAW-01 — Pen and erase return exact pixels.",
+      "runId": "fa4fdc59-630c-451f-b2eb-cf047207b682",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/ca1755b5-469e-446f-9c8f-2898a12644b0/test/fa4fdc59-630c-451f-b2eb-cf047207b682",
+      "environment": {
+        "id": "b3b1c5f9-9878-4092-891b-b0a8a84418a7",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:57:57.414Z",
+      "category": "precision-input-or-selection-prerequisite"
+    },
+    {
+      "testId": "61070835-b7f7-480e-9506-352f6c13b36f",
+      "name": "S4-DRAW-02 — The curve can be reconsidered.",
+      "runId": "358c73fc-0a97-4a22-b0c5-c3fd3a13bce2",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/358c73fc-0a97-4a22-b0c5-c3fd3a13bce2",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:24:34.325Z",
+      "category": "precision-input-or-selection-prerequisite"
+    },
+    {
+      "testId": "7e243cd0-2e2f-45e2-a6ae-a2c9e6c0c2c6",
+      "name": "S4-DRAW-03 — A bucket respects its boundary.",
+      "runId": "8189918b-6390-468b-8c12-6f53ee62a25b",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/8189918b-6390-468b-8c12-6f53ee62a25b",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:27:36.223Z",
+      "category": "precision-input-or-selection-prerequisite"
+    },
+    {
+      "testId": "07d954a4-7605-43c9-af85-207d06a8b18a",
+      "name": "S4-DRAW-04 — A gradient stays in its selection.",
+      "runId": "54b9f411-5052-4ee8-95a0-cf75bbac1dc5",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/54b9f411-5052-4ee8-95a0-cf75bbac1dc5",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:15:15.578Z",
+      "category": "precision-input-or-selection-prerequisite"
+    },
+    {
+      "testId": "5185d7a0-c55b-4bd4-bdac-87ccd1daef0b",
+      "name": "S4-DRAW-05 — Dither leaves the gaps alone.",
+      "runId": "9f5ebb38-b765-4ede-b6f8-e91ff2512b93",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/9f5ebb38-b765-4ede-b6f8-e91ff2512b93",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:21:43.184Z",
+      "category": "precision-input-or-selection-prerequisite"
+    },
+    {
+      "testId": "5ccfecc6-b4bc-4017-9184-6e76f51b4e98",
+      "name": "S4-DRAW-06 — Replace only the requested color.",
+      "runId": "c83857d1-a389-4107-a43e-26e191bba39e",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/c83857d1-a389-4107-a43e-26e191bba39e",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:26:22.471Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "bde1ab4b-a6e2-47ae-ab33-00c8ee84c3cf",
+      "name": "S4-DRAW-07 — Erase a family, keep a neighbor.",
+      "runId": "4e7cb1c6-8f6d-437d-bbbb-0aa2ae911eac",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/4e7cb1c6-8f6d-437d-bbbb-0aa2ae911eac",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:35:11.842Z",
+      "category": "known-fixture-not-admitted"
+    },
+    {
+      "testId": "8e9da616-47f1-4cd9-ae9a-163ef2190f12",
+      "name": "S4-DRAW-08 — Three ways to select.",
+      "runId": "7f1c35f6-35dd-44fb-ba72-ae9c7da2e47c",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/7f1c35f6-35dd-44fb-ba72-ae9c7da2e47c",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:29:57.758Z",
+      "category": "precision-input-or-selection-prerequisite"
+    },
+    {
+      "testId": "c84e8e84-b8ea-48a9-9a45-cbdcb7304c59",
+      "name": "S4-DRAW-09 — A transformed detail can come back.",
+      "runId": "ee4d006c-7faf-4ecf-880b-6425b8db6392",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/ee4d006c-7faf-4ecf-880b-6425b8db6392",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:37:14.679Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "0f7b89d1-67d1-4337-8b4c-ee09195f9c10",
+      "name": "S4-DRAW-10 — Straight and isometric agree with their previews.",
+      "runId": "e17f46c7-8226-418c-9a3e-c586305b4a09",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/e17f46c7-8226-418c-9a3e-c586305b4a09",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:14:34.074Z",
+      "category": "precision-input-or-selection-prerequisite"
+    },
+    {
+      "testId": "055924c4-9b9d-4a1f-9215-2685358f3896",
+      "name": "S4-DRAW-12 — A normal is a surface, not paint.",
+      "runId": "f9f2671b-0db6-4643-9886-2f2a6d80d226",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/f9f2671b-0db6-4643-9886-2f2a6d80d226",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:16:19.834Z",
+      "category": "precision-input-or-selection-prerequisite"
+    },
+    {
+      "testId": "b14b8600-0dd8-4837-bd4c-59f027f8fa4d",
+      "name": "S4-DRAW-13 — Eyedropper samples the art.",
+      "runId": "0df02993-c5ac-4fa7-b327-609463dc5d92",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/0df02993-c5ac-4fa7-b327-609463dc5d92",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:33:44.866Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "1d9dc104-94e9-4eb1-ac2c-406a3003da92",
+      "name": "S4-EXPORT-01 — PNG takes the active pose home.",
+      "runId": "a522d5e8-9dd1-49f3-bc02-526016e919c6",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/ca1755b5-469e-446f-9c8f-2898a12644b0/test/a522d5e8-9dd1-49f3-bc02-526016e919c6",
+      "environment": {
+        "id": "b3b1c5f9-9878-4092-891b-b0a8a84418a7",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:58:06.317Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "9d8df519-fd82-44cc-95dd-ba29fec74e73",
+      "name": "S4-EXPORT-02 — A GIF keeps the beat.",
+      "runId": "5b1f0380-b45d-4460-aecb-556b6031b336",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/5b1f0380-b45d-4460-aecb-556b6031b336",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:33:42.879Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "6c9b8100-1170-433a-890b-7477303e6181",
+      "name": "S4-EXPORT-03 — APNG preserves admitted RGBA.",
+      "runId": "8cba3e4c-5043-4415-915f-24ef790f8ed0",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/8cba3e4c-5043-4415-915f-24ef790f8ed0",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:28:28.465Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "1acf9570-11e0-44c8-bdc9-b0bf3c0ab39a",
+      "name": "S4-EXPORT-04 — A sheet and its map agree.",
+      "runId": "406738a8-56e5-41d4-8970-71a2e5c9b3ab",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/406738a8-56e5-41d4-8970-71a2e5c9b3ab",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:19:02.653Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "87220cbb-74de-4287-8bc4-f5b34179289c",
+      "name": "S4-EXPORT-05 — A Godot kit opens as a bundle.",
+      "runId": "49864668-dfeb-42ee-b97b-118f4c5d6bb2",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/49864668-dfeb-42ee-b97b-118f4c5d6bb2",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:32:14.479Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "064e9c2c-3eef-42a9-a6f6-d6d9ae5db343",
+      "name": "S4-EXPORT-06 — A replay remembers the latest stroke.",
+      "runId": "e9ec6652-6d80-4fe0-b371-e8c8b7de5ed2",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/e9ec6652-6d80-4fe0-b371-e8c8b7de5ed2",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:14:22.220Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "6e22e00c-53b8-4a8c-b762-0859b83b8702",
+      "name": "S4-EXPORT-08 — Shader code travels with its context.",
+      "runId": "8b4d8614-1811-428f-b357-b1ed50054d86",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/8b4d8614-1811-428f-b357-b1ed50054d86",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:27:41.846Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "7113128a-96dd-40fe-8c3d-79608d16fbc4",
+      "name": "S4-EXPORT-09 — Palette motion becomes a loop.",
+      "runId": "c9a76ee5-f8b8-4e7c-af0f-d688cc39b150",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/c9a76ee5-f8b8-4e7c-af0f-d688cc39b150",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:29:51.408Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "f736d94f-04d6-4e9c-9d50-e3f286076e34",
+      "name": "S4-EXPORT-10 — An editable backup really reopens.",
+      "runId": "404fc12c-9a8d-463d-bacd-077766ecb163",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/404fc12c-9a8d-463d-bacd-077766ecb163",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:15:16.150Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "1bffe460-3740-40d7-acfc-f59d73cbc55a",
+      "name": "S4-EXPORT-11 — Video reports its real capability.",
+      "runId": "fad392d8-a6c7-49c9-96c8-b321da4dcbb8",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/fad392d8-a6c7-49c9-96c8-b321da4dcbb8",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:21:49.513Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "dcf76735-5c13-437a-8f98-45fb2ff95a19",
+      "name": "S4-EXPORT-12 — Unsafe scale is refused kindly.",
+      "runId": "cc80e781-2952-4057-bacf-374eec97070e",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/cc80e781-2952-4057-bacf-374eec97070e",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:39:28.574Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "a0974817-fb8c-45ff-94cd-4223f9071a01",
+      "name": "S4-EXPORT-13 — A lighthouse for a pocket-sized drawing.",
+      "runId": "c8edaf32-e70d-4277-b602-3e305738c6e2",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/c8edaf32-e70d-4277-b602-3e305738c6e2",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:32:37.797Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "ab425882-1179-4999-a003-1b0e0f434388",
+      "name": "S4-FX-01 — The Lamp can be put back.",
+      "runId": "364c9ada-a714-4005-8dbb-114caa693bf9",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/364c9ada-a714-4005-8dbb-114caa693bf9",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:12:53.731Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "cab0a484-4493-495d-99c0-687662d1ce3d",
+      "name": "S4-FX-04 — One normal exports; two refuse; lighting Cancel preserves layers.",
+      "runId": "28b32fb4-b97e-4c8b-a38c-6065389bbc68",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/28b32fb4-b97e-4c8b-a38c-6065389bbc68",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:35:28.709Z",
+      "category": "known-fixture-not-admitted"
+    },
+    {
+      "testId": "1c1f254a-e25d-422f-9bc9-62c35f7127e0",
+      "name": "S4-FX-05 — Cleanup keeps protected details.",
+      "runId": "61efdba0-8286-4fe0-9e25-724d36cf504b",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/61efdba0-8286-4fe0-9e25-724d36cf504b",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:18:17.280Z",
+      "category": "known-fixture-not-admitted"
+    },
+    {
+      "testId": "4b519c7e-d4e0-4db7-87d3-d0a8dee71f17",
+      "name": "S4-FX-06 — Tiles agree with their map.",
+      "runId": "e748186b-3b0f-4700-9354-00349e72b15d",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/e748186b-3b0f-4700-9354-00349e72b15d",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:24:47.693Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "fb1facc7-97dd-4f27-a7fe-c80787ee9859",
+      "name": "S4-FX-07 — Variations stay tied to their source.",
+      "runId": "93e19a26-438c-475a-bc50-6f5caf836bd1",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/93e19a26-438c-475a-bc50-6f5caf836bd1",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:43:50.779Z",
+      "category": "scenario-navigation-or-source-checkpoint"
+    },
+    {
+      "testId": "6c4c3552-16b8-441f-a51b-9732ae33da1f",
+      "name": "S4-HIST-02 — An empty history stays calm.",
+      "runId": "5ddc1b5c-d263-4457-8289-626447ebc555",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/5ddc1b5c-d263-4457-8289-626447ebc555",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:26:19.870Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "6054b7b4-74c8-4c69-8285-9b9568558043",
+      "name": "S4-HOME-01 — The bench keeps its own tiny world.",
+      "runId": "a05e2bdf-3d70-4f60-97b6-1d37b9dcff71",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/a05e2bdf-3d70-4f60-97b6-1d37b9dcff71",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:26:13.436Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "86e87409-b0d0-4575-aca7-881510dca77a",
+      "name": "S4-IMPORT-01 — Image import is explicit.",
+      "runId": "1d812092-0a1b-4948-a9b4-33b652b71995",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/1d812092-0a1b-4948-a9b4-33b652b71995",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:28:41.474Z",
+      "category": "known-fixture-not-admitted"
+    },
+    {
+      "testId": "270fa57f-a5d9-4b0e-aa99-c4158133a420",
+      "name": "S4-IMPORT-02 — A sheet becomes the right poses.",
+      "runId": "aeeca77e-c4a9-43ac-be4d-fdd23e940f91",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/aeeca77e-c4a9-43ac-be4d-fdd23e940f91",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:17:34.093Z",
+      "category": "known-fixture-not-admitted"
+    },
+    {
+      "testId": "afc0b83b-d6df-4b48-8341-bb2cf962f3fc",
+      "name": "S4-JOURNEY-01 — A little animation comes safely home.",
+      "runId": "648b416a-590b-4af4-9c3e-d3b27aa251c3",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/648b416a-590b-4af4-9c3e-d3b27aa251c3",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:32:40.411Z",
+      "category": "known-fixture-not-admitted"
+    },
+    {
+      "testId": "fd3da2e3-9a59-46e0-b591-df9d18fe2703",
+      "name": "S4-LAYER-02 — Hidden and locked mean different things.",
+      "runId": "367a3c90-ead9-490c-8d4a-9016d67c4b12",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/367a3c90-ead9-490c-8d4a-9016d67c4b12",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:42:20.054Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "8f4458ff-2a3b-415c-b99c-bc3a0fb42843",
+      "name": "S4-LAYER-03 — Blend and opacity keep their neighbors.",
+      "runId": "0c30e065-7dda-4efd-91f0-e1853c0f5bf2",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/0c30e065-7dda-4efd-91f0-e1853c0f5bf2",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:29:57.444Z",
+      "category": "known-fixture-not-admitted"
+    },
+    {
+      "testId": "b914aaa8-21d5-4906-ab63-6e39bd356301",
+      "name": "S4-LEARN-04 — A coach teaches one pose at a time.",
+      "runId": "6611a884-cf6e-4d4e-9e72-cc9abbb58429",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/6611a884-cf6e-4d4e-9e72-cc9abbb58429",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:35:33.624Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "1ab5748d-2918-4ee6-9992-12d01a3cdd1b",
+      "name": "S4-LEARN-05 — The teaching board is an example.",
+      "runId": "f245f113-c724-4851-902e-5d41b75d8f03",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/f245f113-c724-4851-902e-5d41b75d8f03",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:18:18.323Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "b5cab687-77f4-4ba1-8df6-5def1766b4f4",
+      "name": "S4-MOTION-01 — A rigid part takes two poses.",
+      "runId": "56ce73fb-c88d-4861-937d-0b73edd41032",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/56ce73fb-c88d-4861-937d-0b73edd41032",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:35:10.865Z",
+      "category": "scenario-navigation-or-source-checkpoint"
+    },
+    {
+      "testId": "f06ef9db-6227-43e0-815e-72bf8fd2166a",
+      "name": "S4-MOTION-02 — A saved rig refuses its genuinely changed source after reload.",
+      "runId": "2a226b2e-2934-435c-9f16-efc7a1a646ff",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/2a226b2e-2934-435c-9f16-efc7a1a646ff",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:44:04.670Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "acc0d53a-3bfd-455f-938a-27c91a99882c",
+      "name": "S4-NEW-01 — A tiny loop keeps its place.",
+      "runId": "9863a4ba-0514-4868-bbe8-a4ca0e7b4ce2",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/9863a4ba-0514-4868-bbe8-a4ca0e7b4ce2",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:12:44.808Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "59fc51e1-ce16-4ad1-9ea4-392dcca93fd7",
+      "name": "S4-NEW-02 — Delete, then bring the pose home.",
+      "runId": "33f2b9b4-1acb-4a45-9576-1d594847b2de",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/ca1755b5-469e-446f-9c8f-2898a12644b0/test/33f2b9b4-1acb-4a45-9576-1d594847b2de",
+      "environment": {
+        "id": "b3b1c5f9-9878-4092-891b-b0a8a84418a7",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:58:56.601Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "e6d22c7e-0756-4ee6-8edd-d8aeb2e8b757",
+      "name": "S4-NEW-05 — Frame keys belong to the focused frame.",
+      "runId": "6bd39a1d-43f9-4d26-938b-07f21daca011",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/6bd39a1d-43f9-4d26-938b-07f21daca011",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:43:15.388Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "f10cb6c5-a9fa-4223-b3b8-45eb48d6481e",
+      "name": "S4-NEW-07 — Animate means add a blank frame.",
+      "runId": "f6a1e6cc-e6a1-47cf-bddc-928f2f56d71d",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/f6a1e6cc-e6a1-47cf-bddc-928f2f56d71d",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:13:02.721Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "fd0f5e17-76da-47d0-942b-ddd752997e9c",
+      "name": "S4-NEW-08 — The timeline fits the desk.",
+      "runId": "25a52fad-2c1b-484f-9bc9-06387f7860ed",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/25a52fad-2c1b-484f-9bc9-06387f7860ed",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:41:12.062Z",
+      "category": "environment-timing-or-preference-control"
+    },
+    {
+      "testId": "31ecb05a-6b76-42fd-bd87-a3525b49ff6c",
+      "name": "S4-NEW-11 — A swatch knows which pot.",
+      "runId": "b992e9d5-ac4e-40ac-8bc6-e9e55522d19c",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/b992e9d5-ac4e-40ac-8bc6-e9e55522d19c",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:19:08.820Z",
+      "category": "precision-input-or-selection-prerequisite"
+    },
+    {
+      "testId": "48fad655-2a7c-49e7-9bb8-c58f74e0f5eb",
+      "name": "S4-NEW-12 — Colors by keyboard.",
+      "runId": "e3feb9f3-529d-49cf-84f5-bb7a6784006f",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/e3feb9f3-529d-49cf-84f5-bb7a6784006f",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:22:29.321Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "306a7b5a-9435-4506-9be2-eaf7dd9f607f",
+      "name": "S4-NEW-15 — Preview stays on the desk.",
+      "runId": "cd04794d-82ed-4254-b650-9ca669f53650",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/cd04794d-82ed-4254-b650-9ca669f53650",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:19:03.364Z",
+      "category": "precision-input-or-selection-prerequisite"
+    },
+    {
+      "testId": "9e95f9a5-6af7-402f-80d8-0fd14784b17f",
+      "name": "S4-NEW-16 — A pan is never a stroke.",
+      "runId": "2b738da8-6742-4c1b-873a-ae03b0ce1138",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/2b738da8-6742-4c1b-873a-ae03b0ce1138",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:34:26.578Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "17a18f9f-1336-47db-abf7-e50fa5ab5427",
+      "name": "S4-NEW-17 — A layered stroke tells the truth.",
+      "runId": "5986bd72-3600-4214-bb23-aeb0158ed28e",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/5986bd72-3600-4214-bb23-aeb0158ed28e",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:15:59.111Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "d175b106-aba4-40a9-a5c3-12c035d7b76b",
+      "name": "S4-NEW-20 — Quiet motion, complete controls.",
+      "runId": "a1793fe8-46ce-470f-93bc-07d2995e0733",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/a1793fe8-46ce-470f-93bc-07d2995e0733",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:40:27.171Z",
+      "category": "environment-timing-or-preference-control"
+    },
+    {
+      "testId": "c9688b8d-3ebc-4fe3-b10d-ad7d49f546bf",
+      "name": "S4-PAL-02 — A library choice is explicit.",
+      "runId": "2da0feb3-7624-42f8-b6d1-30a4eb40f6db",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/2da0feb3-7624-42f8-b6d1-30a4eb40f6db",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:36:09.548Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "87832975-3885-4714-9988-2d6f193489fa",
+      "name": "S4-PAL-05 — Roles and bindings survive editing.",
+      "runId": "734e4a2f-396d-447e-8d7c-3a92f63052a7",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/734e4a2f-396d-447e-8d7c-3a92f63052a7",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:30:15.059Z",
+      "category": "precision-input-or-selection-prerequisite"
+    },
+    {
+      "testId": "90c317f8-81f2-489e-8d74-459e5e50c755",
+      "name": "S4-READOUT-01 — A heart in pixels, words and a real PNG.",
+      "runId": "58eb1d7b-bd6f-450a-bcb5-e14e25bbc12f",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/58eb1d7b-bd6f-450a-bcb5-e14e25bbc12f",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:33:17.440Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "5398500f-34a3-4661-ad5e-ed2dcbe9be7a",
+      "name": "S4-RELATION-01 — Turn it around, and bring it back.",
+      "runId": "181f9874-222e-4d6f-ab04-bec8bf533ecf",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/181f9874-222e-4d6f-ab04-bec8bf533ecf",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:23:12.285Z",
+      "category": "known-fixture-not-admitted"
+    },
+    {
+      "testId": "8841ff88-9ccd-453f-ba68-13a9aa339ac1",
+      "name": "S4-SAFE-01 — Diagnostics ask before sharing.",
+      "runId": "f3205f48-17de-44e1-a986-9cc8c8393a78",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/f3205f48-17de-44e1-a986-9cc8c8393a78",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:31:04.225Z",
+      "category": "download-file-or-container-observation"
+    },
+    {
+      "testId": "2dee1983-4ac9-490d-9986-1b054492cab0",
+      "name": "S4-SAFE-04 — Offline and update promises need an actual network boundary.",
+      "runId": "ccc421e2-4ccc-4ac2-af0e-0e09159c328d",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/ccc421e2-4ccc-4ac2-af0e-0e09159c328d",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:17:50.331Z",
+      "category": "environment-timing-or-preference-control"
+    },
+    {
+      "testId": "7352527c-5f87-46fc-b219-dfc06a82f65d",
+      "name": "S4-SAFE-06 — A layer lock also protects a selection.",
+      "runId": "9b2bcefd-7975-456d-b66d-7643d648def0",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/9b2bcefd-7975-456d-b66d-7643d648def0",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:25:39.485Z",
+      "category": "precision-input-or-selection-prerequisite"
+    },
+    {
+      "testId": "b353085c-8d22-424c-9ecc-8d3a7c75d367",
+      "name": "S4-SAVE-01 — Close the desk, keep the drawing.",
+      "runId": "2b60edb9-5a95-493e-9d4d-9521bc777b1f",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/ca1755b5-469e-446f-9c8f-2898a12644b0/test/2b60edb9-5a95-493e-9d4d-9521bc777b1f",
+      "environment": {
+        "id": "b3b1c5f9-9878-4092-891b-b0a8a84418a7",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:59:25.457Z",
+      "category": "known-fixture-not-admitted"
+    },
+    {
+      "testId": "e08ab5de-e8e9-4a25-b6ca-2ecec084741e",
+      "name": "S4-SAVE-03 — A cancelled new drawing keeps tonight's work.",
+      "runId": "c48b3af8-95f7-4389-b02e-2b98fb562948",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/c48b3af8-95f7-4389-b02e-2b98fb562948",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:39:08.329Z",
+      "category": "scenario-navigation-or-source-checkpoint"
+    },
+    {
+      "testId": "76cb1fe2-c7c5-4cf0-b5b1-a3ea0cd8b905",
+      "name": "S4-STORY-01 — A lamp for a little midnight friend.",
+      "runId": "c3b8776b-558a-4548-bec3-c406c2b76142",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/c3b8776b-558a-4548-bec3-c406c2b76142",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:27:46.405Z",
+      "category": "independent-raster-or-history-oracle"
+    },
+    {
+      "testId": "1bdd2744-29ef-4e59-879f-9852f0a1475c",
+      "name": "S4-VIEW-01 — Lenses do not leave the glass.",
+      "runId": "a6ed11dd-d640-417d-ae7b-0a5a251bc502",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/38207a10-bdfb-463a-99ea-10d3cd934d80/test/a6ed11dd-d640-417d-ae7b-0a5a251bc502",
+      "environment": {
+        "id": "ce059a14-f25c-4af7-aa99-3f928d645167",
+        "name": "github-pr-6"
+      },
+      "finishedAt": "2026-10-19T21:17:32.255Z",
+      "category": "independent-raster-or-history-oracle"
+    }
+  ],
+  "ci": {
+    "runId": 39435162705,
+    "head": "98d7625e43e125a39d5151be578703d2040191bb",
+    "mergeSource": "654ea179750af8719e9eb755dfeed7c14c898751",
+    "development": {
+      "passed": 365,
+      "failed": 0,
+      "skipped": 0,
+      "flaky": 0
+    },
+    "production": {
+      "status": "cancelled",
+      "reason": "The job has exceeded the maximum execution time of 2h0m0s",
+      "scheduled": 561,
+      "loggedPassed": 555,
+      "loggedSkipped": 4,
+      "loggedFailed": 0,
+      "uncompleted": 2,
+      "completedJsonReportAvailable": false,
+      "scope": "Log-derived partial results; never a full production pass."
+    },
+    "tailChecks": {
+      "passed": 6,
+      "source": "98d7625e43e125a39d5151be578703d2040191bb",
+      "scope": "Independent current-preview checks, not a successful Linux rerun."
+    },
+    "frozenBuild": {
+      "filesCompared": 432,
+      "changed": 0
+    },
+    "selectedReportIndexVerification": {
+      "matched": 3,
+      "files": [
+        "artifacts/browser/build-after-production.json",
+        "artifacts/browser/development.json",
+        "artifacts/browser/frozen-build.json"
+      ],
+      "fullZipDigestVerifiedLocally": false
+    },
+    "lighthouse": {
+      "originalJobId": 118672772672,
+      "originalStatus": "failure before checkout; action download timeout",
+      "retryJobId": 118814341493,
+      "retryAttempt": 2,
+      "retryStatus": "success",
+      "url": "https://github.com/lxcario/PixiBun/actions/runs/39435162705/job/118814341493"
+    },
+    "nativeCodecRun": {
+      "runId": 39435162722,
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0
+    },
+    "localWorkflowCandidate": {
+      "e2eTimeoutMinutesBefore": 120,
+      "e2eTimeoutMinutesAfter": 150,
+      "perTestTimeouts": "unchanged",
+      "retries": "unchanged at zero",
+      "workflowChecksPassed": 10,
+      "published": false
+    }
+  },
+  "automaticQualification": {
+    "trigger": "Disabled pending approved publication and bounded execution strategy",
+    "targetPattern": "https://pixibun-git-{branch-slug}-lxcarios-projects.vercel.app",
+    "reportBlockingStatus": true,
+    "githubRequiredContexts": [
+      "validate",
+      "TestSprite V3"
+    ],
+    "authoredPlanControl": "Documented Always use planned steps is absent from actual Run Behavior UI. No undocumented setting was guessed.",
+    "passingAppExecutionObtained": false,
+    "manualResultsNotSubstituted": true
+  },
+  "operations": {
+    "newPortalRuns": 1,
+    "newCliCloudRuns": 0,
+    "pushes": 0,
+    "merges": 0,
+    "productionDeployments": 0,
+    "historicalRecordsDeleted": 0,
+    "supportMessages": 0
+  },
+  "localEvidencePolicy": "Raw driver attempts, reports and screenshots remain in ignored local artifacts under the archive policy; this lightweight receipt ships separately."
+}

@@ -2,8 +2,8 @@
  * @vitest-environment node
  */
 import { describe, it, expect } from 'vitest';
-import { executePhotometricPipeline, renderParametric2p5DLighting } from '@/lib/ai/math/photometricLighting';
-import { inferPhotometricSettings } from '@/lib/ai/math/photometricAuto';
+import { executePhotometricPipeline, renderParametric2p5DLighting } from '@/lib/graphics/math/photometricLighting';
+import { inferPhotometricSettings } from '@/lib/graphics/math/photometricAuto';
 
 class MockImageData {
   data: Uint8ClampedArray;

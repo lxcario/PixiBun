@@ -24,7 +24,7 @@ The direct **Export** button opens format choices. **E selects Eraser**; there i
 
 ## Scope, holds and cycling
 
-Opening the panel on an image, game-delivery or backup format does not query native video codec support. WebM is checked when WebM is selected; MP4 also checks WebM for its fallback suggestion. MP4 capability checks run only for MP4 or Timelapse MP4, using the scaled output dimensions and that export's frame rate. Timelapse uses its chosen replay FPS rather than the timeline FPS. Availability remains configuration-dependent; these checks do not qualify every browser's media backend.
+Opening the panel on an image, game-delivery or backup format does not query native video codec support. WebM is checked when WebM is selected; MP4 also checks WebM for its fallback suggestion. MP4 capability checks run only for MP4 or Timelapse MP4, using the scaled output dimensions and that export's frame rate. Timelapse uses its chosen replay FPS rather than the timeline FPS. Availability remains configuration-dependent; these checks do not qualify every browser's media backend. In WebKit on Linux (WebKitGTK, WPE) no H.264 check runs at all and MP4 is refused: in CI, the check froze the page when the MP4 tab opened and closed it during a Light Sweep save (`h264FreezesThisBrowser` in `mp4Encoder.ts`).
 
 The local pre-S4 run found Firefox returning a supported H.264 configuration while real encoding failed. A positive query does not guarantee a working encoder. Chromium's downloaded two-pose MP4 decoded locally; WebKit's unsupported path was refused. These are separate outcomes, and broad MP4/backend qualification remains open. See [current status](../current-status.md#local-pre-s4-hardening-candidate).
 

@@ -134,6 +134,27 @@ export function createAvcCRecord(sps: Uint8Array, pps: Uint8Array): Uint8Array {
   return writer.finish();
 }
 
+/**
+ * Some encoders include parameter sets in their four-byte-length AVCC keyframe.
+ * Use those actual NAL units rather than a malformed decoder description: the
+ * Linux Firefox CI sample duplicated the 0x67/0x68 headers in its description.
+ * Out-of-band-only encoders return null and retain their supplied description.
+ */
+export function avcCFromEncodedSample(sample: Uint8Array): Uint8Array | null {
+  const view = new DataView(sample.buffer, sample.byteOffset, sample.byteLength);
+  let offset = 0, sps: Uint8Array | undefined, pps: Uint8Array | undefined;
+  while (offset + 4 <= sample.length) {
+    const length = view.getUint32(offset, false); offset += 4;
+    if (length === 0 || length > sample.length - offset) return null;
+    const kind = sample[offset] & 0x1f;
+    if (kind === 7 && length >= 4) sps ??= sample.subarray(offset, offset + length);
+    if (kind === 8) pps ??= sample.subarray(offset, offset + length);
+    if (sps && pps) return createAvcCRecord(sps, pps);
+    offset += length;
+  }
+  return null;
+}
+
 export interface Mp4MuxerSample {
   data: Uint8Array; // AVCC format sample payload (4-byte Big-Endian length prefixed NALUs)
   durationMs: number;
@@ -146,6 +167,7 @@ export interface Mp4MuxerTrack {
   timescale?: number; // default: 1000
   avcCData: Uint8Array; // Raw AVCDecoderConfigurationRecord
   samples: Mp4MuxerSample[];
+  color?: { primaries: number; transfer: number; matrix: number; fullRange: boolean };
 }
 
 /**
@@ -161,6 +183,8 @@ export function muxToMp4Blob(track: Mp4MuxerTrack): Blob {
   if (!track.avcCData || track.avcCData.length === 0) {
     throw new Error('[muxToMp4Blob] Missing AVC configuration record (avcCData)');
   }
+  if (track.color && (![track.color.primaries, track.color.transfer, track.color.matrix].every(v => Number.isInteger(v) && v >= 0 && v <= 65535)
+    || typeof track.color.fullRange !== 'boolean')) throw new RangeError('Invalid MP4 color description.');
 
   const timescale = track.timescale ?? 1000;
   const totalDuration = track.samples.reduce((acc, s) => acc + s.durationMs, 0);
@@ -291,6 +315,11 @@ export function muxToMp4Blob(track: Mp4MuxerTrack): Blob {
                 // avcC: AVC Configuration Box
                 moovWriter.box('avcC', () => {
                   moovWriter.bytes(track.avcCData);
+                });
+                if (track.color) moovWriter.box('colr', () => {
+                  moovWriter.str('nclx');
+                  moovWriter.u16(track.color!.primaries); moovWriter.u16(track.color!.transfer); moovWriter.u16(track.color!.matrix);
+                  moovWriter.u8(track.color!.fullRange ? 0x80 : 0);
                 });
               });
             });

@@ -21,11 +21,12 @@ async function fixture(page: Page, opaque = false) {
     await page.getByRole('button', { name: '4 pixel brush preset', exact: true }).click(); await page.keyboard.press('Escape');
   }
   const frames: number[][] = [];
-  for (let i = 0; i < 2; i++) {
+  const paints = opaque ? ['#ff0000', '#0000ff', '#808080', '#00ff00'] : ['#ff0000', '#0000ff'];
+  for (let i = 0; i < paints.length; i++) {
     if (i) { await page.getByTestId('add-frame-button').click(); expect((await pixels(page)).every((v, c) => c % 4 !== 3 || v === 0)).toBe(true); }
     const hold = page.getByRole('spinbutton', { name: 'Active frame duration in milliseconds', exact: true });
-    await hold.fill(i ? '240' : '160'); await hold.press('Tab');
-    await color(page, i ? '#0000ff' : '#ff0000');
+    await hold.fill(i % 2 ? '240' : '160'); await hold.press('Tab');
+    await color(page, paints[i]);
     const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
     const coord = opaque ? 16 : i ? 22 : 8; await page.mouse.click(box.x + (coord + .5) * box.width / 32, box.y + (coord + .5) * box.height / 32);
     const frame = await pixels(page); expect(frame.filter((v, c) => c % 4 === 3 && v === 255)).toHaveLength(opaque ? 1024 : 16); frames.push(frame);
@@ -50,12 +51,41 @@ test('actual GIF download preserves every moving pose, transparent clearing and 
   expect(decoded.frames.map(frame => frame.delayMs)).toEqual([160, 240]); expect(decoded.frames.map(frame => frame.data)).toEqual(frames);
   await expect(dialog).toBeHidden(); expect(await pixels(page)).toEqual(frames[1]);
 });
-test('actual MP4 is playable with both painted poses, or its unsupported platform is explicitly refused', async ({ page, browserName }, info) => {
+test('actual MP4 preserves painted primary and neutral colors, or its unsupported platform is explicitly refused', async ({ page, browser, browserName }, info) => {
+  // Retain the unmodified launcher identity separately: Playwright itself uses
+  // a macOS UA for Linux WebKit. The tested context must identify its real host
+  // so it exercises the product's existing Linux refusal rather than freezing.
+  const nativeContext = await browser.newContext({ userAgent: undefined });
+  try {
+    const nativePage = await nativeContext.newPage();
+    const unmodifiedContextUserAgent = await nativePage.evaluate(() => navigator.userAgent);
+    const testedUserAgent = await page.evaluate(() => navigator.userAgent);
+    await info.attach('actual-browser-platform.json', { body: Buffer.from(JSON.stringify({ browserName, hostPlatform: process.platform, unmodifiedContextUserAgent, testedUserAgent })), contentType: 'application/json' });
+    if (browserName === 'webkit' && process.platform === 'linux') {
+      expect(testedUserAgent).toMatch(/X11; Linux x86_64/);
+      expect(testedUserAgent).not.toContain('Macintosh');
+      expect(testedUserAgent.match(/Version\/[\d.]+/)?.[0]).toBe(unmodifiedContextUserAgent.match(/Version\/[\d.]+/)?.[0]);
+    } else expect(testedUserAgent).toBe(unmodifiedContextUserAgent);
+  } finally { await nativeContext.close(); }
   const frames = await fixture(page, true); await page.getByTestId('export-button').click(); await page.getByTestId('export-tab-mp4').click();
   const dialog = page.getByRole('dialog'); await dialog.getByRole('button', { name: '1x', exact: true }).click();
-  const supported = await page.evaluate(async () => {
+  // WebKit on Linux: probing H.264 froze the page, so Studio refuses MP4 there without probing (mp4Encoder.ts).
+  const freezes = browserName === 'webkit' && process.platform === 'linux';
+  const supported = !freezes && await page.evaluate(async () => {
     if (typeof VideoEncoder !== 'undefined' && typeof VideoFrame !== 'undefined') {
-      try { if ((await VideoEncoder.isConfigSupported({ codec: 'avc1.42001f', width: 32, height: 32, bitrate: 2_000_000, framerate: 30, avc: { format: 'avc' } })).supported) return true; } catch { /* Query recording support independently. */ }
+      // A claimed configuration is not enough: some engines claim H.264 and fail every encode.
+      try {
+        const config = { codec: 'avc1.42001f', width: 32, height: 32, bitrate: 2_000_000, framerate: 30, avc: { format: 'avc' as const } };
+        if ((await VideoEncoder.isConfigSupported(config)).supported) {
+          let chunks = 0, failed = false;
+          const encoder = new VideoEncoder({ output: () => { chunks += 1; }, error: () => { failed = true; } });
+          encoder.configure(config);
+          const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32;
+          const frame = new VideoFrame(canvas, { timestamp: 0, duration: 33_333 }); encoder.encode(frame, { keyFrame: true }); frame.close();
+          await encoder.flush().catch(() => { failed = true; }); try { encoder.close(); } catch { /* already closed */ }
+          if (!failed && chunks > 0) return true;
+        }
+      } catch { /* Query recording support independently. */ }
     }
     return typeof MediaRecorder === 'function' && typeof HTMLCanvasElement.prototype.captureStream === 'function'
       && ['video/mp4;codecs=avc1', 'video/mp4'].some(mime => MediaRecorder.isTypeSupported(mime));
@@ -64,7 +94,7 @@ test('actual MP4 is playable with both painted poses, or its unsupported platfor
   if (!supported) {
     await expect(action).toBeDisabled(); await expect(dialog.getByText(/MP4.*Unsupported/i).first()).toBeVisible();
     await writeFile(info.outputPath('mp4-capability.json'), JSON.stringify({ browserName, status: 'unsupported', decoded: false }));
-    expect(await pixels(page)).toEqual(frames[1]); return;
+    expect(await pixels(page)).toEqual(frames.at(-1)); return;
   }
   await expect(action).toBeEnabled(); const pending = page.waitForEvent('download'); await action.click();
   const download = await pending, bytes = await readFile((await download.path())!); await info.attach('actual-painted-poses.mp4', { body: bytes, contentType: 'video/mp4' });
@@ -83,15 +113,16 @@ test('actual MP4 is playable with both painted poses, or its unsupported platfor
       const ready = event('loadeddata'); video.src = url; await ready;
       const canvas = document.createElement('canvas'); canvas.width = video.videoWidth; canvas.height = video.videoHeight;
       const context = canvas.getContext('2d')!, samples: number[][] = [];
-      for (const at of [.08, .28]) { const seeking = event('seeked'); video.currentTime = at; await seeking; context.drawImage(video, 0, 0); samples.push(Array.from(context.getImageData(16, 16, 1, 1).data)); }
+      for (const at of [.08, .28, .48, .68]) { const seeking = event('seeked'); video.currentTime = at; await seeking; context.drawImage(video, 0, 0); samples.push(Array.from(context.getImageData(16, 16, 1, 1).data)); }
       return { width: video.videoWidth, height: video.videoHeight, duration: video.duration, samples };
     } finally { video.removeAttribute('src'); video.load(); URL.revokeObjectURL(url); }
   }, Array.from(bytes));
   await decoderPage.close();
-  expect([observed.width, observed.height]).toEqual([32, 32]); expect(observed.duration).toBeGreaterThanOrEqual(.7); expect(observed.duration).toBeLessThanOrEqual(1.2);
-  for (const [i, expected] of [[0, [255, 0, 0, 255]], [1, [0, 0, 255, 255]]] as const) {
-    expect(observed.samples[i].map((v, c) => Math.abs(v - expected[c])).every(error => error <= 12)).toBe(true);
+  expect([observed.width, observed.height]).toEqual([32, 32]); expect(observed.duration).toBeGreaterThanOrEqual(1.5); expect(observed.duration).toBeLessThanOrEqual(2.0);
+  for (const [i, expected] of [[0, [255, 0, 0, 255]], [1, [0, 0, 255, 255]], [2, [128, 128, 128, 255]], [3, [0, 255, 0, 255]]] as const) {
+    expect(observed.samples[i].map((v, c) => Math.abs(v - expected[c])).every(error => error <= 12),
+      `pose ${i + 1} decoded as ${observed.samples[i].join(',')}, expected ${expected.join(',')}`).toBe(true);
   }
-  await writeFile(info.outputPath('mp4-capability.json'), JSON.stringify({ browserName, status: 'decoded', expectedDuration: .8, timingTolerance: 'recording path .7–1.2 seconds; not exact-hold qualification', ...observed }));
-  expect(await pixels(page)).toEqual(frames[1]);
+  await writeFile(info.outputPath('mp4-capability.json'), JSON.stringify({ browserName, status: 'decoded', expectedDuration: 1.6, timingTolerance: 'recording path 1.5–2.0 seconds; not exact-hold qualification', ...observed }));
+  expect(await pixels(page)).toEqual(frames.at(-1));
 });

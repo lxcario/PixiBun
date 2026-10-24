@@ -461,9 +461,8 @@ const StoryLine: React.FC<{ index: number; resting: MotionValue<number>; slot: M
   const y = useTransform([distance, slot], ([d, s]: number[]) => d * s);
   const scale = useTransform(away, (a) => 1 - a * 0.06);
   const opacity = useTransform(away, (a) => 1 - a * 0.88);
-  const filter = useTransform(away, (a) => `blur(${a * 3}px)`);
   return (
-    <motion.div className="absolute inset-x-0 top-1/2 -translate-y-1/2 origin-left will-change-transform" style={{ y, scale, opacity, filter }}>
+    <motion.div className="absolute inset-x-0 top-1/2 -translate-y-1/2 origin-left will-change-transform" style={{ y, scale, opacity }}>
       {children}
     </motion.div>
   );
@@ -598,7 +597,7 @@ export const NightStory: React.FC = () => {
           {/* Stage */}
           <div className="relative mx-auto w-full max-w-[min(460px,44svh)] lg:max-w-[540px]">
             <motion.div
-              className="absolute -inset-8 rounded-full blur-3xl opacity-40 pointer-events-none"
+              className="story-stage-glow absolute -inset-8 rounded-full blur-3xl pointer-events-none"
               animate={{ backgroundColor: active.accent }}
               transition={{ duration: 0.9 }}
             />
@@ -656,7 +655,7 @@ export const NightStory: React.FC = () => {
             <div ref={reelRef} className="story-reel relative h-[15rem] sm:h-[17rem] lg:h-[19rem]">
               {CHAPTERS.map((c, i) => (
                 <StoryLine key={c.kicker} index={i} resting={resting} slot={slot}>
-                  <p className="font-mono text-xs uppercase tracking-[0.2em]" style={{ color: c.accent }}>
+                  <p className="tint-text font-mono text-xs uppercase tracking-[0.2em]" style={{ "--tint": c.accent } as React.CSSProperties}>
                     {c.kicker}
                   </p>
                   <p className="mt-3 font-display text-2xl sm:text-3xl lg:text-4xl leading-[1.05] text-[var(--text-heading)] [text-shadow:0_3px_0_var(--ink)]">

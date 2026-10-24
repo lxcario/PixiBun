@@ -1,0 +1,168 @@
+#!/usr/bin/env node
+// Turn App plan specs into TestSprite plan steps ({ planSteps }) and descriptions.
+//
+//   node scripts/testsprite/app-plans/render.mjs          write out/<key>.steps.json + out/plans.json
+//   node scripts/testsprite/app-plans/render.mjs --check  also fail on gestures the App agent cannot perform
+//
+// The same spec drives emulate.py, so the wording here and the emulated gestures stay in step.
+import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const here = dirname(fileURLToPath(import.meta.url));
+const specsDir = join(here, 'specs');
+const outDir = join(here, 'out');
+const check = process.argv.includes('--check');
+
+const LABELS = {
+  size: 'Canvas size', frame: 'Active frame', frames: 'Frames', layer: 'Active layer', layers: 'Layers in this frame',
+  pixels: 'Painted pixels in this frame', colors: 'Colors in this frame', top: 'Most used colors with pixel counts',
+  digest: 'Frame digest',
+};
+
+const READOUT_INTRO = 'the Canvas readout (the screen-reader section labelled "Canvas readout", read from the page text)';
+const q = (s) => `'${s}'`;
+const where = (step) => (step.within ? ` inside the ${q(step.within)} dialog` : '');
+const roleWord = (step) => ({ button: 'button', link: 'link', tab: 'tab', checkbox: 'checkbox', option: 'option',
+  menuitemradio: 'menu item', radio: 'option', switch: 'switch' }[step.role ?? 'button'] ?? step.role);
+// A /pattern/ name is written as the text it starts with, which is how every spec uses it.
+const nameOf = (name, shown) => {
+  if (shown) return `${q(shown)} (accessible name ${q(name)})`;
+  if (!name.startsWith('/')) return q(name);
+  const text = name.replace(/^\/\^?|\/i?$/g, '').replace(/\\(.)/g, '$1');
+  return `one whose name starts with ${q(text)}${name.endsWith('/i') ? ' (any letter case)' : ''}`;
+};
+
+function value(field, want) {
+  if (field.endsWith('~')) {
+    const [hex, count] = want.split(' ');
+    return `${LABELS[field.slice(0, -1)]} is a single color within one step (±1 in each of red, green and blue) of ${hex}, covering ${count} pixels`;
+  }
+  if (typeof want === 'string' && want.startsWith('!=')) {
+    const [ref, sub] = want.slice(2).split('.');
+    if (/^[0-9a-f]{8}$/.test(ref)) return `${LABELS[field]} is no longer "${ref}"`;
+    return `${LABELS[field]} differs from the value recorded as ${ref}${sub ? ` (${LABELS[sub]})` : ''}`;
+  }
+  if (typeof want === 'string' && want.startsWith('=')) {
+    const [ref, sub] = want.slice(1).split('.');
+    return `${LABELS[field]} is exactly the value recorded as ${ref}${sub ? ` (${LABELS[sub]})` : ''}`;
+  }
+  return `${LABELS[field]} is exactly "${want}"`;
+}
+
+function render(step, spec) {
+  if (step.say) return [{ type: step.assert || step.either ? 'assertion' : kindOf(step), description: step.say }];
+  if (step.open && step.reload) return [{ type: 'action', description: `Reload the app now: navigate directly to ${step.open} on the environment under test as a full page load. This step is required; do not skip it or replace it with in-app navigation.` }];
+  if (step.open) {
+    const guard = spec.steps.some((s) => s.canvas) ? '' : ' Do not click the drawing canvas at any point in this test: a click paints a pixel and changes the artwork.';
+    return [{ type: 'action', description: `Navigate directly to ${step.open} on the environment under test (the origin plus this path). This test needs no file: the page itself draws the fixture.${guard}` }];
+  }
+  if (step.classic) return [{ type: 'action', description: `Start from the classic studio: click the ${q('Studio options')} button; if its Labs section shows a ${q('Classic studio')} button, click it so every Lab is off (if it shows ${q('Turn all on')} instead, leave it alone); then click ${q('Close studio options')}.` }];
+  if (step.skip) return [{ type: 'action', description: `If a welcome dialog appears, click ${q('Skip setup')}; otherwise continue.` }];
+  // The agent has repeatedly reported an Undo it never performed (Redo stayed disabled), so say it plainly.
+  if ((step.click === 'Undo last action' || step.click === 'Redo last action') && !step.say) return [{ type: 'action', description: `Click the ${q(step.click)} button once now, with the mouse. This click is required: the checks that follow are about what ${step.click.startsWith('Undo') ? 'Undo' : 'Redo'} restores, so do not assert them without clicking it.` }];
+  if (step.click && step.optional) return [{ type: 'action', description: `If a ${nameOf(step.click, step.shown)} ${roleWord(step)} appears${where(step)}, click it; otherwise continue.` }];
+  // A click that starts a browser download: the agent's tools wait on downloads and time out,
+  // and nothing in these plans depends on the file, so say plainly not to wait for it.
+  if (step.click && /^(Download |Save cart$|Save video$)/.test(step.click) && !step.say) return [{ type: 'action', description: `Click the ${nameOf(step.click, step.shown)} ${roleWord(step)}${where(step)} once. It may start a browser download: do not wait for the download, open it or verify it, and do not click it again. Go straight on to the next step; a download that does not finish is not a failure of this test.` }];
+  if (step.click) return [{ type: 'action', description: `Click the ${nameOf(step.click, step.shown)} ${roleWord(step)}${where(step)}.` }];
+  if (step.clickText) return [{ type: 'action', description: step.why ? `Click the text ${q(step.clickText)}. ${step.why}` : `Click the text ${q(step.clickText)} to expand that section.` }];
+  if (step.rightClick) return [{ type: 'action', description: `Right-click the ${nameOf(step.rightClick, step.shown)} ${roleWord(step)}${where(step)}.` }];
+  if (step.canvas) {
+    const size = spec.canvas ?? '16×16';
+    const [w, h] = size.split('×').map(Number);
+    return [{ type: 'action', description: `Left-click once in the centre of the ${q('Pixel art canvas workspace')} with the active tool. On this ${size} canvas the centre is pixel (${w / 2},${h / 2}); do not click anywhere else on the canvas.` }];
+  }
+  if (step.fill) return [{ type: 'action', description: `Fill ${q(step.value)} into the field labelled ${q(step.fill)}${where(step)}.` }];
+  if (step.select) return [{ type: 'action', description: `In the ${q(step.select)} dropdown${where(step)}, choose ${q(step.option)}.` }];
+  if (step.key && step.inField) return [{ type: 'action', description: `With the field labelled ${q(step.inField)}${where(step)} still focused, press the ${step.key} key.${step.why ? ` ${step.why}` : ''}` }];
+  if (step.key) return [{ type: 'action', description: `Press the ${step.key} key while no text field has focus.` }];
+  if (step.color) {
+    const pot = step.pot ?? 'Primary';
+    return [{ type: 'action', description: `Set the ${pot} color to ${step.color}: click the ${q(`${pot} color …`)} well, fill ${q(step.color)} into the field labelled ${q(`${pot} hex value`)}, then click ${q('Close color access')}.` }];
+  }
+  if (step.command) return [{ type: 'action', description: `Press Control+K to open the command palette, fill ${q(step.command)} into ${q('Search studio commands')}, then click the matching ${q(step.command)} result.` }];
+  if (step.record) {
+    // Also write down any other field a later step compares with this record, so the agent has it.
+    const base = ['digest', 'pixels', 'colors', 'top'];
+    const extra = [...new Set(spec.steps.flatMap((s) => Object.entries(s.readout || {})
+      .filter(([, want]) => typeof want === 'string' && want.replace(/^!?=/, '').split('.')[0] === step.record && /^!?=/.test(want))
+      .map(([field]) => field.replace(/~$/, ''))))].filter((field) => !base.includes(field) && LABELS[field]);
+    const fields = ['Frame digest', ...extra.map((field) => LABELS[field]), 'Painted pixels in this frame', 'Colors in this frame'];
+    return [{ type: 'action', description: `Read ${READOUT_INTRO} and write down its ${fields.join(', ')} and Most used colors with pixel counts as ${step.record}.` }];
+  }
+  if (step.readout) {
+    const parts = Object.entries(step.readout).map(([field, want]) => value(field, want));
+    return [{ type: 'assertion', description: `In ${READOUT_INTRO}: ${parts.join('; ')}.${step.why ? ` ${step.why}` : ''}` }];
+  }
+  if (step.visible) return [{ type: 'assertion', description: `The ${nameOf(step.visible, step.shown)} ${roleWord(step)} is visible${where(step)}.${step.why ? ` ${step.why}` : ''}` }];
+  if (step.absent) return [{ type: 'assertion', description: `There is no ${roleWord(step)} named ${nameOf(step.absent)}${where(step)}.${step.why ? ` ${step.why}` : ''}` }];
+  if (step.selected) return [{ type: 'assertion', description: `In the ${q(step.selected)} dropdown${where(step)}, ${q(step.option)} is the selected option.${step.why ? ` ${step.why}` : ''}` }];
+  if (step.enabled) return [{ type: 'assertion', description: `The ${nameOf(step.enabled, step.shown)} ${roleWord(step)} is enabled.${step.why ? ` ${step.why}` : ''}` }];
+  if (step.disabled) return [{ type: 'assertion', description: `The ${nameOf(step.disabled, step.shown)} ${roleWord(step)} is disabled.${step.why ? ` ${step.why}` : ''}` }];
+  if (step.pressed) return [{ type: 'assertion', description: `The ${nameOf(step.pressed, step.shown)} ${roleWord(step)} is pressed (selected).${step.why ? ` ${step.why}` : ''}` }];
+  if (step.unchecked) return [{ type: 'assertion', description: `The ${nameOf(step.unchecked, step.shown)} ${roleWord(step)} is not checked.${step.why ? ` ${step.why}` : ''}` }];
+  if (step.checked) return [{ type: 'assertion', description: `The ${nameOf(step.checked, step.shown)} ${roleWord(step)} is checked.${step.why ? ` ${step.why}` : ''}` }];
+  if (step.field) return [{ type: 'assertion', description: `The field labelled ${q(step.field)}${where(step)} shows ${q(step.equals)}.${step.why ? ` ${step.why}` : ''}` }];
+  if (step.focused) return [{ type: 'assertion', description: `Keyboard focus is on the ${nameOf(step.focused, step.shown)} ${roleWord(step)}.${step.why ? ` ${step.why}` : ''}` }];
+  if (step.notext) return [{ type: 'assertion', description: `The page no longer contains the text "${step.notext}".${step.why ? ` ${step.why}` : ''}` }];
+  if (step.text) return [{ type: 'assertion', description: `The page contains the text "${step.text}".${step.why ? ` ${step.why}` : ''}` }];
+  if (step.alert) return [{ type: 'assertion', description: `An alert message reading "${step.alert}" is shown immediately, before any other edit.${step.why ? ` ${step.why}` : ''}` }];
+  if (step.note) return [];
+  throw new Error(`${spec.key}: unknown step ${JSON.stringify(step)}`);
+}
+
+function kindOf(step) {
+  return ['readout', 'visible', 'absent', 'selected', 'focused', 'enabled', 'disabled', 'pressed', 'checked', 'unchecked', 'field', 'text', 'alert']
+    .some((k) => k in step) ? 'assertion' : 'action';
+}
+
+// Words that ask the App agent for something it cannot do, or that invite a Blocked verdict.
+const UNSUPPORTED = [
+  [/\bdrag\b/i, 'drag gestures'],
+  [/decod/i, 'decoding a downloaded file'],
+  [/\bRGBA\b|channels?\b/i, 'raw pixel channels'],
+  [/download/i, 'reading a download'],
+  [/upload|import .*\.(png|pixibun)|Test Files/i, 'fixture uploads'],
+  [/viewport|resize the browser/i, 'changing the viewport'],
+  [/report .*Blocked|mark .*Blocked/i, 'pre-authorised Blocked verdicts'],
+];
+
+function description(spec) {
+  return [
+    spec.goal,
+    'App plan: every step is a click, fill, select or a named key on a labelled control, and every artwork check reads the Studio\'s Canvas readout (painted pixels, colors with counts, frame digest), which is computed from the actual composite of the active frame.',
+    // `cliOnlyOutOfScope`: the App agent failed S4-EXPORT-12 after every step passed because it read the note as a check it still had to make.
+    spec.cliOnly?.length && spec.cliOnlyOutOfScope ? `Not part of this App test: ${spec.cliOnly.join('; ')}. A separate stored Python replay covers that, so do not attempt it, and do not fail or block this test because it is not visible on the page.` : '',
+    spec.cliOnly?.length && !spec.cliOnlyOutOfScope ? `Byte-level checks kept in this test's stored Python replay: ${spec.cliOnly.join('; ')}.` : '',
+    spec.uncovered?.length ? `Not covered by any independent script yet: ${spec.uncovered.join('; ')}.` : '',
+    'A readout or control that differs from the stated value is a Failed result, not Blocked.',
+  ].filter(Boolean).join(' ');
+}
+
+mkdirSync(outDir, { recursive: true });
+const plans = [];
+const problems = [];
+for (const file of readdirSync(specsDir).filter((f) => f.endsWith('.json')).sort()) {
+  const spec = JSON.parse(readFileSync(join(specsDir, file), 'utf8'));
+  // "the one whose name starts with 'X' button" reads as "the button whose name starts with 'X'".
+  const planSteps = spec.steps.flatMap((step) => render(step, spec)).map((step) => ({
+    ...step,
+    description: step.description.replace(/([Tt])he one (whose name starts with '[^']*'(?: \(any letter case\))?) ([a-z]+(?: item)?)/g, '$1he $3 $2'),
+  }));
+  if (planSteps.length > 200) problems.push(`${spec.key}: ${planSteps.length} steps (limit 200)`);
+  for (const step of planSteps) {
+    for (const [pattern, what] of UNSUPPORTED) {
+      if (pattern.test(step.description) && !spec.allow?.includes(what)) problems.push(`${spec.key}: "${step.description.slice(0, 80)}…" asks for ${what}`);
+    }
+  }
+  const desc = description(spec);
+  writeFileSync(join(outDir, `${spec.key}.steps.json`), `${JSON.stringify({ planSteps }, null, 2)}\n`);
+  plans.push({ id: spec.id, key: spec.key, title: spec.title, description: desc, steps: planSteps.length, previousSteps: spec.previousSteps ?? null });
+}
+writeFileSync(join(outDir, 'plans.json'), `${JSON.stringify(plans, null, 2)}\n`);
+console.log(`Rendered ${plans.length} App plans to ${outDir}`);
+if (problems.length) {
+  console.log(problems.map((p) => `  ! ${p}`).join('\n'));
+  if (check) process.exit(1);
+}

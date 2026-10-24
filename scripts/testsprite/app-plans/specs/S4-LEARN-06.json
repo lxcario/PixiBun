@@ -1,0 +1,48 @@
+{
+  "id": "161d6301-2b6b-4c53-aa18-b396f848bd60",
+  "key": "S4-LEARN-06",
+  "title": "S4-LEARN-06 — Pocket has a desk of its own.",
+  "goal": "The Playground fits the window it is given: below 1024 px it is the Pocket Doodle Pad, at desktop width the full practice workspace. Either way it opens on the Bouncy Mochi lesson with Pen, Fill and Eraser tools, colour swatches and the lesson's frames.",
+  "steps": [
+    {
+      "open": "/playground?end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "say": "The page shows either the Pocket Doodle Pad (heading 'Pocket Doodle Pad', for narrow windows) or the desktop practice workspace (heading ending 'make Bouncy Mochi'), whichever suits this window's width.",
+      "either": [
+        {
+          "visible": "Pocket Doodle Pad",
+          "role": "heading"
+        },
+        {
+          "visible": "/make Bouncy Mochi$/",
+          "role": "heading"
+        }
+      ]
+    },
+    {
+      "visible": "/^Pen/",
+      "why": "A Pen tool is offered."
+    },
+    {
+      "visible": "/^Fill/"
+    },
+    {
+      "visible": "/^Eraser/"
+    },
+    {
+      "visible": "/^Use color /",
+      "why": "Colour swatches are offered."
+    },
+    {
+      "visible": "/^Frame 1: /",
+      "why": "The lesson's frames start at frame 1."
+    }
+  ],
+  "cliOnly": [
+    "drawing, erasing, clearing and saving the PNG strip in Pocket at 390 x 844 (scripts/testsprite/pixibun-pocket-integrity.py)"
+  ]
+}

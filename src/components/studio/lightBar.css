@@ -1,0 +1,303 @@
+/* ── Live light bar ───────────────────────────────────────────────────
+   The light bulb's controls under the canvas. Built on the shared surface
+   tokens (src/app/surfaces.css), so every theme, Night and Day, dresses it;
+   scene themes add their ink edge. Presses come from pressMotion.ts. */
+
+.lb-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  width: max-content;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+}
+
+.lb-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* One control: name and value on top, the control below — a small mixing-desk channel. */
+.lb-field {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  min-height: 52px;
+  padding: 5px 10px 6px;
+  border-radius: var(--pb-group-radius);
+  background: var(--pb-group-bg);
+  border: 1px solid var(--pb-hairline);
+}
+.lb-row > .lb-field { flex: 1 1 auto; }
+.lb-field-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; line-height: 14px; min-height: 14px; }
+.lb-field-body { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 28px; }
+.lb-field-body > .lb-range { flex: 1 1 96px; min-width: 96px; }
+
+.lb-head { display: flex; align-items: center; gap: 9px; padding: 0 6px 0 2px; }
+.lb-head-text { display: flex; flex-direction: column; gap: 4px; }
+.lb-bulb {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  color: var(--ink, #1d1336);
+  background: radial-gradient(circle at 40% 35%, #fff 0 18%, var(--tint, #fff) 60%);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ink, #000) 70%, transparent), 0 0 18px color-mix(in srgb, var(--tint, #fff) 70%, transparent);
+  transition: background 240ms ease, box-shadow 240ms ease;
+}
+.lb-title { color: var(--text-heading); font-size: 12.5px; font-weight: 800; line-height: 1; }
+.lb-readout {
+  align-self: flex-start;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--pb-tint);
+  border: 1px solid var(--pb-tint-edge);
+  color: var(--text-heading);
+  font: 700 10.5px/1.2 var(--font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+}
+
+.lb-label { font-size: 10px; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
+.lb-value {
+  font: 700 11px/1 var(--font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-gold);
+  white-space: nowrap;
+}
+
+.lb-step {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--desk-surface-raised);
+  border: 1px solid var(--pb-hairline);
+  color: var(--text-heading);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+.lb-step:hover { color: var(--accent-gold); border-color: var(--accent-gold); }
+.lb-step:focus-visible, .lb-dir:focus-visible, .lb-tint:focus-visible, .lb-seg-opt:focus-visible, .lb-tint-picker:focus-visible, .lb-chip-btn:focus-visible, .lb-more:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 1px;
+}
+
+.lb-chip-btn {
+  height: 18px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--desk-surface-raised);
+  border: 1px solid var(--pb-hairline);
+  color: var(--text-heading);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.lb-chip-btn:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
+
+.lb-actions { display: flex; align-items: center; gap: 6px; padding-left: 2px; }
+.lb-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px dashed var(--desk-border-highlight);
+  color: var(--text-heading);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.lb-more:hover, .lb-more[aria-expanded="true"] { border-style: solid; border-color: var(--accent-gold); color: var(--accent-gold); }
+.lb-drawer { padding-top: 2px; }
+
+/* Sliders. Scene themes already draw the chunky handle (and the Labs liquid lens) for every
+   range; the inline gradient is the filled part of the track. Flat themes get a round
+   handle that swells on the snap spring. */
+.lb-range { width: 104px; flex: none; }
+.lb-range:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
+body:not(.moon-ui) .lb-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 22px;
+  background-color: transparent;
+  background-size: 100% 4px;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 999px;
+  cursor: pointer;
+}
+body:not(.moon-ui) .lb-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--primary-bg);
+  border: 2px solid var(--desk-surface-raised);
+  box-shadow: 0 0 0 1px var(--desk-border-highlight), 0 2px 5px var(--shadow-far, rgb(0 0 0 / 0.3));
+  transition: transform var(--spring-snap-duration) var(--spring-snap);
+}
+body:not(.moon-ui) .lb-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--primary-bg);
+  border: 2px solid var(--desk-surface-raised);
+  box-shadow: 0 0 0 1px var(--desk-border-highlight), 0 2px 5px var(--shadow-far, rgb(0 0 0 / 0.3));
+  transition: transform var(--spring-snap-duration) var(--spring-snap);
+}
+body:not(.moon-ui) .lb-range:hover::-webkit-slider-thumb { transform: scale(1.18); }
+body:not(.moon-ui) .lb-range:active::-webkit-slider-thumb { transform: scale(1.35); }
+body:not(.moon-ui) .lb-range:hover::-moz-range-thumb { transform: scale(1.18); }
+body:not(.moon-ui) .lb-range:active::-moz-range-thumb { transform: scale(1.35); }
+
+/* Segmented choices: one lens per segment, placed from offsets and sprung on SNAP (ChoiceSegment). */
+.lb-seg {
+  position: relative;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: calc(var(--pb-control-radius) + 2px);
+  background: color-mix(in srgb, var(--ink, #000) 14%, transparent);
+}
+.lb-seg-opt {
+  position: relative;
+  z-index: 1;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 9px;
+  border-radius: var(--pb-control-radius);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+.lb-seg-opt:hover { color: var(--text-heading); }
+.lb-seg-opt[aria-pressed="true"] { color: var(--primary-fg); }
+.lb-seg-thumb {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: var(--pb-control-radius);
+  background: var(--primary-bg);
+  box-shadow: inset 0 -2px 0 var(--primary-shade);
+  transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease, backdrop-filter 140ms ease;
+}
+body.moon-ui .lb-seg-thumb { border: 2px solid var(--moon-ink); box-shadow: inset 0 -2px 0 var(--primary-shade), 0 2px 0 var(--moon-ink); }
+/* Liquid controls lab: held, the lens is a clear drop of glass, like the tool rail's. Let go,
+   it is solid again at once and only springs into place. */
+.lb-seg[data-liquid] { touch-action: none; }
+.lb-seg-thumb.is-glass { z-index: 2; }
+.lb-seg-opt[data-lq-under] { transform: scale(1.12); color: var(--text-heading); transition: color 160ms ease, transform 160ms ease; }
+.lb-seg:has(.lb-seg-thumb.is-glass) .lb-seg-opt[aria-pressed="true"]:not([data-lq-under]) { color: var(--text-heading); }
+body.lq-sliders .lb-seg-thumb.is-glass {
+  background: color-mix(in srgb, var(--desk-surface-raised) 18%, transparent);
+  border-color: color-mix(in srgb, white 55%, transparent);
+  backdrop-filter: blur(1.5px) saturate(1.9) brightness(1.12);
+  -webkit-backdrop-filter: blur(1.5px) saturate(1.9) brightness(1.12);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.7), inset 0 -2px 4px color-mix(in srgb, black 20%, transparent), 0 4px 12px color-mix(in srgb, black 35%, transparent);
+}
+
+/* Compass: eight quick light directions around Recenter. */
+.lb-compass {
+  display: grid;
+  grid-template-columns: repeat(3, 17px);
+  grid-auto-rows: 17px;
+  gap: 1px;
+  padding: 2px;
+  border-radius: var(--pb-group-radius);
+  background: var(--pb-group-bg);
+  border: 1px solid var(--pb-hairline);
+}
+.lb-dir {
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.lb-dir:hover { background: var(--pb-group-hover); color: var(--text-heading); }
+.lb-dir[aria-pressed="true"] { background: var(--primary-bg); color: var(--primary-fg); }
+.lb-dir-center { color: var(--accent-gold); font-size: 13px; }
+
+/* Light tints */
+.lb-tints { display: flex; align-items: center; gap: 5px; }
+.lb-tint, .lb-tint-picker {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 999px;
+  border: 2px solid var(--pb-hairline);
+  cursor: pointer;
+  transition: transform var(--spring-snap-duration) var(--spring-snap), box-shadow 160ms ease, border-color 160ms ease;
+}
+.lb-tint { background: var(--tint); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.18); }
+.lb-tint:hover, .lb-tint-picker:hover { transform: translateY(-2px) scale(1.08); }
+.lb-tint[aria-pressed="true"] {
+  border-color: var(--accent-gold);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.18), 0 0 0 3px var(--pb-tint), 0 0 12px var(--tint);
+}
+.lb-tint-picker {
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 0;
+  border-style: dashed;
+  background: conic-gradient(#ff6b6b, #ffd36b, #8cff6b, #6bf0ff, #6b8cff, #e06bff, #ff6b6b);
+}
+.lb-tint-picker::-webkit-color-swatch-wrapper { padding: 0; }
+.lb-tint-picker::-webkit-color-swatch { border: 0; opacity: 0; }
+.lb-tint-picker::-moz-color-swatch { border: 0; opacity: 0; }
+.lb-tint-picker[data-on] { border-style: solid; border-color: var(--accent-gold); box-shadow: 0 0 0 3px var(--pb-tint); }
+
+.lb-bar .pb-button { min-height: 34px; padding: 0 16px; gap: 6px; }
+.lb-more-chevron { display: inline-block; font-size: 9px; transition: rotate var(--spring-snap-duration) var(--spring-snap); }
+.lb-more[aria-expanded="true"] .lb-more-chevron { rotate: 180deg; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lb-tint, .lb-tint-picker, .lb-more-chevron { transition: none; }
+  .lb-tint:hover, .lb-tint-picker:hover { transform: none; }
+}
+
+/* While the light bar is open the floating status pill steps aside (it sits where the bar
+   goes) and springs back when the light is applied or cancelled. */
+/* :root:root outranks the scene layout's own transition rule (globals.css), whose bottom spring it keeps. */
+:root:root .moon-slot-status {
+  transition:
+    bottom var(--spring-morph-h-duration) var(--spring-morph-h),
+    opacity 200ms var(--ease-out-soft),
+    translate var(--spring-bloom-duration) var(--spring-bloom),
+    scale var(--spring-bloom-duration) var(--spring-bloom),
+    filter 260ms var(--ease-out-soft);
+}
+:root:root .moon-slot-status[data-away] {
+  opacity: 0;
+  translate: 0 14px;
+  scale: 0.94;
+  filter: blur(6px);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:root .moon-slot-status { transition: opacity 120ms linear; }
+  :root:root .moon-slot-status[data-away] { translate: none; scale: none; filter: none; }
+}

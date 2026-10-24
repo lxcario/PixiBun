@@ -4,8 +4,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   exportAnimationToMp4Async,
+  h264FreezesThisBrowser,
   isMp4ExportSupported,
   probeMp4ExportSupport,
+  resetMp4ProbeCache,
 } from '@/lib/export/mp4Encoder';
 import { exportProcessReplayMp4Async } from '@/lib/export/speedpaintExporter';
 import { HistoryStep } from '@/lib/engine/historyEngine';
@@ -19,6 +21,7 @@ class MockMediaRecorderInstance extends EventTarget {
   public stream: unknown;
   public options: unknown;
   public ondataavailable: ((e: { data: Blob }) => void) | null = null;
+  public onstart: (() => void) | null = null;
   public onstop: (() => void) | null = null;
   public onerror: ((e: unknown) => void) | null = null;
 
@@ -33,13 +36,18 @@ class MockMediaRecorderInstance extends EventTarget {
 
   start() {
     this.state = 'recording';
+    // Real recorders announce capture asynchronously.
+    queueMicrotask(() => this.onstart?.());
   }
 
   stop() {
     if (this.state === 'inactive') return;
     this.state = 'inactive';
     // Deliver mock encoded H.264 / MP4 container chunk
-    const chunk = new Blob([new Uint8Array([0, 0, 0, 24, 102, 116, 121, 112, 105, 115, 111, 109])], {
+    const chunk = new Blob([new Uint8Array([
+      0, 0, 0, 12, 102, 116, 121, 112, 105, 115, 111, 109, // ftyp isom
+      0, 0, 0, 12, 109, 100, 97, 116, 1, 2, 3, 4, // mdat with encoded samples
+    ])], {
       type: 'video/mp4',
     });
     if (this.ondataavailable) {
@@ -176,6 +184,42 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
     expect(isMp4ExportSupported()).toBe(false);
   });
 
+  it('muxes actual keyframe parameter sets instead of the duplicate-header Firefox decoder description', async () => {
+    installMediaRecorderMock();
+    const sample = Uint8Array.from(Buffer.from('000000146742c01fd9096840000003004007a12003c60c920000000468cb8cb2000000026588', 'hex'));
+    const malformed = Uint8Array.from(Buffer.from('0142c01f03010015676742c01fd9096840000003004007a12003c60c920100056868cb8cb2', 'hex'));
+    vi.stubGlobal('VideoEncoder', class {
+      static isConfigSupported = async () => ({ supported: true });
+      constructor(private init: { output: (chunk: unknown, metadata: unknown) => void }) {}
+      configure() {}
+      encode() {
+        this.init.output({ type: 'key', duration: 100_000, byteLength: sample.length, copyTo: (out: Uint8Array) => out.set(sample) }, { decoderConfig: { description: malformed } });
+      }
+      async flush() {}
+      close() {}
+    });
+    const frames: { bytes: number[]; init: unknown }[] = [];
+    vi.stubGlobal('VideoFrame', class {
+      constructor(bytes: Uint8Array, init: unknown) { frames.push({ bytes: [...bytes], init }); }
+      close() {}
+    });
+    mockCtx.getImageData.mockImplementationOnce(() => ({ width: 32, height: 32, data: Uint8ClampedArray.from(Array.from({ length: 1024 }, () => [255, 0, 0, 255]).flat()) }));
+    const blob = await exportAnimationToMp4Async([createMockCanvas(32, 32)], { scale: 1, loopCount: 1, durationsMs: [100] });
+    const bytes = Buffer.from(await blob.arrayBuffer()), position = bytes.indexOf(Buffer.from('avcC'));
+    expect(position).toBeGreaterThan(0);
+    const size = bytes.readUInt32BE(position - 4);
+    expect(bytes.subarray(position + 4, position - 4 + size).toString('hex')).toBe('0142c01fffe100146742c01fd9096840000003004007a12003c60c9201000468cb8cb2');
+    const media = bytes.indexOf(Buffer.from('mdat'));
+    expect(bytes.subarray(media + 4)).toEqual(Buffer.from(sample));
+    expect(frames).toHaveLength(1);
+    expect(frames[0].bytes).toEqual([...new Array(1024).fill(63), ...new Array(256).fill(102), ...new Array(256).fill(240)]);
+    expect(frames[0].init).toMatchObject({ format: 'I420', codedWidth: 32, codedHeight: 32, colorSpace: { primaries: 'bt709', transfer: 'iec61966-2-1', matrix: 'bt709', fullRange: false } });
+    const colr = bytes.indexOf(Buffer.from('colr'));
+    expect(colr).toBeGreaterThan(0);
+    expect(bytes.subarray(colr + 4, colr + 15).toString('hex')).toBe('6e636c780001000d000100');
+    expect(MockMediaRecorderInstance.lastInstance).toBeNull();
+  });
+
   it('probes the actual H.264 configuration and rejects it without an independent recorder fallback', async () => {
     uninstallMediaRecorderMock();
     const configure = vi.fn(); const close = vi.fn();
@@ -184,9 +228,32 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
     vi.stubGlobal('VideoFrame', class {});
     HTMLCanvasElement.prototype.getContext = vi.fn(() => mockCtx) as unknown as typeof HTMLCanvasElement.prototype.getContext;
     expect(await probeMp4ExportSupport(15, 33)).toBe(false);
-    expect(probe).toHaveBeenCalledWith(expect.objectContaining({ width: 16, height: 34, codec: 'avc1.42001f' }));
+    expect(probe).toHaveBeenCalledWith(expect.objectContaining({ width: 16, height: 34, codec: 'avc1.42001f', hardwareAcceleration: 'prefer-software' }));
     await expect(exportAnimationToMp4Async([createMockCanvas(16, 16)])).rejects.toThrow('unsupported');
     expect(configure).not.toHaveBeenCalled(); expect(close).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    ['reports the configuration as supported but fails to encode (Firefox without H.264)', 'error', false],
+    ['produces no chunk', 'silent', false],
+    ['encodes a real chunk', 'ok', true],
+  ] as const)('claims MP4 support only when a trial encode works: encoder %s', async (_name, behaviour, expected) => {
+    uninstallMediaRecorderMock(); resetMp4ProbeCache();
+    const encode = vi.fn(); const close = vi.fn();
+    vi.stubGlobal('VideoEncoder', class {
+      static isConfigSupported = async () => ({ supported: true });
+      constructor(private init: { output: (chunk: unknown) => void; error: (e: unknown) => void }) {}
+      configure() {}
+      encode() { encode(); if (behaviour === 'ok') this.init.output({}); if (behaviour === 'error') this.init.error(new DOMException('Encoding failed', 'EncodingError')); }
+      async flush() {}
+      close = close;
+    });
+    vi.stubGlobal('VideoFrame', class { close() {} });
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => mockCtx) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+    expect(await probeMp4ExportSupport(32, 32)).toBe(expected);
+    expect(await probeMp4ExportSupport(32, 32)).toBe(expected);
+    expect(encode).toHaveBeenCalledOnce();
+    expect(close).toHaveBeenCalledOnce();
   });
 
   it('cancels a stalled hardware flush and closes the encoder', async () => {
@@ -227,6 +294,31 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
   it('reports supported when MediaRecorder with video/mp4 MIME type and captureStream are present', () => {
     installMediaRecorderMock();
     expect(isMp4ExportSupported()).toBe(true);
+  });
+
+  it('leaves H.264 untouched in WebKit on Linux, where probing it froze the page', async () => {
+    const webkitLinux = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15';
+    expect(h264FreezesThisBrowser(webkitLinux)).toBe(true);
+    for (const ua of [
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15',
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Linux; Android 15) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36',
+      'Mozilla/5.0 (X11; Linux x86_64; rv:144.0) Gecko/20100101 Firefox/144.0',
+      navigator.userAgent, // happy-dom: "Linux … AppleWebKit", but not a Safari build
+    ]) expect(h264FreezesThisBrowser(ua)).toBe(false);
+
+    installMediaRecorderMock();
+    MockMediaRecorderInstance.isTypeSupported.mockClear();
+    const configProbe = vi.fn(async () => ({ supported: true }));
+    vi.stubGlobal('VideoEncoder', Object.assign(vi.fn(), { isConfigSupported: configProbe }));
+    vi.stubGlobal('VideoFrame', vi.fn());
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(webkitLinux);
+    expect(isMp4ExportSupported()).toBe(false);
+    await expect(probeMp4ExportSupport(32, 32)).resolves.toBe(false);
+    await expect(exportAnimationToMp4Async([createMockCanvas(4, 4)])).rejects.toThrow('MP4 recording is unsupported');
+    expect(configProbe).not.toHaveBeenCalled();
+    expect(MockMediaRecorderInstance.isTypeSupported).not.toHaveBeenCalled();
   });
 
   it('reports unsupported when MediaRecorder is present but canvas captureStream is missing', () => {

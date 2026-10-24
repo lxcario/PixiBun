@@ -1,0 +1,98 @@
+{
+  "id": "3645e185-6ffd-4ac9-a3ca-f14259d187e9",
+  "key": "S4-HIST-01",
+  "title": "S4-HIST-01 — View actions do not steal Undo.",
+  "goal": "After one Pen pixel, changing a view setting and the desk theme adds no history: one Undo removes exactly the pixel, Redo returns it, and the theme choice stays.",
+  "steps": [
+    {
+      "open": "/studio?template=bun&end=1"
+    },
+    {
+      "skip": true
+    },
+    {
+      "classic": true
+    },
+    {
+      "record": "A"
+    },
+    {
+      "color": "#1D4ED8"
+    },
+    {
+      "key": "b"
+    },
+    {
+      "click": "1px brush preset"
+    },
+    {
+      "canvas": "click"
+    },
+    {
+      "readout": {
+        "digest": "!=A",
+        "pixels": "192"
+      },
+      "why": "The blue pixel replaced Bun's centre pixel."
+    },
+    {
+      "record": "P"
+    },
+    {
+      "click": "/^View/",
+      "nth": 0
+    },
+    {
+      "click": "/^Pixel grid/"
+    },
+    {
+      "click": "Close view options"
+    },
+    {
+      "click": "/^Studio/",
+      "nth": 0
+    },
+    {
+      "click": "/^Sakura:/",
+      "role": "radio"
+    },
+    {
+      "click": "Close studio options"
+    },
+    {
+      "readout": {
+        "digest": "=P"
+      },
+      "why": "View and theme changes do not edit artwork."
+    },
+    {
+      "click": "Undo last action"
+    },
+    {
+      "readout": {
+        "digest": "=A"
+      },
+      "why": "One Undo removes exactly the pixel; views took no history."
+    },
+    {
+      "click": "Redo last action"
+    },
+    {
+      "readout": {
+        "digest": "=P"
+      }
+    },
+    {
+      "click": "/^Studio/",
+      "nth": 0
+    },
+    {
+      "checked": "/^Sakura:/",
+      "role": "radio",
+      "why": "Undo did not revert the theme."
+    },
+    {
+      "click": "Close studio options"
+    }
+  ]
+}
