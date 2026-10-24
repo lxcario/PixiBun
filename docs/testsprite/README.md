@@ -1,6 +1,6 @@
 # PixiBun × TestSprite: the evidence
 
-*For Season 4 judges, and anyone who wants to check our claims. Everything below links to a commit, a test, or a recorded run. Last updated 23 October 2026.*
+*For Season 4 judges, and anyone who wants to check our claims. Everything below links to a commit, a test, or a recorded run. Last updated 24 October 2026.*
 
 PixiBun is a cozy pixel-art studio. Our [121 TestSprite test cases](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/test-cases) follow the small promises an artist relies on: a locked layer stays locked, Undo brings a pose back, an exported file holds the pixels you drew. Most of the bugs below turned up in a test that was looking for something else.
 
@@ -9,7 +9,7 @@ PixiBun is a cozy pixel-art studio. Our [121 TestSprite test cases](https://www.
 | | |
 | --- | --- |
 | Test cases | 121, run by the TestSprite GitHub App on every push to [PR #6](https://github.com/lxcario/PixiBun/pull/6) |
-| Latest automatic App run | **118 passed · 3 failed · 0 blocked** on `c0d1009d`; a manual re-run of the three passed on narrowed plans ([scope note](retry-plan-scope-2026-10-23.md)); the full checks are restored and pass the local emulator 18/18, not yet a TestSprite run ([per-case results](app-run-2026-10-23-c0d1009d.json)) |
+| Final automatic App run | **121 passed · 0 failed · 0 blocked** on `c2670d1c` ([report](https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/6c0fedd6-d38e-4abe-a0d8-70242bb19731), [per-case results](app-run-2026-10-23-c2670d1c.json)). PR #6 merged into `main` through the required check on 24 October |
 | Where we started | 33 passed · 7 failed · 81 blocked on `b78fffb1`, 21 October |
 | Product bugs TestSprite led us to | **13**, 12 of them guarded by a regression test ([table below](#bugs-testsprite-led-us-to)) |
 | Stored Python replays | Run by our own GitHub workflow on every push; passing |
@@ -24,7 +24,7 @@ Nobody presses Run. GitHub's commit statuses for `53ac2afe` show the whole loop:
 2. **22:05:19 UTC:** the TestSprite GitHub App posts the `TestSprite V3` status "121 tests queued" and runs all 121 plans against that preview.
 3. **22:42:28 UTC:** the same status reads "116/121 passed · 3 failed · 2 blocked".
 
-Alongside it, our [Stored Python Replay workflow](../../.github/workflows/testsprite-replay.yml) asks the TestSprite CLI to replay two deep scripts that decode real pixels and the downloaded PNG, so both TestSprite paths check every push. `TestSprite V3` is a required status on `main`, with no admin bypass. On the Free plan the App did not run PR checks until 19 October; results from before then are portal runs, labelled as such in the dated records.
+Alongside it, our [Stored Python Replay workflow](../../.github/workflows/testsprite-replay.yml) asks the TestSprite CLI to replay two deep scripts that decode real pixels and the downloaded PNG, so both TestSprite paths check every push. `TestSprite V3` is a required status on `main`, with no admin bypass; the [run log](run-log.md) notes the one documentation-only exception, PR #14, which couldn't run for lack of credits. On the Free plan the App did not run PR checks until 19 October; results from before then are portal runs, labelled as such in the dated records.
 
 ## Bugs TestSprite led us to
 
@@ -46,7 +46,7 @@ Alongside it, our [Stored Python Replay workflow](../../.github/workflows/testsp
 
 Smaller accessibility fixes came from the same runs: the Apply Cleanup and Live preview names now contain their visible labels (WCAG 2.5.3, [`1c494612`](https://github.com/lxcario/PixiBun/commit/1c494612)), and the canvas readout's summary names its layer count ([`1071bcb6`](https://github.com/lxcario/PixiBun/commit/1071bcb6)). The full PR ledger, with each first failure and fixing commit, is in [loop-ledger.md](loop-ledger.md).
 
-## From 33 to 119 passing
+## From 33 to 121 passing
 
 Automatic App runs on PR #6. Counts are each run's own per-case verdicts (`test result --history`, source `github_action`).
 
@@ -67,9 +67,12 @@ Automatic App runs on PR #6. Counts are each run's own per-case verdicts (`test 
 | [`efed6fae`](app-run-2026-10-23-efed6fae.json) | 118 | 2 | 1 | Every plan starts on the classic desk |
 | [`f97621a4`](app-run-2026-10-23-f97621a4.json) | **119** | **2** | **0** | No blocked case |
 | `6e903b46` | 118 | 2 | 1 | The Create palette fix lands; its three non-passes were plan wording, now clearer |
-| [`c0d1009d`](app-run-2026-10-23-c0d1009d.json) | **118** | **3** | **0** | Latest. A manual re-run of S4-ANIM-02, S4-NEW-02 and S4-SAVE-01 passed on narrowed plans; full checks restored since |
+| [`c0d1009d`](app-run-2026-10-23-c0d1009d.json) | 118 | 3 | 0 | A manual re-run of S4-ANIM-02, S4-NEW-02 and S4-SAVE-01 passed on narrowed plans; the full checks were restored before the next run |
+| [`b56e1528`](app-run-2026-10-23-b56e1528.json) | **120** | 1 | 0 | All three pass with their full checks. S4-EXPORT-12 read a note in its description as an extra check; only that note was reworded |
+| [`f55f586b`](app-run-2026-10-23-f55f586b.json) | **120** | 1 | 0 | S4-EXPORT-05 closed a dialog before reading a button; that step now says to read it first |
+| [`c2670d1c`](app-run-2026-10-23-c2670d1c.json) | **121** | **0** | **0** | **All 121 passed. PR #6 merged on 24 October** |
 
-Every non-pass in every run was traced from the run's step snapshots and video, and sorted into three honest piles: a PixiBun bug, a mistake in our plan, or a limit of the cloud runner. The [22 October record](../releases/2026-10-22-app-plan-reliability.md) has the per-run detail. The two failures in the latest run were plan issues: S4-READOUT-01 expected an outdated readout sentence, and the agent glued three letters onto S4-DRAW-11's link. Both plans are fixed, and all 105 plans pass our local emulator with Studio Labs on and off.
+Every non-pass in every run was traced from the run's step snapshots and video, and sorted into three honest piles: a PixiBun bug, a mistake in our plan, or a limit of the cloud runner. The [22 October record](../releases/2026-10-22-app-plan-reliability.md) has the per-run detail. The [run log](run-log.md) covers every run through the final one. In the last four runs, every miss was plan wording or the agent slipping, except S4-SAVE-01 in the `c0d1009d` run, whose cloud cause stayed unconfirmed; it passed in every run after. All 106 plan specs pass our local emulator against the final preview, with Studio Labs on and off.
 
 ## What the cloud agent can't do, and how we cover it
 

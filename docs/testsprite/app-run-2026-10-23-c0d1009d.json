@@ -4,7 +4,7 @@
   "trigger": "automatic GitHub App after Vercel deployment ready",
   "startedAt": "2026-10-23T12:11Z",
   "finishedBy": "2026-10-23T12:58Z",
-  "note": "The three cases the automatic run missed (S4-ANIM-02, S4-NEW-02, S4-SAVE-01) were re-run on the same PR preview with clearer plans at 13:00 UTC and all passed; see each case's \"rerun\". None of the three was a product defect.",
+  "note": "The three cases this automatic run missed (S4-ANIM-02, S4-NEW-02, S4-SAVE-01) were re-run manually on the same PR preview at 13:00 UTC and passed, but on narrowed plans (see retry-plan-scope-2026-10-23.md), so that re-run is not a pass of the full checks. With the full checks restored, all three passed in the next automatic run, on b56e1528.",
   "counts": {
     "passed": 118,
     "failed": 3,

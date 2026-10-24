@@ -1,0 +1,742 @@
+{
+  "source": "b56e1528c06ffe828f1dea6d4147d0bfc75eaf4b",
+  "environment": "github-pr-6",
+  "trigger": "automatic GitHub App after Vercel deployment ready",
+  "startedAt": "2026-10-23T20:19Z",
+  "finishedBy": "2026-10-23T21:02Z",
+  "note": "S4-EXPORT-12 passed every step, then failed on a note in its description about a file check kept in its stored Python replay. Only that note was reworded (cliOnlyOutOfScope); the steps are unchanged.",
+  "counts": {
+    "passed": 120,
+    "failed": 1,
+    "blocked": 0,
+    "total": 121
+  },
+  "cases": [
+    {
+      "id": "421a951f-7f1a-42de-8f0a-1070b479fea3",
+      "name": "Cancel a lighting adjustment without changing pixels",
+      "now": "passed",
+      "runId": "fff9c8e0-3a42-4360-8b56-dc9d235d03cb"
+    },
+    {
+      "id": "64210b64-e030-4fda-856e-1956e73e6928",
+      "name": "Create two frames with distinct artwork and timing",
+      "now": "passed",
+      "runId": "02260852-ba2f-42d3-82ce-e7c61d5f32c3"
+    },
+    {
+      "id": "a6c571af-6e7d-4a40-bbdf-2d0f196bd9be",
+      "name": "Draw distinct pixels, then undo and redo",
+      "now": "passed",
+      "runId": "dff89b4e-bce1-4e94-883d-64446f5dee6b"
+    },
+    {
+      "id": "f9fbb1e0-03fb-4d5a-90a0-4ab44ccfa8a6",
+      "name": "Draw on an unlocked layer, lock it, and verify drawing is blocked until unlocked",
+      "now": "passed",
+      "runId": "4cd15ad7-7336-4ba7-89b6-3b236349cd23"
+    },
+    {
+      "id": "fde7a312-bc33-4d07-bbde-6dd6d7e49972",
+      "name": "EXP-003 — Paint a little heart, light it, and bring it back.",
+      "now": "passed",
+      "runId": "77e79fa4-3c3c-4619-9bea-8d63ad5ab10b"
+    },
+    {
+      "id": "d2dcb17d-7df0-40ad-ba4a-078e2b661065",
+      "name": "Enter shortcut characters while editing text without switching tools",
+      "now": "passed",
+      "runId": "150ddb85-77bc-446a-a21c-4ca63c2233fc"
+    },
+    {
+      "id": "0aa9fcd9-0c73-4973-a819-e6891b25d1cd",
+      "name": "Erase part of a drawing and undo the erase",
+      "now": "passed",
+      "runId": "70cf63c3-d8e6-4239-91b5-efe10c47d832"
+    },
+    {
+      "id": "2c762ddc-9921-415d-bc62-0f49b0b4a30d",
+      "name": "Export a two-frame animation as GIF with distinct frame content",
+      "now": "passed",
+      "runId": "80086baa-4783-4996-a026-7e49662e7e2f"
+    },
+    {
+      "id": "dd5ae5f3-02e6-47a9-8b8c-fb05a96b25c9",
+      "name": "Export an editable backup and reopen it through the supported import flow",
+      "now": "passed",
+      "runId": "afc3117b-3e4c-49fb-b493-ee509d6c068b"
+    },
+    {
+      "id": "8ba9f1eb-92b7-4d26-bf19-2ce9e9b92273",
+      "name": "Export the current drawing as PNG and verify the decoded image matches",
+      "now": "passed",
+      "runId": "d09e53c7-f47a-45b2-8631-51a0a9f6846d"
+    },
+    {
+      "id": "9300184d-ab5e-4851-ac8f-58fe8b364e8b",
+      "name": "Keep practice in Studio from Playground",
+      "now": "passed",
+      "runId": "4960d781-5a75-4e31-a8ba-cfe584b8e849"
+    },
+    {
+      "id": "99a52012-60cf-4042-a0b3-96a70b39fb63",
+      "name": "Open command palette and select a tool",
+      "now": "passed",
+      "runId": "4aaf20c5-978f-4b2f-95bd-332b65a546a5"
+    },
+    {
+      "id": "3028ec4f-6802-43b9-82f4-37f1bb927d69",
+      "name": "Persist desk theme after reloading the studio",
+      "now": "passed",
+      "runId": "05347d72-15f5-49fe-b4c0-3d7a755538f2"
+    },
+    {
+      "id": "71cc3067-44fb-4a52-8469-88468e42d1c9",
+      "name": "Reject invalid canvas size before starting a new drawing",
+      "now": "passed",
+      "runId": "1d3d04f1-a806-4245-88f6-3b0c741b71fe"
+    },
+    {
+      "id": "e4f6a0ae-6028-4035-9e59-a42ad5a88e46",
+      "name": "Reject or clamp invalid canvas sizes through the real resize controls",
+      "now": "passed",
+      "runId": "2bb5ccab-e045-4804-960f-a9dadd6563bb"
+    },
+    {
+      "id": "3c65e1d1-03c9-4bf5-92f4-ad82e0f2ba2b",
+      "name": "Return to drawing from Playground",
+      "now": "passed",
+      "runId": "16087346-453e-4d05-ab44-a504df25abd4"
+    },
+    {
+      "id": "69f584fe-836d-49a2-b91d-0ad7a857affa",
+      "name": "S4-ANIM-01 — Onion skin is only a guide.",
+      "now": "passed",
+      "runId": "0cf74b0d-0042-4e20-9531-7a40a41155f3"
+    },
+    {
+      "id": "ac3e0785-bcf6-445d-a2a9-8ccef1464bec",
+      "name": "S4-ANIM-02 — Holds and playback remain editable.",
+      "now": "passed",
+      "runId": "58153944-c5b7-433a-a447-671b2b7d27f3"
+    },
+    {
+      "id": "5197eb3b-9b2a-43ca-8371-5fb0ed29d7ae",
+      "name": "S4-ANIM-03 — Clips use inclusive endpoints.",
+      "now": "passed",
+      "runId": "4f4c40b0-a9fa-4bca-a9fb-64ab26e39ed4"
+    },
+    {
+      "id": "e3dedfcc-3074-4425-a274-6b3d9fc81674",
+      "name": "S4-ANIM-04 — Review explains a difference.",
+      "now": "passed",
+      "runId": "405f51d8-60f1-4007-b47c-6951ba37c2ad"
+    },
+    {
+      "id": "1165bc74-c877-4d9f-a3ad-ad58dd3f6729",
+      "name": "S4-CART-01 — A living postcard brings the drawing back.",
+      "now": "passed",
+      "runId": "46109ec4-2adf-41ab-8149-b815ca73c695"
+    },
+    {
+      "id": "da6a67a2-4780-4761-98e9-5f9b33e07566",
+      "name": "S4-CART-02 — A broken postcard is not a lost drawing.",
+      "now": "passed",
+      "runId": "d1d2c34e-9698-4ea6-b639-3ada19bff0c1"
+    },
+    {
+      "id": "6b85de97-1585-4bda-a830-b9b23fb83901",
+      "name": "S4-DRAW-01 — Pen and erase return exact pixels.",
+      "now": "passed",
+      "runId": "8acaac00-6c03-4471-9039-fe33b61f8705"
+    },
+    {
+      "id": "61070835-b7f7-480e-9506-352f6c13b36f",
+      "name": "S4-DRAW-02 — The curve can be reconsidered.",
+      "now": "passed",
+      "runId": "c768c67d-e70a-4c0e-a81e-8c419905a214"
+    },
+    {
+      "id": "7e243cd0-2e2f-45e2-a6ae-a2c9e6c0c2c6",
+      "name": "S4-DRAW-03 — A bucket respects its boundary.",
+      "now": "passed",
+      "runId": "6b52cf48-1d9b-463c-a649-0698d411ed05"
+    },
+    {
+      "id": "07d954a4-7605-43c9-af85-207d06a8b18a",
+      "name": "S4-DRAW-04 — A gradient stays in its selection.",
+      "now": "passed",
+      "runId": "78cdbc26-752c-4c4b-bd5e-76abb735ec97"
+    },
+    {
+      "id": "5185d7a0-c55b-4bd4-bdac-87ccd1daef0b",
+      "name": "S4-DRAW-05 — Dither leaves the gaps alone.",
+      "now": "passed",
+      "runId": "4a8c08c3-65db-4fd8-9214-a8032bce8f68"
+    },
+    {
+      "id": "5ccfecc6-b4bc-4017-9184-6e76f51b4e98",
+      "name": "S4-DRAW-06 — Replace only the requested color.",
+      "now": "passed",
+      "runId": "d2c49bd1-39d5-412c-acf0-41a7a1e3b7d6"
+    },
+    {
+      "id": "bde1ab4b-a6e2-47ae-ab33-00c8ee84c3cf",
+      "name": "S4-DRAW-07 — Erase a family, keep a neighbor.",
+      "now": "passed",
+      "runId": "bb44a81a-5ad1-4804-a3f7-53f28bb5eef0"
+    },
+    {
+      "id": "8e9da616-47f1-4cd9-ae9a-163ef2190f12",
+      "name": "S4-DRAW-08 — Three ways to select.",
+      "now": "passed",
+      "runId": "c512d64f-7a70-4c9b-a1b7-e91ce0120b9d"
+    },
+    {
+      "id": "c84e8e84-b8ea-48a9-9a45-cbdcb7304c59",
+      "name": "S4-DRAW-09 — A transformed detail can come back.",
+      "now": "passed",
+      "runId": "77e4bf83-910b-4a77-b9c4-d268375ecb7a"
+    },
+    {
+      "id": "0f7b89d1-67d1-4337-8b4c-ee09195f9c10",
+      "name": "S4-DRAW-10 — Straight and isometric agree with their previews.",
+      "now": "passed",
+      "runId": "bd4677cd-29dd-4bf8-a8e5-40dd1105f7a5"
+    },
+    {
+      "id": "dc365ace-40a4-4567-a6c5-7d199b58658c",
+      "name": "S4-DRAW-11 — Rectangles and ellipses keep their promises.",
+      "now": "passed",
+      "runId": "52b47507-7259-4e72-9071-abbf36841bf9"
+    },
+    {
+      "id": "055924c4-9b9d-4a1f-9215-2685358f3896",
+      "name": "S4-DRAW-12 — A normal is a surface, not paint.",
+      "now": "passed",
+      "runId": "04c6b221-5fbd-4bbb-b0f0-c8a6a6f06edf"
+    },
+    {
+      "id": "b14b8600-0dd8-4837-bd4c-59f027f8fa4d",
+      "name": "S4-DRAW-13 — Eyedropper samples the art.",
+      "now": "passed",
+      "runId": "7711f74d-80fd-4642-9d2e-030c08ce73ec"
+    },
+    {
+      "id": "df2541b1-1b7c-4ea9-a018-d7fe083b5f2a",
+      "name": "S4-DRAW-14 — Seventeen tools have reachable controls.",
+      "now": "passed",
+      "runId": "91516949-a415-4ced-8481-315159f670f9"
+    },
+    {
+      "id": "1d9dc104-94e9-4eb1-ac2c-406a3003da92",
+      "name": "S4-EXPORT-01 — PNG takes the active pose home.",
+      "now": "passed",
+      "runId": "dd64a014-3f57-4567-8c67-c4d3041ded5c"
+    },
+    {
+      "id": "9d8df519-fd82-44cc-95dd-ba29fec74e73",
+      "name": "S4-EXPORT-02 — A GIF keeps the beat.",
+      "now": "passed",
+      "runId": "4a7ba0fb-b039-45c6-a3d0-c253e759b96c"
+    },
+    {
+      "id": "6c9b8100-1170-433a-890b-7477303e6181",
+      "name": "S4-EXPORT-03 — APNG preserves admitted RGBA.",
+      "now": "passed",
+      "runId": "d69d4636-f453-4ee5-a57c-c6743965bffd"
+    },
+    {
+      "id": "1acf9570-11e0-44c8-bdc9-b0bf3c0ab39a",
+      "name": "S4-EXPORT-04 — A sheet and its map agree.",
+      "now": "passed",
+      "runId": "90e76f88-3122-4c44-bb84-0cdb451d527b"
+    },
+    {
+      "id": "87220cbb-74de-4287-8bc4-f5b34179289c",
+      "name": "S4-EXPORT-05 — A Godot kit opens as a bundle.",
+      "now": "passed",
+      "runId": "156b351b-027b-4553-a7e2-6efb109db991"
+    },
+    {
+      "id": "064e9c2c-3eef-42a9-a6f6-d6d9ae5db343",
+      "name": "S4-EXPORT-06 — A replay remembers the latest stroke.",
+      "now": "passed",
+      "runId": "3b5458dd-4325-4128-8625-94cf3ebcb4a4"
+    },
+    {
+      "id": "df8bdde4-3afe-4f0d-8d06-eecc3a00e058",
+      "name": "S4-EXPORT-07 — SVG explains its approximation.",
+      "now": "passed",
+      "runId": "f3ba3214-f156-48ad-9167-664e9ee2a485"
+    },
+    {
+      "id": "6e22e00c-53b8-4a8c-b762-0859b83b8702",
+      "name": "S4-EXPORT-08 — Shader code travels with its context.",
+      "now": "passed",
+      "runId": "e8c69151-2abe-4cea-b0c8-6c29037f45c6"
+    },
+    {
+      "id": "7113128a-96dd-40fe-8c3d-79608d16fbc4",
+      "name": "S4-EXPORT-09 — Palette motion becomes a loop.",
+      "now": "passed",
+      "runId": "de4a9866-faea-4297-ae6d-e05888e398fa"
+    },
+    {
+      "id": "f736d94f-04d6-4e9c-9d50-e3f286076e34",
+      "name": "S4-EXPORT-10 — An editable backup really reopens.",
+      "now": "passed",
+      "runId": "390d90e5-f92c-49eb-862e-a0f697d06779"
+    },
+    {
+      "id": "1bffe460-3740-40d7-acfc-f59d73cbc55a",
+      "name": "S4-EXPORT-11 — Video reports its real capability.",
+      "now": "passed",
+      "runId": "28c82010-4f5c-4966-9073-1c3b397dc8c7"
+    },
+    {
+      "id": "dcf76735-5c13-437a-8f98-45fb2ff95a19",
+      "name": "S4-EXPORT-12 — Unsafe scale is refused kindly.",
+      "now": "failed",
+      "runId": "267cc8f8-db02-46e6-a4f9-73c0c295bf09"
+    },
+    {
+      "id": "a0974817-fb8c-45ff-94cd-4223f9071a01",
+      "name": "S4-EXPORT-13 — A lighthouse for a pocket-sized drawing.",
+      "now": "passed",
+      "runId": "4e55e9ab-64e9-442d-8100-d768a4bb8321"
+    },
+    {
+      "id": "ab425882-1179-4999-a003-1b0e0f434388",
+      "name": "S4-FX-01 — The Lamp can be put back.",
+      "now": "passed",
+      "runId": "48ddc108-1087-4c5e-80df-2662c5d600cc"
+    },
+    {
+      "id": "76bbe317-2ce3-4643-b8a9-6649e732c91f",
+      "name": "S4-FX-02 — Cancel leaves the lamp unlit.",
+      "now": "passed",
+      "runId": "600b6750-b204-4e52-8075-aeab6461afe5"
+    },
+    {
+      "id": "8b27171a-6d28-442e-8df6-b9d50e53c57a",
+      "name": "S4-FX-03 — Quick magic has a way home.",
+      "now": "passed",
+      "runId": "6488ee63-613e-42ae-a1a8-d131a2b12e16"
+    },
+    {
+      "id": "cab0a484-4493-495d-99c0-687662d1ce3d",
+      "name": "S4-FX-04 — One normal exports; two refuse; lighting Cancel preserves layers.",
+      "now": "passed",
+      "runId": "98e513c9-b177-4222-bee6-c9d77d63820f"
+    },
+    {
+      "id": "1c1f254a-e25d-422f-9bc9-62c35f7127e0",
+      "name": "S4-FX-05 — Cleanup keeps protected details.",
+      "now": "passed",
+      "runId": "6717a138-e5ce-4422-9128-8187661220c3"
+    },
+    {
+      "id": "4b519c7e-d4e0-4db7-87d3-d0a8dee71f17",
+      "name": "S4-FX-06 — Tiles agree with their map.",
+      "now": "passed",
+      "runId": "e1039077-50a9-4498-918a-cfc7488e75c7"
+    },
+    {
+      "id": "fb1facc7-97dd-4f27-a7fe-c80787ee9859",
+      "name": "S4-FX-07 — Variations stay tied to their source.",
+      "now": "passed",
+      "runId": "4d5cd419-3158-4274-80da-2582c556f48b"
+    },
+    {
+      "id": "3645e185-6ffd-4ac9-a3ca-f14259d187e9",
+      "name": "S4-HIST-01 — View actions do not steal Undo.",
+      "now": "passed",
+      "runId": "ba157d00-bdf2-40df-8388-8978f77f4367"
+    },
+    {
+      "id": "6c4c3552-16b8-441f-a51b-9732ae33da1f",
+      "name": "S4-HIST-02 — An empty history stays calm.",
+      "now": "passed",
+      "runId": "f35c8155-31ba-4889-85bf-45d014dd722a"
+    },
+    {
+      "id": "86b8b3e8-6a09-471c-a23d-a3319137c078",
+      "name": "S4-HIST-03 — Resize can be cancelled.",
+      "now": "passed",
+      "runId": "7d2fa2d6-c37f-4b0b-86d3-03fcb45dcc5f"
+    },
+    {
+      "id": "3795f720-7b78-431f-9764-a388a2f51294",
+      "name": "S4-HIST-04 — Resize bounds are real.",
+      "now": "passed",
+      "runId": "c26efc33-6706-40b1-83e8-048b6158a182"
+    },
+    {
+      "id": "6054b7b4-74c8-4c69-8285-9b9568558043",
+      "name": "S4-HOME-01 — The bench keeps its own tiny world.",
+      "now": "passed",
+      "runId": "9cfba8b8-32b4-4d3d-8ad1-f8f2df3132fe"
+    },
+    {
+      "id": "86e87409-b0d0-4575-aca7-881510dca77a",
+      "name": "S4-IMPORT-01 — Image import is explicit.",
+      "now": "passed",
+      "runId": "c1ed8a04-2f36-480d-b41a-001658b261bc"
+    },
+    {
+      "id": "270fa57f-a5d9-4b0e-aa99-c4158133a420",
+      "name": "S4-IMPORT-02 — A sheet becomes the right poses.",
+      "now": "passed",
+      "runId": "6793b510-e680-43c5-9d11-e997ffea8679"
+    },
+    {
+      "id": "afc0b83b-d6df-4b48-8341-bb2cf962f3fc",
+      "name": "S4-JOURNEY-01 — A little animation comes safely home.",
+      "now": "passed",
+      "runId": "38da7b42-7285-4e98-bf00-c23fbaf77c22"
+    },
+    {
+      "id": "bbb8f684-adbc-43aa-87f0-6a41913bda05",
+      "name": "S4-LAYER-01 — Layer structure is reversible.",
+      "now": "passed",
+      "runId": "95f4018e-8410-4e19-bf9c-ca65ab4db43c"
+    },
+    {
+      "id": "fd3da2e3-9a59-46e0-b591-df9d18fe2703",
+      "name": "S4-LAYER-02 — Hidden and locked mean different things.",
+      "now": "passed",
+      "runId": "4af25c8c-deab-495f-8f5a-83b7fd758319"
+    },
+    {
+      "id": "8f4458ff-2a3b-415c-b99c-bc3a0fb42843",
+      "name": "S4-LAYER-03 — Blend and opacity keep their neighbors.",
+      "now": "passed",
+      "runId": "e60d4304-abf2-4ba7-87c3-06b265b13083"
+    },
+    {
+      "id": "2533dba8-1cfd-47e4-a42f-77e396cb56d0",
+      "name": "S4-LEARN-01 — Every lesson has a first page.",
+      "now": "passed",
+      "runId": "0b7a2c87-6460-417d-ac3f-624dabf963ad"
+    },
+    {
+      "id": "4efa7cc4-49d7-43a1-887a-0d5148376376",
+      "name": "S4-LEARN-02 — Practice returns to the original.",
+      "now": "passed",
+      "runId": "c5da6703-12dc-4ff2-ac40-1eb8237a42f4"
+    },
+    {
+      "id": "4a6bfdd0-5829-4661-ae5a-06f170218af8",
+      "name": "S4-LEARN-03 — Keep means a new project.",
+      "now": "passed",
+      "runId": "1b5d8aa0-6915-48fe-8563-7347757d2750"
+    },
+    {
+      "id": "b914aaa8-21d5-4906-ab63-6e39bd356301",
+      "name": "S4-LEARN-04 — A coach teaches one pose at a time.",
+      "now": "passed",
+      "runId": "93eb4cdd-1208-4ff3-979a-4918d2176d7c"
+    },
+    {
+      "id": "1ab5748d-2918-4ee6-9992-12d01a3cdd1b",
+      "name": "S4-LEARN-05 — The teaching board is an example.",
+      "now": "passed",
+      "runId": "2c73223b-22f3-4deb-8d51-b88cf644c71b"
+    },
+    {
+      "id": "161d6301-2b6b-4c53-aa18-b396f848bd60",
+      "name": "S4-LEARN-06 — Pocket has a desk of its own.",
+      "now": "passed",
+      "runId": "52a43dcf-3e8c-4c32-9e21-cb883d322502"
+    },
+    {
+      "id": "b5cab687-77f4-4ba1-8df6-5def1766b4f4",
+      "name": "S4-MOTION-01 — A rigid part takes two poses.",
+      "now": "passed",
+      "runId": "d40ceb19-4b61-4832-9180-0c0733627fbd"
+    },
+    {
+      "id": "f06ef9db-6227-43e0-815e-72bf8fd2166a",
+      "name": "S4-MOTION-02 — A saved rig refuses its genuinely changed source after reload.",
+      "now": "passed",
+      "runId": "8d2e36dc-ac97-42fc-9af8-d9b0deeef45c"
+    },
+    {
+      "id": "acc0d53a-3bfd-455f-938a-27c91a99882c",
+      "name": "S4-NEW-01 — A tiny loop keeps its place.",
+      "now": "passed",
+      "runId": "1aa99320-87f3-4f8b-8912-dc911d5ce2b6"
+    },
+    {
+      "id": "59fc51e1-ce16-4ad1-9ea4-392dcca93fd7",
+      "name": "S4-NEW-02 — Delete, then bring the pose home.",
+      "now": "passed",
+      "runId": "1bae75be-d360-467a-97c5-69e5cefe02ba"
+    },
+    {
+      "id": "e603c521-4772-4767-b258-2ec4e0e6973b",
+      "name": "S4-NEW-03 — The last frame stays.",
+      "now": "passed",
+      "runId": "d5606693-3e84-4875-8d3f-4939575286c6"
+    },
+    {
+      "id": "4fdbc1b5-3baa-4fc0-bcf9-1d3bdc501e30",
+      "name": "S4-NEW-04 — Earlier and later respect the ends.",
+      "now": "passed",
+      "runId": "c77d76a0-14a8-48da-a4c3-be0af775e317"
+    },
+    {
+      "id": "e6d22c7e-0756-4ee6-8edd-d8aeb2e8b757",
+      "name": "S4-NEW-05 — Frame keys belong to the focused frame.",
+      "now": "passed",
+      "runId": "27189d82-db99-4709-8ac9-4ed8556d8b09"
+    },
+    {
+      "id": "4cd53bc1-ed07-4e21-bfe8-0a3566035797",
+      "name": "S4-NEW-06 — A frame menu finds its way back.",
+      "now": "passed",
+      "runId": "a1579916-c5ca-4048-8fdc-a35f94f792e1"
+    },
+    {
+      "id": "f10cb6c5-a9fa-4223-b3b8-45eb48d6481e",
+      "name": "S4-NEW-07 — Animate means add a blank frame.",
+      "now": "passed",
+      "runId": "a83ad517-f9ef-477f-a936-2850b6983c88"
+    },
+    {
+      "id": "fd0f5e17-76da-47d0-942b-ddd752997e9c",
+      "name": "S4-NEW-08 — The timeline fits the desk.",
+      "now": "passed",
+      "runId": "b2c5e30f-4e92-4479-91d3-1d8d4c411d93"
+    },
+    {
+      "id": "e871e984-5663-481a-a4f7-4797c95faab5",
+      "name": "S4-NEW-09 — Two paint pots, no surprises.",
+      "now": "passed",
+      "runId": "5116eea5-dcff-4c84-b6e6-51e9abcd8234"
+    },
+    {
+      "id": "a3ffdffc-17ef-43b3-8df8-feeebb00d513",
+      "name": "S4-NEW-10 — A typo stays in the paint pot.",
+      "now": "passed",
+      "runId": "d4d7a790-eac4-4346-83c5-2fd8461c2df9"
+    },
+    {
+      "id": "31ecb05a-6b76-42fd-bd87-a3525b49ff6c",
+      "name": "S4-NEW-11 — A swatch knows which pot.",
+      "now": "passed",
+      "runId": "0df18dad-3da2-4d5f-b598-f09268de8fea"
+    },
+    {
+      "id": "48fad655-2a7c-49e7-9bb8-c58f74e0f5eb",
+      "name": "S4-NEW-12 — Colors by keyboard.",
+      "now": "passed",
+      "runId": "328125d1-d926-45b0-818f-0353df3c5dd7"
+    },
+    {
+      "id": "53f05468-e8ac-46de-941b-353e4ab51b6f",
+      "name": "S4-NEW-13 — Recent colors remember settled choices.",
+      "now": "passed",
+      "runId": "c399b065-13a2-4a85-a952-072c758a46bb"
+    },
+    {
+      "id": "f3933f1b-661a-41f6-8297-9a9bfbb58f84",
+      "name": "S4-NEW-14 — Preview is a window, not a paintbrush.",
+      "now": "passed",
+      "runId": "cec690dc-2790-419e-83c9-feb3eacc7b30"
+    },
+    {
+      "id": "306a7b5a-9435-4506-9be2-eaf7dd9f607f",
+      "name": "S4-NEW-15 — Preview stays on the desk.",
+      "now": "passed",
+      "runId": "2de33688-73e1-45c2-a8c5-4a03d4528cc9"
+    },
+    {
+      "id": "9e95f9a5-6af7-402f-80d8-0fd14784b17f",
+      "name": "S4-NEW-16 — A pan is never a stroke.",
+      "now": "passed",
+      "runId": "51d7be75-7d24-4e3d-8ec7-349318419317"
+    },
+    {
+      "id": "17a18f9f-1336-47db-abf7-e50fa5ab5427",
+      "name": "S4-NEW-17 — A layered stroke tells the truth.",
+      "now": "passed",
+      "runId": "41d7ca2a-9e54-4215-8329-d24e73effcd0"
+    },
+    {
+      "id": "8454253c-80b9-4da4-b9c8-548776bb4298",
+      "name": "S4-NEW-18 — The four new cozy rooms.",
+      "now": "passed",
+      "runId": "2e94047a-c62f-4e67-8df7-c37d1bcfa067"
+    },
+    {
+      "id": "b8cf6346-268e-4131-8936-a699c4974816",
+      "name": "S4-NEW-19 — All twelve rooms keep the drawing.",
+      "now": "passed",
+      "runId": "526ede13-a224-43d4-ab37-0600d965dc9f"
+    },
+    {
+      "id": "d175b106-aba4-40a9-a5c3-12c035d7b76b",
+      "name": "S4-NEW-20 — Quiet motion, complete controls.",
+      "now": "passed",
+      "runId": "33690088-2e8d-4d45-b0a5-c91ebb420ef6"
+    },
+    {
+      "id": "e36de20f-0c53-4e83-98d4-1a537be622a1",
+      "name": "S4-NEW-21 — Every Lab can come home.",
+      "now": "passed",
+      "runId": "6be1b731-c6e8-4298-97c4-889dafe98738"
+    },
+    {
+      "id": "e16f11fa-19e9-4617-bfaf-3811b9e2d9fc",
+      "name": "S4-NEW-22 — The command palette really opens.",
+      "now": "passed",
+      "runId": "b1ddcf69-40a3-4f44-a1fc-38e5c66e2f18"
+    },
+    {
+      "id": "ffedf7d1-5b19-4552-993a-fe63e56e9f19",
+      "name": "S4-PAL-01 — A named palette is a keepsake.",
+      "now": "passed",
+      "runId": "282aefe3-cf6e-41fc-8dd9-b83744cd8df8"
+    },
+    {
+      "id": "c9688b8d-3ebc-4fe3-b10d-ad7d49f546bf",
+      "name": "S4-PAL-02 — A library choice is explicit.",
+      "now": "passed",
+      "runId": "e2ad12f7-4af1-4678-bca3-dfc384365e40"
+    },
+    {
+      "id": "1c218262-aac8-4a1d-b6ba-fb7785bce98f",
+      "name": "S4-PAL-03 — Five shades from one seed.",
+      "now": "passed",
+      "runId": "13864a17-58d2-45fa-988e-888e3e448014"
+    },
+    {
+      "id": "3de75df2-12d6-451d-99e8-23af772c3063",
+      "name": "S4-PAL-04 — Cycle tracks keep their range.",
+      "now": "passed",
+      "runId": "be5a335d-7241-4200-ac11-bc5449359118"
+    },
+    {
+      "id": "87832975-3885-4714-9988-2d6f193489fa",
+      "name": "S4-PAL-05 — Roles and bindings survive editing.",
+      "now": "passed",
+      "runId": "ccbdc415-c819-4db2-9dec-9ea7dac9c1f4"
+    },
+    {
+      "id": "90c317f8-81f2-489e-8d74-459e5e50c755",
+      "name": "S4-READOUT-01 — A heart in pixels, words and a real PNG.",
+      "now": "passed",
+      "runId": "da364728-5783-4ae1-825d-2f7cd66869ca"
+    },
+    {
+      "id": "5398500f-34a3-4661-ad5e-ed2dcbe9be7a",
+      "name": "S4-RELATION-01 — Turn it around, and bring it back.",
+      "now": "passed",
+      "runId": "0d3c4fc4-8163-40c7-a34b-e47cd6e9836a"
+    },
+    {
+      "id": "8841ff88-9ccd-453f-ba68-13a9aa339ac1",
+      "name": "S4-SAFE-01 — Diagnostics ask before sharing.",
+      "now": "passed",
+      "runId": "6502ed75-7a2a-4456-9cda-7cc1c97018f5"
+    },
+    {
+      "id": "451a46ca-eb84-452a-9925-d0ccff94addb",
+      "name": "S4-SAFE-02 — Co-Draw refuses a broken invitation.",
+      "now": "passed",
+      "runId": "2f97ed46-7a2d-47b3-9733-27427b16c480"
+    },
+    {
+      "id": "8659a0b0-983c-40c8-ab30-60a9eb8f81b5",
+      "name": "S4-SAFE-03 — A corrupted import leaves an escape.",
+      "now": "passed",
+      "runId": "ec14a816-3ae2-4586-a523-3539ad2833b4"
+    },
+    {
+      "id": "2dee1983-4ac9-490d-9986-1b054492cab0",
+      "name": "S4-SAFE-04 — Offline and update promises need an actual network boundary.",
+      "now": "passed",
+      "runId": "b21e4e0d-c878-4e93-9952-1a4faa9eda2e"
+    },
+    {
+      "id": "269c1ec8-1b18-4d97-bc92-53311046b4b1",
+      "name": "S4-SAFE-05 — Surface tools leave Bun’s colors alone.",
+      "now": "passed",
+      "runId": "e3ff6c41-784d-4f31-ba1f-e50f516a18b7"
+    },
+    {
+      "id": "7352527c-5f87-46fc-b219-dfc06a82f65d",
+      "name": "S4-SAFE-06 — A layer lock also protects a selection.",
+      "now": "passed",
+      "runId": "f376119e-8b74-45cf-8472-f717132eba20"
+    },
+    {
+      "id": "b353085c-8d22-424c-9ecc-8d3a7c75d367",
+      "name": "S4-SAVE-01 — Close the desk, keep the drawing.",
+      "now": "passed",
+      "runId": "2d42bfa5-1fa3-4f72-a91b-8717bea6e852"
+    },
+    {
+      "id": "a717d33a-ab5a-4e61-84a1-0108a0bd7b51",
+      "name": "S4-SAVE-02 — A gallery copy is its own project.",
+      "now": "passed",
+      "runId": "56035689-09eb-4321-a229-dcb650f78f86"
+    },
+    {
+      "id": "e08ab5de-e8e9-4a25-b6ca-2ecec084741e",
+      "name": "S4-SAVE-03 — A cancelled new drawing keeps tonight's work.",
+      "now": "passed",
+      "runId": "e2e39c1b-0b57-47ab-8ad9-e422c99f2fd5"
+    },
+    {
+      "id": "76cb1fe2-c7c5-4cf0-b5b1-a3ea0cd8b905",
+      "name": "S4-STORY-01 — A lamp for a little midnight friend.",
+      "now": "passed",
+      "runId": "20074414-5678-4611-8031-19aff46168ae"
+    },
+    {
+      "id": "1bdd2744-29ef-4e59-879f-9852f0a1475c",
+      "name": "S4-VIEW-01 — Lenses do not leave the glass.",
+      "now": "passed",
+      "runId": "9d99ab07-ec4b-45ab-b199-868012dd7b97"
+    },
+    {
+      "id": "aff47330-da21-4332-803b-67d3f8c1bb85",
+      "name": "S4-VIEW-02 — A workspace remembers its shelves.",
+      "now": "passed",
+      "runId": "969c5274-ec5f-45fb-bdf1-53f243d89ec6"
+    },
+    {
+      "id": "e65d4b15-428d-430e-bbbb-4c8f0e7e917c",
+      "name": "S4-VIEW-03 — Quick tools follow the keymap.",
+      "now": "passed",
+      "runId": "57c6276d-4531-4b15-83be-a6fba197c83a"
+    },
+    {
+      "id": "813350a7-4390-4ecc-8ab3-2298787696cf",
+      "name": "S4-WELCOME-01 — A welcome you can leave.",
+      "now": "passed",
+      "runId": "c1b1e8af-351a-46b3-96dc-7d2e905fcecf"
+    },
+    {
+      "id": "c5377b6e-0321-4426-8e41-2da4c98a34cf",
+      "name": "Save a drawing and reload the project in the same browser context",
+      "now": "passed",
+      "runId": "84ca6a90-386e-44cb-a03c-cb14f986179d"
+    },
+    {
+      "id": "79f38a30-8492-4308-97a2-50189b25e598",
+      "name": "Select the Bun starter and continue into the studio",
+      "now": "passed",
+      "runId": "38477371-d975-474f-9729-e555d73a4084"
+    },
+    {
+      "id": "47b10a79-72f8-4d03-be7f-93ae111d71c0",
+      "name": "Undo a layer deletion and restore its prior state",
+      "now": "passed",
+      "runId": "fdc92495-6e1f-45ab-96b0-cde78a0ff926"
+    }
+  ]
+}

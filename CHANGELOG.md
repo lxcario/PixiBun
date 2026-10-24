@@ -3,6 +3,9 @@
 All notable changes and architectural enhancements to the PixiBun codebase are documented below.
 ## Unreleased
 
+- Season 4 merged at 121/121 (24 October).
+  - **PR #6 merged through the required check.** The automatic TestSprite App run on `c2670d1c` passed all 121 cases, and the PR merged into `main` as `238ff87b` with every check green. The two runs before it (120/1/0 each) missed one case each: S4-EXPORT-12 read a description note as an extra check, and the agent closed S4-EXPORT-05's dialog before reading a button. Only those two plans' wording changed; no check was removed. Per-run records, the [run log](docs/testsprite/run-log.md), the [mutation proof](docs/testsprite/mutation-proof.md) and the [submission](SUBMISSION.md) are up to date.
+
 - Steadier palettes and CI, and early tester feedback on the record (23 October).
   - **Create palette always reopens.** Clicking **Create palette** again within about 50 ms of saving a palette could leave the button dead until the panel remounted: the closing dialog was revived, then removed while the panel still thought it was open. Each opening of the Create palette and palette library dialogs is now a fresh dialog (`PalettePanel.tsx`, `c6e42784`). Found by the TestSprite plan emulator (S4-PAL-01 failed 1 run in 6); reproduced 3 times in 6 fast reopens before the fix, 0 in 10 after. `tests/production/paletteDialogReopen.spec.ts` fails on the previous build and passes in all three engines on the fixed one; a development build does not reproduce the race.
   - **The two-build rollback check no longer hangs.** After WebKit refuses the legacy-Blob fixture, its read-back once waited until the 2-minute timeout (CI run 39927559408). The fixture now closes its database connection, the read-back reports which step failed and retries a stall on a fresh connection; its comparisons are unchanged (`tests/release/updateRollback.spec.ts`).
