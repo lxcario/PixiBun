@@ -10,7 +10,7 @@ So PixiBun is built on quiet promises: **a locked layer stays locked, Undo retur
 
 ## Links
 
-- **Live app:** https://pixibun.vercel.app (production serves the merged build, `v1.14.1-238ff87b`)
+- **Live app:** https://pixibun.vercel.app (production serves `main`, where PR #6 merged as `238ff87b`)
 - **Repository:** https://github.com/lxcario/PixiBun
 - **The PR with the TestSprite check:** https://github.com/lxcario/PixiBun/pull/6 (opened 18 October, merged 24 October)
 - **Final TestSprite report, 121/121:** https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ae8453ac-f859-4324-9ca2-5016e683bc6c/execution/6c0fedd6-d38e-4abe-a0d8-70242bb19731
@@ -79,7 +79,7 @@ A green check only means something if it would turn red when the app breaks. So 
 
 ## What we kept honest
 
-- **Every red run stays in the log**, sorted into our bug, our plan, or the agent slipping. No check was loosened to get to green.
-- **When the agent slipped,** the step got clearer, never weaker: "Click Undo once now; this click is required." "Read the button before you close the dialog."
-- **Things the cloud agent can't do** (drag, upload, decode a downloaded file) are checked by stored Python replays and Playwright on every push, and the evidence page lists each one.
+- **Every red run stays in the log**, sorted into our bug, our plan, or the agent slipping, with the commit that changed each plan.
+- **When the agent slipped on a clear step,** we made the step clearer instead of removing it: "Click Undo once now; this click is required." "Read the button before you close the dialog."
+- **When a plan asked for something the agent can't reliably do,** that check moved to a stored Python replay or a Playwright test, or is read from another place on the page. It wasn't just dropped, and the run log says where each one went.
 - **A manual retry on narrowed plans** was labelled as exactly that, and not counted as green.

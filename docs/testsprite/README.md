@@ -72,7 +72,7 @@ Automatic App runs on PR #6. Counts are each run's own per-case verdicts (`test 
 | [`f55f586b`](app-run-2026-10-23-f55f586b.json) | **120** | 1 | 0 | S4-EXPORT-05 closed a dialog before reading a button; that step now says to read it first |
 | [`c2670d1c`](app-run-2026-10-23-c2670d1c.json) | **121** | **0** | **0** | **All 121 passed. PR #6 merged on 24 October** |
 
-Every non-pass in every run was traced from the run's step snapshots and video, and sorted into three honest piles: a PixiBun bug, a mistake in our plan, or a limit of the cloud runner. The [22 October record](../releases/2026-10-22-app-plan-reliability.md) has the per-run detail. The two failures in the latest run were plan issues: S4-READOUT-01 expected an outdated readout sentence, and the agent glued three letters onto S4-DRAW-11's link. Both plans are fixed, and all 105 plans pass our local emulator with Studio Labs on and off.
+Every non-pass in every run was traced from the run's step snapshots and video, and sorted into three honest piles: a PixiBun bug, a mistake in our plan, or a limit of the cloud runner. The [22 October record](../releases/2026-10-22-app-plan-reliability.md) has the per-run detail. The [run log](run-log.md) covers every run through the final one. In the last four runs, every miss was plan wording or the agent slipping, except S4-SAVE-01 in the `c0d1009d` run, whose cloud cause stayed unconfirmed; it passed in every run after. All 106 plan specs pass our local emulator against the final preview, with Studio Labs on and off.
 
 ## What the cloud agent can't do, and how we cover it
 
